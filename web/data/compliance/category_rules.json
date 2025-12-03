@@ -539,6 +539,60 @@
         "https://oehha.ca.gov/proposition-65/proposition-65-list",
         "https://www.cpsc.gov/s3fs-public/CPSA.pdf"
       ]
+    },
+    {
+      "id": "bluetooth_speaker_waterproof",
+      "label": "Waterproof Bluetooth Speaker",
+      "exampleProducts": [
+        "Portable Waterproof Bluetooth Speaker",
+        "Rugged Outdoor Bluetooth Speaker",
+        "Shower Bluetooth Speaker",
+        "Floating Pool Speaker"
+      ],
+      "targetMarkets": [
+        "United States"
+      ],
+      "typicalHtsCodes": [
+        "8518.22.00",
+        "8518.21.00"
+      ],
+      "requiredRegulations": [
+        "FCC Part 15 Subpart C - Radio Frequency Devices: Mandatory for devices with intentional radiators like Bluetooth. Requires testing by an accredited lab, certification (which grants an FCC ID), and specific labeling.",
+        "UL/IEC 62368-1 - Safety requirements for audio/video, information and communication technology equipment. While a voluntary standard, it is the de facto requirement for electrical safety by most national retailers to mitigate fire and electrical shock hazards.",
+        "49 CFR § 173.185 - Lithium cell and battery transport regulations. Incorporates UN/DOT 38.3 testing requirements, which are mandatory for shipping any product containing lithium-ion batteries by air, sea, or land.",
+        "California Proposition 65: Requires a clear and reasonable warning if the product exposes consumers to chemicals on the P65 list above established safe harbor levels.",
+        "Consumer Product Safety Improvement Act (CPSIA) - Conditional: Mandatory if the product is intended for children 12 years or younger. Requires limits on lead in surface coatings (16 CFR Part 1303) and substrates, limits on specific phthalates (16 CFR Part 1307), and third-party testing to applicable ASTM F963 toy safety standards.",
+        "FTC Act - Truthful Advertising: All marketing claims, especially performance claims like 'waterproof' (e.g., IPX7), must be truthful and substantiated with competent and reliable scientific evidence, such as IEC 60529 test reports.",
+        "Bluetooth SIG Qualification: Required to legally use the Bluetooth word mark or logo on the product, packaging, or marketing materials. Involves product testing and declaration through the Bluetooth Special Interest Group.",
+        "Energy Efficiency (Conditional): If sold with an external power supply (AC adapter), it must meet Department of Energy (DOE) Level VI standards (10 CFR Part 430) and may require certification for the California Energy Commission (CEC).",
+        "Toxics in Packaging Legislation: Many states restrict the concentration of four heavy metals (lead, mercury, cadmium, and hexavalent chromium) in product packaging and packaging components, based on the TPCH model."
+      ],
+      "testingRequirements": [
+        "FCC Part 15 Subpart C Testing: For intentional radiators (Bluetooth), performed by an accredited lab to obtain an FCC ID.",
+        "Ingress Protection (IP) Testing per IEC 60529: To substantiate waterproof claims (e.g., IPX7). Must be performed to validate design and for production quality control.",
+        "UN/DOT 38.3 Testing: Mandatory for the lithium-ion battery pack to ensure safety during transport.",
+        "Battery & Cell Safety Testing: UL 1642 for the cells and UL 2054 or IEC 62133 for the battery pack are industry best practices and often required by retailers.",
+        "Safety Testing to UL/IEC 62368-1: Comprehensive product evaluation for electrical, thermal, and mechanical hazards.",
+        "California Proposition 65 Screening: Chemical analysis of accessible materials to determine if a warning label is required.",
+        "CPSIA Testing (Conditional): If a children's product, requires third-party accredited lab testing for lead content, phthalates, and applicable sections of ASTM F963.",
+        "Toxics in Packaging Testing: Analysis of packaging materials for restricted heavy metals to comply with state laws."
+      ],
+      "highRiskFlags": [
+        "Lithium-Ion Battery Safety: High risk of fire, explosion, or thermal runaway from low-quality cells, poor Battery Management System (BMS) design, or incorrect charging circuits. A primary cause of recalls and safety incidents.",
+        "FCC Non-Compliance: Failure to obtain a valid FCC ID, incorrect labeling, or making unauthorized modifications post-certification can lead to Customs seizures, fines from the FCC, and sales prohibitions.",
+        "False Waterproof Claims: Marketing a product with an IP rating (e.g., IPX7) without robust design, testing, and production line quality control (e.g., air leak testing) leads to product failure, high return rates, and FTC action for deceptive advertising.",
+        "Intellectual Property Infringement: High risk of infringing on design patents, utility patents, or trademarks of established audio brands. Sourcing 'copycat' products can result in litigation and delisting from online marketplaces.",
+        "Bluetooth Trademark Infringement: Using the Bluetooth® word mark or logo on the product, packaging, or advertising without completing the official Bluetooth SIG qualification and declaration process is a trademark violation that can lead to legal action."
+      ],
+      "referenceLinks": [
+        "https://www.fcc.gov/oet/ea/fccid",
+        "https://www.ecfr.gov/current/title-47/chapter-I/subchapter-A/part-15",
+        "https://www.cpsc.gov/Business--Manufacturing/Business-Education/Business-Guidance/Childrens-Products",
+        "https://oehha.ca.gov/proposition-65",
+        "https://www.phmsa.dot.gov/hazmat/lithium-battery-guide-shippers",
+        "https://www.bluetooth.com/develop-with-bluetooth/qualification-listing/",
+        "https://www.toxicsinpackaging.org/"
+      ]
     }
   ]
 }

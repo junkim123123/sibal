@@ -411,6 +411,47 @@
         "Supplier has ISO 9001 certification",
         "Supplier has BSCI certification"
       ]
+    },
+    {
+      "id": "bluetooth_speaker_waterproof",
+      "label": "Waterproof Bluetooth Speaker",
+      "typicalSupplierTypes": [
+        "ODM (Original Design Manufacturer): Most common. They have existing, pre-engineered models that can be branded and slightly customized.",
+        "OEM (Original Equipment Manufacturer): For brands with unique, proprietary designs who need a factory to manufacture to their exact specifications.",
+        "Specialized Audio Equipment Factory: Factories with deep expertise in acoustics, driver design, and audio electronics."
+      ],
+      "mustHaveCertificates": [
+        "ISO 9001:2015 - Quality Management System. A fundamental requirement for a reliable and consistent manufacturing process.",
+        "Evidence of previous FCC certified products: The factory must demonstrate experience in manufacturing products that successfully passed FCC Part 15 testing for the US market.",
+        "UN 38.3 Test Reports for Battery Packs: Proof that the batteries they source and use are certified for safe transport."
+      ],
+      "niceToHaveCertificates": [
+        "BSCI (Business Social Compliance Initiative) or SMETA (Sedex Members Ethical Trade Audit): Demonstrates commitment to ethical labor practices, important for brand reputation.",
+        "ISO 14001 - Environmental Management System.",
+        "Evidence of experience with the Bluetooth SIG qualification process for past products.",
+        "UL Certification for factory (e.g., Witnessed Test Data Program) or existing UL 62368-1 reports for similar products."
+      ],
+      "sampleQuestionsToFactory": [
+        "Can you provide a valid FCC ID for a similar Bluetooth speaker model you have produced for the US market?",
+        "What is your on-line production testing procedure to verify the IPX7 waterproof rating for every unit, such as an air pressure leak test?",
+        "Please provide the UN 38.3 test report and UL 1642 certificate for the specific battery cells used in this speaker.",
+        "Can you share your most recent BSCI or SMETA audit report, including the full Corrective Action Plan?",
+        "What is your standard QC process for audio performance, including frequency response and distortion checks?"
+      ],
+      "commonRedFlags": [
+        "Inability to provide specific compliance documents (FCC ID, UL reports, UN 38.3). Vague answers like 'yes, it is compliant' are not sufficient.",
+        "No robust plan for production line waterproof testing. A simple visual check or dunk test is inadequate for mass production.",
+        "Unusually low price, which often indicates use of low-quality, non-certified batteries, inferior chipsets, or poor assembly.",
+        "Lack of experience exporting electronics to North America or the EU.",
+        "Hesitation to disclose their battery cell supplier or provide battery certifications."
+      ],
+      "recommendedAlibabaFilters": [
+        "Verified Supplier",
+        "Trade Assurance",
+        "Years on Alibaba (5+ recommended)",
+        "ISO 9001",
+        "BSCI"
+      ]
     }
   ]
 }

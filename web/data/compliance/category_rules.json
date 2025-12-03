@@ -203,6 +203,53 @@
         "https://ww2.arb.ca.gov/",
         "https://oehha.ca.gov/proposition-65"
       ]
+    },
+    {
+      "id": "auto_category_2",
+      "label": "Automotive Filters",
+      "exampleProducts": [
+        "Spin-on engine oil filter",
+        "Cartridge-style engine oil filter",
+        "Panel-type engine air filter",
+        "Activated carbon cabin air filter",
+        "In-line gasoline fuel filter"
+      ],
+      "targetMarkets": [
+        "United States"
+      ],
+      "typicalHtsCodes": [
+        "8421.23.00",
+        "8421.31.00",
+        "8421.39.80",
+        "8421.99.00"
+      ],
+      "requiredRegulations": [
+        "California Proposition 65: Requires a warning label if the product contains chemicals known to the state to cause cancer or reproductive toxicity above safe harbor levels.",
+        "National Traffic and Motor Vehicle Safety Act: Imposes a general duty on manufacturers to ensure their products are free of safety-related defects. A faulty filter causing a fuel leak or engine failure is a safety defect under NHTSA jurisdiction.",
+        "FTC 'Made in USA' Standard: If marketed as such, the product must be 'all or virtually all' made in the United States.",
+        "EPA Regulations (40 CFR Part 279): While not a regulation on the sale of new filters, these rules govern the management and disposal of used oil and oil filters, which can influence product design and marketing."
+      ],
+      "testingRequirements": [
+        "Performance Testing (Industry Standard): Testing to SAE/ISO standards is critical to ensure product function, safety, and mitigate liability risk.",
+        "Oil Filter Testing (ISO 4548 / SAE J1858): Includes multipass filtration efficiency and capacity, burst pressure, impulse fatigue, and bubble leak tests.",
+        "Air Filter Testing (ISO 5011 / SAE J726): Measures filtration efficiency, dust holding capacity, and airflow restriction.",
+        "Fuel Filter Testing (ISO 19438 / SAE J905): Measures filtration efficiency, pressure drop, and structural integrity.",
+        "Cabin Air Filter Testing (ISO 11155): Measures particulate filtration efficiency.",
+        "California Proposition 65 Screening: Chemical analysis (e.g., XRF, GC-MS) to determine if concentrations of listed chemicals (e.g., lead, BPA, phthalates) require a warning label."
+      ],
+      "highRiskFlags": [
+        "Fuel or Oil Leaks: A cracked housing or failed seal can lead to fluid leaks, creating a significant fire hazard and risk of engine seizure. This is a primary cause for NHTSA recalls.",
+        "Filter Media Failure: Low-quality media can collapse or tear, releasing contaminants into the engine and causing catastrophic damage.",
+        "Burst Failure: Inadequate canister strength or seaming can lead to a burst under pressure, causing a sudden and total loss of oil.",
+        "Incorrect Fitment: Poor dimensional tolerances can result in improper sealing, allowing unfiltered fluid to bypass the filter."
+      ],
+      "referenceLinks": [
+        "https://www.nhtsa.gov/recalls",
+        "https://oehha.ca.gov/proposition-65",
+        "https://www.ftc.gov/business-guidance/enforcement/complying-made-usa-standard",
+        "https://www.iso.org/committee/48456.html",
+        "https://www.sae.org/standards"
+      ]
     }
   ]
 }

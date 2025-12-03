@@ -179,6 +179,44 @@
         "Review supplier's main markets to see if 'North America' is a significant export destination.",
         "Insist on video factory tours and third-party audits before any engagement."
       ]
+    },
+    {
+      "id": "auto_category_2",
+      "label": "Automotive Filters",
+      "typicalSupplierTypes": [
+        "Aftermarket Manufacturers",
+        "OEM/OES (Original Equipment Manufacturer/Supplier) Factories"
+      ],
+      "mustHaveCertificates": [
+        "IATF 16949: The global quality management standard for the automotive industry. This is the most critical certification.",
+        "ISO 9001: A general quality management system standard, often a prerequisite for IATF 16949."
+      ],
+      "niceToHaveCertificates": [
+        "ISO 14001: Environmental Management System.",
+        "SMETA (Sedex Members Ethical Trade Audit): Demonstrates social and ethical compliance.",
+        "BSCI (Business Social Compliance Initiative): Another leading social compliance certification."
+      ],
+      "sampleQuestionsToFactory": [
+        "Can you provide your current IATF 16949 certificate and the name of the certifying body?",
+        "What specific ISO and SAE standards do you use to validate the performance of your oil filters (e.g., ISO 4548-12)?",
+        "Can you provide a sample test report from a recent production batch for a filter similar to the one we need?",
+        "Describe your in-line quality control process, specifically how you perform 100% leak testing on every oil and fuel filter.",
+        "Who are your primary suppliers for raw materials like filter media, steel canisters, and rubber gaskets?",
+        "What is your product traceability system? Can you trace a single filter back to its raw material batches?"
+      ],
+      "commonRedFlags": [
+        "No IATF 16949 Certification: A major red flag indicating the factory does not meet the stringent quality standards of the automotive supply chain.",
+        "Vague Performance Claims: Using terms like 'OEM-quality' without providing specific test data (e.g., beta ratios, efficiency percentages) to back it up.",
+        "Inability to Provide Test Reports: A reputable factory should readily provide detailed performance and validation test reports.",
+        "Lack of 100% Leak Testing: For pressurized filters (oil, fuel), anything less than 100% leak testing on the production line is unacceptable.",
+        "Unusually Low Price: Prices significantly below the market average often point to the use of inferior filter media, thinner steel, or poor quality seals."
+      ],
+      "recommendedAlibabaFilters": [
+        "Verified Supplier",
+        "IATF 16949",
+        "ISO 9001",
+        "Trade Assurance"
+      ]
     }
   ]
 }

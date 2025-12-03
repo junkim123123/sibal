@@ -99,41 +99,41 @@
       "id": "us_baby_teether_toy",
       "label": "Silicone Baby Teether Toy",
       "typicalSupplierTypes": [
-        "ODM (Original Design Manufacturer): Factories offering pre-designed teethers that can be private labeled.",
-        "OEM (Original Equipment Manufacturer): Factories that produce custom designs based on a buyer's specifications.",
-        "Specialized Silicone Molding Factory: A factory focused exclusively on food-grade and medical-grade silicone products."
+        "Specialized Silicone Product Manufacturer (focus on baby, kitchen, or medical items)",
+        "ODM (Original Design Manufacturer) with existing teether molds",
+        "OEM (Original Equipment Manufacturer) for custom designs"
       ],
       "mustHaveCertificates": [
-        "ISO 9001:2015: Certification for a quality management system.",
-        "Recent CPSC-Accepted Lab Test Reports: Verifiable ASTM F963-17 and CPSIA test reports for the specific product or a highly similar one, dated within the last 12-24 months.",
-        "Raw Material Documentation: Specification sheets and compliance certificates for the silicone raw material, confirming it meets FDA 21 CFR 177.2600."
+        "ISO 9001:2015 (Quality Management System)",
+        "BSCI (Business Social Compliance Initiative) or SMETA (Sedex Members Ethical Trade Audit) report for social compliance.",
+        "Recent (within 1-2 years) CPSC/ASTM F963/CPSIA test reports for similar silicone products for the US market."
       ],
       "niceToHaveCertificates": [
-        "BSCI (Business Social Compliance Initiative) Audit Report: Demonstrates ethical social practices.",
-        "SMETA (Sedex Members Ethical Trade Audit) Report: Another leading social compliance audit.",
-        "ISO 13485 (Medical Devices): Indicates a high level of quality control and cleanliness.",
-        "GMP (Good Manufacturing Practice) Certification: Ensures production is in a hygienic and controlled environment."
+        "ISO 13485 (Medical Devices - Quality Management)",
+        "GMP (Good Manufacturing Practice) Certification",
+        "LFGB Certification (German food contact standard, often indicates higher quality silicone)"
       ],
       "sampleQuestionsToFactory": [
-        "Can you provide the full, unredacted ASTM F963-17 and CPSIA test report for this exact model from a CPSC-accepted lab? What is the date of the report?",
-        "What is the specific brand and grade of silicone rubber you use? Can you provide the raw material data sheet and its FDA 21 CFR 177.2600 compliance documentation?",
-        "What is your on-line quality control process to check for and remove items with molding defects like sharp flashing before they are packaged?",
-        "Do you use a metal detector on the production line to prevent foreign body contamination in the final product?",
-        "How do you apply the permanent CPSIA tracking information? Is it molded, engraved, or printed on the product itself?"
+        "Can you provide a recent, complete ASTM F963 and CPSIA test report for a silicone teether you produced for another US client?",
+        "What grade of silicone do you use? Is it platinum-cured or peroxide-cured? Can you provide the raw material specification sheet?",
+        "What is your in-process quality control for detecting molding defects like flash, sink marks, or air bubbles?",
+        "Can you share your most recent BSCI or SMETA audit summary page?",
+        "Do you perform any in-house durability tests, such as pull tests, on every production batch?",
+        "Are you registered with the FDA as a food-contact article manufacturer?"
       ],
       "commonRedFlags": [
-        "Refusal or hesitation to provide complete, recent test reports from a reputable, CPSC-accepted lab.",
-        "Price is significantly lower than quotes from other specialized silicone factories, suggesting material or quality compromises.",
-        "The supplier is a general trading company with no specialization in baby products or silicone manufacturing.",
-        "Vague answers regarding material composition, such as '100% safe silicone' without providing technical data sheets.",
-        "Supplier's main product catalog does not feature baby products or other silicone items."
+        "Supplier cannot provide any valid US market test reports or provides an old/incomplete one.",
+        "Price is significantly lower than competitors, suggesting use of cheap fillers or low-grade silicone.",
+        "Supplier claims their products are 'FDA Approved'. The FDA does not approve teethers; materials can be 'FDA compliant'. This indicates a lack of regulatory understanding.",
+        "Unwillingness to provide social compliance audit reports (BSCI/SMETA).",
+        "Poor communication or lack of transparency about their production process and raw material sourcing.",
+        "A messy or disorganized production environment visible in factory photos or videos."
       ],
       "recommendedAlibabaFilters": [
-        "Supplier Type: Verified Supplier",
-        "Management Certification: ISO 9001, BSCI",
-        "Product Certification: Search within supplier's profile for evidence of FDA, ASTM.",
-        "Minimum 3-5 Years of Experience as a supplier on the platform.",
-        "Review Main Products: Ensure their primary category is 'Mother, Kids & Toys' or that they have a deep catalog of silicone products."
+        "Verified Supplier",
+        "Trade Assurance",
+        "Supplier has 'BSCI' or 'ISO 9001' listed in their profile.",
+        "Search keywords: 'food grade silicone teether', 'ASTM F963 teether', 'LFGB silicone teether'."
       ]
     }
   ]

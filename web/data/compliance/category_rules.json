@@ -149,6 +149,60 @@
         "https://www.ecfr.gov/current/title-21/chapter-I/subchapter-B/part-177/subpart-C/section-177.2600",
         "https://oehha.ca.gov/proposition-65"
       ]
+    },
+    {
+      "id": "auto_category_1",
+      "label": "Passenger Vehicles",
+      "exampleProducts": [
+        "Sedan",
+        "Sport Utility Vehicle (SUV)",
+        "Electric Car",
+        "Hatchback",
+        "Pickup Truck"
+      ],
+      "targetMarkets": [
+        "United States"
+      ],
+      "typicalHtsCodes": [
+        "8703.23.00",
+        "8703.24.00",
+        "8703.80.00",
+        "8703.90.00"
+      ],
+      "requiredRegulations": [
+        "National Highway Traffic Safety Administration (NHTSA) Regulations: All passenger vehicles must comply with all applicable Federal Motor Vehicle Safety Standards (FMVSS) as specified in 49 CFR Part 571.",
+        "Environmental Protection Agency (EPA) Regulations: Vehicles must meet federal emissions standards under 40 CFR Parts 85, 86, and 600. Importers must submit EPA Form 3520-1 upon entry.",
+        "NHTSA Importation Requirements: Importers must submit NHTSA Form HS-7 at the port of entry to declare FMVSS compliance.",
+        "American Automobile Labeling Act (AALA): Requires labeling specifying the percentage of U.S./Canadian parts content, the final assembly point, and the country of origin for the engine and transmission (49 CFR Part 583).",
+        "California Air Resources Board (CARB): Stricter emissions standards that apply to vehicles sold in California and other states that have adopted California's standards under Section 177 of the Clean Air Act. Requires a specific Executive Order (EO) number for compliance.",
+        "California Proposition 65 (Safe Drinking Water and Toxic Enforcement Act of 1986): Requires businesses to provide warnings to Californians about significant exposures to chemicals that cause cancer, birth defects or other reproductive harm.",
+        "NOTE: CPSC regulations such as CPSIA, 16 CFR Part 1501 (small parts), and 16 CFR Parts 1303/1307 (lead/phthalates) do NOT apply to passenger vehicles. They apply to children's products, which could include vehicle accessories like car seats or toys sold with the vehicle."
+      ],
+      "testingRequirements": [
+        "FMVSS Compliance Testing: Mandatory third-party or first-party (with sufficient data) testing to prove compliance with all applicable standards. Key examples include:",
+        "FMVSS 208: Occupant Crash Protection (including front and side impact crash tests).",
+        "FMVSS 108: Lamps, Reflective Devices, and Associated Equipment.",
+        "FMVSS 135: Light Vehicle Brake Systems.",
+        "FMVSS 214: Side Impact Protection.",
+        "FMVSS 301: Fuel System Integrity.",
+        "FMVSS 305: Electric Powered Vehicles: Electrolyte Spillage and Electrical Shock Protection (for EVs).",
+        "EPA Emissions Testing: Vehicle must undergo testing according to the Federal Test Procedure (FTP) to receive an EPA Certificate of Conformity.",
+        "On-Board Diagnostics (OBD-II) Verification: System must be tested and validated per EPA and CARB requirements.",
+        "AALA Content Verification: Audit and verification of the supply chain to determine parts content percentages for labeling."
+      ],
+      "highRiskFlags": [
+        "Non-Conforming Vehicles: Attempting to import a vehicle not originally manufactured to meet US standards (a 'gray market' vehicle) is extremely difficult and costly to bring into compliance.",
+        "Incomplete Documentation: Failure to provide a valid EPA Form 3520-1 and NHTSA Form HS-7 at the time of import will result in the vehicle being denied entry.",
+        "Lack of Manufacturer Support: The original manufacturer must certify compliance. A vehicle from a manufacturer with no official US presence or designated agent to handle recalls is a major red flag.",
+        "Emissions Failures: A vehicle that cannot pass EPA and/or CARB emissions testing cannot be legally sold or registered in the respective states."
+      ],
+      "referenceLinks": [
+        "https://www.nhtsa.gov/importing-vehicle",
+        "https://www.epa.gov/importing-vehicles-and-engines",
+        "https://www.ecfr.gov/current/title-49/subtitle-B/chapter-V/part-571",
+        "https://ww2.arb.ca.gov/",
+        "https://oehha.ca.gov/proposition-65"
+      ]
     }
   ]
 }

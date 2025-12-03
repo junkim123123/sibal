@@ -135,6 +135,50 @@
         "Supplier has 'BSCI' or 'ISO 9001' listed in their profile.",
         "Search keywords: 'food grade silicone teether', 'ASTM F963 teether', 'LFGB silicone teether'."
       ]
+    },
+    {
+      "id": "auto_category_1",
+      "label": "Passenger Vehicles",
+      "typicalSupplierTypes": [
+        "Original Equipment Manufacturer (OEM)",
+        "Contract Manufacturer (for specialized/low-volume vehicles)",
+        "Tier 1 Supplier (for major systems like powertrains, electronics)",
+        "Tier 2 Supplier (for components)"
+      ],
+      "mustHaveCertificates": [
+        "IATF 16949:2016 (The global quality management system standard for the automotive industry)",
+        "ISO 9001:2015 (General Quality Management System)",
+        "Evidence of EPA Certificate of Conformity for specific models",
+        "Evidence of successful FMVSS compliance testing from accredited labs"
+      ],
+      "niceToHaveCertificates": [
+        "ISO 14001 (Environmental Management)",
+        "ISO 45001 (Occupational Health and Safety)",
+        "SMETA (Sedex Members Ethical Trade Audit) or BSCI (Business Social Compliance Initiative) for social accountability."
+      ],
+      "sampleQuestionsToFactory": [
+        "Can you provide your current IATF 16949 certificate and the most recent audit report?",
+        "Please provide the complete list of applicable FMVSS standards this vehicle has been tested and certified for, along with the lab reports.",
+        "Can you provide the EPA Certificate of Conformity and the CARB Executive Order number for this model year?",
+        "What is your process for Production Part Approval Process (PPAP) with your Tier 1 suppliers?",
+        "How do you ensure traceability for critical safety components like airbags, brake systems, and chassis welds?",
+        "Do you have an established US entity to act as the importer of record and handle potential recalls as required by US law?"
+      ],
+      "commonRedFlags": [
+        "No IATF 16949 certification. This is a non-negotiable standard for any legitimate automotive manufacturer.",
+        "Vague answers about FMVSS or EPA compliance, or claims that a vehicle for another market is 'close enough' for the US.",
+        "Inability to provide detailed test reports from accredited laboratories.",
+        "Lack of a robust recall and warranty plan for the US market.",
+        "No prior experience exporting complete vehicles to the United States.",
+        "Unusually low pricing, which may indicate non-compliant components or materials were used."
+      ],
+      "recommendedAlibabaFilters": [
+        "NOTE: Sourcing fully compliant, road-legal passenger vehicles for the US market on platforms like Alibaba is extremely high-risk and not a standard industry practice. The platform is more suitable for parts or accessories.",
+        "If researching specialized manufacturers, prioritize: 'IATF 16949' in supplier certifications.",
+        "Filter for 'Verified' suppliers with a long operational history (e.g., 10+ years).",
+        "Review supplier's main markets to see if 'North America' is a significant export destination.",
+        "Insist on video factory tours and third-party audits before any engagement."
+      ]
     }
   ]
 }

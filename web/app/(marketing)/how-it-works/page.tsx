@@ -1,111 +1,17 @@
-// How It Works Page Structure (Rebuilt):
-// 1) Hero with left text and right visual collage (chat → report → box)
-// 2) Journey in three moves (3-card overview)
-// 3) Step by step timeline (4 detailed steps)
-// 4) Pricing and coverage band (two cards)
-// 5) FAQ section
-// 6) Final CTA banner
-// 7) Footer (handled in layout)
-
+// How It Works Page - Config-driven
 import Link from 'next/link';
-import { MessageSquare, FileText, Package, Upload, Brain, Users, Truck, TrendingUp } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Accordion, AccordionItem } from '@/components/ui/accordion';
+import { MessageSquare, FileText, Package } from 'lucide-react';
+import { howItWorksPageConfig } from '@/lib/content/howItWorks';
+import { MarketingCard } from '@/components/marketing/MarketingCard';
+import { SectionLayout } from '@/components/marketing/SectionLayout';
 
 export const revalidate = 60;
 
 export default async function HowItWorksPage() {
-  // Journey cards
-  const journeyCards = [
-    {
-      title: 'Start with a chat',
-      body: 'Tell us what you want to sell, where you want to sell it, and how big you want to go. We capture the key details in a shared project brief.',
-      icon: MessageSquare,
-    },
-    {
-      title: 'Get a cost and risk snapshot',
-      body: 'Our tools turn that brief into a landed cost and risk view, so you see margins, duties, and red flags before you spend on inventory.',
-      icon: TrendingUp,
-    },
-    {
-      title: 'Run a pilot with NexSupply',
-      body: 'When the numbers look right, we help you line up suppliers, QC and logistics for a first controlled shipment, not a blind leap.',
-      icon: Package,
-    },
-  ];
-
-  // Detailed steps
-  const steps = [
-    {
-      stepNumber: '1',
-      title: 'Describe your product',
-      timeEstimate: '~10 minutes',
-      body: 'Upload a product idea, photo or reference listing. In a short guided flow, we capture what matters for sourcing.',
-      bullets: [
-        'Product idea or reference listing',
-        'Target market and main sales channel',
-        'Rough volume and timing (test run or ongoing)',
-      ],
-      icon: Upload,
-    },
-    {
-      stepNumber: '2',
-      title: 'AI cost and risk check',
-      timeEstimate: 'Within 24 hours',
-      body: 'Our toolkit turns your brief into a first pass landed cost and risk picture so you can sanity check the project before you commit.',
-      bullets: [
-        'Estimated DDP per unit',
-        'Simple breakdown of factory, freight, duty and extras',
-        'Early flags for compliance or AD/CVD risk',
-      ],
-      icon: Brain,
-    },
-    {
-      stepNumber: '3',
-      title: 'Talk to NexSupply',
-      timeEstimate: '30 minute call',
-      body: 'If it looks promising, you can book a call with our sourcing team to go deeper.',
-      bullets: [
-        'Human specialist reviews your assumptions',
-        'Together you stress test margin and risk scenarios',
-        'You decide whether to move into supplier search',
-      ],
-      icon: Users,
-    },
-    {
-      stepNumber: '4',
-      title: 'Pilot run and beyond',
-      timeEstimate: '1–2 week pilot',
-      body: 'When you are ready to move, we help you run a controlled first order instead of jumping straight to a huge PO.',
-      bullets: [
-        'Shortlist and compare qualified factories',
-        'Align on QC and logistics that match your risk level',
-        'Turn lessons from the pilot into a repeatable playbook',
-      ],
-      icon: Truck,
-    },
-  ];
-
-  // FAQ content
-  const faqs = [
-    {
-      question: 'Do I have to be an experienced seller?',
-      answer: 'No. Many of our early users are launching their first or second product. We focus on helping you understand landed cost and risk before you commit.',
-    },
-    {
-      question: 'Can I use NexSupply if I already have suppliers?',
-      answer: 'Yes. You can bring your own suppliers and use NexSupply only for cost and risk checks or to benchmark new options.',
-    },
-    {
-      question: 'Do you handle shipping and customs?',
-      answer: 'We help you plan freight and customs but we are not a customs broker or law firm. We can coordinate with your partners or recommend specialists.',
-    },
-    {
-      question: 'How long does the whole process take?',
-      answer: 'Most projects receive an initial analysis within one business day and a first pilot supplier plan within one to two weeks, depending on category.',
-    },
-  ];
+  const { hero, journey, steps, pricing, faq, cta } = howItWorksPageConfig;
 
   return (
     <div className="bg-white">
@@ -116,32 +22,32 @@ export default async function HowItWorksPage() {
             {/* Left: Text Content */}
             <div className="flex flex-col justify-center">
               <h1 className="text-4xl sm:text-5xl lg:text-[52px] font-semibold tracking-tight text-neutral-900 leading-tight mb-6">
-                How NexSupply Works
+                {hero.title}
               </h1>
               <p className="text-lg sm:text-xl text-neutral-700 font-medium mb-3 leading-relaxed">
-                From first idea to your first test shipment, NexSupply keeps your project moving at every step of the sourcing process.
+                {hero.subtitle}
               </p>
               <p className="text-sm text-neutral-500 mb-4">
-                Most projects get an initial snapshot within one business day.
+                {hero.note}
               </p>
               <p className="text-base text-neutral-600 mb-8 leading-relaxed">
-                Start with one chat. When the numbers work, scale at your own pace.
+                {hero.description}
               </p>
               <div className="flex flex-row flex-wrap gap-3 sm:gap-4 items-center">
-                <Link href="/chat">
+                <Link href={hero.cta.primary.href}>
                   <Button
                     variant="primary"
                     size="lg"
                     className="rounded-full px-8 py-3.5"
                   >
-                    Get started
+                    {hero.cta.primary.label}
                   </Button>
                 </Link>
                 <Link
-                  href="/#home-use-cases"
+                  href={hero.cta.secondary.href}
                   className="text-sm font-medium text-neutral-600 hover:text-neutral-900 transition-colors"
                 >
-                  See use cases
+                  {hero.cta.secondary.label}
                 </Link>
               </div>
             </div>
@@ -159,12 +65,12 @@ export default async function HowItWorksPage() {
                 <div className="space-y-3">
                   <div className="bg-neutral-50 rounded-2xl p-4">
                     <p className="text-sm text-neutral-600">
-                      "I want to import snack products to the US..."
+                      &quot;I want to import snack products to the US...&quot;
                     </p>
                   </div>
                   <div className="bg-neutral-50 rounded-2xl p-4">
                     <p className="text-sm text-neutral-600">
-                      "Target market: Amazon FBA, test run volume..."
+                      &quot;Target market: Amazon FBA, test run volume...&quot;
                     </p>
                   </div>
                 </div>
@@ -203,16 +109,17 @@ export default async function HowItWorksPage() {
       </section>
 
       {/* Journey in Three Moves */}
-      <section aria-label="Journey overview" className="py-16 sm:py-20 bg-neutral-50">
-        <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
-          <h2 className="text-3xl sm:text-4xl font-bold text-neutral-900 mb-12 text-center">
-            Your sourcing journey in three moves
-          </h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8">
-            {journeyCards.map((card, idx) => {
-              const Icon = card.icon;
-              return (
-                <Card key={idx} className="bg-transparent border-neutral-200 shadow-sm">
+      <SectionLayout
+        title={journey.title}
+        subtitle={journey.subtitle}
+        className="py-16 sm:py-20 bg-neutral-50"
+      >
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8">
+          {journey.cards.map((card, idx) => {
+            const Icon = card.icon;
+            return (
+              <MarketingCard key={idx}>
+                <div className="p-6">
                   <div className="flex items-start gap-4 mb-4">
                     <div className="flex-shrink-0">
                       <Icon className="h-6 w-6 text-neutral-600" />
@@ -224,21 +131,21 @@ export default async function HowItWorksPage() {
                   <p className="text-base text-neutral-600 leading-relaxed">
                     {card.body}
                   </p>
-                </Card>
-              );
-            })}
-          </div>
+                </div>
+              </MarketingCard>
+            );
+          })}
         </div>
-      </section>
+      </SectionLayout>
 
       {/* Step by Step Timeline */}
-      <section aria-label="Detailed steps" className="py-16 sm:py-20 bg-white">
-        <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
-          <h2 className="text-3xl sm:text-4xl font-bold text-neutral-900 mb-12 text-center">
-            What happens in each step
-          </h2>
+      <SectionLayout
+        title={steps.title}
+        className="py-16 sm:py-20 bg-white"
+      >
+        <div className="max-w-4xl mx-auto">
           <div className="space-y-12 sm:space-y-16">
-            {steps.map((step, index) => {
+            {steps.items.map((step, index) => {
               const Icon = step.icon;
               return (
                 <div key={step.stepNumber} className="flex gap-6">
@@ -253,7 +160,7 @@ export default async function HowItWorksPage() {
                       </div>
                     </div>
                     {/* Vertical line (except last) */}
-                    {index < steps.length - 1 && (
+                    {index < steps.items.length - 1 && (
                       <div className="w-0.5 h-full bg-neutral-200 ml-8 mt-4" style={{ height: 'calc(100% + 3rem)' }}></div>
                     )}
                   </div>
@@ -289,102 +196,66 @@ export default async function HowItWorksPage() {
             })}
           </div>
         </div>
-      </section>
+      </SectionLayout>
 
       {/* Pricing and Coverage Band */}
-      <section aria-label="Pricing and coverage" className="py-16 sm:py-20 bg-neutral-50">
-        <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
-          <h2 className="text-3xl sm:text-4xl font-bold text-neutral-900 mb-12 text-center">
-            What you pay and where we work
-          </h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8">
-            {/* Left Card */}
-            <Card className="bg-transparent border-neutral-200 shadow-sm">
-              <h3 className="text-2xl font-bold text-neutral-900 mb-6">Analysis and planning</h3>
-              <ul className="space-y-4">
-                <li className="flex items-start gap-3">
-                  <div className="w-1.5 h-1.5 rounded-full bg-neutral-900 mt-2.5 flex-shrink-0" />
-                  <span className="text-neutral-600 leading-relaxed font-semibold">
-                    Simple flat fee per project during alpha
-                  </span>
-                </li>
-                <li className="flex items-start gap-3">
-                  <div className="w-1.5 h-1.5 rounded-full bg-neutral-900 mt-2.5 flex-shrink-0" />
-                  <span className="text-neutral-600 leading-relaxed">
-                    Includes AI report and one review call
-                  </span>
-                </li>
-                <li className="flex items-start gap-3">
-                  <div className="w-1.5 h-1.5 rounded-full bg-neutral-900 mt-2.5 flex-shrink-0" />
-                  <span className="text-neutral-600 leading-relaxed">
-                    No subscription or long term contract
-                  </span>
-                </li>
-              </ul>
-            </Card>
-
-            {/* Right Card */}
-            <Card className="bg-transparent border-neutral-200 shadow-sm">
-              <h3 className="text-2xl font-bold text-neutral-900 mb-6">When orders go through NexSupply</h3>
-              <ul className="space-y-4">
-                <li className="flex items-start gap-3">
-                  <div className="w-1.5 h-1.5 rounded-full bg-neutral-900 mt-2.5 flex-shrink-0" />
-                  <span className="text-neutral-600 leading-relaxed font-semibold">
-                    Transparent project based success fee with a clear cap
-                  </span>
-                </li>
-                <li className="flex items-start gap-3">
-                  <div className="w-1.5 h-1.5 rounded-full bg-neutral-900 mt-2.5 flex-shrink-0" />
-                  <span className="text-neutral-600 leading-relaxed">
-                    Clear cap so your per unit margin stays protected
-                  </span>
-                </li>
-                <li className="flex items-start gap-3">
-                  <div className="w-1.5 h-1.5 rounded-full bg-neutral-900 mt-2.5 flex-shrink-0" />
-                  <span className="text-neutral-600 leading-relaxed">
-                    Currently focused on imports into the US and selected EU markets
-                  </span>
-                </li>
-              </ul>
-            </Card>
-          </div>
+      <SectionLayout
+        title={pricing.title}
+        className="py-16 sm:py-20 bg-neutral-50"
+      >
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8">
+          {pricing.cards.map((card, idx) => (
+            <MarketingCard key={idx}>
+              <div className="p-6">
+                <h3 className="text-2xl font-bold text-neutral-900 mb-6">{card.title}</h3>
+                <ul className="space-y-4">
+                  {card.items.map((item, i) => (
+                    <li key={i} className="flex items-start gap-3">
+                      <div className="w-1.5 h-1.5 rounded-full bg-neutral-900 mt-2.5 flex-shrink-0" />
+                      <span className="text-neutral-600 leading-relaxed">{item}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </MarketingCard>
+          ))}
         </div>
-      </section>
+      </SectionLayout>
 
       {/* FAQ Section */}
-      <section aria-label="Frequently asked questions" className="py-16 sm:py-20 bg-white">
-        <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
-          <h2 className="text-3xl sm:text-4xl font-bold text-neutral-900 mb-12 text-center">
-            More questions
-          </h2>
+      <SectionLayout
+        title={faq.title}
+        className="py-16 sm:py-20 bg-white"
+      >
+        <div className="max-w-4xl mx-auto">
           <Accordion>
-            {faqs.map((faq, idx) => (
+            {faq.items.map((faqItem, idx) => (
               <AccordionItem
                 key={idx}
-                question={faq.question}
-                answer={faq.answer}
+                question={faqItem.question}
+                answer={faqItem.answer}
               />
             ))}
           </Accordion>
         </div>
-      </section>
+      </SectionLayout>
 
       {/* Final CTA Banner */}
       <section aria-label="Call to action" className="py-16 sm:py-20 bg-neutral-100">
         <div className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8 text-center">
           <h2 className="text-3xl sm:text-4xl font-semibold text-neutral-900 mb-4">
-            Ready to test your next import?
+            {cta.title}
           </h2>
           <p className="text-lg text-neutral-600 mb-8 max-w-2xl mx-auto">
-            Start with one product, one box and see how NexSupply fits your workflow.
+            {cta.description}
           </p>
-          <Link href="/chat">
+          <Link href={cta.buttonHref}>
             <Button
               variant="primary"
               size="lg"
               className="rounded-full px-8 py-3.5"
             >
-              Get started
+              {cta.buttonLabel}
             </Button>
           </Link>
         </div>

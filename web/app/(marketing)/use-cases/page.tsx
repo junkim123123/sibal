@@ -13,15 +13,9 @@
 import Link from 'next/link';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { ShoppingCart, Store, Building2, Globe, ArrowDown } from 'lucide-react';
-import { useRef } from 'react';
+import { ShoppingCart, Store, Building2, Globe } from 'lucide-react';
 
 export default function UseCasesPage() {
-  const ctaRef = useRef<HTMLDivElement>(null);
-
-  const scrollToCTA = () => {
-    ctaRef.current?.scrollIntoView({ behavior: 'smooth' });
-  };
 
   // Seller type cards with outcome statements and decision-focused projects
   const sellerTypes = [
@@ -212,15 +206,15 @@ export default function UseCasesPage() {
           <p className="text-lg sm:text-xl text-neutral-700 font-medium mb-8 max-w-3xl mx-auto leading-relaxed">
             Use cases for Amazon sellers, DTC brands, offline retail buyers, and trading companies—all in one place.
           </p>
-          <Button
-            onClick={scrollToCTA}
-            variant="primary"
-            size="lg"
-            className="rounded-full px-8 py-3.5"
-          >
-            Start a project
-            <ArrowDown className="ml-2 h-5 w-5" />
-          </Button>
+          <Link href="/analyze">
+            <Button
+              variant="primary"
+              size="lg"
+              className="rounded-full px-8 py-3.5"
+            >
+              Analyze a product
+            </Button>
+          </Link>
         </div>
       </section>
 
@@ -234,7 +228,7 @@ export default function UseCasesPage() {
             {sellerTypes.map((sellerType, index) => {
               const Icon = sellerType.icon;
               return (
-                <Card key={index} className={`p-6 sm:p-8 ${sellerType.bgColor} border-neutral-200 shadow-sm`}>
+                <Card key={index} className="p-6 sm:p-8 bg-transparent border-neutral-200 shadow-sm">
                   <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
                     <div className="lg:col-span-1">
                       <div className="flex items-center gap-4 mb-4">
@@ -452,7 +446,7 @@ export default function UseCasesPage() {
       </section>
 
       {/* CTA Band */}
-      <section ref={ctaRef} aria-label="Call to action" className="py-16 sm:py-20 bg-neutral-900">
+      <section aria-label="Call to action" className="py-16 sm:py-20 bg-neutral-900">
         <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8 text-center">
           <h2 className="text-3xl sm:text-4xl font-bold text-white mb-4">
             Ready to analyze your product?
@@ -463,13 +457,13 @@ export default function UseCasesPage() {
           <p className="text-base text-neutral-400 mb-8 max-w-2xl mx-auto">
             We typically respond within 24 hours via email, and schedule a call if needed.
           </p>
-          <Link href="/chat">
+          <Link href="/analyze">
             <Button
               variant="primary"
               size="lg"
               className="rounded-full px-8 py-3.5 bg-white text-neutral-900 hover:bg-neutral-100"
             >
-              Start a project
+              Analyze a product
             </Button>
           </Link>
         </div>

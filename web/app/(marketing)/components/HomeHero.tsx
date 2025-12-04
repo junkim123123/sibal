@@ -31,13 +31,13 @@ export default function HomeHero({ page }: Props) {
               {heroBody}
             </p>
             <div className="mt-8 flex flex-row flex-wrap gap-3 sm:gap-4 items-center">
-              <Link href="/chat">
+              <Link href="/analyze">
                 <Button
                   variant="primary"
                   size="lg"
                   className="rounded-full px-8 py-3.5"
                 >
-                  {heroCtaLabel}
+                  Analyze a product
                 </Button>
               </Link>
               <Link

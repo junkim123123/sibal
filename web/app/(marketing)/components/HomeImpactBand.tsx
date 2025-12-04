@@ -1,27 +1,29 @@
-export default function HomeImpactBand() {
-  return (
-    <section className="py-12 sm:py-16 md:py-20 bg-neutral-900 text-white">
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8 lg:gap-12">
-          {/* Left Card */}
-          <div className="rounded-3xl bg-neutral-800 p-6 sm:p-8">
-            <h2 className="text-3xl font-bold">
-              Do good trade while you grow
-            </h2>
-            <p className="mt-4 text-base text-neutral-300 leading-relaxed">
-              NexSupply was started to make cross-border trade fairer and more transparent for both importers and factories.
-            </p>
-          </div>
+import Link from 'next/link';
+import { Button } from '@/components/ui/button';
+import { homePageConfig } from '@/lib/content/homePage';
 
-          {/* Right Card */}
-          <div className="rounded-3xl bg-neutral-800 p-6 sm:p-8">
-            <h2 className="text-3xl font-bold">
-              Over 25 projects supported
-            </h2>
-            <p className="mt-4 text-base text-neutral-300 leading-relaxed">
-              Even in alpha, NexSupply has helped projects understand landed cost, lead times, and compliance risks before buying.
-            </p>
-          </div>
+export default function HomeImpactBand() {
+  const { cta } = homePageConfig;
+
+  return (
+    <section className="py-16 sm:py-20 bg-neutral-900 text-white">
+      <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
+        <div className="text-center">
+          <h2 className="text-3xl sm:text-4xl font-bold mb-4">
+            {cta.title}
+          </h2>
+          <p className="text-lg text-neutral-300 mb-8 max-w-2xl mx-auto leading-relaxed">
+            {cta.description}
+          </p>
+          <Link href={cta.buttonHref}>
+            <Button
+              variant="primary"
+              size="lg"
+              className="rounded-full px-8 py-3.5 bg-white text-neutral-900 hover:bg-neutral-100"
+            >
+              {cta.buttonLabel}
+            </Button>
+          </Link>
         </div>
       </div>
     </section>

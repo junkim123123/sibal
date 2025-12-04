@@ -70,23 +70,22 @@ export interface HowItWorksPageConfig {
 export const howItWorksPageConfig: HowItWorksPageConfig = {
   hero: {
     title: 'How NexSupply Works',
-    subtitle: 'From first idea to your first test shipment, NexSupply keeps your project moving at every step of the sourcing process.',
+    subtitle: 'From first idea to your first controlled shipment, NexSupply keeps your project moving at every step of the sourcing process.',
     description: 'Start with one chat. When the numbers work, scale at your own pace.',
-    note: 'Most projects get an initial snapshot within one business day.',
+    note: 'Most projects receive an initial landed-cost snapshot within one business day.',
     cta: {
       primary: {
-        label: 'Analyze a product',
+        label: 'Get an analysis',
         href: '/analyze',
       },
       secondary: {
-        label: 'See how it works',
+        label: 'See use cases',
         href: '/how-it-works',
       },
     },
   },
   journey: {
     title: 'Your sourcing journey in three moves',
-    subtitle: 'Each move breaks down into simple steps:',
     cards: [
       {
         title: 'Start with a chat',
@@ -111,48 +110,44 @@ export const howItWorksPageConfig: HowItWorksPageConfig = {
       {
         stepNumber: '1',
         title: 'Describe your product',
-        timeEstimate: '~5 minutes',
-        body: 'Upload a product idea, photo or reference listing. In a short guided flow, we capture what matters for sourcing.',
+        timeEstimate: '~10 minutes',
+        body: 'You do: Upload a product idea, photo or reference listing. Tell us the target market and main sales channel. Share rough volume and timing (test run or ongoing).',
         bullets: [
-          'Product idea or reference listing',
-          'Target market and main sales channel',
-          'Rough volume and timing (test run or ongoing)',
+          'We do: Turn this into a structured sourcing brief.',
+          'You get: A clear, shared starting point for everyone on the project.',
         ],
         icon: Upload,
       },
       {
         stepNumber: '2',
         title: 'AI cost and risk check',
-        timeEstimate: '~2 minutes',
-        body: 'Our toolkit turns your brief into a first pass landed cost and risk picture so you can sanity check the project before you commit.',
+        timeEstimate: 'Within 24 hours',
+        body: 'You do: Review a first-pass landed cost and risk snapshot.',
         bullets: [
-          'Estimated DDP per unit',
-          'Simple breakdown of factory, freight, duty and extras',
-          'Early flags for compliance or AD/CVD risk',
+          'We do: Estimated DDP per unit (factory, freight, duty, and extras). Flag early signs of compliance or AD/CVD risk.',
+          'You get: A sanity check on whether the project makes sense before you commit.',
         ],
         icon: Brain,
       },
       {
         stepNumber: '3',
         title: 'Talk to NexSupply',
-        timeEstimate: '15–30 minutes',
-        body: 'If it looks promising, you can book a call with our sourcing team to go deeper.',
+        timeEstimate: '30 minute call',
+        body: 'You do: Book a short call with our sourcing team if the numbers look promising.',
         bullets: [
-          'Human specialist reviews your assumptions',
-          'Together you stress test margin and risk scenarios',
-          'You decide whether to move into supplier search',
+          'We do: Pressure-test your assumptions on margin and risk. Suggest alternative scenarios (factory options, MOQ, route, etc.). Align on whether to move into supplier search.',
+          'You get: Human eyes on the numbers and a clear "go / pause / drop" recommendation.',
         ],
         icon: Users,
       },
       {
         stepNumber: '4',
         title: 'Pilot run and beyond',
-        timeEstimate: 'Weeks, not months',
-        body: 'When you are ready to move, we help you run a controlled first order instead of jumping straight to a huge PO.',
+        timeEstimate: '1–2 week pilot',
+        body: 'You do: Decide when you\'re ready to move from analysis into a first test order.',
         bullets: [
-          'Shortlist and compare qualified factories',
-          'Align on QC and logistics that match your risk level',
-          'Turn lessons from the pilot into a repeatable playbook',
+          'We do: Shortlist and compare qualified factories. Align QC and logistics to match your risk level. Use the pilot to learn, then translate those lessons into a repeatable playbook.',
+          'You get: A controlled first shipment instead of jumping straight into a huge PO.',
         ],
         icon: Truck,
       },
@@ -164,23 +159,23 @@ export const howItWorksPageConfig: HowItWorksPageConfig = {
       {
         title: 'Analysis and planning',
         items: [
-          'From $149 per product analysis during alpha',
-          'Includes AI report and one review call (typically 30+ minutes)',
-          'No subscription or long term contract',
+          'Simple flat fee per project during alpha.',
+          'Includes AI report and one review call.',
+          'No subscription or long-term contract.',
         ],
       },
       {
         title: 'When orders go through NexSupply',
         items: [
-          'Transparent project-based success fee only when you place orders',
-          'Fee cap on per unit margin so your upside stays protected',
-          'Currently focused on imports into the US and selected EU markets',
+          'Transparent project-based success fee with a clear cap.',
+          'Clear cap so your per-unit margin stays protected.',
+          'Currently focused on imports into the US and selected EU markets.',
         ],
       },
     ],
   },
   faq: {
-    title: 'More questions',
+    title: 'More questions before you start?',
     items: [
       {
         question: 'Do I have to be an experienced seller?',
@@ -203,7 +198,7 @@ export const howItWorksPageConfig: HowItWorksPageConfig = {
   cta: {
     title: 'Ready to test your next import?',
     description: 'Start with one product, one box and see how NexSupply fits your workflow.',
-    buttonLabel: 'Analyze a product',
+    buttonLabel: 'Get an analysis',
     buttonHref: '/analyze',
   },
 };

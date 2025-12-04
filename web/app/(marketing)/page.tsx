@@ -13,6 +13,9 @@ import HomeSocialProofStrip from './components/HomeSocialProofStrip';
 import HomeBenefitsGrid from './components/HomeBenefitsGrid';
 import HomeImpactBand from './components/HomeImpactBand';
 import ExpertPanelSection from '@/components/marketing/ExpertPanelSection';
+import { ReviewsSection } from '@/components/marketing/home/ReviewsSection';
+import { ProTeamSection } from '@/components/marketing/home/ProTeamSection';
+import { homePageConfig } from '@/lib/content/homePage';
 
 export const revalidate = 60;
 
@@ -28,6 +31,8 @@ export default async function HomePage() {
       <HomeUseCases />
       <HomeSocialProofStrip />
       <HomeBenefitsGrid />
+      <ReviewsSection section={homePageConfig.reviewsSection} />
+      <ProTeamSection section={homePageConfig.teamSection} />
       <ExpertPanelSection panel={page?.expertPanel} />
       <HomeImpactBand />
     </div>

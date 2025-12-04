@@ -1,4 +1,38 @@
 // Config for Home page
+
+export type HomeReview = {
+  id: string;
+  headline: string;
+  quote: string;
+  name: string;
+  role?: string;
+  date: string;
+};
+
+export type HomeReviewsSection = {
+  eyebrow?: string;
+  title: string;
+  subtitle?: string;
+  averageRating: number;
+  ratingLabel: string; // e.g. "4.6 average rating based on internal pilot users"
+  reviews: HomeReview[];
+};
+
+export type HomeTeamMember = {
+  id: string;
+  name: string;
+  title: string;
+  bio: string;
+  badges?: string[]; // e.g. "Amazon FBA", "Korean snacks", etc.
+};
+
+export type HomeTeamSection = {
+  eyebrow?: string;
+  title: string;
+  body: string;
+  members: HomeTeamMember[];
+};
+
 export interface HomePageConfig {
   hero: {
     headline: string;
@@ -59,6 +93,8 @@ export interface HomePageConfig {
     buttonLabel: string;
     buttonHref: string;
   };
+  reviewsSection: HomeReviewsSection;
+  teamSection: HomeTeamSection;
 }
 
 export const homePageConfig: HomePageConfig = {
@@ -176,6 +212,71 @@ export const homePageConfig: HomePageConfig = {
     description: 'Start with one product. We will run a full landed cost and risk review, usually within one day.',
     buttonLabel: 'Get an analysis',
     buttonHref: '/analyze',
+  },
+  reviewsSection: {
+    eyebrow: 'Showing featured reviews',
+    title: 'See what importers are saying about NexSupply',
+    subtitle: undefined,
+    averageRating: 4.6,
+    ratingLabel: 'Four point six average rating based on internal pilot users',
+    reviews: [
+      {
+        id: 'kevin',
+        headline: 'Great partner for test orders',
+        quote:
+          'We used NexSupply to ship only a few cartons of a new snack. Once it sold through they scaled us to pallets without any drama.',
+        name: 'Kevin Park',
+        role: 'Amazon FBA seller',
+        date: 'November 25, 2025',
+      },
+      {
+        id: 'ashley',
+        headline: 'DDP costs that finally made sense',
+        quote:
+          'For the first time we saw factory price, freight, duty, and extra fees in one place. It made our go or no go meetings much faster.',
+        name: 'Ashley Gomez',
+        role: 'DTC brand operator',
+        date: 'November 22, 2025',
+      },
+      {
+        id: 'daniel',
+        headline: 'Helped us avoid a compliance mess',
+        quote:
+          'NexSupply flagged a potential safety test issue on a toy project. Fixing it early probably saved us months.',
+        name: 'Daniel Lee',
+        role: 'Retail buyer',
+        date: 'November 18, 2025',
+      },
+    ],
+  },
+  teamSection: {
+    eyebrow: 'NexSupply behind the scenes',
+    title: 'Trade crafted by world-class operators',
+    body:
+      "NexSupply is built by sourcing agents, logistics managers, and compliance nerds who have actually run containers between Asia and the US. We don't just quote landed costs — we've dealt with the factories, trucks, and customs paperwork ourselves.",
+    members: [
+      {
+        id: 'mj',
+        name: 'Myungjun Kim',
+        title: 'Founder & Supply Chain Lead',
+        bio: 'Grew up inside a family-run sourcing agency in Korea and Japan. Specializes in snacks, toys, and seasonal goods for US and Japanese retailers.',
+        badges: ['Snacks & confectionery', 'Japan & Korea', 'Amazon FBA'],
+      },
+      {
+        id: 'kevin-ops',
+        name: 'Kevin Park',
+        title: 'Amazon FBA Operator',
+        bio: 'Scaled multiple private label brands from test cartons to full containers. Obsessed with margin math and keeping prep simple.',
+        badges: ['Amazon FBA', 'Margin analysis'],
+      },
+      {
+        id: 'daniel-compliance',
+        name: 'Daniel Lee',
+        title: 'Compliance & Risk Advisor',
+        bio: '10+ years helping importers navigate duties, HTS classification, and product safety requirements for US retail.',
+        badges: ['Tariffs & HTS', 'Product safety'],
+      },
+    ],
   },
 };
 

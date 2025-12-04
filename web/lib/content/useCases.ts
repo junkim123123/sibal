@@ -4,22 +4,22 @@ import type { LucideIcon } from 'lucide-react';
 
 export interface SellerType {
   label: string;
-  outcomeStatement: string;
-  description: string;
-  keyProjects: Array<{
-    title: string;
-    decision: string;
-  }>;
+  summary: string;
+  whenYouCall: string[];
+  decisionsWeHelp: string[];
+  goodStartingProjects: string[];
   icon: LucideIcon;
-  recommendedAction: string;
 }
 
 export interface ProjectGoal {
   title: string;
-  body: string;
-  scope: string;
-  timeline: string;
-  positioning: string;
+  description: string;
+  bestFor: string[];
+  whatYouGet: string[];
+  scopeAndTimeline: {
+    scope: string;
+    timeline: string;
+  };
 }
 
 export interface WorkflowStep {
@@ -42,10 +42,12 @@ export interface UseCasesPageConfig {
   };
   sellerTypes: {
     title: string;
+    subtitle?: string;
     items: SellerType[];
   };
   projectGoals: {
     title: string;
+    subtitle?: string;
     items: ProjectGoal[];
   };
   workflow: {
@@ -63,14 +65,12 @@ export interface UseCasesPageConfig {
   };
   testimonials: {
     title: string;
-    subtitle: string;
-    note: string;
+    subtitle?: string;
     items: Testimonial[];
   };
   cta: {
     title: string;
     description: string;
-    note: string;
     buttonLabel: string;
     buttonHref: string;
   };
@@ -78,145 +78,159 @@ export interface UseCasesPageConfig {
 
 export const useCasesPageConfig: UseCasesPageConfig = {
   hero: {
-    title: 'Who NexSupply helps',
-    subtitle: 'Use cases for Amazon sellers, DTC brands, offline retail buyers, and trading companies—all in one place.',
+    title: 'Use cases',
+    subtitle: 'NexSupply works best with importers who need clear margins, predictable logistics and simple decisions about when to scale. Find the role that fits you, then pick a project to start with.',
     ctaLabel: 'Start a project',
   },
   sellerTypes: {
-    title: 'Who NexSupply is for',
+    title: 'Who we work best with',
     items: [
       {
-        label: 'Amazon FBA private label',
-        outcomeStatement: 'Sellers who want to validate margins and duty risks before launching a new PL product.',
-        description: 'For sellers who want to launch or re-source SKUs with clear landed cost and compliance.',
-        keyProjects: [
-          {
-            title: 'Launch a new FBA brand or product line',
-            decision: 'Confirm whether a new product still makes profit after FBA fees, shipping, and duties',
-          },
-          {
-            title: 'Re-source an existing SKU to improve margin',
-            decision: 'Compare keeping current factory vs switching to a new supplier for better unit economics',
-          },
-          {
-            title: 'Check AD/CVD and restricted category risk',
-            decision: 'Identify compliance flags before committing to inventory in a new category',
-          },
-          {
-            title: 'Compare FBA vs 3PL landed costs',
-            decision: 'Choose the most cost-effective fulfillment channel for your product',
-          },
+        label: 'Amazon FBA private label sellers',
+        summary: 'You want to launch or re source SKUs with clear landed margins and duty risk before you ship inventory.',
+        whenYouCall: [
+          'You are planning a new private label line and need to know if the numbers still work.',
+          'You want to move an existing SKU to a new factory but are not sure about landed cost.',
+          'You are entering a category that might have extra AD or CVD or safety rules.',
+        ],
+        decisionsWeHelp: [
+          'See real per unit margin after FBA fees freight and duty.',
+          'Compare your current factory with a new supplier on full landed cost.',
+          'Check AD and CVD and restricted category risk before you list on Amazon.',
+        ],
+        goodStartingProjects: [
+          'Launch a new product',
+          'Re source an existing SKU',
+          'Test a higher risk category',
         ],
         icon: ShoppingCart,
-        recommendedAction: 'If this matches your situation, start with one of the projects below.',
       },
       {
-        label: 'DTC / Shopify brands',
-        outcomeStatement: 'Founders who need to protect margin while scaling into new products or regions.',
-        description: 'For founders who need to protect margin while scaling into new products or regions.',
-        keyProjects: [
-          {
-            title: 'Per unit cost analysis with DTC fees in mind',
-            decision: 'See true margins after ad spend, fulfillment, and platform fees before scaling',
-          },
-          {
-            title: 'Packaging and fulfillment that works with 3PLs',
-            decision: 'Optimize packaging and case packs for 3PL-friendly shipping and storage',
-          },
-          {
-            title: 'Adding new SKUs without breaking cash flow',
-            decision: 'Test new products with small pilot orders before committing to large inventory',
-          },
-          {
-            title: 'Planning a move into US or EU markets',
-            decision: 'Understand landed cost differences and compliance requirements for new markets',
-          },
+        label: 'DTC and Shopify brands',
+        summary: 'You need transparent landed cost and supplier options before you scale a hero product.',
+        whenYouCall: [
+          'You have a product that sells through online and want to move production closer to your target market.',
+          'You are planning new packaging or bundles and need to understand impact on freight and duty.',
+          'You are preparing to pitch retailers and want container ready cost numbers.',
+        ],
+        decisionsWeHelp: [
+          'Check unit economics for DTC price points after shipping and fulfillment.',
+          'Compare different packaging and pack sizes for 3PL friendly logistics.',
+          'Decide which factory or region makes the most sense before signing a long term deal.',
+        ],
+        goodStartingProjects: [
+          'Launch a new product',
+          'Clean up a messy supply chain',
         ],
         icon: Store,
-        recommendedAction: 'If this matches your situation, start with one of the projects below.',
       },
       {
-        label: 'Offline retail / wholesale',
-        outcomeStatement: 'Buyers making container-level decisions who need numbers they can defend internally.',
-        description: 'For buyers making container-level decisions who need numbers they can defend internally.',
-        keyProjects: [
-          {
-            title: 'Case pack and master carton optimization',
-            decision: 'Determine optimal case pack sizes for retail shelf space and shipping efficiency',
-          },
-          {
-            title: 'Pallet and container level shipping scenarios',
-            decision: 'Compare different shipping methods and volumes to find the best cost structure',
-          },
-          {
-            title: 'Bulk pricing and supplier negotiation support',
-            decision: 'Benchmark factory quotes and negotiate better terms with data-backed analysis',
-          },
-          {
-            title: 'Comparing multiple factories for the same item',
-            decision: 'Evaluate suppliers on cost, quality, and risk to make an informed choice',
-          },
+        label: 'Offline retail and wholesale buyers',
+        summary: 'You make container level decisions and need numbers you can defend to finance and leadership.',
+        whenYouCall: [
+          'You want to test a new category or private brand without jumping straight to full containers.',
+          'You need case pack and master carton plans that match store and DC realities.',
+          'You must compare offers from multiple factories and trading companies.',
+        ],
+        decisionsWeHelp: [
+          'Set case pack and master carton plans that hit target shelf price and margin.',
+          'Compare container routes and shipping patterns to find the best structure.',
+          'Run side by side comparisons of factories on cost quality and risk so you can negotiate with confidence.',
+        ],
+        goodStartingProjects: [
+          'Launch a new product',
+          'Test a higher risk category',
         ],
         icon: Building2,
-        recommendedAction: 'If this matches your situation, start with one of the projects below.',
       },
       {
-        label: 'Importers / trading companies',
-        outcomeStatement: 'Teams managing many SKUs who need fast, structured checks instead of ad-hoc spreadsheets.',
-        description: 'For teams managing many SKUs who need fast, structured checks instead of ad-hoc spreadsheets.',
-        keyProjects: [
-          {
-            title: 'Multi-product portfolio cost and risk review',
-            decision: 'Get a unified view of costs and risks across your entire product line',
-          },
-          {
-            title: 'Cross-border compliance checks by HS code',
-            decision: 'Verify duty rates and compliance requirements for multiple products at once',
-          },
-          {
-            title: 'Supplier relationship and performance review',
-            decision: 'Standardize how you evaluate and compare suppliers across different projects',
-          },
-          {
-            title: 'Standardized pilot process for new factories',
-            decision: 'Test new suppliers with a consistent, low-risk pilot process',
-          },
+        label: 'Importers and trading companies',
+        summary: 'You manage many SKUs and need fast structured checks instead of ad hoc spreadsheets.',
+        whenYouCall: [
+          'You are re quoting a range of SKUs and want a single view of cost and duty.',
+          'You want to standardize how your team checks compliance and logistics risk by HS code.',
+          'You are planning new pilot factories and want a simple playbook your team can reuse.',
+        ],
+        decisionsWeHelp: [
+          'Run quick profit and risk reviews on portfolio or key SKUs.',
+          'Check cross border compliance and duty by HS code before you pitch a deal.',
+          'Standardize pilot order process so every new factory runs through the same checks.',
+        ],
+        goodStartingProjects: [
+          'Re source an existing SKU',
+          'Clean up a messy supply chain',
         ],
         icon: Globe,
-        recommendedAction: 'If this matches your situation, start with one of the projects below.',
       },
     ],
   },
   projectGoals: {
-    title: 'Common projects we help with',
+    title: 'Projects you can start today',
+    subtitle: 'Pick a project that matches where you are. Each one is a small scoped engagement that ends with a clear decision and a simple report you can share with your team.',
     items: [
       {
         title: 'Launch a new product',
-        body: 'Quickly test if a new idea still makes sense after landed cost, duties and fees.',
-        scope: '1 SKU, 1 market',
-        timeline: 'Typically 1 week for initial report',
-        positioning: 'Best for first-time clients',
+        description: 'Quickly test whether a new idea still makes sense once landed cost duties and fees are real.',
+        bestFor: [
+          'First time imports or new private label SKUs you are not ready to bet a container on.',
+        ],
+        whatYouGet: [
+          'DDP cost per unit by channel.',
+          'Basic compliance and risk flags for your target markets.',
+          'A short go or no go recommendation you can share in a meeting.',
+        ],
+        scopeAndTimeline: {
+          scope: 'one SKU and one destination market.',
+          timeline: 'typically one week from confirmed brief to final report.',
+        },
       },
       {
-        title: 'Re-source an existing SKU',
-        body: 'Benchmark new factories and routes when your current supplier is too expensive or risky.',
-        scope: '1 SKU, multiple supplier options',
-        timeline: 'Typically 1–2 weeks for comparison',
-        positioning: 'When you need to improve margins',
+        title: 'Re source an existing SKU',
+        description: 'Benchmark new factories and routes against your current supplier so you know if a move is worth it.',
+        bestFor: [
+          'Brands and importers who already sell the product but want better margin or more stable supply.',
+        ],
+        whatYouGet: [
+          'Side by side landed cost comparison of current and candidate suppliers.',
+          'View of changes in duty freight and lead time.',
+          'A recommendation on stay or move with notes on risk.',
+        ],
+        scopeAndTimeline: {
+          scope: 'one SKU and multiple supplier options or regions.',
+          timeline: 'typically one to two weeks depending on number of options.',
+        },
       },
       {
-        title: 'Test a higher-risk category',
-        body: 'Explore products with extra compliance or AD/CVD risk without committing to a huge order.',
-        scope: '1 SKU, risk-focused analysis',
-        timeline: 'Typically 1 week for risk assessment',
-        positioning: 'Before entering a new category',
+        title: 'Test a higher risk category',
+        description: 'Explore products with extra compliance or AD and CVD exposure without committing to a huge order.',
+        bestFor: [
+          'Teams entering new categories such as food toys or electronics where rules feel unclear.',
+        ],
+        whatYouGet: [
+          'Early view of required tests and certifications.',
+          'Duty and trade remedy risk checks by HS code and country pair.',
+          'A recommendation on safe price range and practical next steps.',
+        ],
+        scopeAndTimeline: {
+          scope: 'one SKU or small set of related SKUs with similar risk profile.',
+          timeline: 'typically one week for initial assessment.',
+        },
       },
       {
         title: 'Clean up a messy supply chain',
-        body: 'Bring quotes, duties, QC and logistics into one view so you can make decisions faster.',
-        scope: 'Multiple SKUs, unified view',
-        timeline: 'Typically 2 weeks for full review',
-        positioning: 'When you need clarity across projects',
+        description: 'Bring quotes duties quality data and logistics info for a product line into one view so decisions get faster.',
+        bestFor: [
+          'Importers with multi year products where data sits across emails spreadsheets and freight portals.',
+        ],
+        whatYouGet: [
+          'Consolidated landed cost view across suppliers routes and pack sizes.',
+          'Clear list of leaks in margin quality or lead time.',
+          'A simple action roadmap such as where to re quote or which routes to retire.',
+        ],
+        scopeAndTimeline: {
+          scope: 'multiple SKUs or one family of SKUs with shared packaging and routes.',
+          timeline: 'typically two weeks for full review.',
+        },
       },
     ],
   },
@@ -225,71 +239,69 @@ export const useCasesPageConfig: UseCasesPageConfig = {
     subtitle: 'Every use case follows the same simple path from idea to first shipment.',
     items: [
       {
-        title: 'Share your idea',
-        body: 'Pick a seller type and project from this page, then share your product idea. We capture the key details in a structured brief.',
+        title: 'Share your product and target channel',
+        body: 'Tell us what you want to import where you plan to sell it and which markets you care about. We capture the key details in a structured brief rather than chat screenshots.',
       },
       {
-        title: 'Get a cost and risk snapshot',
-        body: 'We generate a snapshot tailored to your use case—whether it\'s Amazon FBA, DTC, retail, or trading. The format clearly shows your channel-specific costs.',
+        title: 'Get a DDP cost and risk snapshot',
+        body: 'We combine AI models with our trade playbooks to build a landed cost model and risk summary tailored to your channel and destination. You see factory price freight duty and extra costs in one view.',
       },
       {
-        title: 'Decide how far to go',
-        body: 'You can stop at the analysis, book a call to go deeper, or move forward to factory search and a pilot order.',
+        title: 'Choose report only or full pilot run',
+        body: 'You can stop after the report book a call to walk through the numbers or move forward with factory search pilot orders and ongoing support. You stay in control of how far to go.',
       },
     ],
   },
   pricing: {
     title: 'What does it cost',
-    subtitle: 'Simple pricing while we are in alpha.',
+    subtitle: 'Simple pricing while NexSupply is in early alpha.',
     cards: [
       {
         title: 'Analysis and planning',
         items: [
-          'From $149 per product analysis during alpha',
-          'Includes AI report and one review call (typically 30+ minutes of analysis)',
-          'No subscription or long term contract during alpha',
+          'Flat project fee for each analysis during alpha so you know your cost before we start.',
+          'Includes AI report and one review call which is typically a bit more than half an hour.',
+          'No subscription or long term contract during alpha.',
         ],
       },
       {
         title: 'When orders go through NexSupply',
         items: [
-          'Transparent project-based success fee only when you place orders through us',
-          'Fee cap on per unit margin so your upside stays protected',
-          'Currently focused on imports into the US and selected EU markets',
+          'Transparent success fee only when you place orders through us.',
+          'Fee linked to per unit margin with a hard cap so your upside stays protected.',
+          'Currently focused on imports into the United States and selected markets in the European Union.',
         ],
       },
     ],
   },
   testimonials: {
-    title: 'What importers are saying',
-    subtitle: 'Early projects use NexSupply to get clarity on landed cost, lead times and risk before committing.',
-    note: 'Results from actual projects',
+    title: 'Results from real projects',
+    subtitle: 'Early users rely on NexSupply to get clarity on landed cost lead times and risk before they commit. Here are a few examples.',
     items: [
       {
         segmentTag: 'Amazon FBA seller',
-        context: 'When launching a new snack category, we were worried about duties and AD/CVD risks.',
-        quote: 'Finally a way to sanity check margins and duties before we commit to inventory.',
-        attribution: 'FBA seller, CPG category',
+        context: 'When launching a new snack category we were worried about duties and AD and CVD risk.',
+        quote: 'Finally we can sanity check margins and duties before we commit to inventory.',
+        attribution: 'FBA seller snack category',
       },
       {
         segmentTag: 'Retail buyer',
-        context: 'We were exploring a new hardlines category with complex compliance requirements.',
-        quote: 'The compliance flags helped us avoid a very expensive mistake on a new category.',
-        attribution: 'Retail buyer, hardlines',
+        context: 'We were exploring a new hardlines category with complex compliance needs.',
+        quote: 'The compliance flags helped us avoid a very expensive mistake on a new program.',
+        attribution: 'Retail buyer hardlines',
       },
       {
-        segmentTag: 'Food & Beverage brand manager',
-        context: 'We needed to test a new snack product quickly without committing to a large order.',
-        quote: 'We used NexSupply to test a new snack product. The whole process felt fast and contained.',
-        attribution: 'Brand manager, food and beverage',
+        segmentTag: 'Food and beverage brand manager',
+        context: 'We needed to test a new snack product quickly without jumping to a large order.',
+        quote: 'We used NexSupply to test a new snack project. The whole process felt fast and contained.',
+        attribution: 'Brand manager food and beverage',
       },
     ],
   },
   cta: {
-    title: 'Ready to analyze your product?',
-    description: 'Pick your seller type and project goal above, then request your first analysis.',
-    note: 'We typically respond within 24 hours via email, and schedule a call if needed.',
-    buttonLabel: 'Analyze a product',
+    title: 'Ready to analyze your product',
+    description: 'Pick your seller type and project above then request your first analysis. We usually respond within one business day by email and can schedule a call if you prefer.',
+    buttonLabel: 'Start a project',
     buttonHref: '/analyze',
   },
 };

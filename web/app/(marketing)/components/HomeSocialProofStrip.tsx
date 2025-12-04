@@ -4,32 +4,32 @@ export default function HomeSocialProofStrip() {
   const { socialProof } = homePageConfig;
 
   return (
-    <section className="py-16 sm:py-20 bg-neutral-50 border-y border-neutral-200">
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="text-center">
-          <h2 className="text-2xl font-semibold text-neutral-900 sm:text-3xl">
+    <section className="py-10 md:py-16 bg-neutral-50 border-y border-neutral-200">
+      <div className="mx-auto max-w-6xl px-4 md:px-6">
+        <div className="flex flex-col items-center gap-6 md:gap-10">
+          <h2 className="text-xl md:text-2xl lg:text-3xl font-semibold text-neutral-900 text-center">
             {socialProof.title}
           </h2>
-          <div className="mt-8">
-            <div className="inline-block rounded-xl bg-white p-6 shadow-md text-center">
-              <p className="text-xs font-semibold text-neutral-500 uppercase tracking-wide mb-2">
+          <div className="text-center">
+            <div className="inline-block rounded-xl bg-white p-4 md:p-6 shadow-md text-center">
+              <p className="text-[10px] md:text-xs font-semibold text-neutral-500 uppercase tracking-wide mb-2">
                 {socialProof.rating.badge}
               </p>
-              <p className="text-3xl font-bold text-neutral-900">{socialProof.rating.value}</p>
-              <p className="mt-1 text-sm text-neutral-600">
+              <p className="text-2xl md:text-3xl font-bold text-neutral-900">{socialProof.rating.value}</p>
+              <p className="mt-1 text-xs md:text-sm text-neutral-600">
                 {socialProof.rating.label}
               </p>
             </div>
-            <p className="mt-4 text-base text-neutral-700 max-w-2xl mx-auto">
+            <p className="mt-4 text-sm md:text-base text-neutral-700 max-w-2xl mx-auto">
               {socialProof.summary}
             </p>
           </div>
         </div>
-        <div className="mt-12 grid grid-cols-1 gap-8 md:grid-cols-3">
+        <div className="mt-8 md:mt-12 space-y-6 md:space-y-0 md:flex md:gap-8">
           {socialProof.quotes.map((item, index) => (
-            <blockquote key={index} className="text-center">
-              <p className="text-lg font-medium text-neutral-800 leading-relaxed">&ldquo;{item.quote}&rdquo;</p>
-              <footer className="mt-4 text-sm text-neutral-600">
+            <blockquote key={index} className="text-center flex-1">
+              <p className="text-sm md:text-base lg:text-lg font-medium text-neutral-800 leading-relaxed">&ldquo;{item.quote}&rdquo;</p>
+              <footer className="mt-4 text-xs md:text-sm text-neutral-600">
                 — {item.author}
               </footer>
             </blockquote>

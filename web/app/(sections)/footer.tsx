@@ -1,4 +1,3 @@
-<![CDATA[
 import Link from 'next/link';
 
 const footerLinks = {
@@ -70,4 +69,3 @@ export default function Footer() {
     </footer>
   );
 }
-]]>

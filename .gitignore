@@ -59,3 +59,7 @@ web/.sanity/
 # CONTENTFUL_*.md
 # CMS_*.md
 
+# Files with sensitive information (should not contain real tokens)
+*_TOKEN_*.md
+*_SAVED.md
+

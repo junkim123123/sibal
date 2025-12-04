@@ -9,8 +9,10 @@ Sanity API 토큰이 `web/.env.local` 파일에 성공적으로 저장되었습�
 ```env
 NEXT_PUBLIC_SANITY_PROJECT_ID="m4g1dr67"
 NEXT_PUBLIC_SANITY_DATASET="production"
-SANITY_API_TOKEN=sktXThi7RG2MBAMvnm2Ut770ZmXlomium3Vrtuc24r48e0Oew2REsXcXtydt4Rh9jiGWAmbeAexafQx9HhOmIl6MBPUcD8GImBHlRm4FWOYZm9loOl32dqiZrEAuAHvHL9poZzBWxPPiNzA9h6dPWiOOCgivRP9njsuxaJNH4aNdtHfZ2iNd
+SANITY_API_TOKEN=your-api-token-here
 ```
+
+⚠️ **보안**: 실제 API 토큰은 `.env.local` 파일에만 저장하고, 이 파일에는 포함하지 마세요.
 
 ## 토큰 정보
 

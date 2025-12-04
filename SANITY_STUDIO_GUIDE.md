@@ -58,10 +58,12 @@ Studio가 열리면 다음 문서들을 생성하고 콘텐츠를 입력하세�
 
 ### Next.js 앱 (web/.env.local)
 ```env
-NEXT_PUBLIC_SANITY_PROJECT_ID=vqt42bhw
+NEXT_PUBLIC_SANITY_PROJECT_ID=your-project-id
 NEXT_PUBLIC_SANITY_DATASET=production
-SANITY_API_TOKEN=skUFMqFIEBvUZzCvFNdJtPtlldDkIC1SbbaDWvDlyNp1r3Z9XKuxaCR2mYl9SQKURVNz6UTycnPolbU00uWuLrugdS0SeiUIyStj0JW66wXyMRJpsrYnKy82uGl9hDkB5UIYFhvIcZWcPx5rBogboEja5Ce0yYaQJD1WpMoZxP3503VBRk5f
+SANITY_API_TOKEN=your-api-token-here
 ```
+
+⚠️ **보안**: 실제 API 토큰은 `.env.local` 파일에만 저장하고, 이 파일에는 포함하지 마세요.
 
 ### Sanity Studio (sanity/.env.local - 선택사항)
 Studio는 `sanity.config.ts`에서 직접 projectId를 읽습니다.

@@ -1,4 +1,11 @@
 {
+  "name": "nexsupply-root",
+  "private": true,
+  "scripts": {
+    "dev": "cd web && npm run dev",
+    "build": "cd web && npm run build",
+    "start": "cd web && npm start"
+  },
   "dependencies": {
     "@types/three": "^0.181.0",
     "react-globe.gl": "^2.37.0",

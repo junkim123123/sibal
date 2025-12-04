@@ -11,7 +11,7 @@
 
 'use client';
 
-import { useState, useRef, useEffect, ReactNode } from 'react';
+import { useState, useRef, useEffect, ReactNode, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { QUESTION_FLOW, getQuestionById, getNextQuestionId, type QuestionNode } from '@/lib/analyze/questionFlow';
 import { Button } from '@/components/ui/button';
@@ -31,7 +31,7 @@ type ChatMessage = {
 
 type Answers = Record<string, any>;
 
-export default function AnalyzeChatPage() {
+function AnalyzeChatPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const leadId = searchParams?.get('leadId') || null;
@@ -805,6 +805,14 @@ export default function AnalyzeChatPage() {
         return null;
     }
   }
+}
+
+export default function AnalyzeChatPage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <AnalyzeChatPageContent />
+    </Suspense>
+  );
 }
 
 function SummaryCard({ answers }: { answers: Answers }) {

@@ -32,8 +32,8 @@ export function GenericChipGroup({ options, value, onChange, disabled = false }:
             disabled={disabled}
             className={`px-4 py-2 rounded-lg border text-sm font-medium transition-all disabled:opacity-50 disabled:cursor-not-allowed ${
               isSelected
-                ? 'border-primary bg-primary/10 text-foreground'
-                : 'border-subtle-border bg-surface hover:border-primary/50 hover:bg-surface/80 text-foreground'
+                ? 'border-primary bg-primary/10 text-neutral-900'
+                : 'border-neutral-200 bg-white hover:border-primary/50 hover:bg-neutral-50 text-neutral-900'
             }`}
           >
             {option.label}

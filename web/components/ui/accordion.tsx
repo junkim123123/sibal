@@ -29,7 +29,7 @@ export function AccordionItem({ question, answer, defaultOpen = false }: Accordi
         />
       </button>
       {isOpen && (
-        <div className="pb-4 text-neutral-600 leading-relaxed">
+        <div className="pb-4 text-neutral-600 leading-relaxed whitespace-pre-line">
           {answer}
         </div>
       )}

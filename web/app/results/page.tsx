@@ -33,10 +33,26 @@ function ResultsContent() {
   // Load onboarding state from localStorage
   useEffect(() => {
     if (isInitialized) return;
+    
+    // Try to load from new chat flow (nexsupply_onboarding_data)
+    try {
+      const chatData = localStorage.getItem('nexsupply_onboarding_data');
+      if (chatData) {
+        const parsed = JSON.parse(chatData);
+        // Convert chat data format to OnboardingState format if needed
+        // For now, we'll use it as answers
+        setAnswers(parsed);
+      }
+    } catch (error) {
+      console.error('Failed to load chat onboarding data:', error);
+    }
+    
+    // Also try to load from existing onboarding state
     const savedOnboarding = loadOnboardingState();
     if (savedOnboarding) {
       setOnboardingState(savedOnboarding);
     }
+    
     setIsInitialized(true);
   }, [isInitialized]);
 
@@ -341,7 +357,7 @@ function ResultsContent() {
           </p>
           <div className="flex flex-col sm:flex-row gap-2">
             <Button
-              variant="default"
+              variant="primary"
               className="w-full sm:w-auto"
               onClick={() => router.push('/contact')}
             >

@@ -12,6 +12,7 @@ export interface SimpleCard {
   description: string;
   cta?: CTA;
   badge?: string;
+  tag?: string;
 }
 
 export interface ResourceHeroSection {
@@ -26,6 +27,7 @@ export interface StartHereSection {
 
 export interface DeepDiveSection {
   title: string;
+  subtitle?: string;
   cards: SimpleCard[];
 }
 
@@ -37,6 +39,7 @@ export interface FAQItem {
 
 export interface FAQSection {
   title: string;
+  subtitle?: string;
   items: FAQItem[];
 }
 

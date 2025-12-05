@@ -1,593 +1,483 @@
 /**
- * NexSupply Chat-First Interface - Config-Driven Onboarding
+ * Dr.B Style Onboarding Chat Interface - Deep Sourcing Flow
  * 
- * This chat interface uses a configuration-driven approach where conversation
- * steps are defined in onboardingSteps.ts. The UI renders questions and collects
- * answers based on the step configuration.
+ * A smooth, chat-like experience where the system asks comprehensive questions
+ * to collect detailed sourcing information.
  * 
- * Layout Structure:
- * - Top Header: NexSupply logo, project name, progress indicator
- * - Main Chat Area: Scrollable message timeline (Nexi bubbles on left, user bubbles on right)
- * - Right Side Panel: Current project snapshot with collected answers
- * - Bottom Input Area: Dynamic input based on current step (text, chips, etc.)
+ * Features:
+ * - Framer Motion animations for smooth transitions
+ * - Pill-shaped option buttons (for select steps)
+ * - Text input fields (for text steps)
+ * - Typing indicator
+ * - Progress bar
+ * - Clean, minimal design
  */
 
 'use client';
 
-import { useState, useRef, useEffect, ReactNode } from 'react';
+import { useState, useEffect, useRef } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Send } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { Send, Camera } from 'lucide-react';
-import { Card } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { onboardingSteps, getStepById, getNextStep } from './onboardingSteps';
-import type { OnboardingStep } from '@/lib/types/onboardingSteps';
-import type { OnboardingState } from '@/lib/types/onboarding';
-import { ChannelChips } from '@/components/chat/ChannelChips';
-import { MarketChips } from '@/components/chat/MarketChips';
-import { GenericChipGroup } from '@/components/chat/GenericChipGroup';
-import type { ChannelOption, YearlyVolumePlan, TimelinePlan } from '@/lib/types/onboarding';
-import { getChannelLabel, getMarketLabel } from '@/lib/types/onboarding';
-import { OnboardingSummaryCard } from '@/components/chat/OnboardingSummaryCard';
-import { saveOnboardingState, loadOnboardingState } from '@/lib/onboardingStorage';
 
-type ChatMessage = {
+// Deep Sourcing Flow - 10 comprehensive steps (extracted from legacy app)
+const ONBOARDING_STEPS = [
+  // Phase 1: Setup
+  {
+    id: 'project_name',
+    type: 'text' as const,
+    question: "Hi, I'm Nexi! Let's analyze your product. What would you like to call this project?",
+    placeholder: "e.g. Japanese Gummy Expansion"
+  },
+  {
+    id: 'channel',
+    type: 'select' as const,
+    question: "What is your main sales channel?",
+    options: ["Amazon FBA", "Shopify / DTC", "TikTok Shop", "Retail / Wholesale"]
+  },
+  {
+    id: 'market',
+    type: 'select' as const,
+    question: "Which market are you primarily targeting?",
+    options: ["United States", "Canada", "Europe (EU)", "United Kingdom", "Korea/Japan"]
+  },
+  // Phase 2: Product
+  {
+    id: 'origin',
+    type: 'select' as const,
+    question: "Where do you expect to source this product from?",
+    options: ["China", "South Korea", "Vietnam", "Other Asia", "Not sure"]
+  },
+  {
+    id: 'stage',
+    type: 'select' as const,
+    question: "What stage is this product at?",
+    options: ["New test product (Feasibility)", "Existing product (Cost check)", "Scaling up"]
+  },
+  {
+    id: 'details',
+    type: 'text' as const,
+    question: "Please describe your product and target retail price. (e.g. 'Wireless noise-cancelling headphones, target $79-99')",
+    placeholder: "Product description..."
+  },
+  // Phase 3: Logistics & Strategy
+  {
+    id: 'trade_term',
+    type: 'select' as const,
+    question: "What trade term do you prefer? (DDP is easiest for beginners)",
+    options: ["DDP (Door-to-door, Duty Paid)", "FOB (Port only)", "Ex-Works (Factory pickup)", "Not sure"]
+  },
+  {
+    id: 'priority',
+    type: 'select' as const,
+    question: "What matters more to you right now?",
+    options: ["Lowest Cost", "Fastest Speed", "Balanced"]
+  },
+  {
+    id: 'volume',
+    type: 'select' as const,
+    question: "Roughly what is your monthly volume plan?",
+    options: ["Test run (< 50 units)", "Small launch (100-500 units)", "Scale (1000+ units)"]
+  },
+  {
+    id: 'timeline',
+    type: 'select' as const,
+    question: "When do you need the first shipment to arrive?",
+    options: ["Within 1 month", "2-3 months", "Flexible"]
+  }
+];
+
+type Step = typeof ONBOARDING_STEPS[number];
+
+type Message = {
   id: string;
-  role: 'assistant' | 'user';
-  content: string | ReactNode;
+  type: 'system' | 'user';
+  content: string;
+  timestamp: number;
 };
-
-// Chip options for yearly volume and timeline steps
-const YEARLY_VOLUME_OPTIONS = [
-  { value: 'test', label: 'Test level (1-2 boxes)' },
-  { value: 'small_launch', label: 'Small launch (1 pallet or less)' },
-  { value: 'steady', label: 'Steady sales (1-3 pallets)' },
-  { value: 'aggressive', label: 'Aggressive expansion (3+ pallets)' },
-  { value: 'not_sure', label: 'Not sure yet' },
-];
-
-const TIMELINE_OPTIONS = [
-  { value: 'within_1_month', label: 'Within 1 month if possible' },
-  { value: 'within_3_months', label: 'Within 2-3 months' },
-  { value: 'after_3_months', label: 'After 3 months, no rush' },
-  { value: 'flexible', label: 'Timeline is flexible' },
-];
 
 export default function ChatPage() {
   const router = useRouter();
-  const [messages, setMessages] = useState<ChatMessage[]>([]);
-  const [currentStepId, setCurrentStepId] = useState<string | null>(null);
-  const [input, setInput] = useState('');
-  const [onboardingState, setOnboardingState] = useState<OnboardingState>({
-    sellingContext: {
-      targetMarkets: [],
-    },
-  });
+  const [currentStepIndex, setCurrentStepIndex] = useState(0);
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [selectedOptions, setSelectedOptions] = useState<Record<string, string>>({});
+  const [showTyping, setShowTyping] = useState(false);
+  const [showInput, setShowInput] = useState(true);
+  const [textInput, setTextInput] = useState('');
+  const [isGeneratingReport, setIsGeneratingReport] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const [isInitialized, setIsInitialized] = useState(false);
+  const inputRef = useRef<HTMLInputElement>(null);
 
-  // Load saved state from localStorage on mount
+  const currentStep = ONBOARDING_STEPS[currentStepIndex];
+  const progress = ((currentStepIndex + 1) / ONBOARDING_STEPS.length) * 100;
+
+  // Initialize with first question
   useEffect(() => {
-    if (isInitialized) return;
-
-    const savedState = loadOnboardingState();
-    if (savedState) {
-      setOnboardingState(savedState);
-      
-      // Reconstruct messages from saved state
-      const reconstructedMessages: ChatMessage[] = [];
-      let nextStepId: string | null = null;
-      
-      // Check each step to see if it's completed
-      for (const step of onboardingSteps) {
-        let isStepComplete = false;
-        let userAnswer = '';
-
-        if (step.id === 'project_name') {
-          isStepComplete = !!savedState.projectName;
-          userAnswer = savedState.projectName || '';
-        } else if (step.id === 'main_channel') {
-          isStepComplete = !!savedState.sellingContext.mainChannel;
-          if (isStepComplete) {
-            if (savedState.sellingContext.mainChannel === 'other' && savedState.sellingContext.mainChannelOtherText) {
-              userAnswer = `Other (${savedState.sellingContext.mainChannelOtherText})`;
-            } else {
-              userAnswer = getChannelLabel(savedState.sellingContext.mainChannel!);
-            }
-          }
-        } else if (step.id === 'target_markets') {
-          isStepComplete = savedState.sellingContext.targetMarkets.length > 0;
-          if (isStepComplete) {
-            userAnswer = savedState.sellingContext.targetMarkets
-              .map(m => m === 'other' && savedState.sellingContext.targetMarketsOtherText
-                ? `Other (${savedState.sellingContext.targetMarketsOtherText})`
-                : getMarketLabel(m))
-              .join(', ');
-          }
-        } else if (step.id === 'yearly_volume') {
-          isStepComplete = !!savedState.yearlyVolumePlan;
-          if (isStepComplete) {
-            userAnswer = YEARLY_VOLUME_OPTIONS.find(opt => opt.value === savedState.yearlyVolumePlan)?.label || '';
-          }
-        } else if (step.id === 'timeline') {
-          isStepComplete = !!savedState.timelinePlan;
-          if (isStepComplete) {
-            userAnswer = TIMELINE_OPTIONS.find(opt => opt.value === savedState.timelinePlan)?.label || '';
-          }
-        }
-
-        if (isStepComplete) {
-          // Add Nexi's question
-          reconstructedMessages.push({
-            id: `assistant-${step.id}-restored`,
-            role: 'assistant',
-            content: step.nexMessage,
-          });
-          // Add user's answer
-          reconstructedMessages.push({
-            id: `user-${step.id}-restored`,
-            role: 'user',
-            content: userAnswer,
-          });
-        } else {
-          // This is the first incomplete step - set it as current
-          nextStepId = step.id;
-          reconstructedMessages.push({
-            id: `assistant-${step.id}-restored`,
-            role: 'assistant',
-            content: step.nexMessage,
-          });
-          break;
-        }
-      }
-
-      // If all steps are complete, show completion message with CTA
-      if (nextStepId === null) {
-        reconstructedMessages.push({
-          id: 'complete-restored',
-          role: 'assistant',
-          content: (
-            <div className="space-y-4">
-              <div>
-                <p className="mb-2">All done! 🎉</p>
-                <p>We've collected all the information. You can now start analyzing your project.</p>
-              </div>
-              <Button
-                onClick={() => router.push('/analyze/chat')}
-                className="w-full sm:w-auto"
-              >
-                Start analysis for this project
-              </Button>
-            </div>
-          ),
-        });
-      }
-
-      setCurrentStepId(nextStepId);
-      setMessages(reconstructedMessages);
-    } else {
-      // No saved state - initialize with first step
-      if (onboardingSteps.length > 0) {
-        const firstStep = onboardingSteps[0];
-        setCurrentStepId(firstStep.id);
-        setMessages([{
-          id: 'welcome',
-          role: 'assistant',
-          content: firstStep.nexMessage,
-        }]);
-      }
+    if (messages.length === 0 && currentStep) {
+      setMessages([{
+        id: `msg-${currentStep.id}`,
+        type: 'system',
+        content: currentStep.question,
+        timestamp: Date.now(),
+      }]);
     }
+  }, []);
 
-    setIsInitialized(true);
-  }, [isInitialized]);
-
-  // Save state to localStorage whenever it changes
+  // Focus text input when it appears
   useEffect(() => {
-    if (!isInitialized) return;
-    saveOnboardingState(onboardingState);
-  }, [onboardingState, isInitialized]);
+    if (currentStep?.type === 'text' && showInput) {
+      setTimeout(() => {
+        inputRef.current?.focus();
+      }, 300);
+    }
+  }, [currentStep, showInput]);
 
-  // Auto-scroll to bottom when messages change or current step changes
+  // Auto-scroll to bottom when messages change
   useEffect(() => {
-    // Small delay to ensure DOM is updated
-    const timeoutId = setTimeout(() => {
-      messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-    }, 100);
-    return () => clearTimeout(timeoutId);
-  }, [messages, currentStepId]);
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [messages, showTyping, showInput]);
 
-  // Get current step from config
-  const currentStep: OnboardingStep | undefined = currentStepId ? getStepById(currentStepId) : undefined;
+  const handleTextSubmit = () => {
+    if (!currentStep || currentStep.type !== 'text') return;
+    if (!textInput.trim()) return;
 
-  // Compute progress indicators
-  const totalSteps = onboardingSteps.length;
-  const currentStepIndex = currentStep ? onboardingSteps.findIndex(s => s.id === currentStep.id) : -1;
+    // Hide input immediately
+    setShowInput(false);
 
-  /**
-   * Helper to check if the current step is complete and ready to proceed
-   */
-  const isCurrentStepComplete = (step: OnboardingStep | undefined, state: OnboardingState, input: string): boolean => {
-    if (!step) return false;
+    // Add user message
+    const userMessage: Message = {
+      id: `user-${Date.now()}`,
+      type: 'user',
+      content: textInput.trim(),
+      timestamp: Date.now(),
+    };
+    setMessages(prev => [...prev, userMessage]);
 
-    if (step.answerKind === 'short_text') {
-      return input.trim().length > 0;
-    } else if (step.answerKind === 'chips_single') {
-      if (step.usesChannelChips) {
-        // For channel chips, also check if "other" has text when selected
-        if (state.sellingContext.mainChannel === 'other') {
-          return !!state.sellingContext.mainChannelOtherText?.trim();
-        }
-        return !!state.sellingContext.mainChannel;
-      } else if (step.id === 'yearly_volume') {
-        return !!state.yearlyVolumePlan;
-      } else if (step.id === 'timeline') {
-        return !!state.timelinePlan;
-      }
-    } else if (step.answerKind === 'chips_multi') {
-      if (step.usesMarketChips) {
-        // For market chips, check if "other" has text when selected
-        if (state.sellingContext.targetMarkets.includes('other')) {
-          return state.sellingContext.targetMarkets.length > 0 && !!state.sellingContext.targetMarketsOtherText?.trim();
-        }
-        return state.sellingContext.targetMarkets.length > 0;
-      }
-    }
-
-    return false;
-  };
-
-  /**
-   * Get the label for the Next button based on current step
-   */
-  const getNextButtonLabel = (step: OnboardingStep | undefined): string => {
-    if (!step) return 'Continue';
-    
-    const isLastStep = currentStepIndex >= 0 && currentStepIndex === totalSteps - 1;
-    return isLastStep ? 'Complete' : 'Continue';
-  };
-
-  /**
-   * Handles moving to the next step in the conversation.
-   * This is the main "Next" logic that validates, saves answers, and advances the flow.
-   */
-  const handleNext = () => {
-    if (!currentStep) return;
-
-    let canProceed = false;
-    let answerValue: any = null;
-
-    // Validate based on answer kind
-    if (currentStep.answerKind === 'short_text') {
-      canProceed = input.trim().length > 0;
-      answerValue = input.trim();
-    } else if (currentStep.answerKind === 'chips_single') {
-      if (currentStep.usesChannelChips) {
-        // For channel chips, also check if "other" has text when selected
-        if (onboardingState.sellingContext.mainChannel === 'other') {
-          canProceed = !!onboardingState.sellingContext.mainChannelOtherText?.trim();
-        } else {
-          canProceed = !!onboardingState.sellingContext.mainChannel;
-        }
-        answerValue = onboardingState.sellingContext.mainChannel;
-      } else if (currentStep.id === 'yearly_volume') {
-        canProceed = !!onboardingState.yearlyVolumePlan;
-        answerValue = onboardingState.yearlyVolumePlan;
-      } else if (currentStep.id === 'timeline') {
-        canProceed = !!onboardingState.timelinePlan;
-        answerValue = onboardingState.timelinePlan;
-      }
-    } else if (currentStep.answerKind === 'chips_multi') {
-      // For market chips, check if "other" has text when selected
-      if (onboardingState.sellingContext.targetMarkets.includes('other')) {
-        canProceed = onboardingState.sellingContext.targetMarkets.length > 0 && 
-                     !!onboardingState.sellingContext.targetMarketsOtherText?.trim();
-      } else {
-        canProceed = onboardingState.sellingContext.targetMarkets.length > 0;
-      }
-      answerValue = onboardingState.sellingContext.targetMarkets;
-    }
-
-    if (!canProceed) return;
-
-    // Save answer to state
-    if (currentStep.id === 'project_name') {
-      setOnboardingState(prev => ({ ...prev, projectName: answerValue }));
-    } else if (currentStep.id === 'main_channel') {
-      // Channel is already saved via ChannelChips onChange
-    } else if (currentStep.id === 'target_markets') {
-      // Markets are already saved via MarketChips onChange
-    } else if (currentStep.id === 'yearly_volume') {
-      setOnboardingState(prev => ({ ...prev, yearlyVolumePlan: answerValue as YearlyVolumePlan }));
-    } else if (currentStep.id === 'timeline') {
-      setOnboardingState(prev => ({ ...prev, timelinePlan: answerValue as TimelinePlan }));
-    }
-
-    // Add user message to chat
-    let userMessageContent = '';
-    if (currentStep.answerKind === 'short_text') {
-      userMessageContent = answerValue;
-    } else if (currentStep.usesChannelChips) {
-      userMessageContent = onboardingState.sellingContext.mainChannel === 'other' && onboardingState.sellingContext.mainChannelOtherText
-        ? `Other (${onboardingState.sellingContext.mainChannelOtherText})`
-        : answerValue || '';
-    } else if (currentStep.usesMarketChips) {
-      userMessageContent = answerValue.join(', ');
-    } else if (currentStep.id === 'yearly_volume') {
-      userMessageContent = YEARLY_VOLUME_OPTIONS.find(opt => opt.value === answerValue)?.label || '';
-    } else if (currentStep.id === 'timeline') {
-      userMessageContent = TIMELINE_OPTIONS.find(opt => opt.value === answerValue)?.label || '';
-    }
-
-    setMessages(prev => [...prev, {
-      id: `user-${currentStep.id}-${Date.now()}`,
-      role: 'user',
-      content: userMessageContent,
-    }]);
+    // Save input
+    setSelectedOptions(prev => ({
+      ...prev,
+      [currentStep.id]: textInput.trim(),
+    }));
 
     // Clear input
-    setInput('');
+    setTextInput('');
 
-    // Advance to next step
-    // This is where the conversation flow advances based on the config
-    const nextStep = getNextStep(currentStep.id);
-    if (nextStep) {
-      setCurrentStepId(nextStep.id);
-      // Add Nexi's next question message
-      setMessages(prev => [...prev, {
-        id: `assistant-${nextStep.id}-${Date.now()}`,
-        role: 'assistant',
-        content: nextStep.nexMessage,
-      }]);
-    } else {
-      // Conversation complete - all steps from config are done
-      setCurrentStepId(null);
-      setMessages(prev => [...prev, {
-        id: 'complete',
-        role: 'assistant',
-        content: (
-          <div className="space-y-4">
-            <div>
-              <p className="mb-2">All done! 🎉</p>
-              <p>We've collected all the information. You can now start analyzing your project.</p>
-            </div>
-            <Button
-              onClick={() => router.push('/analyze/chat')}
-              className="w-full sm:w-auto"
-            >
-              Start analysis for this project
-            </Button>
-          </div>
-        ),
-      }]);
+    // Show typing indicator and proceed
+    proceedToNextStep();
+  };
+
+  const handleOptionSelect = (option: string) => {
+    if (!currentStep || currentStep.type !== 'select') return;
+
+    // Hide options immediately
+    setShowInput(false);
+
+    // Add user message
+    const userMessage: Message = {
+      id: `user-${Date.now()}`,
+      type: 'user',
+      content: option,
+      timestamp: Date.now(),
+    };
+    setMessages(prev => [...prev, userMessage]);
+
+    // Save selection
+    setSelectedOptions(prev => ({
+      ...prev,
+      [currentStep.id]: option,
+    }));
+
+    // Show typing indicator and proceed
+    proceedToNextStep();
+  };
+
+  const proceedToNextStep = () => {
+    // Show typing indicator
+    setShowTyping(true);
+
+    // After delay, show next question
+    setTimeout(() => {
+      setShowTyping(false);
+      
+      if (currentStepIndex < ONBOARDING_STEPS.length - 1) {
+        const nextStep = ONBOARDING_STEPS[currentStepIndex + 1];
+        setCurrentStepIndex(prev => prev + 1);
+        
+        // Add next system message
+        setMessages(prev => [...prev, {
+          id: `msg-${nextStep.id}`,
+          type: 'system',
+          content: nextStep.question,
+          timestamp: Date.now(),
+        }]);
+        
+        // Show input for next step
+        setShowInput(true);
+      } else {
+        // All steps complete - save data and redirect to results
+        setMessages(prev => [...prev, {
+          id: 'complete',
+          type: 'system',
+          content: "Perfect! We have all the information we need. Generating your analysis report...",
+          timestamp: Date.now(),
+        }]);
+        setShowInput(false);
+        
+        // Save to localStorage
+        try {
+          const onboardingData = {
+            ...selectedOptions,
+            timestamp: Date.now(),
+          };
+          localStorage.setItem('nexsupply_onboarding_data', JSON.stringify(onboardingData));
+        } catch (error) {
+          console.error('Failed to save onboarding data:', error);
+        }
+        
+        // Show generating state and redirect
+        setIsGeneratingReport(true);
+        setTimeout(() => {
+          router.push('/results');
+        }, 2000); // 2 second delay to show "Generating Report..." message
+      }
+    }, 1500); // Typing indicator duration
+  };
+
+  // Animation variants
+  const messageVariants = {
+    hidden: { opacity: 0, y: 10, scale: 0.95 },
+    visible: { 
+      opacity: 1, 
+      y: 0, 
+      scale: 1,
+      transition: {
+        type: "spring",
+        stiffness: 300,
+        damping: 30,
+        duration: 0.4
+      }
+    },
+    exit: {
+      opacity: 0,
+      scale: 0.95,
+      transition: { duration: 0.2 }
     }
   };
 
-  // Render input component based on current step
-  const renderStepInput = () => {
-    if (!currentStep) return null;
-
-    if (currentStep.answerKind === 'short_text') {
-      return (
-        <div className="flex gap-2">
-          <input
-            type="text"
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            placeholder="Type your answer..."
-            className="flex-1 h-12 px-4 rounded-lg bg-surface border border-subtle-border text-foreground placeholder-muted-foreground focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all"
-            onKeyDown={(e) => {
-              if (e.key === 'Enter' && !e.shiftKey && isCurrentStepComplete(currentStep, onboardingState, input)) {
-                e.preventDefault();
-                handleNext();
-              }
-            }}
-          />
-          <Button
-            onClick={handleNext}
-            disabled={!isCurrentStepComplete(currentStep, onboardingState, input)}
-            className="h-12 px-6"
-          >
-            {getNextButtonLabel(currentStep)}
-          </Button>
-        </div>
-      );
+  const optionVariants = {
+    hidden: { opacity: 0, y: 10 },
+    visible: (i: number) => ({
+      opacity: 1,
+      y: 0,
+      transition: {
+        delay: i * 0.05,
+        type: "spring",
+        stiffness: 300,
+        damping: 25
+      }
+    }),
+    exit: {
+      opacity: 0,
+      y: -10,
+      transition: { duration: 0.2 }
     }
-
-    if (currentStep.usesChannelChips) {
-      return (
-        <div className="space-y-3">
-          <ChannelChips
-            value={onboardingState.sellingContext.mainChannel}
-            otherText={onboardingState.sellingContext.mainChannelOtherText}
-            onChange={(channel, otherText) => {
-              setOnboardingState(prev => ({
-                ...prev,
-                sellingContext: {
-                  ...prev.sellingContext,
-                  mainChannel: channel,
-                  mainChannelOtherText: otherText,
-                },
-              }));
-            }}
-          />
-          <Button
-            onClick={handleNext}
-            disabled={!isCurrentStepComplete(currentStep, onboardingState, input)}
-            className="w-full sm:w-auto"
-          >
-            {getNextButtonLabel(currentStep)}
-          </Button>
-        </div>
-      );
-    }
-
-    if (currentStep.usesMarketChips) {
-      return (
-        <div className="space-y-3">
-          <MarketChips
-            selectedMarkets={onboardingState.sellingContext.targetMarkets}
-            otherText={onboardingState.sellingContext.targetMarketsOtherText}
-            onChange={(markets, otherText) => {
-              setOnboardingState(prev => ({
-                ...prev,
-                sellingContext: {
-                  ...prev.sellingContext,
-                  targetMarkets: markets,
-                  targetMarketsOtherText: otherText,
-                },
-              }));
-            }}
-          />
-          <Button
-            onClick={handleNext}
-            disabled={!isCurrentStepComplete(currentStep, onboardingState, input)}
-            className="w-full sm:w-auto"
-          >
-            {getNextButtonLabel(currentStep)}
-          </Button>
-        </div>
-      );
-    }
-
-    if (currentStep.id === 'yearly_volume') {
-      return (
-        <div className="space-y-3">
-          <GenericChipGroup
-            options={YEARLY_VOLUME_OPTIONS}
-            value={onboardingState.yearlyVolumePlan}
-            onChange={(value) => {
-              setOnboardingState(prev => ({
-                ...prev,
-                yearlyVolumePlan: value as YearlyVolumePlan,
-              }));
-            }}
-          />
-          <Button
-            onClick={handleNext}
-            disabled={!isCurrentStepComplete(currentStep, onboardingState, input)}
-            className="w-full sm:w-auto"
-          >
-            {getNextButtonLabel(currentStep)}
-          </Button>
-        </div>
-      );
-    }
-
-    if (currentStep.id === 'timeline') {
-      return (
-        <div className="space-y-3">
-          <GenericChipGroup
-            options={TIMELINE_OPTIONS}
-            value={onboardingState.timelinePlan}
-            onChange={(value) => {
-              setOnboardingState(prev => ({
-                ...prev,
-                timelinePlan: value as TimelinePlan,
-              }));
-            }}
-          />
-          <Button
-            onClick={handleNext}
-            disabled={!isCurrentStepComplete(currentStep, onboardingState, input)}
-            className="w-full sm:w-auto"
-          >
-            {getNextButtonLabel(currentStep)}
-          </Button>
-        </div>
-      );
-    }
-
-    return null;
   };
 
-  const progress = currentStep ? `${currentStep.order} / ${onboardingSteps.length}` : 'Complete';
+  const typingVariants = {
+    hidden: { opacity: 0 },
+    visible: { 
+      opacity: 1,
+      transition: { duration: 0.3 }
+    },
+    exit: {
+      opacity: 0,
+      transition: { duration: 0.2 }
+    }
+  };
+
+  const inputVariants = {
+    hidden: { opacity: 0, y: 10 },
+    visible: { 
+      opacity: 1,
+      y: 0,
+      transition: {
+        type: "spring",
+        stiffness: 300,
+        damping: 25,
+        duration: 0.4
+      }
+    },
+    exit: {
+      opacity: 0,
+      y: -10,
+      transition: { duration: 0.2 }
+    }
+  };
 
   return (
-    <div className="flex flex-col h-screen bg-background">
+    <div className="min-h-screen bg-white">
       {/* Header */}
-      <header className="border-b border-subtle-border px-4 sm:px-6 py-4 flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          <h1 className="text-xl font-bold">NexSupply</h1>
-          <div className="hidden sm:flex items-center gap-2 text-sm text-muted-foreground">
-            <span>•</span>
-            <span>{onboardingState.projectName || 'Untitled project'}</span>
-            <span>•</span>
-            <span>Collecting info ({progress})</span>
+      <header className="sticky top-0 z-50 bg-white border-b border-neutral-200">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+          <div className="flex items-center justify-center">
+            <h1 className="text-2xl font-serif font-bold text-neutral-900">NexSupply</h1>
           </div>
         </div>
-        <div className="text-xs text-muted-foreground">
-          Chatting with Nexi
+        
+        {/* Progress Bar */}
+        <div className="h-1 bg-neutral-100">
+          <motion.div
+            className="h-full bg-neutral-900"
+            initial={{ width: 0 }}
+            animate={{ width: `${progress}%` }}
+            transition={{ duration: 0.5, ease: "easeOut" }}
+          />
         </div>
       </header>
 
-      <div className="flex-1 flex overflow-hidden">
-        {/* Main Chat Area */}
-        <main className="flex-1 flex flex-col overflow-hidden">
-          <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-4">
-            {/* Step Progress Indicator */}
-            {currentStepIndex >= 0 ? (
-              <div className="text-xs text-muted-foreground mb-2">
-                Step {currentStepIndex + 1} of {totalSteps}
-              </div>
-            ) : currentStepIndex === -1 && !currentStep ? (
-              <div className="text-xs text-muted-foreground mb-2">
-                Onboarding complete
-              </div>
-            ) : null}
-
-            {messages.map((message, index) => {
-              // Find the step that corresponds to this assistant message
-              const stepForMessage = message.role === 'assistant' && message.id.startsWith('assistant-')
-                ? getStepById(message.id.split('-')[1])
-                : null;
-
-              return (
+      {/* Chat Area */}
+      <main className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="space-y-6">
+          {/* Messages */}
+          <AnimatePresence mode="popLayout">
+            {messages.map((message) => (
+              <motion.div
+                key={message.id}
+                initial="hidden"
+                animate="visible"
+                exit="exit"
+                variants={messageVariants}
+                className={`flex ${message.type === 'user' ? 'justify-end' : 'justify-start'}`}
+              >
                 <div
-                  key={message.id}
-                  className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
+                  className={`max-w-[85%] sm:max-w-lg rounded-2xl px-4 py-3 ${
+                    message.type === 'user'
+                      ? 'bg-neutral-900 text-white'
+                      : 'bg-neutral-100 text-neutral-900'
+                  }`}
                 >
-                  <div
-                    className={`max-w-[85%] sm:max-w-lg rounded-lg px-4 py-3 ${
-                      message.role === 'user'
-                        ? 'bg-primary text-black'
-                        : 'bg-surface border border-subtle-border text-foreground'
-                    }`}
-                  >
-                    {typeof message.content === 'string' ? (
-                      <p className="whitespace-pre-wrap break-words text-sm leading-relaxed">
-                        {message.content}
-                      </p>
-                    ) : (
-                      <div className="text-sm leading-relaxed">
-                        {message.content}
-                      </div>
-                    )}
-                    {/* Show helper text for assistant messages */}
-                    {stepForMessage && stepForMessage.helperText && (
-                      <p className="text-xs text-muted-foreground mt-2">{stepForMessage.helperText}</p>
-                    )}
+                  <p className="text-sm leading-relaxed whitespace-pre-wrap">
+                    {message.content}
+                  </p>
+                </div>
+              </motion.div>
+            ))}
+          </AnimatePresence>
+
+          {/* Typing Indicator */}
+          <AnimatePresence>
+            {(showTyping || isGeneratingReport) && (
+              <motion.div
+                initial="hidden"
+                animate="visible"
+                exit="exit"
+                variants={typingVariants}
+                className="flex justify-start"
+              >
+                <div className="bg-neutral-100 rounded-2xl px-4 py-3">
+                  <div className="flex items-center gap-1">
+                    <motion.div
+                      className="w-2 h-2 bg-neutral-400 rounded-full"
+                      animate={{
+                        scale: [1, 1.2, 1],
+                        opacity: [0.5, 1, 0.5],
+                      }}
+                      transition={{
+                        duration: 1,
+                        repeat: Infinity,
+                        delay: 0,
+                      }}
+                    />
+                    <motion.div
+                      className="w-2 h-2 bg-neutral-400 rounded-full"
+                      animate={{
+                        scale: [1, 1.2, 1],
+                        opacity: [0.5, 1, 0.5],
+                      }}
+                      transition={{
+                        duration: 1,
+                        repeat: Infinity,
+                        delay: 0.2,
+                      }}
+                    />
+                    <motion.div
+                      className="w-2 h-2 bg-neutral-400 rounded-full"
+                      animate={{
+                        scale: [1, 1.2, 1],
+                        opacity: [0.5, 1, 0.5],
+                      }}
+                      transition={{
+                        duration: 1,
+                        repeat: Infinity,
+                        delay: 0.4,
+                      }}
+                    />
                   </div>
                 </div>
-              );
-            })}
-
-            {/* Current step input */}
-            {currentStep && (
-              <div className="flex justify-start">
-                <div className="max-w-[85%] sm:max-w-lg w-full">
-                  {renderStepInput()}
-                </div>
-              </div>
+              </motion.div>
             )}
+          </AnimatePresence>
 
-            <div ref={messagesEndRef} />
-          </div>
-        </main>
+          {/* Input Area - Select Options or Text Input */}
+          <AnimatePresence mode="wait">
+            {showInput && currentStep && (
+              <motion.div
+                key={currentStep.id}
+                initial="hidden"
+                animate="visible"
+                exit="exit"
+                variants={inputVariants}
+              >
+                {currentStep.type === 'select' ? (
+                  // Pill-shaped option buttons
+                  <div className="flex flex-wrap gap-3">
+                    {currentStep.options.map((option, index) => (
+                      <motion.button
+                        key={option}
+                        custom={index}
+                        variants={optionVariants}
+                        onClick={() => handleOptionSelect(option)}
+                        className="px-6 py-3 rounded-full border-2 border-neutral-300 bg-white text-neutral-900 text-sm font-medium transition-all hover:bg-neutral-900 hover:text-white hover:border-neutral-900 focus:outline-none focus:ring-2 focus:ring-neutral-900 focus:ring-offset-2"
+                      >
+                        {option}
+                      </motion.button>
+                    ))}
+                  </div>
+                ) : (
+                  // Text input field
+                  <div className="flex gap-3">
+                    <input
+                      ref={inputRef}
+                      type="text"
+                      value={textInput}
+                      onChange={(e) => setTextInput(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' && !e.shiftKey && textInput.trim()) {
+                          e.preventDefault();
+                          handleTextSubmit();
+                        }
+                      }}
+                      placeholder={currentStep.placeholder || "Type your answer..."}
+                      className="flex-1 px-4 py-3 rounded-full border-2 border-neutral-300 bg-white text-neutral-900 text-sm placeholder-neutral-400 focus:outline-none focus:border-neutral-900 focus:ring-2 focus:ring-neutral-900 focus:ring-offset-2 transition-all"
+                    />
+                    <motion.button
+                      onClick={handleTextSubmit}
+                      disabled={!textInput.trim()}
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                      className="px-6 py-3 rounded-full bg-neutral-900 text-white disabled:opacity-50 disabled:cursor-not-allowed transition-all focus:outline-none focus:ring-2 focus:ring-neutral-900 focus:ring-offset-2"
+                    >
+                      <Send className="w-4 h-4" />
+                    </motion.button>
+                  </div>
+                )}
+              </motion.div>
+            )}
+          </AnimatePresence>
 
-        {/* Right Side Summary Panel */}
-        <aside className="hidden lg:block w-80 border-l border-subtle-border overflow-y-auto">
-          <OnboardingSummaryCard onboardingState={onboardingState} />
-        </aside>
-      </div>
+          <div ref={messagesEndRef} />
+        </div>
+      </main>
     </div>
   );
 }

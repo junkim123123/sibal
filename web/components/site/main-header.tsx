@@ -15,18 +15,6 @@ export function MainHeader() {
     { label: 'Resources', href: '/resources' },
   ];
 
-  // Handle Use Cases click - scroll to section on home page
-  const handleUseCasesClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
-    if (pathname === '/') {
-      e.preventDefault();
-      const useCasesSection = document.getElementById('home-use-cases');
-      if (useCasesSection) {
-        useCasesSection.scrollIntoView({ behavior: 'smooth' });
-        setMobileMenuOpen(false);
-      }
-    }
-  };
-
   return (
     <header className="sticky top-0 z-50 w-full border-b border-neutral-200 bg-white">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
@@ -42,7 +30,6 @@ export function MainHeader() {
               <Link
                 key={item.href}
                 href={item.href}
-                onClick={item.label === 'Use Cases' ? handleUseCasesClick : undefined}
                 className={`text-sm font-medium transition-colors hover:text-neutral-900 ${
                   pathname === item.href
                     ? 'text-neutral-900'
@@ -96,13 +83,7 @@ export function MainHeader() {
               <Link
                 key={item.href}
                 href={item.href}
-                onClick={(e) => {
-                  if (item.label === 'Use Cases') {
-                    handleUseCasesClick(e);
-                  } else {
-                    setMobileMenuOpen(false);
-                  }
-                }}
+                onClick={() => setMobileMenuOpen(false)}
                 className="block rounded-md px-3 py-2 text-base font-medium text-neutral-600 hover:bg-neutral-50 hover:text-neutral-900"
               >
                 {item.label}

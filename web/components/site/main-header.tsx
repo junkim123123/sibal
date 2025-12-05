@@ -12,6 +12,7 @@ export function MainHeader() {
   const navItems = [
     { label: 'How It Works', href: '/how-it-works' },
     { label: 'Use Cases', href: '/use-cases' },
+    { label: 'Pricing', href: '/pricing' },
     { label: 'Resources', href: '/resources' },
   ];
 
@@ -43,14 +44,14 @@ export function MainHeader() {
 
           {/* Desktop CTA */}
           <div className="hidden md:flex md:items-center md:gap-4">
-            <Link 
-              href="/signin" 
+            <button
+              onClick={() => alert('See you soon')}
               className="p-2 text-neutral-600 hover:text-neutral-900 transition-colors"
               title="Sign in"
               aria-label="Sign in"
             >
               <User className="h-5 w-5" />
-            </Link>
+            </button>
             <Link
               href="/chat"
               className="rounded-full bg-neutral-900 px-6 py-2 text-sm font-medium text-white hover:bg-neutral-800 transition-colors"
@@ -90,13 +91,15 @@ export function MainHeader() {
               </Link>
             ))}
             <div className="border-t border-neutral-200 pt-4">
-              <Link
-                href="/signin"
-                className="block rounded-md px-3 py-2 text-base font-medium text-neutral-600 hover:bg-neutral-50 hover:text-neutral-900"
-                onClick={() => setMobileMenuOpen(false)}
+              <button
+                onClick={() => {
+                  alert('See you soon');
+                  setMobileMenuOpen(false);
+                }}
+                className="block w-full text-left rounded-md px-3 py-2 text-base font-medium text-neutral-600 hover:bg-neutral-50 hover:text-neutral-900"
               >
                 Sign in
-              </Link>
+              </button>
               <Link
                 href="/chat"
                 className="mt-2 block w-full rounded-full bg-neutral-900 px-6 py-2 text-center text-sm font-medium text-white hover:bg-neutral-800 transition-colors"

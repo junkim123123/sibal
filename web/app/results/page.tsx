@@ -1,1088 +1,22 @@
 /**
- * Professional Sourcing Intelligence Dashboard
+ * Professional Sourcing Analysis Dashboard
  * 
- * 8-Section Actionable Intelligence:
- * 1. Hero Metric Card
- * 2. Cost Breakdown (Detailed)
- * 3. Profitability Simulator (Interactive)
- * 4. Scale Analysis (Decision Support)
- * 5. Risk Assessment (5 Cards)
- * 6. Market Positioning (Visual)
- * 7. Action Roadmap (Timeline)
- * 8. CTA & Services (3 Tiers)
+ * Dark-mode, grid-based dashboard displaying comprehensive sourcing intelligence
  */
 
 'use client';
 
-import { useSearchParams, useRouter } from 'next/navigation';
+import { useSearchParams } from 'next/navigation';
+import { useEffect, useState, Suspense } from 'react';
+import Link from 'next/link';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { AlertCircle, CheckCircle2, XCircle, Download, TrendingUp, Factory, Shield, Truck, Check, Package, DollarSign, BarChart3, HelpCircle, Calendar, Rocket } from 'lucide-react';
-import { useEffect, useState, Suspense } from 'react';
-import { loadOnboardingState, clearOnboardingState } from '@/lib/onboardingStorage';
-import type { OnboardingState } from '@/lib/types/onboarding';
+import { AlertCircle, CheckCircle2, XCircle, TrendingUp, Factory, Shield, Truck, Package, DollarSign, BarChart3, Calendar, Rocket, Download } from 'lucide-react';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend, BarChart, Bar, XAxis, YAxis, CartesianGrid } from 'recharts';
-import { motion } from 'framer-motion';
+import AnalysisLoader from '@/components/AnalysisLoader';
 
 type Answers = Record<string, string>;
 
-// Dynamic Calculation Functions
-function calculateInsurance(factoryCost: number, units: number): number {
-  // Insurance = Factory Cost * 0.01 (1%) OR minimum $30 divided by units
-  const percentageBased = factoryCost * 0.01;
-  const minimumBased = 30 / units;
-  return Math.max(percentageBased, minimumBased);
-}
-
-function calculateCustomsFee(units: number): number {
-  // Fixed customs entry fee: $100 flat
-  // For low volume, this significantly impacts per-unit cost
-  const fixedFee = 100;
-  const perUnitFee = fixedFee / units;
-  
-  // Additional variable fees (estimated $0.10 per unit)
-  const variableFee = 0.10;
-  
-  return perUnitFee + variableFee;
-}
-
-function extractVolumeFromAnswer(volumeAnswer: string): number {
-  // Parse volume from answer like "Test run (< 50 units)" or "Scale (1000+ units)"
-  if (volumeAnswer.includes('50') || volumeAnswer.includes('Test')) return 50;
-  if (volumeAnswer.includes('100-500') || volumeAnswer.includes('Small')) return 300;
-  if (volumeAnswer.includes('1000') || volumeAnswer.includes('Scale')) return 1000;
-  return 100; // default
-}
-
-function inferShippingMethod(priority: string, timeline: string): 'Air' | 'Sea' {
-  // If priority is "Fastest Speed" or timeline is "Within 1 month", use Air
-  if (priority?.includes('Speed') || timeline?.includes('1 month') || timeline?.includes('4 weeks')) {
-    return 'Air';
-  }
-  // If priority is "Lowest Cost" or timeline is "Flexible" or "3-6 months", prefer Sea
-  if (priority?.includes('Cost') || timeline?.includes('Flexible') || timeline?.includes('3-6 months')) {
-    return 'Sea';
-  }
-  // Default to Air for safety
-  return 'Air';
-}
-
-// Infer channel type from user answers
-function inferChannelType(channel: string, businessModel: string): 'Amazon' | 'Shopify' | 'Wholesale' | 'B2B' | 'Marketplace' | 'Other' {
-  if (!channel && !businessModel) return 'Other';
-  
-  const channelLower = (channel || '').toLowerCase();
-  const businessLower = (businessModel || '').toLowerCase();
-  
-  // Check for Amazon
-  if (channelLower.includes('amazon') || channelLower.includes('marketplace')) {
-    return 'Amazon';
-  }
-  
-  // Check for Shopify/DTC
-  if (channelLower.includes('shopify') || channelLower.includes('woo') || channelLower.includes('direct-to-consumer') || channelLower.includes('dtc')) {
-    return 'Shopify';
-  }
-  
-  // Check for Wholesale/B2B
-  if (channelLower.includes('wholesale') || channelLower.includes('b2b') || channelLower.includes('distributor') || 
-      businessLower.includes('wholesale') || businessLower.includes('b2b') || businessLower.includes('distributor')) {
-    return 'Wholesale';
-  }
-  
-  // Check for B2B Marketplaces
-  if (channelLower.includes('alibaba') || channelLower.includes('faire') || channelLower.includes('b2b marketplace')) {
-    return 'B2B';
-  }
-  
-  return 'Other';
-}
-
-// Calculate channel & fulfillment costs based on channel type
-function calculateChannelFees(retailPrice: number, channelType: ReturnType<typeof inferChannelType>): number {
-  switch (channelType) {
-    case 'Amazon':
-      // Amazon: Referral (15%) + FBA ($3.50) + Storage ($0.20)
-      return (retailPrice * 0.15) + 3.50 + 0.20;
-    
-    case 'Shopify':
-      // Shopify: Credit card fees (2.9% + $0.30) + 3PL fulfillment (~$3-5)
-      return (retailPrice * 0.029) + 0.30 + 3.50;
-    
-    case 'Wholesale':
-    case 'B2B':
-      // Wholesale/B2B: Very low - just logistics handling (2-5%)
-      return retailPrice * 0.03; // 3% for handling
-    
-    case 'Marketplace':
-      // Other marketplaces: Moderate fees
-      return (retailPrice * 0.10) + 2.00;
-    
-    default:
-      // Default: Moderate estimate
-      return (retailPrice * 0.08) + 2.50;
-  }
-}
-
-// Comprehensive Mock Data (Bluetooth Earphones Example)
-const BASE_MOCK_DATA = {
-  productName: 'Bluetooth Noise-Cancelling Earphones',
-  asin: 'B08XYZ1234',
-  factoryCost: 5.50, // Base factory cost
-  estimatedMargin: { min: 15, max: 25 },
-};
-
-// Generate dynamic cost breakdown based on user answers
-function generateCostBreakdown(answers: Answers) {
-  const factoryCost = BASE_MOCK_DATA.factoryCost;
-  const volume = extractVolumeFromAnswer(answers.volume || 'Test run (< 50 units)');
-  const shippingMethod = inferShippingMethod(answers.priority || '', answers.timeline || '');
-  
-  // Calculate dynamic values
-  const insurance = calculateInsurance(factoryCost, volume);
-  const customs = calculateCustomsFee(volume);
-  
-  // Shipping cost varies by method
-  const shippingCost = shippingMethod === 'Air' ? 3.50 : 1.50; // Sea is cheaper
-  const duty = factoryCost * 0.15; // 15% duty rate (example)
-  const packaging = 0.95; // Fixed packaging cost
-  
-  const totalLandedCost = factoryCost + shippingCost + duty + packaging + customs + insurance;
-  
-  // Calculate percentages
-  const calculatePercentage = (value: number) => (value / totalLandedCost) * 100;
-  
-  return {
-    factory: { 
-      value: factoryCost, 
-      percentage: Math.round(calculatePercentage(factoryCost)), 
-      label: 'Factory (EXW)', 
-      tooltip: 'Ex-Works price from factory in Shenzhen, China' 
-    },
-    shipping: { 
-      value: shippingCost, 
-      percentage: Math.round(calculatePercentage(shippingCost)), 
-      label: `Shipping (${shippingMethod})`, 
-      tooltip: `${shippingMethod === 'Air' ? 'Air' : 'Sea'} freight from China to US West Coast (DDP terms)` 
-    },
-    duty: { 
-      value: duty, 
-      percentage: Math.round(calculatePercentage(duty)), 
-      label: 'Duty (15%)', 
-      tooltip: 'Based on HS Code 8518.30 - Headphones. Standard US import duty rate.' 
-    },
-    packaging: { 
-      value: packaging, 
-      percentage: Math.round(calculatePercentage(packaging)), 
-      label: 'Packaging', 
-      tooltip: 'Custom branded packaging and inserts' 
-    },
-    customs: { 
-      value: customs, 
-      percentage: Math.round(calculatePercentage(customs)), 
-      label: 'Customs & Fees', 
-      tooltip: `Customs clearance, port fees, and handling charges (Fixed $100 entry fee divided by ${volume} units)` 
-    },
-    insurance: { 
-      value: insurance, 
-      percentage: Math.round(calculatePercentage(insurance)), 
-      label: 'Insurance', 
-      tooltip: `Cargo insurance coverage (1% of factory cost or minimum $30/${volume} units)` 
-    },
-    totalLandedCost,
-  };
-}
-
-// Generate category-based risks
-function generateRisks(category: string) {
-  const baseRisks = [
-    {
-      id: 'duty',
-      category: 'Duty Risk',
-      level: 'Low' as const,
-      impact: '$0',
-      description: 'Standard duty rate applies. No special regulations expected.',
-      mitigation: 'Monitor 2025 Trade Policy changes. Consider DDP terms for predictability.',
-      icon: Shield,
-    },
-    {
-      id: 'supplier',
-      category: 'Supplier Risk',
-      level: 'Medium' as const,
-      impact: '$500-1,000',
-      description: 'Category requires supplier verification and quality control.',
-      mitigation: 'Request ISO 9001 certification. Conduct factory audit before first order.',
-      icon: Factory,
-    },
-    {
-      id: 'logistics',
-      category: 'Logistics Risk',
-      level: 'Low' as const,
-      impact: '$0',
-      description: 'Standard shipping routes available. No major port congestion expected.',
-      mitigation: 'Book shipping 2 weeks in advance. Consider LCL for volumes under 5 CBM.',
-      icon: Truck,
-    },
-  ];
-  
-  // Category-specific compliance risk
-  let complianceRisk;
-  if (category?.toLowerCase().includes('electronic') || category?.toLowerCase().includes('battery')) {
-    complianceRisk = {
-      id: 'compliance',
-      category: 'Compliance Risk',
-      level: 'Medium' as const,
-      impact: '$800',
-      description: 'FCC / UL certification required for electronics in US market.',
-      mitigation: 'Budget for FCC certification costs upfront. Factor into launch timeline.',
-      icon: AlertCircle,
-    };
-  } else if (category?.toLowerCase().includes('home') || category?.toLowerCase().includes('kitchen') || category?.toLowerCase().includes('food')) {
-    complianceRisk = {
-      id: 'compliance',
-      category: 'Compliance Risk',
-      level: 'Medium' as const,
-      impact: '$600-1,200',
-      description: 'FDA / Food Contact Safety certification required.',
-      mitigation: 'Ensure food-grade materials. Budget for FDA compliance testing.',
-      icon: AlertCircle,
-    };
-  } else if (category?.toLowerCase().includes('fashion') || category?.toLowerCase().includes('textile')) {
-    complianceRisk = {
-      id: 'compliance',
-      category: 'Compliance Risk',
-      level: 'Low' as const,
-      impact: '$200-400',
-      description: 'Fabric Labeling / Flammability standards apply.',
-      mitigation: 'Ensure proper care labels and flammability testing for textiles.',
-      icon: AlertCircle,
-    };
-  } else {
-    // Default compliance risk
-    complianceRisk = {
-      id: 'compliance',
-      category: 'Compliance Risk',
-      level: 'Low' as const,
-      impact: '$200-500',
-      description: 'Standard compliance requirements apply.',
-      mitigation: 'Review category-specific regulations before launch.',
-      icon: AlertCircle,
-    };
-  }
-  
-  return [...baseRisks, complianceRisk, {
-    id: 'quality',
-    category: 'Quality Risk',
-    level: 'Low' as const,
-    impact: '$200-500',
-    description: 'Low risk for established category. Standard QC protocols apply.',
-    mitigation: 'Request pre-shipment inspection. Set AQL 2.5 for critical components.',
-    icon: CheckCircle2,
-  }];
-}
-
-// Generate roadmap based on shipping method
-function generateRoadmap(shippingMethod: 'Air' | 'Sea', category: string) {
-  const baseRoadmap = [
-    { week: 'Wk 1-2', title: 'Supplier Verification', description: 'Verify credentials, certifications, and factory audit', completed: false },
-  ];
-  
-  // Compliance step varies by category
-  let complianceStep;
-  if (category?.toLowerCase().includes('electronic')) {
-    complianceStep = { week: 'Wk 2-3', title: 'Compliance & Certifications', description: 'Obtain FCC/UL certifications for electronics in target market', completed: false };
-  } else if (category?.toLowerCase().includes('home') || category?.toLowerCase().includes('food')) {
-    complianceStep = { week: 'Wk 2-3', title: 'Compliance & Certifications', description: 'Obtain FDA/food safety certifications for food contact products', completed: false };
-  } else {
-    complianceStep = { week: 'Wk 2-3', title: 'Compliance & Certifications', description: 'Verify category-specific compliance requirements and certifications', completed: false };
-  }
-  
-  const orderStep = { week: 'Wk 4', title: 'Place Order', description: 'Finalize order details, payment terms, and production schedule', completed: false };
-  
-  // Launch timing depends on shipping method
-  const launchWeek = shippingMethod === 'Air' ? 'Wk 8' : 'Wk 12-14';
-  const launchStep = { 
-    week: launchWeek, 
-    title: 'Channel Launch & Fulfillment', 
-    description: `Receive shipment via ${shippingMethod === 'Air' ? 'air freight' : 'sea freight'}, quality check, and launch to your sales channel`, 
-    completed: false 
-  };
-  
-  return [...baseRoadmap, complianceStep, orderStep, launchStep];
-}
-
-const MOCK_DATA = {
-  ...BASE_MOCK_DATA,
-  scaleScenarios: [
-    { units: 100, method: 'Air', cost: 12.45, margin: 48, label: 'Safe Start', recommended: false },
-    { units: 500, method: 'Air', cost: 10.95, margin: 55, label: 'Steady Growth', recommended: false },
-    { units: 1000, method: 'Sea', cost: 8.95, margin: 62, label: 'Scale Up', recommended: true, savings: 3.50 },
-  ],
-  competitorPrices: {
-    budget: 18,
-    mid: 35,
-    premium: 79,
-  },
-  risks: [
-    {
-      id: 'duty',
-      category: 'Duty Risk',
-      level: 'Low' as const,
-      impact: '$0',
-      description: 'Standard duty rate applies. No special regulations expected.',
-      mitigation: 'Monitor 2025 Trade Policy changes. Consider DDP terms for predictability.',
-      icon: Shield,
-    },
-    {
-      id: 'supplier',
-      category: 'Supplier Risk',
-      level: 'Medium' as const,
-      impact: '$500-1,000',
-      description: 'Electronics category requires supplier verification and quality control.',
-      mitigation: 'Request ISO 9001 certification. Conduct factory audit before first order.',
-      icon: Factory,
-    },
-    {
-      id: 'compliance',
-      category: 'Compliance Risk',
-      level: 'Medium' as const,
-      impact: '$800',
-      description: 'FCC certification required for Bluetooth devices in US market.',
-      mitigation: 'Budget for FCC certification costs upfront. Factor into launch timeline.',
-      icon: AlertCircle,
-    },
-    {
-      id: 'logistics',
-      category: 'Logistics Risk',
-      level: 'Low' as const,
-      impact: '$0',
-      description: 'Standard shipping routes available. No major port congestion expected.',
-      mitigation: 'Book shipping 2 weeks in advance. Consider LCL for volumes under 5 CBM.',
-      icon: Truck,
-    },
-    {
-      id: 'quality',
-      category: 'Quality Risk',
-      level: 'Low' as const,
-      impact: '$200-500',
-      description: 'Low risk for established electronics category. Standard QC protocols apply.',
-      mitigation: 'Request pre-shipment inspection. Set AQL 2.5 for critical components.',
-      icon: CheckCircle2,
-    },
-  ],
-  monthlySalesVelocity: 100, // units per month
-  roadmap: [
-    { week: 'Wk 1-2', title: 'Supplier Verification', description: 'Verify credentials, certifications, and factory audit', completed: false },
-    { week: 'Wk 2-3', title: 'Compliance (FCC)', description: 'Obtain FCC certification for Bluetooth devices', completed: false },
-    { week: 'Wk 4', title: 'Place Order', description: 'Finalize order details, payment terms, and production schedule', completed: false },
-    { week: 'Wk 8', title: 'Launch', description: 'Receive shipment, quality check, and launch to Amazon', completed: false },
-  ],
-  serviceTiers: [
-    { 
-      name: 'Starter (AI Scout)', 
-      tag: 'Free Tool',
-      price: 0, 
-      priceDisplay: '$0 / mo',
-      features: [
-        'Real-Time Cost & Risk Analysis',
-        '30 Reports/month',
-        'Platform-neutral insights',
-        'Basic supplier database access'
-      ],
-      recommended: false,
-      ctaLabel: 'Start Analysis',
-      ctaHref: '/chat',
-    },
-    { 
-      name: 'Validator (Entry)', 
-      tag: 'Start with One Box',
-      price: 199, 
-      priceDisplay: '$199 (Retainer)',
-      features: [
-        'Get Verified Quote',
-        'Supplier Vetting',
-        '100% Credited on Order ($5k+)',
-        'Priority support',
-        'Dedicated quote specialist'
-      ],
-      recommended: false,
-      ctaLabel: 'Request Quote',
-      ctaHref: '/contact',
-    },
-    { 
-      name: 'Executor (Full Service)', 
-      tag: 'End-to-End Solution',
-      price: null, 
-      priceDisplay: '3% - 9% Commission',
-      features: [
-        'Module A or B Selection',
-        'QC & Logistics',
-        'Dedicated Manager',
-        'Global Sync Time',
-        '24-hour response (Mon-Fri)'
-      ],
-      recommended: true,
-      note: 'Min. service fee $500 applies.',
-      ctaLabel: 'Get Started',
-      ctaHref: '/contact',
-    },
-  ],
-};
-
-// Helper function to generate chart data from cost breakdown
-function generateChartData(costBreakdown: ReturnType<typeof generateCostBreakdown>) {
-  return Object.entries(costBreakdown)
-    .filter(([key, data]) => key !== 'totalLandedCost' && typeof data === 'object' && 'label' in data)
-    .map(([key, data]) => {
-      if (typeof data === 'object' && 'label' in data && 'value' in data) {
-        return {
-          name: data.label.split('(')[0].trim(),
-          value: data.value,
-          color: key === 'factory' ? '#22d3ee' : key === 'shipping' ? '#34d399' : key === 'duty' ? '#fbbf24' : key === 'packaging' ? '#a78bfa' : key === 'customs' ? '#8b5cf6' : '#ec4899',
-        };
-      }
-      return null;
-    })
-    .filter((item): item is { name: string; value: number; color: string } => item !== null);
-}
-
-// Component: Hero Metric Card
-function HeroMetricCard({ productName, asin, totalLandedCost, margin }: { 
-  productName: string; 
-  asin: string;
-  totalLandedCost: number; 
-  margin: { min: number; max: number } 
-}) {
-  return (
-    <Card className="bg-[#18181b] border-zinc-800/50 p-8">
-      <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
-        <div>
-          <h1 className="text-2xl md:text-3xl font-semibold text-white mb-2">{productName}</h1>
-          <div className="flex items-center gap-4 text-xs text-zinc-500">
-            <span>ASIN: {asin}</span>
-            <span>•</span>
-            <span>Sourcing Intelligence Report</span>
-          </div>
-        </div>
-        <div className="flex items-center gap-8">
-          <div className="text-right">
-            <p className="text-zinc-500 text-xs uppercase tracking-wide mb-2">Estimated Landed Cost</p>
-            <p className="text-6xl md:text-7xl lg:text-8xl font-mono font-bold tabular-nums tracking-tight text-[#22d3ee]">
-              ${totalLandedCost.toFixed(2)}
-            </p>
-          </div>
-          <div className="px-4 py-2 rounded-full bg-zinc-800/50 border border-zinc-700">
-            <p className="text-zinc-400 font-semibold text-sm">
-              Margin {margin.min}-{margin.max}%
-            </p>
-          </div>
-        </div>
-      </div>
-    </Card>
-  );
-}
-
-// Component: Cost Breakdown Card with Tooltips
-function CostBreakdownCard({ answers }: { answers: Answers }) {
-  const [tooltipKey, setTooltipKey] = useState<string | null>(null);
-  const costBreakdown = generateCostBreakdown(answers);
-  const costChartData = generateChartData(costBreakdown);
-  
-  return (
-    <Card className="bg-[#18181b] border-zinc-800/50 p-8">
-      <div className="mb-6">
-        <h2 className="text-xs uppercase tracking-wider text-zinc-500 font-semibold mb-1">Cost Breakdown</h2>
-      </div>
-      
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Donut Chart */}
-        <div style={{ height: '320px' }}>
-          <ResponsiveContainer width="100%" height="100%">
-            <PieChart>
-              <Pie
-                data={costChartData}
-                cx="50%"
-                cy="50%"
-                innerRadius={70}
-                outerRadius={110}
-                paddingAngle={2}
-                dataKey="value"
-                label={({ name, value }) => `${name}: $${value.toFixed(2)}`}
-              >
-                {costChartData.map((entry, index) => (
-                  <Cell key={`cell-${index}`} fill={entry.color} />
-                ))}
-              </Pie>
-              <Tooltip 
-                formatter={(value: number) => `$${value.toFixed(2)}`}
-                contentStyle={{ 
-                  backgroundColor: '#09090b', 
-                  border: '1px solid #27272a', 
-                  borderRadius: '8px',
-                  color: '#fff'
-                }}
-              />
-              <Legend 
-                wrapperStyle={{ color: '#fff', fontSize: '12px' }}
-                formatter={(value) => <span style={{ color: '#a1a1aa' }}>{value}</span>}
-              />
-            </PieChart>
-          </ResponsiveContainer>
-        </div>
-
-        {/* Cost List with Tooltips */}
-        <div className="space-y-3">
-          {Object.entries(costBreakdown)
-            .filter(([key, data]) => key !== 'totalLandedCost' && typeof data === 'object' && 'label' in data)
-            .map(([key, data]) => {
-              if (typeof data !== 'object' || !('label' in data) || !('value' in data) || !('percentage' in data) || !('tooltip' in data)) {
-                return null;
-              }
-              
-              const icons: Record<string, any> = {
-                factory: Factory,
-                shipping: Truck,
-                duty: Shield,
-                packaging: Package,
-                customs: DollarSign,
-                insurance: Shield,
-              };
-              const Icon = icons[key] || DollarSign;
-              
-              return (
-                <div 
-                  key={key} 
-                  className="relative p-4 rounded-lg bg-[#09090b] border border-zinc-800/50 hover:border-[#22d3ee]/30 transition-colors"
-                  onMouseEnter={() => setTooltipKey(key)}
-                  onMouseLeave={() => setTooltipKey(null)}
-                >
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <Icon className="h-4 w-4 text-zinc-400" />
-                      <div>
-                        <div className="flex items-center gap-2">
-                          <span className="text-sm text-zinc-400">{data.label}</span>
-                          <div className="relative">
-                            <HelpCircle className="h-3 w-3 text-zinc-500 cursor-help" />
-                            {tooltipKey === key && (
-                              <div className="absolute bottom-full left-0 mb-2 w-64 p-3 bg-zinc-800 border border-zinc-700 rounded-lg text-xs text-zinc-300 z-10 shadow-xl">
-                                {data.tooltip}
-                              </div>
-                            )}
-                          </div>
-                        </div>
-                        <span className="text-xs text-zinc-500">{data.percentage}% of total</span>
-                      </div>
-                    </div>
-                    <span className="text-lg font-mono font-semibold tabular-nums text-white">${data.value.toFixed(2)}</span>
-                  </div>
-                </div>
-              );
-            })}
-          <div className="mt-4 p-4 rounded-lg bg-[#22d3ee]/10 border border-[#22d3ee]/20">
-            <p className="text-xs text-zinc-500 mb-1 uppercase tracking-wide">💡 Insight</p>
-            <p className="text-sm text-zinc-300">
-              {typeof costBreakdown.shipping === 'object' && 'label' in costBreakdown.shipping && costBreakdown.shipping.label.includes('Air')
-                ? `Shipping (Air) is ${typeof costBreakdown.shipping === 'object' && 'percentage' in costBreakdown.shipping ? costBreakdown.shipping.percentage : 0}% of your total cost. Consider Sea Freight for volumes above 500 units.`
-                : `Shipping (Sea) is ${typeof costBreakdown.shipping === 'object' && 'percentage' in costBreakdown.shipping ? costBreakdown.shipping.percentage : 0}% of your total cost. Good choice for cost optimization.`
-              }
-            </p>
-          </div>
-        </div>
-      </div>
-    </Card>
-  );
-}
-
-// Component: Profitability Simulator with Monthly View
-function ProfitabilitySimulator({ totalLandedCost, answers }: { totalLandedCost: number; answers: Answers }) {
-  const [retailPrice, setRetailPrice] = useState(49.99);
-  
-  const channelType = inferChannelType(answers.channel || '', answers.business_model || '');
-  const channelFees = calculateChannelFees(retailPrice, channelType);
-  const netProfit = retailPrice - totalLandedCost - channelFees;
-  const profitMargin = (netProfit / retailPrice) * 100;
-  const monthlyProfit = netProfit * MOCK_DATA.monthlySalesVelocity;
-
-  const waterfallData = [
-    { name: 'Retail Price', value: retailPrice, color: '#22d3ee' },
-    { name: 'Product Cost', value: -totalLandedCost, color: '#ef4444' },
-    { name: 'Channel & Fulfillment Costs', value: -channelFees, color: '#fbbf24' },
-    { name: 'Net Profit', value: netProfit, color: '#10b981' },
-  ];
-
-  return (
-    <Card className="bg-[#18181b] border-zinc-800/50 p-8">
-      <div className="mb-6">
-        <h2 className="text-xs uppercase tracking-wider text-zinc-500 font-semibold mb-1">Profitability Simulator</h2>
-      </div>
-
-      <div className="space-y-6">
-        {/* Slider */}
-        <div>
-          <label className="block text-sm text-zinc-400 mb-3">
-            Target Retail Price: <span className="text-white font-mono font-semibold">${retailPrice.toFixed(2)}</span>
-          </label>
-          <input
-            type="range"
-            min="18"
-            max="80"
-            step="0.01"
-            value={retailPrice}
-            onChange={(e) => setRetailPrice(parseFloat(e.target.value))}
-            className="w-full h-2 bg-zinc-800 rounded-lg appearance-none cursor-pointer accent-[#22d3ee]"
-          />
-          <div className="flex justify-between text-xs text-zinc-500 mt-1">
-            <span>$18</span>
-            <span>$80</span>
-          </div>
-        </div>
-
-        {/* Waterfall Calculation */}
-        <div className="space-y-3">
-          {waterfallData.map((item, index) => (
-            <div key={item.name} className="flex items-center justify-between p-3 rounded-lg bg-[#09090b] border border-zinc-800/50">
-              <span className="text-sm text-zinc-400">{item.name}</span>
-              <span className={`text-lg font-mono font-semibold tabular-nums ${
-                item.value >= 0 ? 'text-emerald-400' : 'text-red-400'
-              }`}>
-                {item.value >= 0 ? '+' : ''}${item.value.toFixed(2)}
-              </span>
-            </div>
-          ))}
-          
-          <div className="flex items-center justify-between p-4 rounded-lg bg-[#10b981]/10 border border-[#10b981]/20 mt-4">
-            <div>
-              <p className="text-sm font-semibold text-[#10b981]">Net Profit per Unit</p>
-              <p className="text-xs text-zinc-500 mt-1">Profit Margin: {profitMargin.toFixed(1)}%</p>
-            </div>
-            <span className={`text-2xl font-mono font-bold tabular-nums ${netProfit >= 0 ? 'text-[#10b981]' : 'text-red-400'}`}>
-              ${netProfit.toFixed(2)}
-            </span>
-          </div>
-        </div>
-
-        {/* Monthly View */}
-        <div className="p-4 rounded-lg bg-[#09090b] border border-zinc-800/50">
-          <p className="text-xs text-zinc-500 mb-2 uppercase tracking-wide">Monthly Projection (at {MOCK_DATA.monthlySalesVelocity} units/month)</p>
-          <p className="text-3xl font-mono font-bold tabular-nums text-[#22d3ee]">
-            ${monthlyProfit.toFixed(2)}/month
-          </p>
-          <p className="text-xs text-zinc-600 mt-1">
-            Annual: ${(monthlyProfit * 12).toLocaleString()}
-          </p>
-        </div>
-      </div>
-    </Card>
-  );
-}
-
-// Component: Scale Analysis with Savings Insight
-function ScaleAnalysisCard({ aiAnalysis }: { aiAnalysis?: AIAnalysisResult | null }) {
-  type ScenarioType = {
-    units: number;
-    method: string;
-    cost: number;
-    margin: number;
-    label: string;
-    recommended: boolean;
-    savings?: number;
-  };
-  
-  const scenarios: ScenarioType[] = aiAnalysis?.scale_analysis 
-    ? aiAnalysis.scale_analysis.map((s, idx) => {
-        const prevCost = idx > 0 ? aiAnalysis.scale_analysis[idx - 1].unit_cost : 0;
-        return {
-          units: s.qty,
-          method: s.mode,
-          cost: s.unit_cost,
-          margin: Math.round(s.margin),
-          label: s.qty < 100 ? 'Safe Start' : s.qty < 1000 ? 'Steady Growth' : 'Scale Up',
-          recommended: idx === aiAnalysis.scale_analysis.length - 1,
-          savings: idx > 0 ? prevCost - s.unit_cost : undefined,
-        };
-      })
-    : MOCK_DATA.scaleScenarios;
-  
-  const recommendedScenario = scenarios.find(s => s.recommended);
-  
-  return (
-    <Card className="bg-[#18181b] border-zinc-800/50 p-8">
-      <div className="mb-6">
-        <h2 className="text-xs uppercase tracking-wider text-zinc-500 font-semibold mb-1">Scale Analysis</h2>
-      </div>
-
-      <div className="space-y-3">
-        {scenarios.map((scenario, index) => (
-          <motion.div
-            key={index}
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: index * 0.1 }}
-            className={`p-4 rounded-lg border-2 ${
-              scenario.recommended
-                ? 'bg-[#22d3ee]/10 border-[#22d3ee] shadow-lg shadow-[#22d3ee]/20'
-                : 'bg-[#09090b] border-zinc-800/50'
-            }`}
-          >
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-4">
-                <span className="text-white font-semibold">{scenario.units} Units</span>
-                <span className="text-zinc-400 text-sm">({scenario.method})</span>
-                <span className="text-zinc-500 text-xs">{scenario.label}</span>
-                {scenario.recommended && (
-                  <span className="px-2 py-1 rounded text-xs font-semibold bg-[#22d3ee] text-black flex items-center gap-1">
-                    <Rocket className="h-3 w-3" />
-                    Recommended
-                  </span>
-                )}
-              </div>
-              <div className="flex items-center gap-6">
-                <div className="text-right">
-                  <p className="text-xs text-zinc-400">Cost/Unit</p>
-                  <p className="text-lg font-mono font-semibold tabular-nums text-white">${scenario.cost.toFixed(2)}</p>
-                </div>
-                <div className="text-right">
-                  <p className="text-xs text-zinc-400">Margin</p>
-                  <p className="text-lg font-mono font-semibold tabular-nums text-emerald-400">{scenario.margin}%</p>
-                </div>
-              </div>
-            </div>
-          </motion.div>
-        ))}
-      </div>
-
-      {recommendedScenario && recommendedScenario.savings && (
-        <div className="mt-4 p-4 rounded-lg bg-[#10b981]/10 border border-[#10b981]/20">
-          <p className="text-xs text-zinc-500 mb-1 uppercase tracking-wide">💡 Decision Support</p>
-          <p className="text-sm text-zinc-300">
-            Switching to Sea Freight saves you <span className="font-semibold text-[#10b981]">${recommendedScenario.savings.toFixed(2)}/unit</span> at scale.
-          </p>
-        </div>
-      )}
-    </Card>
-  );
-}
-
-// Component: Risk Assessment (5 Cards)
-function RiskAssessmentCard({ category, aiAnalysis }: { category: string; aiAnalysis?: AIAnalysisResult | null }) {
-  const risks = aiAnalysis 
-    ? [
-        {
-          id: 'duty',
-          category: 'Duty Risk',
-          level: aiAnalysis.risks.duty.level,
-          impact: '$0',
-          description: aiAnalysis.risks.duty.reason,
-          mitigation: 'Monitor 2025 Trade Policy changes. Consider DDP terms for predictability.',
-          icon: Shield,
-        },
-        {
-          id: 'supplier',
-          category: 'Supplier Risk',
-          level: aiAnalysis.risks.supplier.level,
-          impact: '$500-1,000',
-          description: aiAnalysis.risks.supplier.reason,
-          mitigation: 'Request ISO 9001 certification. Conduct factory audit before first order.',
-          icon: Factory,
-        },
-        {
-          id: 'compliance',
-          category: 'Compliance Risk',
-          level: aiAnalysis.risks.compliance.level,
-          impact: `$${aiAnalysis.risks.compliance.cost}`,
-          description: aiAnalysis.risks.compliance.reason,
-          mitigation: 'Budget for certification costs upfront. Factor into launch timeline.',
-          icon: AlertCircle,
-        },
-        {
-          id: 'logistics',
-          category: 'Logistics Risk',
-          level: 'Low' as const,
-          impact: '$0',
-          description: 'Standard shipping routes available. No major port congestion expected.',
-          mitigation: 'Book shipping 2 weeks in advance. Consider LCL for volumes under 5 CBM.',
-          icon: Truck,
-        },
-        {
-          id: 'quality',
-          category: 'Quality Risk',
-          level: 'Low' as const,
-          impact: '$200-500',
-          description: 'Low risk for established category. Standard QC protocols apply.',
-          mitigation: 'Request pre-shipment inspection. Set AQL 2.5 for critical components.',
-          icon: CheckCircle2,
-        },
-      ]
-    : generateRisks(category);
-  
-  const getRiskStyles = (level: 'Low' | 'Medium' | 'High') => {
-    if (level === 'High') return 'bg-[#09090b] border-red-500/50 text-red-400';
-    if (level === 'Medium') return 'bg-[#09090b] border-yellow-500/50 text-yellow-400';
-    return 'bg-[#09090b] border-[#10b981]/50 text-[#10b981]';
-  };
-
-  const getRiskIcon = (level: 'Low' | 'Medium' | 'High') => {
-    if (level === 'High') return <XCircle className="h-4 w-4" />;
-    if (level === 'Medium') return <AlertCircle className="h-4 w-4" />;
-    return <CheckCircle2 className="h-4 w-4" />;
-  };
-
-  return (
-    <Card className="bg-[#18181b] border-zinc-800/50 p-8">
-      <div className="mb-6">
-        <h2 className="text-xs uppercase tracking-wider text-zinc-500 font-semibold mb-1">Risk Assessment</h2>
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {risks.map((risk) => {
-          const Icon = risk.icon;
-          return (
-            <div
-              key={risk.id}
-              className={`p-4 rounded-lg border-2 ${getRiskStyles(risk.level)}`}
-            >
-              <div className="flex items-center justify-between mb-3">
-                <div className="flex items-center gap-2">
-                  <Icon className="h-4 w-4" />
-                  <h3 className="font-semibold text-sm">{risk.category}</h3>
-                </div>
-                {getRiskIcon(risk.level)}
-              </div>
-              <p className="text-xs text-zinc-400 mb-2">{risk.description}</p>
-              <div className="mt-3 pt-3 border-t border-zinc-800/50">
-                <p className="text-xs text-zinc-500 mb-1">
-                  Impact: <span className="font-semibold text-white">{risk.impact}</span>
-                </p>
-                <p className="text-xs text-zinc-400">💡 {risk.mitigation}</p>
-              </div>
-            </div>
-          );
-        })}
-      </div>
-    </Card>
-  );
-}
-
-// Component: Market Positioning with Strategy
-function MarketPositioningCard() {
-  const [retailPrice] = useState(49.99);
-  const minPrice = MOCK_DATA.competitorPrices.budget;
-  const maxPrice = MOCK_DATA.competitorPrices.premium;
-  const range = maxPrice - minPrice;
-  const userPosition = ((retailPrice - minPrice) / range) * 100;
-  const budgetPosition = 0;
-  const midPosition = ((MOCK_DATA.competitorPrices.mid - minPrice) / range) * 100;
-  const premiumPosition = 100;
-  const launchPrice = 44.99;
-  const launchPosition = ((launchPrice - minPrice) / range) * 100;
-
-  return (
-    <Card className="bg-[#18181b] border-zinc-800/50 p-8">
-      <div className="mb-6">
-        <h2 className="text-xs uppercase tracking-wider text-zinc-500 font-semibold mb-1">Market Positioning</h2>
-      </div>
-
-      <div className="space-y-6">
-        {/* Price Ladder */}
-        <div className="relative">
-          <div className="relative h-16 bg-[#09090b] rounded-lg border border-zinc-800/50 overflow-hidden">
-            <div className="absolute inset-0 bg-gradient-to-r from-red-500/20 via-yellow-500/20 to-emerald-500/20" />
-            
-            {/* Budget Marker */}
-            <div className="absolute top-0 bottom-0" style={{ left: `${budgetPosition}%` }}>
-              <div className="relative h-full w-0.5 bg-red-400">
-                <div className="absolute -top-6 left-1/2 -translate-x-1/2 text-xs text-zinc-400 whitespace-nowrap">
-                  Budget ${minPrice}
-                </div>
-              </div>
-            </div>
-
-            {/* Mid Marker */}
-            <div className="absolute top-0 bottom-0" style={{ left: `${midPosition}%` }}>
-              <div className="relative h-full w-0.5 bg-yellow-400">
-                <div className="absolute -top-6 left-1/2 -translate-x-1/2 text-xs text-zinc-400 whitespace-nowrap">
-                  Mid ${MOCK_DATA.competitorPrices.mid}
-                </div>
-              </div>
-            </div>
-
-            {/* Launch Price Marker */}
-            <div className="absolute top-0 bottom-0" style={{ left: `${launchPosition}%` }}>
-              <div className="relative h-full w-1 bg-yellow-500">
-                <div className="absolute -top-8 left-1/2 -translate-x-1/2">
-                  <div className="px-2 py-1 rounded bg-yellow-500 text-black text-xs font-semibold whitespace-nowrap">
-                    Launch ${launchPrice}
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* User Target Marker */}
-            <div className="absolute top-0 bottom-0" style={{ left: `${userPosition}%` }}>
-              <div className="relative h-full w-1 bg-[#22d3ee]">
-                <div className="absolute -top-8 left-1/2 -translate-x-1/2">
-                  <div className="px-2 py-1 rounded bg-[#22d3ee] text-black text-xs font-semibold whitespace-nowrap">
-                    Target ${retailPrice.toFixed(2)}
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Premium Marker */}
-            <div className="absolute top-0 bottom-0" style={{ left: `${premiumPosition}%` }}>
-              <div className="relative h-full w-0.5 bg-emerald-400">
-                <div className="absolute -top-6 right-0 text-xs text-zinc-400 whitespace-nowrap">
-                  Premium ${maxPrice}
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Strategy Insight */}
-        <div className="p-4 rounded-lg bg-[#22d3ee]/10 border border-[#22d3ee]/20">
-          <p className="text-xs text-zinc-500 mb-1 uppercase tracking-wide">💡 Launch Strategy</p>
-          <p className="text-sm text-zinc-300">
-            Launch at <span className="font-semibold text-[#22d3ee]">${launchPrice}</span> to build reviews, then raise to ${retailPrice.toFixed(2)} after 50+ reviews. Position as "Value Leader" in mid-market segment.
-          </p>
-        </div>
-      </div>
-    </Card>
-  );
-}
-
-// Component: Action Roadmap with Weeks
-function ActionRoadmap({ shippingMethod, category }: { shippingMethod: 'Air' | 'Sea', category: string }) {
-  const roadmap = generateRoadmap(shippingMethod, category);
-  
-  return (
-    <Card className="bg-zinc-900 border-zinc-800 p-6">
-      <div className="flex items-center gap-2 mb-6">
-        <CheckCircle2 className="h-5 w-5 text-[#208094]" />
-        <h2 className="text-xl font-semibold text-white">Action Roadmap</h2>
-      </div>
-
-      <div className="space-y-4">
-        {roadmap.map((step, index) => (
-          <div key={index} className="flex gap-4">
-            <div className="flex flex-col items-center">
-              <div className={`w-12 h-12 rounded-full flex items-center justify-center font-semibold text-xs ${
-                step.completed 
-                  ? 'bg-[#10b981] text-black' 
-                  : 'bg-[#09090b] border-2 border-zinc-800/50 text-zinc-400'
-              }`}>
-                {step.completed ? <Check className="h-5 w-5" /> : (
-                  <span className="text-[10px] leading-tight text-center px-1">{step.week}</span>
-                )}
-              </div>
-              {index < roadmap.length - 1 && (
-                <div className="w-0.5 h-16 bg-zinc-800/50 mt-2" />
-              )}
-            </div>
-            <div className="flex-1 pb-4">
-              <div className="flex items-center gap-2 mb-1">
-                <h3 className="font-semibold text-white">{step.title}</h3>
-                <span className="text-xs text-zinc-500 font-mono">{step.week}</span>
-              </div>
-              <p className="text-sm text-zinc-400">{step.description}</p>
-            </div>
-          </div>
-        ))}
-      </div>
-    </Card>
-  );
-}
-
-// Component: CTA & Services (3 Tiers)
-function CTAServicesCard() {
-  const router = useRouter();
-  
-  return (
-    <Card className="bg-[#18181b] border-zinc-800/50 p-8">
-      <div className="mb-6">
-        <h2 className="text-xs uppercase tracking-wider text-zinc-500 font-semibold mb-1">Get Started</h2>
-      </div>
-
-      {/* Primary CTA */}
-      <div className="mb-6 p-6 rounded-lg bg-[#09090b] border-2 border-[#22d3ee]/30">
-        <h3 className="text-lg font-semibold text-white mb-2">Schedule Free Consultation</h3>
-        <p className="text-sm text-zinc-400 mb-4">
-          Talk to our sourcing experts about your project. No commitment required.
-        </p>
-        <Button
-          variant="primary"
-          className="w-full sm:w-auto bg-[#22d3ee] hover:bg-[#06b6d4] text-black font-bold"
-          onClick={() => router.push('/contact')}
-          size="lg"
-        >
-          <Calendar className="mr-2 h-4 w-4" />
-          Schedule Free Consultation
-        </Button>
-      </div>
-
-      {/* Service Tiers - Model 4.0 */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        {MOCK_DATA.serviceTiers.map((tier) => (
-          <div
-            key={tier.name}
-            className={`relative p-4 sm:p-6 rounded-lg border-2 ${
-              tier.recommended
-                ? 'bg-[#22d3ee]/10 border-[#22d3ee] shadow-lg'
-                : 'bg-[#09090b] border-zinc-800/50'
-            }`}
-          >
-              {tier.recommended && (
-                <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                  <span className="bg-[#22d3ee] text-black px-3 py-1 rounded-full text-xs font-semibold">
-                    Most Popular
-                  </span>
-                </div>
-              )}
-
-            <div className="mb-4">
-              {tier.tag && (
-                <span className={`inline-flex items-center rounded-full px-2 py-1 text-xs font-semibold uppercase tracking-wide mb-3 ${
-                  tier.name.includes('Starter') ? 'bg-neutral-700 text-neutral-300' :
-                  tier.name.includes('Validator') ? 'bg-blue-500/20 text-blue-400' :
-                  'bg-emerald-500/20 text-emerald-400'
-                }`}>
-                  {tier.tag}
-                </span>
-              )}
-              <h3 className="font-semibold text-white text-lg mb-2">{tier.name}</h3>
-              <div className="flex items-baseline gap-1">
-                <p className="text-xl sm:text-2xl font-mono font-bold tabular-nums text-[#208094]">
-                  {tier.priceDisplay}
-                </p>
-              </div>
-              {tier.note && (
-                <p className="text-xs text-zinc-500 mt-2">{tier.note}</p>
-              )}
-            </div>
-            <ul className="space-y-2 mb-4">
-              {tier.features.map((feature, i) => (
-                <li key={i} className="flex items-start gap-2 text-xs text-zinc-400">
-                  <Check className="h-3 w-3 text-emerald-400 flex-shrink-0 mt-0.5" />
-                  <span className="leading-relaxed">{feature}</span>
-                </li>
-              ))}
-            </ul>
-            <Button
-              variant={tier.recommended ? 'primary' : 'outline'}
-              className="w-full"
-              onClick={() => router.push(tier.ctaHref || '/contact')}
-            >
-              {tier.ctaLabel || `Select ${tier.name}`}
-            </Button>
-          </div>
-        ))}
-      </div>
-    </Card>
-  );
-}
-
-// AI Analysis Result Interface
 interface AIAnalysisResult {
   financials: {
     estimated_landed_cost: number;
@@ -1099,34 +33,605 @@ interface AIAnalysisResult {
   };
   scale_analysis: Array<{
     qty: number;
-    mode: "Air" | "Sea";
+    mode: string;
     unit_cost: number;
     margin: number;
   }>;
   risks: {
-    duty: {
-      level: "Low" | "Medium" | "High";
-      reason: string;
-    };
-    supplier: {
-      level: "Low" | "Medium" | "High";
-      reason: string;
-    };
-    compliance: {
-      level: "Low" | "Medium" | "High";
-      reason: string;
-      cost: number;
-    };
+    duty?: { level?: string; reason?: string; impact?: string };
+    supplier?: { level?: string; reason?: string; impact?: string };
+    compliance?: { level?: string; reason?: string; impact?: string; cost?: number };
+    logistics?: { level?: string; reason?: string; impact?: string };
+    quality?: { level?: string; reason?: string; impact?: string };
   };
-  executive_summary: string;
+  // ✨ Deep Sourcing 2.0: Enhanced Analysis (100% Input Utilization)
+  duty_analysis?: {
+    hs_code: string; // e.g., "3926.90"
+    rate: string; // e.g., "6.5%"
+    rationale: string; // "Based on user input 'Plastic'..."
+  };
+  logistics_insight?: {
+    efficiency_score: string; // "High" | "Medium" | "Low"
+    container_loading: string; // "Est. 3,500 units per 20ft container"
+    advice: string; // "Size is optimized for FBA" or "Reduce box size by 2cm to save fees"
+  };
+  market_benchmark?: {
+    competitor_price: string; // "Est. Retail $30"
+    our_price_advantage: string; // "25% Cheaper"
+    differentiation_point: string; // "Add eco-packaging to win"
+  };
+  strategic_advice?: {
+    for_business_model: string;
+    key_action: string;
+  };
+  executive_summary?: string;
+  [key: string]: any;
 }
 
-// Main Component
+// Result Header Component
+function ResultHeader({ productName, landedCost, margin }: { productName: string; landedCost: number; margin: { min: number; max: number } }) {
+  return (
+    <div className="col-span-2 bg-white border border-gray-200 rounded-lg p-8 shadow-sm">
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900 mb-2">{productName}</h1>
+          <p className="text-gray-500 text-sm">Sourcing Intelligence Report</p>
+        </div>
+        <div className="flex items-baseline gap-6">
+          <div>
+            <p className="text-xs text-gray-500 uppercase mb-1 tracking-wide">Estimated Landed Cost</p>
+            <p className="text-5xl font-bold font-mono text-blue-600">${landedCost.toFixed(2)}</p>
+          </div>
+          <div>
+            <p className="text-xs text-gray-500 uppercase mb-1 tracking-wide">Margin</p>
+            <p className="text-3xl font-bold font-mono text-gray-900">{margin.min}-{margin.max}%</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// Cost Breakdown Component (Donut Chart + Table)
+function CostBreakdown({ costBreakdown, totalLandedCost }: { costBreakdown: any; totalLandedCost: number }) {
+  const chartData = [
+    { name: 'Factory', value: costBreakdown.factory_exw || 0, color: '#3b82f6' }, // Blue
+    { name: 'Shipping', value: costBreakdown.shipping || 0, color: '#14b8a6' }, // Teal
+    { name: 'Duty', value: costBreakdown.duty || 0, color: '#6366f1' }, // Indigo
+    { name: 'Packaging', value: costBreakdown.packaging || 0, color: '#64748b' }, // Slate
+    { name: 'Customs', value: costBreakdown.customs || 0, color: '#8b5cf6' }, // Purple
+    { name: 'Insurance', value: costBreakdown.insurance || 0, color: '#06b6d4' }, // Cyan
+  ].filter(item => item.value > 0);
+
+  const total = chartData.reduce((sum, item) => sum + item.value, 0);
+
+  return (
+    <Card className="bg-white border border-gray-200 p-6 shadow-sm h-full min-h-[400px] flex flex-col">
+      <h2 className="text-sm font-semibold text-gray-500 uppercase mb-4 tracking-wide">Cost Breakdown</h2>
+      
+      <div className="grid grid-cols-2 gap-4 flex-1">
+        {/* Donut Chart - Left Side (50%) */}
+        <div className="flex items-center justify-center relative">
+          <ResponsiveContainer width="100%" height="100%">
+            <PieChart>
+              <Pie
+                data={chartData}
+                cx="50%"
+                cy="50%"
+                innerRadius={70}
+                outerRadius={100}
+                paddingAngle={2}
+                dataKey="value"
+              >
+                {chartData.map((entry, index) => (
+                  <Cell key={`cell-${index}`} fill={entry.color} />
+                ))}
+              </Pie>
+              <Tooltip 
+                formatter={(value: number) => `$${value.toFixed(2)}`}
+                contentStyle={{ backgroundColor: '#fff', border: '1px solid #e5e7eb', borderRadius: '6px', color: '#111827', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}
+              />
+            </PieChart>
+          </ResponsiveContainer>
+          {/* Center Text Overlay */}
+          <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+            <p className="text-xs text-gray-500 uppercase tracking-wide mb-1">Total Landed Cost</p>
+            <p className="text-2xl font-bold font-mono text-blue-600">${totalLandedCost.toFixed(2)}</p>
+          </div>
+        </div>
+
+        {/* Data Table - Right Side (50%) */}
+        <div className="flex flex-col justify-center space-y-1">
+          {chartData.map((item, index) => {
+            const percentage = total > 0 ? ((item.value / total) * 100).toFixed(1) : '0';
+            return (
+              <div key={index} className="flex items-center justify-between py-2">
+                <div className="flex items-center gap-2 flex-1 min-w-0">
+                  <div className="w-3 h-3 rounded-full flex-shrink-0" style={{ backgroundColor: item.color }} />
+                  <span className="text-sm text-gray-700 truncate">{item.name}</span>
+                  <span className="flex-1 border-b border-dotted border-gray-300 mx-2"></span>
+                </div>
+                <div className="text-right flex-shrink-0">
+                  <div className="text-gray-900 font-medium font-mono text-sm">${item.value.toFixed(2)}</div>
+                  <div className="text-xs text-gray-500">{percentage}%</div>
+                </div>
+              </div>
+            );
+          })}
+          <div className="pt-2 mt-2 border-t border-gray-300">
+            <div className="flex items-center justify-between">
+              <span className="text-gray-900 font-semibold text-sm">Total</span>
+              <span className="text-blue-600 font-bold font-mono">${totalLandedCost.toFixed(2)}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </Card>
+  );
+}
+
+// Profitability Simulator Component
+function ProfitabilitySimulator({ totalLandedCost, answers }: { totalLandedCost: number; answers: Answers }) {
+  const [retailPrice, setRetailPrice] = useState(49.99);
+  
+  const channelFees = retailPrice * 0.15; // 15% channel fees (example)
+  const netProfit = retailPrice - totalLandedCost - channelFees;
+  const profitMargin = (netProfit / retailPrice) * 100;
+  
+  // Calculate Break-Even ROAS: (Net Profit / Retail Price) * 100
+  const breakEvenROAS = netProfit > 0 ? ((netProfit / retailPrice) * 100).toFixed(1) : '0.0';
+  
+  // Calculate Min. Sell Price: The price where profit becomes $0
+  // netProfit = price - totalLandedCost - (price * 0.15) = 0
+  // price - price * 0.15 = totalLandedCost
+  // price * (1 - 0.15) = totalLandedCost
+  // price = totalLandedCost / 0.85
+  const minSellPrice = (totalLandedCost / 0.85).toFixed(2);
+
+  return (
+    <Card className="bg-white border border-gray-200 p-6 shadow-sm h-full min-h-[400px] flex flex-col">
+      <h2 className="text-sm font-semibold text-gray-500 uppercase mb-3 tracking-wide">Profitability Simulator</h2>
+      
+      <div className="space-y-3 flex-1 flex flex-col">
+        <div>
+          <label className="text-sm text-gray-700 mb-2 block font-medium">Target Retail Price</label>
+          <input
+            type="range"
+            min="10"
+            max="100"
+            step="0.01"
+            value={retailPrice}
+            onChange={(e) => setRetailPrice(parseFloat(e.target.value))}
+            className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-blue-600"
+          />
+          <div className="flex justify-between text-xs text-gray-500 mt-1">
+            <span>$10</span>
+            <span className="text-blue-600 font-bold font-mono">${retailPrice.toFixed(2)}</span>
+            <span>$100</span>
+          </div>
+        </div>
+
+        <div className="space-y-1.5 pt-2 border-t border-gray-200 flex-1">
+          <div className="flex justify-between text-sm py-1">
+            <span className="text-gray-500">Retail Price</span>
+            <span className="text-gray-900 font-mono">+${retailPrice.toFixed(2)}</span>
+          </div>
+          <div className="flex justify-between text-sm py-1">
+            <span className="text-gray-500">Product Cost</span>
+            <span className="text-red-600 font-mono">-${totalLandedCost.toFixed(2)}</span>
+          </div>
+          <div className="flex justify-between text-sm py-1">
+            <span className="text-gray-500">Channel & Fulfillment</span>
+            <span className="text-red-600 font-mono">-${channelFees.toFixed(2)}</span>
+          </div>
+          <div className="flex justify-between text-sm pt-2 pb-1 border-t border-gray-300">
+            <span className="text-gray-900 font-semibold">Net Profit</span>
+            <span className="text-emerald-600 font-bold font-mono">+${netProfit.toFixed(2)}</span>
+          </div>
+          <div className="text-right pb-2">
+            <span className="text-xs text-gray-500">Profit Margin: </span>
+            <span className="text-emerald-600 font-semibold">{profitMargin.toFixed(1)}%</span>
+          </div>
+          
+          {/* New Metrics Section */}
+          <div className="pt-3 mt-3 border-t border-gray-300 space-y-2">
+            <div className="bg-gray-50 rounded-lg p-3 border border-gray-200">
+              <div className="flex justify-between items-center mb-1">
+                <span className="text-xs text-gray-500 uppercase tracking-wide">Break-Even ROAS</span>
+                <span className="text-blue-600 font-bold font-mono text-sm">{breakEvenROAS}%</span>
+              </div>
+              <p className="text-xs text-gray-600 leading-relaxed">Profit return on ad spend at current price</p>
+            </div>
+            <div className="bg-gray-50 rounded-lg p-3 border border-gray-200">
+              <div className="flex justify-between items-center mb-1">
+                <span className="text-xs text-gray-500 uppercase tracking-wide">Min. Sell Price</span>
+                <span className="text-orange-600 font-bold font-mono text-sm">${minSellPrice}</span>
+              </div>
+              <p className="text-xs text-gray-600 leading-relaxed">Minimum price to break even (0% profit)</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </Card>
+  );
+}
+
+// Scale Analysis Component
+function ScaleAnalysis({ scaleAnalysis }: { scaleAnalysis: any[] }) {
+  return (
+    <Card className="bg-white border border-gray-200 p-6 shadow-sm">
+      <h2 className="text-sm font-semibold text-gray-500 uppercase mb-4 tracking-wide">Scale Analysis</h2>
+      <div className="space-y-3">
+        {scaleAnalysis.map((scenario, index) => (
+          <div key={index} className="bg-gray-50 rounded-lg p-4 border border-gray-200">
+            <div className="flex items-center justify-between mb-2">
+              <div>
+                <span className="text-gray-900 font-medium">{scenario.qty?.toLocaleString() || 'N/A'} Units</span>
+                <span className="text-gray-500 text-xs ml-2">({scenario.mode || 'N/A'})</span>
+              </div>
+              <div className="text-right">
+                <div className="text-blue-600 font-bold font-mono">${scenario.unit_cost?.toFixed(2) || '0.00'}</div>
+                <div className="text-emerald-600 text-xs font-medium">{scenario.margin?.toFixed(1) || '0'}% margin</div>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+    </Card>
+  );
+}
+
+// Risk Assessment Component (2x2 Grid with Left-Border Style)
+function RiskAssessment({ risks }: { risks: any }) {
+  const getRiskColor = (level?: string) => {
+    if (!level) return { border: 'border-l-gray-400', text: 'text-gray-600', icon: 'text-gray-400' };
+    switch (level.toLowerCase()) {
+      case 'low':
+        return { border: 'border-l-green-500', text: 'text-green-700', icon: 'text-green-600' };
+      case 'medium':
+        return { border: 'border-l-yellow-500', text: 'text-yellow-700', icon: 'text-yellow-600' };
+      case 'high':
+        return { border: 'border-l-red-500', text: 'text-red-700', icon: 'text-red-600' };
+      default:
+        return { border: 'border-l-gray-400', text: 'text-gray-600', icon: 'text-gray-400' };
+    }
+  };
+
+  const getRiskIcon = (level?: string) => {
+    if (!level) return <AlertCircle className="w-5 h-5" />;
+    switch (level.toLowerCase()) {
+      case 'low':
+        return <CheckCircle2 className="w-5 h-5" />;
+      case 'medium':
+        return <AlertCircle className="w-5 h-5" />;
+      case 'high':
+        return <XCircle className="w-5 h-5" />;
+      default:
+        return <AlertCircle className="w-5 h-5" />;
+    }
+  };
+
+  const riskItems = [
+    { key: 'duty', label: 'Duty Risk', data: risks.duty },
+    { key: 'supplier', label: 'Supplier Risk', data: risks.supplier },
+    { key: 'compliance', label: 'Compliance Risk', data: risks.compliance },
+    { key: 'logistics', label: 'Logistics Risk', data: risks.logistics },
+  ].filter(item => item.data);
+
+  return (
+    <Card className="bg-white border border-gray-200 p-6 shadow-sm">
+      <h2 className="text-sm font-semibold text-gray-500 uppercase mb-4 tracking-wide">Risk Assessment</h2>
+      <div className="grid grid-cols-2 gap-3">
+        {riskItems.map((item) => {
+          const colors = getRiskColor(item.data?.level);
+          const Icon = getRiskIcon(item.data?.level);
+          return (
+            <div key={item.key} className={`bg-white border-l-4 ${colors.border} rounded-r-lg p-4 border border-gray-200 border-l-0`}>
+              <div className="flex items-center gap-2 mb-2">
+                <div className={colors.icon}>{Icon}</div>
+                <h3 className="text-gray-900 font-medium text-sm">{item.label}</h3>
+              </div>
+              <p className={`${colors.text} text-xs font-semibold mb-1 uppercase`}>{item.data?.level || 'Unknown'}</p>
+              <p className="text-gray-600 text-xs line-clamp-2">{item.data?.reason || 'No details'}</p>
+            </div>
+          );
+        })}
+      </div>
+    </Card>
+  );
+}
+
+// NexSupply Insight Component (AI 한마디)
+function NexSupplyInsight({ strategicAdvice, businessModel }: { strategicAdvice?: any; businessModel?: string }) {
+  if (!strategicAdvice) return null;
+
+  return (
+    <Card className="col-span-2 bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 p-6 shadow-sm">
+      <div className="flex items-start gap-3">
+        <Rocket className="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" />
+        <div className="flex-1">
+          <h3 className="text-sm font-semibold text-blue-600 uppercase mb-2 tracking-wide">NexSupply Insight</h3>
+          <p className="text-gray-900 font-medium mb-1">{strategicAdvice.for_business_model || `For ${businessModel || 'your business model'}`}</p>
+          <p className="text-gray-700 text-sm leading-relaxed">{strategicAdvice.key_action}</p>
+        </div>
+      </div>
+    </Card>
+  );
+}
+
+// Logistics & Duty Intelligence Component
+function LogisticsDutyIntelligence({ 
+  dutyAnalysis, 
+  logisticsInsight, 
+  sizeTier 
+}: { 
+  dutyAnalysis?: any; 
+  logisticsInsight?: any; 
+  sizeTier?: string;
+}) {
+  if (!dutyAnalysis && !logisticsInsight) return null;
+
+  return (
+    <Card className="bg-white border border-gray-200 p-6 shadow-sm">
+      <h2 className="text-sm font-semibold text-gray-500 uppercase mb-4 tracking-wide">Logistics & Duty Intelligence</h2>
+      
+      <div className="space-y-4">
+        {/* Product Specs */}
+        {sizeTier && (
+          <div className="flex items-center gap-2 mb-4">
+            <Package className="w-4 h-4 text-gray-500" />
+            <span className="text-gray-700 text-sm">
+              <span className="font-medium">Product Specs:</span> {sizeTier}
+            </span>
+          </div>
+        )}
+
+        {/* Container Loading */}
+        {logisticsInsight && (
+          <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
+            <div className="flex items-center gap-2 mb-2">
+              <Truck className="w-4 h-4 text-blue-600" />
+              <span className="text-gray-900 font-medium text-sm">Container Loading</span>
+            </div>
+            <div className="space-y-2 text-sm">
+              {logisticsInsight.efficiency_score && (
+                <div className="flex justify-between items-center">
+                  <span className="text-gray-500">Efficiency Score:</span>
+                  <span className={`font-semibold ${
+                    logisticsInsight.efficiency_score.toLowerCase() === 'high' ? 'text-green-600' :
+                    logisticsInsight.efficiency_score.toLowerCase() === 'medium' ? 'text-yellow-600' :
+                    'text-red-600'
+                  }`}>
+                    {logisticsInsight.efficiency_score}
+                  </span>
+                </div>
+              )}
+              <div className="flex justify-between">
+                <span className="text-gray-500">20ft Container Capacity:</span>
+                <span className="text-blue-600 font-bold">
+                  {logisticsInsight.container_loading || 'N/A'}
+                </span>
+              </div>
+              {logisticsInsight.advice && (
+                <div className="mt-3 pt-3 border-t border-gray-200">
+                  <p className="text-gray-600 text-xs leading-relaxed">{logisticsInsight.advice}</p>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* HS Code & Duty */}
+        {dutyAnalysis && (
+          <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
+            <div className="flex items-center gap-2 mb-2">
+              <Shield className="w-4 h-4 text-blue-600" />
+              <span className="text-gray-900 font-medium text-sm">HS Code & Duty Rate</span>
+            </div>
+            <div className="space-y-2 text-sm">
+              <div className="flex justify-between">
+                <span className="text-gray-500">HS Code:</span>
+                <span className="text-gray-900 font-mono font-medium">{dutyAnalysis.hs_code || 'N/A'}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-gray-500">Applied Rate:</span>
+                <span className="text-blue-600 font-bold">{dutyAnalysis.rate || 'N/A'}</span>
+              </div>
+              {dutyAnalysis.rationale && (
+                <div className="mt-3 pt-3 border-t border-gray-200">
+                  <p className="text-gray-600 text-xs leading-relaxed">{dutyAnalysis.rationale}</p>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+      </div>
+    </Card>
+  );
+}
+
+// Competitor Benchmark Component (업그레이드)
+function CompetitorBenchmark({ marketBenchmark, refLink }: { marketBenchmark?: any; refLink?: string }) {
+  if (!marketBenchmark) return null;
+
+  return (
+    <Card className="col-span-2 bg-white border border-gray-200 p-6 shadow-sm">
+      <h2 className="text-sm font-semibold text-gray-500 uppercase mb-4 tracking-wide">Competitor Benchmark</h2>
+      
+      <div className="space-y-4">
+        {refLink && refLink.toLowerCase() !== 'skip' && (
+          <div className="flex items-center gap-2 mb-4">
+            <BarChart3 className="w-4 h-4 text-gray-500" />
+            <span className="text-gray-700 text-sm">
+              <span className="font-medium">Reference:</span>{' '}
+              <a href={refLink} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
+                {refLink.length > 50 ? refLink.substring(0, 50) + '...' : refLink}
+              </a>
+            </span>
+          </div>
+        )}
+
+        <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
+          <div className="flex items-center gap-2 mb-3">
+            <TrendingUp className="w-5 h-5 text-emerald-600" />
+            <span className="text-gray-900 font-medium">VS Competitor</span>
+          </div>
+          
+          {marketBenchmark?.competitor_price && (
+            <div className="flex items-baseline gap-2 mb-2">
+              <span className="text-gray-500 text-sm">Competitor Price:</span>
+              <span className="text-gray-900 font-bold text-lg">{marketBenchmark.competitor_price}</span>
+            </div>
+          )}
+          
+          <div className="bg-emerald-50 border border-emerald-200 rounded-lg p-3 mb-3">
+            <p className="text-emerald-700 font-semibold text-sm mb-1">Price Advantage</p>
+            <p className="text-gray-900 font-medium">{marketBenchmark?.our_price_advantage || 'N/A'}</p>
+          </div>
+
+          <div className="border-t border-gray-200 pt-3">
+            <p className="text-gray-500 text-xs font-medium mb-1">Differentiation Strategy</p>
+            <p className="text-gray-700 text-sm leading-relaxed">{marketBenchmark?.differentiation_point || 'N/A'}</p>
+          </div>
+        </div>
+      </div>
+    </Card>
+  );
+}
+
+// Action Roadmap Component (Full-width Timeline)
+function ActionRoadmap({ answers }: { answers: Answers }) {
+  const roadmapSteps = [
+    { week: 'Wk 1-2', task: 'Supplier Verification', description: 'Verify credentials, certifications, and factory audit' },
+    { week: 'Wk 2-3', task: 'Compliance & Certifications', description: 'Obtain required certifications for target market' },
+    { week: 'Wk 4', task: 'Place Order', description: 'Finalize order details, payment terms, and production schedule' },
+    { week: 'Wk 8', task: 'Channel Launch & Fulfillment', description: 'Receive shipment, quality check, and launch to sales channel' },
+  ];
+
+  return (
+    <Card className="col-span-2 bg-white border border-gray-200 p-6 shadow-sm">
+      <h2 className="text-sm font-semibold text-gray-500 uppercase mb-4 tracking-wide">Action Roadmap</h2>
+      
+      <div className="space-y-4">
+        {roadmapSteps.map((step, index) => (
+          <div key={index} className="flex gap-4">
+            <div className="flex flex-col items-center">
+              <div className="w-10 h-10 rounded-full bg-blue-600 flex items-center justify-center text-white font-bold text-sm">
+                {index + 1}
+              </div>
+              {index < roadmapSteps.length - 1 && (
+                <div className="w-0.5 h-full bg-gray-300 mt-2" />
+              )}
+            </div>
+            <div className="flex-1 pb-6">
+              <div className="flex items-center gap-2 mb-1">
+                <span className="text-xs text-gray-500 font-medium">{step.week}</span>
+                <span className="text-gray-900 font-semibold">{step.task}</span>
+              </div>
+              <p className="text-gray-600 text-sm">{step.description}</p>
+            </div>
+          </div>
+        ))}
+      </div>
+    </Card>
+  );
+}
+
+// Pricing CTA Component (Three-column pricing table)
+function PricingCTA() {
+  const tiers = [
+    {
+      name: 'Starter',
+      subtitle: 'AI Scout',
+      price: '$0',
+      period: '/ mo',
+      features: [
+        'Real-Time Cost & Risk Analysis',
+        '30 Reports/month',
+        'Platform-neutral insights',
+        'Basic supplier database access',
+      ],
+      cta: 'Start Analysis',
+      ctaHref: '/chat',
+    },
+    {
+      name: 'Validator',
+      subtitle: 'Entry',
+      price: '$199',
+      period: '(Retainer)',
+      features: [
+        'Get Verified Quote',
+        'Supplier Vetting',
+        '100% Credited on Order ($5k+)',
+        'Priority support',
+        'Dedicated quote specialist',
+      ],
+      cta: 'Request Quote',
+      ctaHref: '/contact',
+      popular: true,
+    },
+    {
+      name: 'Executor',
+      subtitle: 'Full Service',
+      price: '3% - 9%',
+      period: 'Commission',
+      features: [
+        'Module A or B Selection',
+        'QC & Logistics',
+        'Dedicated Manager',
+        'Global Sync Time',
+        '24-hour response (Mon-Fri)',
+      ],
+      cta: 'Get Started',
+      ctaHref: '/contact',
+    },
+  ];
+
+  return (
+    <Card className="col-span-2 bg-white border border-gray-200 p-6 shadow-sm">
+      <h2 className="text-sm font-semibold text-gray-500 uppercase mb-6 tracking-wide">Get Started</h2>
+      
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        {tiers.map((tier, index) => (
+          <div
+            key={index}
+            className={`bg-white rounded-lg p-6 border-2 ${tier.popular ? 'border-blue-600 shadow-md' : 'border-gray-200'}`}
+          >
+            {tier.popular && (
+              <div className="text-xs text-blue-600 font-semibold mb-2 uppercase tracking-wide">Most Popular</div>
+            )}
+            <h3 className="text-gray-900 font-bold text-lg mb-1">{tier.name}</h3>
+            <p className="text-gray-500 text-sm mb-4">{tier.subtitle}</p>
+            <div className="mb-4">
+              <span className="text-3xl font-bold text-gray-900">{tier.price}</span>
+              <span className="text-gray-500 text-sm ml-1">{tier.period}</span>
+            </div>
+            <ul className="space-y-2 mb-6">
+              {tier.features.map((feature, fIndex) => (
+                <li key={fIndex} className="text-gray-700 text-sm flex items-start gap-2">
+                  <CheckCircle2 className="w-4 h-4 text-blue-600 mt-0.5 flex-shrink-0" />
+                  <span>{feature}</span>
+                </li>
+              ))}
+            </ul>
+            <Button
+              variant={tier.popular ? 'primary' : 'outline'}
+              className={`w-full ${tier.popular ? 'bg-gray-900 hover:bg-gray-800 text-white' : 'border-gray-300 text-gray-700 hover:bg-gray-50'}`}
+              onClick={() => window.location.href = tier.ctaHref}
+            >
+              {tier.cta}
+            </Button>
+          </div>
+        ))}
+      </div>
+    </Card>
+  );
+}
+
+// Main Results Content
 function ResultsContent() {
-  const router = useRouter();
   const searchParams = useSearchParams();
   const [answers, setAnswers] = useState<Answers>({});
-  const [onboardingState, setOnboardingState] = useState<OnboardingState | null>(null);
   const [isInitialized, setIsInitialized] = useState(false);
   const [aiAnalysis, setAiAnalysis] = useState<AIAnalysisResult | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -1142,12 +647,7 @@ function ResultsContent() {
         setAnswers(parsed);
       }
     } catch (error) {
-      console.error('Failed to load chat onboarding data:', error);
-    }
-    
-    const savedOnboarding = loadOnboardingState();
-    if (savedOnboarding) {
-      setOnboardingState(savedOnboarding);
+      console.error('[Results] Failed to load chat onboarding data:', error);
     }
     
     setIsInitialized(true);
@@ -1168,10 +668,12 @@ function ResultsContent() {
     }
   }, [searchParams]);
 
-  // Call AI API when answers are available
   useEffect(() => {
-    if (!isInitialized || !answers.project_name) return;
-    if (aiAnalysis) return; // Don't call again if we already have analysis
+    if (!isInitialized) return;
+    const hasAnswers = Object.keys(answers).length > 0;
+    if (!hasAnswers) return;
+    if (!answers.project_name && !answers.product_info) return;
+    if (aiAnalysis) return;
 
     const fetchAnalysis = async () => {
       setIsLoading(true);
@@ -1180,12 +682,8 @@ function ResultsContent() {
       try {
         const response = await fetch('/api/analyze', {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            userContext: answers,
-          }),
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ userContext: answers }),
         });
 
         const data = await response.json();
@@ -1196,148 +694,132 @@ function ResultsContent() {
 
         if (data.analysis) {
           setAiAnalysis(data.analysis);
+        } else {
+          throw new Error('No analysis data in response');
         }
       } catch (err) {
         console.error('[Results] Failed to fetch AI analysis:', err);
         setError(err instanceof Error ? err.message : 'Failed to load analysis');
-        // Continue with mock data on error
       } finally {
         setIsLoading(false);
       }
     };
 
     fetchAnalysis();
-  }, [isInitialized, answers.project_name, aiAnalysis]);
+  }, [isInitialized, answers, aiAnalysis]);
 
-  const productName = answers.product_desc?.split(',')[0] || answers.project_name || BASE_MOCK_DATA.productName;
-  const category = answers.category || 'Electronics'; // Default category
-  const shippingMethod = inferShippingMethod(answers.priority || '', answers.timeline || '');
-  
-  // Use AI analysis if available, otherwise use generated cost breakdown
-  const costBreakdown = aiAnalysis 
-    ? {
-        factory: { 
-          value: aiAnalysis.cost_breakdown.factory_exw, 
-          percentage: 0, 
-          label: 'Factory (EXW)', 
-          tooltip: 'Ex-Works price from factory' 
-        },
-        shipping: { 
-          value: aiAnalysis.cost_breakdown.shipping, 
-          percentage: 0, 
-          label: `Shipping (${shippingMethod})`, 
-          tooltip: 'Shipping cost' 
-        },
-        duty: { 
-          value: aiAnalysis.cost_breakdown.duty, 
-          percentage: 0, 
-          label: 'Duty', 
-          tooltip: 'Import duty' 
-        },
-        packaging: { 
-          value: aiAnalysis.cost_breakdown.packaging, 
-          percentage: 0, 
-          label: 'Packaging', 
-          tooltip: 'Packaging cost' 
-        },
-        customs: { 
-          value: aiAnalysis.cost_breakdown.customs, 
-          percentage: 0, 
-          label: 'Customs & Fees', 
-          tooltip: 'Customs clearance fees' 
-        },
-        insurance: { 
-          value: aiAnalysis.cost_breakdown.insurance, 
-          percentage: 0, 
-          label: 'Insurance', 
-          tooltip: 'Cargo insurance' 
-        },
-        totalLandedCost: aiAnalysis.financials.estimated_landed_cost,
-      }
-    : generateCostBreakdown(answers);
-  
-  const totalLandedCost = costBreakdown.totalLandedCost;
-  
-  // Calculate percentages for AI analysis
-  if (aiAnalysis && typeof costBreakdown === 'object' && 'totalLandedCost' in costBreakdown) {
-    const total = costBreakdown.totalLandedCost;
-    Object.keys(costBreakdown).forEach((key) => {
-      if (key !== 'totalLandedCost' && typeof costBreakdown[key as keyof typeof costBreakdown] === 'object') {
-        const item = costBreakdown[key as keyof typeof costBreakdown] as { value: number; percentage: number };
-        item.percentage = Math.round((item.value / total) * 100);
-      }
-    });
+  if (isLoading) {
+    return <AnalysisLoader />;
   }
 
-  return (
-    <div className="min-h-screen bg-[#09090b] py-8">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
-        {/* Section 1: Hero Metric Card (Full Width) */}
-        <HeroMetricCard
-          productName={productName}
-          asin={BASE_MOCK_DATA.asin}
-          totalLandedCost={totalLandedCost}
-          margin={BASE_MOCK_DATA.estimatedMargin}
-        />
-
-        {/* Bento Grid: Sections 2-8 */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {/* Section 2: Cost Breakdown (2 columns) */}
-          <div className="md:col-span-2">
-            <CostBreakdownCard answers={answers} />
-          </div>
-
-          {/* Section 3: Profitability Simulator (1 column) */}
-          <div className="md:col-span-1">
-            <ProfitabilitySimulator totalLandedCost={totalLandedCost} answers={answers} />
-          </div>
-
-          {/* Section 4: Scale Analysis (1 column) */}
-          <div className="md:col-span-1">
-            <ScaleAnalysisCard aiAnalysis={aiAnalysis} />
-          </div>
-
-          {/* Section 5: Risk Assessment (2 columns) */}
-          <div className="md:col-span-2">
-            <RiskAssessmentCard category={category} aiAnalysis={aiAnalysis} />
-          </div>
-
-          {/* Section 6: Market Positioning (Full Width) */}
-          <div className="md:col-span-3">
-            <MarketPositioningCard />
-          </div>
-
-          {/* Section 7: Action Roadmap (Full Width) */}
-          <div className="md:col-span-3">
-            <ActionRoadmap shippingMethod={shippingMethod} category={category} />
-          </div>
-
-          {/* Section 8: CTA & Services (Full Width) */}
-          <div className="md:col-span-3">
-            <CTAServicesCard />
-          </div>
+  if (error) {
+    return (
+      <div className="min-h-screen bg-[#09090b] flex items-center justify-center p-4">
+        <div className="text-center max-w-2xl">
+          <div className="text-red-400 text-xl mb-2">Error</div>
+          <div className="text-zinc-400">{error}</div>
         </div>
+      </div>
+    );
+  }
 
-        {/* Footer Actions */}
-        <div className="flex flex-col sm:flex-row gap-4 justify-end pt-4">
-          <Button
-            variant="outline"
-            onClick={() => alert('PDF download feature coming soon!')}
-            className="border-zinc-800/50 text-zinc-400 hover:bg-[#18181b]"
-          >
-            <Download className="mr-2 h-4 w-4" />
-            Download PDF Report
-          </Button>
-          <Button
-            variant="ghost"
-            onClick={() => {
-              clearOnboardingState();
-              router.push('/chat');
-            }}
-            className="text-zinc-400 hover:text-white"
-          >
-            Start New Project
-          </Button>
+  if (!aiAnalysis) {
+    return (
+      <div className="min-h-screen bg-[#09090b] flex items-center justify-center">
+        <div className="text-center">
+          <div className="text-white text-xl mb-2">No Analysis Available</div>
+          <div className="text-zinc-400 text-sm">Please complete the chat flow first</div>
+        </div>
+      </div>
+    );
+  }
+
+  const { 
+    financials, 
+    cost_breakdown, 
+    scale_analysis, 
+    risks,
+    duty_analysis,
+    logistics_insight,
+    market_benchmark,
+    strategic_advice,
+  } = aiAnalysis;
+  // Extract product name from new streamlined field or legacy fields
+  const productName = answers.product_info?.split('-')[0]?.trim() || 
+                      answers.product_info?.split(',')[0]?.trim() ||
+                      answers.product_desc?.split(',')[0] || 
+                      answers.project_name || 
+                      'Product Analysis';
+  const totalLandedCost = financials?.estimated_landed_cost || 0;
+  const margin = {
+    min: Math.max(0, Math.floor((financials?.estimated_margin_pct || 0) - 5)),
+    max: Math.ceil((financials?.estimated_margin_pct || 0) + 5),
+  };
+
+  return (
+    <div className="min-h-screen bg-[#f9fafb] p-6 md:p-8">
+      {/* Header with Logo */}
+      <div className="max-w-7xl mx-auto mb-8">
+        <Link href="/" className="inline-block cursor-pointer hover:opacity-80 transition-opacity">
+          <h1 className="text-2xl font-bold text-gray-900">NexSupply</h1>
+        </Link>
+      </div>
+      <div className="max-w-7xl mx-auto">
+        {/* Grid Layout */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-stretch">
+          {/* Header - Full Width */}
+          <ResultHeader 
+            productName={productName}
+            landedCost={totalLandedCost}
+            margin={margin}
+          />
+
+          {/* NexSupply Insight - Full Width */}
+          <NexSupplyInsight 
+            strategicAdvice={strategic_advice}
+            businessModel={answers.business_model}
+          />
+
+          {/* Cost Breakdown */}
+          <CostBreakdown 
+            costBreakdown={cost_breakdown || {}}
+            totalLandedCost={totalLandedCost}
+          />
+
+          {/* Logistics & Duty Intelligence */}
+          <LogisticsDutyIntelligence 
+            dutyAnalysis={duty_analysis}
+            logisticsInsight={logistics_insight}
+            sizeTier={answers.size_tier}
+          />
+
+          {/* Profitability Simulator */}
+          <ProfitabilitySimulator 
+            totalLandedCost={totalLandedCost}
+            answers={answers}
+          />
+
+          {/* Scale Analysis */}
+          <ScaleAnalysis 
+            scaleAnalysis={scale_analysis || []}
+          />
+
+          {/* Risk Assessment */}
+          <RiskAssessment 
+            risks={risks || {}}
+          />
+
+          {/* Competitor Benchmark - Full Width (Market Positioning 대체) */}
+          <CompetitorBenchmark 
+            marketBenchmark={market_benchmark}
+            refLink={answers.ref_link}
+          />
+
+          {/* Action Roadmap - Full Width */}
+          <ActionRoadmap answers={answers} />
+
+          {/* Pricing CTA - Full Width */}
+          <PricingCTA />
         </div>
       </div>
     </div>
@@ -1348,7 +830,7 @@ export default function ResultsPage() {
   return (
     <Suspense fallback={
       <div className="min-h-screen bg-[#09090b] flex items-center justify-center">
-        <p className="text-zinc-400">Loading...</p>
+        <div className="text-white">Loading...</div>
       </div>
     }>
       <ResultsContent />

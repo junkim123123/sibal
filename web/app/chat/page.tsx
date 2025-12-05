@@ -575,14 +575,14 @@ export default function ChatPage() {
               >
                 {currentStep.type === 'select' ? (
                   // Pill-shaped option buttons
-                  <div className="flex flex-wrap gap-3">
+                  <div className="flex flex-wrap gap-3 justify-start">
                     {currentStep.options.map((option, index) => (
                       <motion.button
                         key={option}
                         custom={index}
                         variants={optionVariants}
                         onClick={() => handleOptionSelect(option)}
-                        className="px-6 py-3 rounded-full border-2 border-neutral-300 bg-white text-neutral-900 text-sm font-medium transition-all hover:bg-neutral-900 hover:text-white hover:border-neutral-900 focus:outline-none focus:ring-2 focus:ring-neutral-900 focus:ring-offset-2"
+                        className="px-6 py-3 h-auto rounded-full border-2 border-neutral-300 bg-white text-neutral-900 text-sm font-medium transition-all hover:bg-neutral-900 hover:text-white hover:border-neutral-900 focus:outline-none focus:ring-2 focus:ring-neutral-900 focus:ring-offset-2 whitespace-normal text-left max-w-full sm:max-w-[80%]"
                       >
                         {option}
                       </motion.button>

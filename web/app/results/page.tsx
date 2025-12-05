@@ -56,15 +56,72 @@ function extractVolumeFromAnswer(volumeAnswer: string): number {
 
 function inferShippingMethod(priority: string, timeline: string): 'Air' | 'Sea' {
   // If priority is "Fastest Speed" or timeline is "Within 1 month", use Air
-  if (priority?.includes('Speed') || timeline?.includes('1 month')) {
+  if (priority?.includes('Speed') || timeline?.includes('1 month') || timeline?.includes('4 weeks')) {
     return 'Air';
   }
-  // If priority is "Lowest Cost" or timeline is "Flexible", prefer Sea
-  if (priority?.includes('Cost') || timeline?.includes('Flexible')) {
+  // If priority is "Lowest Cost" or timeline is "Flexible" or "3-6 months", prefer Sea
+  if (priority?.includes('Cost') || timeline?.includes('Flexible') || timeline?.includes('3-6 months')) {
     return 'Sea';
   }
   // Default to Air for safety
   return 'Air';
+}
+
+// Infer channel type from user answers
+function inferChannelType(channel: string, businessModel: string): 'Amazon' | 'Shopify' | 'Wholesale' | 'B2B' | 'Marketplace' | 'Other' {
+  if (!channel && !businessModel) return 'Other';
+  
+  const channelLower = (channel || '').toLowerCase();
+  const businessLower = (businessModel || '').toLowerCase();
+  
+  // Check for Amazon
+  if (channelLower.includes('amazon') || channelLower.includes('marketplace')) {
+    return 'Amazon';
+  }
+  
+  // Check for Shopify/DTC
+  if (channelLower.includes('shopify') || channelLower.includes('woo') || channelLower.includes('direct-to-consumer') || channelLower.includes('dtc')) {
+    return 'Shopify';
+  }
+  
+  // Check for Wholesale/B2B
+  if (channelLower.includes('wholesale') || channelLower.includes('b2b') || channelLower.includes('distributor') || 
+      businessLower.includes('wholesale') || businessLower.includes('b2b') || businessLower.includes('distributor')) {
+    return 'Wholesale';
+  }
+  
+  // Check for B2B Marketplaces
+  if (channelLower.includes('alibaba') || channelLower.includes('faire') || channelLower.includes('b2b marketplace')) {
+    return 'B2B';
+  }
+  
+  return 'Other';
+}
+
+// Calculate channel & fulfillment costs based on channel type
+function calculateChannelFees(retailPrice: number, channelType: ReturnType<typeof inferChannelType>): number {
+  switch (channelType) {
+    case 'Amazon':
+      // Amazon: Referral (15%) + FBA ($3.50) + Storage ($0.20)
+      return (retailPrice * 0.15) + 3.50 + 0.20;
+    
+    case 'Shopify':
+      // Shopify: Credit card fees (2.9% + $0.30) + 3PL fulfillment (~$3-5)
+      return (retailPrice * 0.029) + 0.30 + 3.50;
+    
+    case 'Wholesale':
+    case 'B2B':
+      // Wholesale/B2B: Very low - just logistics handling (2-5%)
+      return retailPrice * 0.03; // 3% for handling
+    
+    case 'Marketplace':
+      // Other marketplaces: Moderate fees
+      return (retailPrice * 0.10) + 2.00;
+    
+    default:
+      // Default: Moderate estimate
+      return (retailPrice * 0.08) + 2.50;
+  }
 }
 
 // Comprehensive Mock Data (Bluetooth Earphones Example)
@@ -233,11 +290,11 @@ function generateRoadmap(shippingMethod: 'Air' | 'Sea', category: string) {
   // Compliance step varies by category
   let complianceStep;
   if (category?.toLowerCase().includes('electronic')) {
-    complianceStep = { week: 'Wk 2-3', title: 'Compliance (FCC)', description: 'Obtain FCC certification for Bluetooth devices', completed: false };
+    complianceStep = { week: 'Wk 2-3', title: 'Compliance & Certifications', description: 'Obtain FCC/UL certifications for electronics in target market', completed: false };
   } else if (category?.toLowerCase().includes('home') || category?.toLowerCase().includes('food')) {
-    complianceStep = { week: 'Wk 2-3', title: 'Compliance (FDA)', description: 'Obtain FDA certification for food contact products', completed: false };
+    complianceStep = { week: 'Wk 2-3', title: 'Compliance & Certifications', description: 'Obtain FDA/food safety certifications for food contact products', completed: false };
   } else {
-    complianceStep = { week: 'Wk 2-3', title: 'Compliance Check', description: 'Verify category-specific compliance requirements', completed: false };
+    complianceStep = { week: 'Wk 2-3', title: 'Compliance & Certifications', description: 'Verify category-specific compliance requirements and certifications', completed: false };
   }
   
   const orderStep = { week: 'Wk 4', title: 'Place Order', description: 'Finalize order details, payment terms, and production schedule', completed: false };
@@ -246,8 +303,8 @@ function generateRoadmap(shippingMethod: 'Air' | 'Sea', category: string) {
   const launchWeek = shippingMethod === 'Air' ? 'Wk 8' : 'Wk 12-14';
   const launchStep = { 
     week: launchWeek, 
-    title: 'Launch', 
-    description: `Receive shipment via ${shippingMethod === 'Air' ? 'air freight' : 'sea freight'}, quality check, and launch to Amazon`, 
+    title: 'Channel Launch & Fulfillment', 
+    description: `Receive shipment via ${shippingMethod === 'Air' ? 'air freight' : 'sea freight'}, quality check, and launch to your sales channel`, 
     completed: false 
   };
   
@@ -313,11 +370,6 @@ const MOCK_DATA = {
       icon: CheckCircle2,
     },
   ],
-  amazonFees: {
-    referral: 0.15, // 15%
-    fulfillment: 3.50,
-    storage: 0.20,
-  },
   monthlySalesVelocity: 100, // units per month
   roadmap: [
     { week: 'Wk 1-2', title: 'Supplier Verification', description: 'Verify credentials, certifications, and factory audit', completed: false },
@@ -327,22 +379,52 @@ const MOCK_DATA = {
   ],
   serviceTiers: [
     { 
-      name: 'Self-Service', 
+      name: 'Starter (AI Scout)', 
+      tag: 'Free Tool',
       price: 0, 
-      features: ['Basic supplier verification', 'Email support', 'Standard templates', 'Access to dashboard'],
+      priceDisplay: '$0 / mo',
+      features: [
+        'Real-Time Cost & Risk Analysis',
+        '30 Reports/month',
+        'Platform-neutral insights',
+        'Basic supplier database access'
+      ],
       recommended: false,
+      ctaLabel: 'Start Analysis',
+      ctaHref: '/chat',
     },
     { 
-      name: 'Basic', 
-      price: 299, 
-      features: ['Full supplier verification', 'Compliance checklist', 'Priority email support', '1 revision'],
+      name: 'Validator (Entry)', 
+      tag: 'Start with One Box',
+      price: 199, 
+      priceDisplay: '$199 (Retainer)',
+      features: [
+        'Get Verified Quote',
+        'Supplier Vetting',
+        '100% Credited on Order ($5k+)',
+        'Priority support',
+        'Dedicated quote specialist'
+      ],
       recommended: false,
+      ctaLabel: 'Request Quote',
+      ctaHref: '/contact',
     },
     { 
-      name: 'Premium', 
-      price: 999, 
-      features: ['Full supplier audit', 'Compliance guarantee', 'Dedicated manager', 'Priority support', 'Unlimited revisions'],
+      name: 'Executor (Full Service)', 
+      tag: 'End-to-End Solution',
+      price: null, 
+      priceDisplay: '3% - 9% Commission',
+      features: [
+        'Module A or B Selection',
+        'QC & Logistics',
+        'Dedicated Manager',
+        'Global Sync Time',
+        '24-hour response (Mon-Fri)'
+      ],
       recommended: true,
+      note: 'Min. service fee $500 applies.',
+      ctaLabel: 'Get Started',
+      ctaHref: '/contact',
     },
   ],
 };
@@ -356,7 +438,7 @@ function generateChartData(costBreakdown: ReturnType<typeof generateCostBreakdow
         return {
           name: data.label.split('(')[0].trim(),
           value: data.value,
-          color: key === 'factory' ? '#208094' : key === 'shipping' ? '#34D399' : key === 'duty' ? '#FBBF24' : key === 'packaging' ? '#60A5FA' : key === 'customs' ? '#A78BFA' : '#F472B6',
+          color: key === 'factory' ? '#22d3ee' : key === 'shipping' ? '#34d399' : key === 'duty' ? '#fbbf24' : key === 'packaging' ? '#a78bfa' : key === 'customs' ? '#8b5cf6' : '#ec4899',
         };
       }
       return null;
@@ -372,11 +454,11 @@ function HeroMetricCard({ productName, asin, totalLandedCost, margin }: {
   margin: { min: number; max: number } 
 }) {
   return (
-    <Card className="bg-zinc-900 border-zinc-800 p-8">
+    <Card className="bg-[#18181b] border-zinc-800/50 p-8">
       <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
         <div>
-          <h1 className="text-3xl md:text-4xl font-bold text-white mb-2">{productName}</h1>
-          <div className="flex items-center gap-4 text-sm text-zinc-400">
+          <h1 className="text-2xl md:text-3xl font-semibold text-white mb-2">{productName}</h1>
+          <div className="flex items-center gap-4 text-xs text-zinc-500">
             <span>ASIN: {asin}</span>
             <span>•</span>
             <span>Sourcing Intelligence Report</span>
@@ -384,13 +466,13 @@ function HeroMetricCard({ productName, asin, totalLandedCost, margin }: {
         </div>
         <div className="flex items-center gap-8">
           <div className="text-right">
-            <p className="text-zinc-400 text-sm mb-1">Estimated Landed Cost</p>
-            <p className="text-5xl md:text-6xl font-mono font-bold tabular-nums tracking-tight text-[#208094]">
+            <p className="text-zinc-500 text-xs uppercase tracking-wide mb-2">Estimated Landed Cost</p>
+            <p className="text-6xl md:text-7xl lg:text-8xl font-mono font-bold tabular-nums tracking-tight text-[#22d3ee]">
               ${totalLandedCost.toFixed(2)}
             </p>
           </div>
-          <div className="px-4 py-2 rounded-full bg-emerald-500/20 border border-emerald-500/30">
-            <p className="text-emerald-400 font-semibold text-sm">
+          <div className="px-4 py-2 rounded-full bg-zinc-800/50 border border-zinc-700">
+            <p className="text-zinc-400 font-semibold text-sm">
               Margin {margin.min}-{margin.max}%
             </p>
           </div>
@@ -407,10 +489,9 @@ function CostBreakdownCard({ answers }: { answers: Answers }) {
   const costChartData = generateChartData(costBreakdown);
   
   return (
-    <Card className="bg-zinc-900 border-zinc-800 p-6">
-      <div className="flex items-center gap-2 mb-6">
-        <BarChart3 className="h-5 w-5 text-[#208094]" />
-        <h2 className="text-xl font-semibold text-white">Cost Breakdown</h2>
+    <Card className="bg-[#18181b] border-zinc-800/50 p-8">
+      <div className="mb-6">
+        <h2 className="text-xs uppercase tracking-wider text-zinc-500 font-semibold mb-1">Cost Breakdown</h2>
       </div>
       
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -435,13 +516,16 @@ function CostBreakdownCard({ answers }: { answers: Answers }) {
               <Tooltip 
                 formatter={(value: number) => `$${value.toFixed(2)}`}
                 contentStyle={{ 
-                  backgroundColor: '#18181b', 
+                  backgroundColor: '#09090b', 
                   border: '1px solid #27272a', 
                   borderRadius: '8px',
                   color: '#fff'
                 }}
               />
-              <Legend />
+              <Legend 
+                wrapperStyle={{ color: '#fff', fontSize: '12px' }}
+                formatter={(value) => <span style={{ color: '#a1a1aa' }}>{value}</span>}
+              />
             </PieChart>
           </ResponsiveContainer>
         </div>
@@ -468,7 +552,7 @@ function CostBreakdownCard({ answers }: { answers: Answers }) {
               return (
                 <div 
                   key={key} 
-                  className="relative p-3 rounded-lg bg-zinc-950 border border-zinc-800 hover:border-[#208094]/50 transition-colors"
+                  className="relative p-4 rounded-lg bg-[#09090b] border border-zinc-800/50 hover:border-[#22d3ee]/30 transition-colors"
                   onMouseEnter={() => setTooltipKey(key)}
                   onMouseLeave={() => setTooltipKey(null)}
                 >
@@ -495,9 +579,9 @@ function CostBreakdownCard({ answers }: { answers: Answers }) {
                 </div>
               );
             })}
-          <div className="mt-4 p-4 rounded-lg bg-[#208094]/10 border border-[#208094]/30">
-            <p className="text-xs text-zinc-400 mb-1">💡 Insight</p>
-            <p className="text-sm text-white">
+          <div className="mt-4 p-4 rounded-lg bg-[#22d3ee]/10 border border-[#22d3ee]/20">
+            <p className="text-xs text-zinc-500 mb-1 uppercase tracking-wide">💡 Insight</p>
+            <p className="text-sm text-zinc-300">
               {typeof costBreakdown.shipping === 'object' && 'label' in costBreakdown.shipping && costBreakdown.shipping.label.includes('Air')
                 ? `Shipping (Air) is ${typeof costBreakdown.shipping === 'object' && 'percentage' in costBreakdown.shipping ? costBreakdown.shipping.percentage : 0}% of your total cost. Consider Sea Freight for volumes above 500 units.`
                 : `Shipping (Sea) is ${typeof costBreakdown.shipping === 'object' && 'percentage' in costBreakdown.shipping ? costBreakdown.shipping.percentage : 0}% of your total cost. Good choice for cost optimization.`
@@ -511,27 +595,26 @@ function CostBreakdownCard({ answers }: { answers: Answers }) {
 }
 
 // Component: Profitability Simulator with Monthly View
-function ProfitabilitySimulator({ totalLandedCost }: { totalLandedCost: number }) {
+function ProfitabilitySimulator({ totalLandedCost, answers }: { totalLandedCost: number; answers: Answers }) {
   const [retailPrice, setRetailPrice] = useState(49.99);
   
-  const referralFee = retailPrice * MOCK_DATA.amazonFees.referral;
-  const totalAmazonFees = referralFee + MOCK_DATA.amazonFees.fulfillment + MOCK_DATA.amazonFees.storage;
-  const netProfit = retailPrice - totalLandedCost - totalAmazonFees;
+  const channelType = inferChannelType(answers.channel || '', answers.business_model || '');
+  const channelFees = calculateChannelFees(retailPrice, channelType);
+  const netProfit = retailPrice - totalLandedCost - channelFees;
   const profitMargin = (netProfit / retailPrice) * 100;
   const monthlyProfit = netProfit * MOCK_DATA.monthlySalesVelocity;
 
   const waterfallData = [
-    { name: 'Retail Price', value: retailPrice, color: '#208094' },
-    { name: 'Product Cost', value: -totalLandedCost, color: '#EF4444' },
-    { name: 'Amazon Fees', value: -totalAmazonFees, color: '#F59E0B' },
-    { name: 'Net Profit', value: netProfit, color: '#10B981' },
+    { name: 'Retail Price', value: retailPrice, color: '#22d3ee' },
+    { name: 'Product Cost', value: -totalLandedCost, color: '#ef4444' },
+    { name: 'Channel & Fulfillment Costs', value: -channelFees, color: '#fbbf24' },
+    { name: 'Net Profit', value: netProfit, color: '#10b981' },
   ];
 
   return (
-    <Card className="bg-zinc-900 border-zinc-800 p-6">
-      <div className="flex items-center gap-2 mb-6">
-        <TrendingUp className="h-5 w-5 text-[#208094]" />
-        <h2 className="text-xl font-semibold text-white">Profitability Simulator</h2>
+    <Card className="bg-[#18181b] border-zinc-800/50 p-8">
+      <div className="mb-6">
+        <h2 className="text-xs uppercase tracking-wider text-zinc-500 font-semibold mb-1">Profitability Simulator</h2>
       </div>
 
       <div className="space-y-6">
@@ -547,7 +630,7 @@ function ProfitabilitySimulator({ totalLandedCost }: { totalLandedCost: number }
             step="0.01"
             value={retailPrice}
             onChange={(e) => setRetailPrice(parseFloat(e.target.value))}
-            className="w-full h-2 bg-zinc-800 rounded-lg appearance-none cursor-pointer accent-[#208094]"
+            className="w-full h-2 bg-zinc-800 rounded-lg appearance-none cursor-pointer accent-[#22d3ee]"
           />
           <div className="flex justify-between text-xs text-zinc-500 mt-1">
             <span>$18</span>
@@ -558,7 +641,7 @@ function ProfitabilitySimulator({ totalLandedCost }: { totalLandedCost: number }
         {/* Waterfall Calculation */}
         <div className="space-y-3">
           {waterfallData.map((item, index) => (
-            <div key={item.name} className="flex items-center justify-between p-3 rounded-lg bg-zinc-950 border border-zinc-800">
+            <div key={item.name} className="flex items-center justify-between p-3 rounded-lg bg-[#09090b] border border-zinc-800/50">
               <span className="text-sm text-zinc-400">{item.name}</span>
               <span className={`text-lg font-mono font-semibold tabular-nums ${
                 item.value >= 0 ? 'text-emerald-400' : 'text-red-400'
@@ -568,24 +651,24 @@ function ProfitabilitySimulator({ totalLandedCost }: { totalLandedCost: number }
             </div>
           ))}
           
-          <div className="flex items-center justify-between p-4 rounded-lg bg-emerald-500/10 border border-emerald-500/30 mt-4">
+          <div className="flex items-center justify-between p-4 rounded-lg bg-[#10b981]/10 border border-[#10b981]/20 mt-4">
             <div>
-              <p className="text-sm font-semibold text-emerald-400">Net Profit per Unit</p>
-              <p className="text-xs text-zinc-400 mt-1">Profit Margin: {profitMargin.toFixed(1)}%</p>
+              <p className="text-sm font-semibold text-[#10b981]">Net Profit per Unit</p>
+              <p className="text-xs text-zinc-500 mt-1">Profit Margin: {profitMargin.toFixed(1)}%</p>
             </div>
-            <span className={`text-2xl font-mono font-bold tabular-nums ${netProfit >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
+            <span className={`text-2xl font-mono font-bold tabular-nums ${netProfit >= 0 ? 'text-[#10b981]' : 'text-red-400'}`}>
               ${netProfit.toFixed(2)}
             </span>
           </div>
         </div>
 
         {/* Monthly View */}
-        <div className="p-4 rounded-lg bg-zinc-950 border border-zinc-800">
-          <p className="text-xs text-zinc-400 mb-2">Monthly Projection (at {MOCK_DATA.monthlySalesVelocity} units/month)</p>
-          <p className="text-2xl font-mono font-bold tabular-nums text-[#208094]">
+        <div className="p-4 rounded-lg bg-[#09090b] border border-zinc-800/50">
+          <p className="text-xs text-zinc-500 mb-2 uppercase tracking-wide">Monthly Projection (at {MOCK_DATA.monthlySalesVelocity} units/month)</p>
+          <p className="text-3xl font-mono font-bold tabular-nums text-[#22d3ee]">
             ${monthlyProfit.toFixed(2)}/month
           </p>
-          <p className="text-xs text-zinc-500 mt-1">
+          <p className="text-xs text-zinc-600 mt-1">
             Annual: ${(monthlyProfit * 12).toLocaleString()}
           </p>
         </div>
@@ -599,10 +682,9 @@ function ScaleAnalysisCard() {
   const recommendedScenario = MOCK_DATA.scaleScenarios.find(s => s.recommended);
   
   return (
-    <Card className="bg-zinc-900 border-zinc-800 p-6">
-      <div className="flex items-center gap-2 mb-6">
-        <Package className="h-5 w-5 text-[#208094]" />
-        <h2 className="text-xl font-semibold text-white">Scale Analysis</h2>
+    <Card className="bg-[#18181b] border-zinc-800/50 p-8">
+      <div className="mb-6">
+        <h2 className="text-xs uppercase tracking-wider text-zinc-500 font-semibold mb-1">Scale Analysis</h2>
       </div>
 
       <div className="space-y-3">
@@ -614,8 +696,8 @@ function ScaleAnalysisCard() {
             transition={{ delay: index * 0.1 }}
             className={`p-4 rounded-lg border-2 ${
               scenario.recommended
-                ? 'bg-[#208094]/10 border-[#208094] shadow-lg shadow-[#208094]/20'
-                : 'bg-zinc-950 border-zinc-800'
+                ? 'bg-[#22d3ee]/10 border-[#22d3ee] shadow-lg shadow-[#22d3ee]/20'
+                : 'bg-[#09090b] border-zinc-800/50'
             }`}
           >
             <div className="flex items-center justify-between">
@@ -624,7 +706,7 @@ function ScaleAnalysisCard() {
                 <span className="text-zinc-400 text-sm">({scenario.method})</span>
                 <span className="text-zinc-500 text-xs">{scenario.label}</span>
                 {scenario.recommended && (
-                  <span className="px-2 py-1 rounded text-xs font-semibold bg-[#208094] text-white flex items-center gap-1">
+                  <span className="px-2 py-1 rounded text-xs font-semibold bg-[#22d3ee] text-black flex items-center gap-1">
                     <Rocket className="h-3 w-3" />
                     Recommended
                   </span>
@@ -646,10 +728,10 @@ function ScaleAnalysisCard() {
       </div>
 
       {recommendedScenario && recommendedScenario.savings && (
-        <div className="mt-4 p-4 rounded-lg bg-emerald-500/10 border border-emerald-500/30">
-          <p className="text-xs text-zinc-400 mb-1">💡 Decision Support</p>
-          <p className="text-sm text-white">
-            Switching to Sea Freight saves you <span className="font-semibold text-emerald-400">${recommendedScenario.savings.toFixed(2)}/unit</span> at scale.
+        <div className="mt-4 p-4 rounded-lg bg-[#10b981]/10 border border-[#10b981]/20">
+          <p className="text-xs text-zinc-500 mb-1 uppercase tracking-wide">💡 Decision Support</p>
+          <p className="text-sm text-zinc-300">
+            Switching to Sea Freight saves you <span className="font-semibold text-[#10b981]">${recommendedScenario.savings.toFixed(2)}/unit</span> at scale.
           </p>
         </div>
       )}
@@ -662,9 +744,9 @@ function RiskAssessmentCard({ category }: { category: string }) {
   const risks = generateRisks(category);
   
   const getRiskStyles = (level: 'Low' | 'Medium' | 'High') => {
-    if (level === 'High') return 'bg-red-500/10 border-red-500/30 text-red-400';
-    if (level === 'Medium') return 'bg-yellow-500/10 border-yellow-500/30 text-yellow-400';
-    return 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400';
+    if (level === 'High') return 'bg-[#09090b] border-red-500/50 text-red-400';
+    if (level === 'Medium') return 'bg-[#09090b] border-yellow-500/50 text-yellow-400';
+    return 'bg-[#09090b] border-[#10b981]/50 text-[#10b981]';
   };
 
   const getRiskIcon = (level: 'Low' | 'Medium' | 'High') => {
@@ -674,10 +756,9 @@ function RiskAssessmentCard({ category }: { category: string }) {
   };
 
   return (
-    <Card className="bg-zinc-900 border-zinc-800 p-6">
-      <div className="flex items-center gap-2 mb-6">
-        <Shield className="h-5 w-5 text-[#208094]" />
-        <h2 className="text-xl font-semibold text-white">Risk Assessment</h2>
+    <Card className="bg-[#18181b] border-zinc-800/50 p-8">
+      <div className="mb-6">
+        <h2 className="text-xs uppercase tracking-wider text-zinc-500 font-semibold mb-1">Risk Assessment</h2>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -696,7 +777,7 @@ function RiskAssessmentCard({ category }: { category: string }) {
                 {getRiskIcon(risk.level)}
               </div>
               <p className="text-xs text-zinc-400 mb-2">{risk.description}</p>
-              <div className="mt-3 pt-3 border-t border-zinc-800">
+              <div className="mt-3 pt-3 border-t border-zinc-800/50">
                 <p className="text-xs text-zinc-500 mb-1">
                   Impact: <span className="font-semibold text-white">{risk.impact}</span>
                 </p>
@@ -724,16 +805,15 @@ function MarketPositioningCard() {
   const launchPosition = ((launchPrice - minPrice) / range) * 100;
 
   return (
-    <Card className="bg-zinc-900 border-zinc-800 p-6">
-      <div className="flex items-center gap-2 mb-6">
-        <BarChart3 className="h-5 w-5 text-[#208094]" />
-        <h2 className="text-xl font-semibold text-white">Market Positioning</h2>
+    <Card className="bg-[#18181b] border-zinc-800/50 p-8">
+      <div className="mb-6">
+        <h2 className="text-xs uppercase tracking-wider text-zinc-500 font-semibold mb-1">Market Positioning</h2>
       </div>
 
       <div className="space-y-6">
         {/* Price Ladder */}
         <div className="relative">
-          <div className="relative h-16 bg-zinc-950 rounded-lg border border-zinc-800 overflow-hidden">
+          <div className="relative h-16 bg-[#09090b] rounded-lg border border-zinc-800/50 overflow-hidden">
             <div className="absolute inset-0 bg-gradient-to-r from-red-500/20 via-yellow-500/20 to-emerald-500/20" />
             
             {/* Budget Marker */}
@@ -767,9 +847,9 @@ function MarketPositioningCard() {
 
             {/* User Target Marker */}
             <div className="absolute top-0 bottom-0" style={{ left: `${userPosition}%` }}>
-              <div className="relative h-full w-1 bg-[#208094]">
+              <div className="relative h-full w-1 bg-[#22d3ee]">
                 <div className="absolute -top-8 left-1/2 -translate-x-1/2">
-                  <div className="px-2 py-1 rounded bg-[#208094] text-white text-xs font-semibold whitespace-nowrap">
+                  <div className="px-2 py-1 rounded bg-[#22d3ee] text-black text-xs font-semibold whitespace-nowrap">
                     Target ${retailPrice.toFixed(2)}
                   </div>
                 </div>
@@ -788,10 +868,10 @@ function MarketPositioningCard() {
         </div>
 
         {/* Strategy Insight */}
-        <div className="p-4 rounded-lg bg-[#208094]/10 border border-[#208094]/30">
-          <p className="text-xs text-zinc-400 mb-1">💡 Launch Strategy</p>
-          <p className="text-sm text-white">
-            Launch at <span className="font-semibold text-[#208094]">${launchPrice}</span> to build reviews, then raise to ${retailPrice.toFixed(2)} after 50+ reviews. Position as "Value Leader" in mid-market segment.
+        <div className="p-4 rounded-lg bg-[#22d3ee]/10 border border-[#22d3ee]/20">
+          <p className="text-xs text-zinc-500 mb-1 uppercase tracking-wide">💡 Launch Strategy</p>
+          <p className="text-sm text-zinc-300">
+            Launch at <span className="font-semibold text-[#22d3ee]">${launchPrice}</span> to build reviews, then raise to ${retailPrice.toFixed(2)} after 50+ reviews. Position as "Value Leader" in mid-market segment.
           </p>
         </div>
       </div>
@@ -814,21 +894,23 @@ function ActionRoadmap({ shippingMethod, category }: { shippingMethod: 'Air' | '
         {roadmap.map((step, index) => (
           <div key={index} className="flex gap-4">
             <div className="flex flex-col items-center">
-              <div className={`w-10 h-10 rounded-full flex items-center justify-center font-semibold text-xs ${
+              <div className={`w-12 h-12 rounded-full flex items-center justify-center font-semibold text-xs ${
                 step.completed 
-                  ? 'bg-emerald-500 text-white' 
-                  : 'bg-zinc-950 border-2 border-zinc-800 text-zinc-400'
+                  ? 'bg-[#10b981] text-black' 
+                  : 'bg-[#09090b] border-2 border-zinc-800/50 text-zinc-400'
               }`}>
-                {step.completed ? <Check className="h-5 w-5" /> : step.week}
+                {step.completed ? <Check className="h-5 w-5" /> : (
+                  <span className="text-[10px] leading-tight text-center px-1">{step.week}</span>
+                )}
               </div>
               {index < roadmap.length - 1 && (
-                <div className="w-0.5 h-16 bg-zinc-800 mt-2" />
+                <div className="w-0.5 h-16 bg-zinc-800/50 mt-2" />
               )}
             </div>
             <div className="flex-1 pb-4">
               <div className="flex items-center gap-2 mb-1">
                 <h3 className="font-semibold text-white">{step.title}</h3>
-                <span className="text-xs text-zinc-500">{step.week}</span>
+                <span className="text-xs text-zinc-500 font-mono">{step.week}</span>
               </div>
               <p className="text-sm text-zinc-400">{step.description}</p>
             </div>
@@ -844,21 +926,20 @@ function CTAServicesCard() {
   const router = useRouter();
   
   return (
-    <Card className="bg-zinc-900 border-zinc-800 p-6">
-      <div className="flex items-center gap-2 mb-6">
-        <Calendar className="h-5 w-5 text-[#208094]" />
-        <h2 className="text-xl font-semibold text-white">Get Started</h2>
+    <Card className="bg-[#18181b] border-zinc-800/50 p-8">
+      <div className="mb-6">
+        <h2 className="text-xs uppercase tracking-wider text-zinc-500 font-semibold mb-1">Get Started</h2>
       </div>
 
       {/* Primary CTA */}
-      <div className="mb-6 p-6 rounded-lg bg-[#208094]/10 border-2 border-[#208094]">
+      <div className="mb-6 p-6 rounded-lg bg-[#09090b] border-2 border-[#22d3ee]/30">
         <h3 className="text-lg font-semibold text-white mb-2">Schedule Free Consultation</h3>
         <p className="text-sm text-zinc-400 mb-4">
           Talk to our sourcing experts about your project. No commitment required.
         </p>
         <Button
           variant="primary"
-          className="w-full sm:w-auto bg-[#208094] hover:bg-[#1a6b7a] text-white"
+          className="w-full sm:w-auto bg-[#22d3ee] hover:bg-[#06b6d4] text-black font-bold"
           onClick={() => router.push('/contact')}
           size="lg"
         >
@@ -867,44 +948,59 @@ function CTAServicesCard() {
         </Button>
       </div>
 
-      {/* Service Tiers */}
+      {/* Service Tiers - Model 4.0 */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         {MOCK_DATA.serviceTiers.map((tier) => (
           <div
             key={tier.name}
-            className={`p-4 rounded-lg border-2 ${
+            className={`relative p-4 sm:p-6 rounded-lg border-2 ${
               tier.recommended
-                ? 'bg-[#208094]/10 border-[#208094]'
-                : 'bg-zinc-950 border-zinc-800'
+                ? 'bg-[#22d3ee]/10 border-[#22d3ee] shadow-lg'
+                : 'bg-[#09090b] border-zinc-800/50'
             }`}
           >
-            <div className="flex justify-between items-start mb-3">
-              <div>
-                <h3 className="font-semibold text-white">{tier.name}</h3>
-                <p className="text-2xl font-mono font-bold tabular-nums text-[#208094] mt-1">
-                  {tier.price === 0 ? 'Free' : `$${tier.price}`}
+              {tier.recommended && (
+                <div className="absolute -top-3 left-1/2 -translate-x-1/2">
+                  <span className="bg-[#22d3ee] text-black px-3 py-1 rounded-full text-xs font-semibold">
+                    Most Popular
+                  </span>
+                </div>
+              )}
+
+            <div className="mb-4">
+              {tier.tag && (
+                <span className={`inline-flex items-center rounded-full px-2 py-1 text-xs font-semibold uppercase tracking-wide mb-3 ${
+                  tier.name.includes('Starter') ? 'bg-neutral-700 text-neutral-300' :
+                  tier.name.includes('Validator') ? 'bg-blue-500/20 text-blue-400' :
+                  'bg-emerald-500/20 text-emerald-400'
+                }`}>
+                  {tier.tag}
+                </span>
+              )}
+              <h3 className="font-semibold text-white text-lg mb-2">{tier.name}</h3>
+              <div className="flex items-baseline gap-1">
+                <p className="text-xl sm:text-2xl font-mono font-bold tabular-nums text-[#208094]">
+                  {tier.priceDisplay}
                 </p>
               </div>
-              {tier.recommended && (
-                <span className="px-2 py-1 rounded text-xs font-semibold bg-[#208094] text-white">
-                  Recommended
-                </span>
+              {tier.note && (
+                <p className="text-xs text-zinc-500 mt-2">{tier.note}</p>
               )}
             </div>
             <ul className="space-y-2 mb-4">
               {tier.features.map((feature, i) => (
-                <li key={i} className="flex items-center gap-2 text-xs text-zinc-400">
-                  <Check className="h-3 w-3 text-emerald-400" />
-                  {feature}
+                <li key={i} className="flex items-start gap-2 text-xs text-zinc-400">
+                  <Check className="h-3 w-3 text-emerald-400 flex-shrink-0 mt-0.5" />
+                  <span className="leading-relaxed">{feature}</span>
                 </li>
               ))}
             </ul>
             <Button
               variant={tier.recommended ? 'primary' : 'outline'}
               className="w-full"
-              onClick={() => router.push('/contact')}
+              onClick={() => router.push(tier.ctaHref || '/contact')}
             >
-              Select {tier.name}
+              {tier.ctaLabel || `Select ${tier.name}`}
             </Button>
           </div>
         ))}
@@ -964,7 +1060,7 @@ function ResultsContent() {
   const totalLandedCost = costBreakdown.totalLandedCost;
 
   return (
-    <div className="min-h-screen bg-zinc-950 py-8">
+    <div className="min-h-screen bg-[#09090b] py-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
         {/* Section 1: Hero Metric Card (Full Width) */}
         <HeroMetricCard
@@ -983,7 +1079,7 @@ function ResultsContent() {
 
           {/* Section 3: Profitability Simulator (1 column) */}
           <div className="md:col-span-1">
-            <ProfitabilitySimulator totalLandedCost={totalLandedCost} />
+            <ProfitabilitySimulator totalLandedCost={totalLandedCost} answers={answers} />
           </div>
 
           {/* Section 4: Scale Analysis (1 column) */}
@@ -1017,7 +1113,7 @@ function ResultsContent() {
           <Button
             variant="outline"
             onClick={() => alert('PDF download feature coming soon!')}
-            className="border-zinc-800 text-zinc-400 hover:bg-zinc-900"
+            className="border-zinc-800/50 text-zinc-400 hover:bg-[#18181b]"
           >
             <Download className="mr-2 h-4 w-4" />
             Download PDF Report
@@ -1041,7 +1137,7 @@ function ResultsContent() {
 export default function ResultsPage() {
   return (
     <Suspense fallback={
-      <div className="min-h-screen bg-zinc-950 flex items-center justify-center">
+      <div className="min-h-screen bg-[#09090b] flex items-center justify-center">
         <p className="text-zinc-400">Loading...</p>
       </div>
     }>

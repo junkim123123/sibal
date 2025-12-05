@@ -678,8 +678,33 @@ function ProfitabilitySimulator({ totalLandedCost, answers }: { totalLandedCost:
 }
 
 // Component: Scale Analysis with Savings Insight
-function ScaleAnalysisCard() {
-  const recommendedScenario = MOCK_DATA.scaleScenarios.find(s => s.recommended);
+function ScaleAnalysisCard({ aiAnalysis }: { aiAnalysis?: AIAnalysisResult | null }) {
+  type ScenarioType = {
+    units: number;
+    method: string;
+    cost: number;
+    margin: number;
+    label: string;
+    recommended: boolean;
+    savings?: number;
+  };
+  
+  const scenarios: ScenarioType[] = aiAnalysis?.scale_analysis 
+    ? aiAnalysis.scale_analysis.map((s, idx) => {
+        const prevCost = idx > 0 ? aiAnalysis.scale_analysis[idx - 1].unit_cost : 0;
+        return {
+          units: s.qty,
+          method: s.mode,
+          cost: s.unit_cost,
+          margin: Math.round(s.margin),
+          label: s.qty < 100 ? 'Safe Start' : s.qty < 1000 ? 'Steady Growth' : 'Scale Up',
+          recommended: idx === aiAnalysis.scale_analysis.length - 1,
+          savings: idx > 0 ? prevCost - s.unit_cost : undefined,
+        };
+      })
+    : MOCK_DATA.scaleScenarios;
+  
+  const recommendedScenario = scenarios.find(s => s.recommended);
   
   return (
     <Card className="bg-[#18181b] border-zinc-800/50 p-8">
@@ -688,7 +713,7 @@ function ScaleAnalysisCard() {
       </div>
 
       <div className="space-y-3">
-        {MOCK_DATA.scaleScenarios.map((scenario, index) => (
+        {scenarios.map((scenario, index) => (
           <motion.div
             key={index}
             initial={{ opacity: 0, x: -20 }}
@@ -740,8 +765,56 @@ function ScaleAnalysisCard() {
 }
 
 // Component: Risk Assessment (5 Cards)
-function RiskAssessmentCard({ category }: { category: string }) {
-  const risks = generateRisks(category);
+function RiskAssessmentCard({ category, aiAnalysis }: { category: string; aiAnalysis?: AIAnalysisResult | null }) {
+  const risks = aiAnalysis 
+    ? [
+        {
+          id: 'duty',
+          category: 'Duty Risk',
+          level: aiAnalysis.risks.duty.level,
+          impact: '$0',
+          description: aiAnalysis.risks.duty.reason,
+          mitigation: 'Monitor 2025 Trade Policy changes. Consider DDP terms for predictability.',
+          icon: Shield,
+        },
+        {
+          id: 'supplier',
+          category: 'Supplier Risk',
+          level: aiAnalysis.risks.supplier.level,
+          impact: '$500-1,000',
+          description: aiAnalysis.risks.supplier.reason,
+          mitigation: 'Request ISO 9001 certification. Conduct factory audit before first order.',
+          icon: Factory,
+        },
+        {
+          id: 'compliance',
+          category: 'Compliance Risk',
+          level: aiAnalysis.risks.compliance.level,
+          impact: `$${aiAnalysis.risks.compliance.cost}`,
+          description: aiAnalysis.risks.compliance.reason,
+          mitigation: 'Budget for certification costs upfront. Factor into launch timeline.',
+          icon: AlertCircle,
+        },
+        {
+          id: 'logistics',
+          category: 'Logistics Risk',
+          level: 'Low' as const,
+          impact: '$0',
+          description: 'Standard shipping routes available. No major port congestion expected.',
+          mitigation: 'Book shipping 2 weeks in advance. Consider LCL for volumes under 5 CBM.',
+          icon: Truck,
+        },
+        {
+          id: 'quality',
+          category: 'Quality Risk',
+          level: 'Low' as const,
+          impact: '$200-500',
+          description: 'Low risk for established category. Standard QC protocols apply.',
+          mitigation: 'Request pre-shipment inspection. Set AQL 2.5 for critical components.',
+          icon: CheckCircle2,
+        },
+      ]
+    : generateRisks(category);
   
   const getRiskStyles = (level: 'Low' | 'Medium' | 'High') => {
     if (level === 'High') return 'bg-[#09090b] border-red-500/50 text-red-400';
@@ -1009,6 +1082,45 @@ function CTAServicesCard() {
   );
 }
 
+// AI Analysis Result Interface
+interface AIAnalysisResult {
+  financials: {
+    estimated_landed_cost: number;
+    estimated_margin_pct: number;
+    net_profit: number;
+  };
+  cost_breakdown: {
+    factory_exw: number;
+    shipping: number;
+    duty: number;
+    packaging: number;
+    customs: number;
+    insurance: number;
+  };
+  scale_analysis: Array<{
+    qty: number;
+    mode: "Air" | "Sea";
+    unit_cost: number;
+    margin: number;
+  }>;
+  risks: {
+    duty: {
+      level: "Low" | "Medium" | "High";
+      reason: string;
+    };
+    supplier: {
+      level: "Low" | "Medium" | "High";
+      reason: string;
+    };
+    compliance: {
+      level: "Low" | "Medium" | "High";
+      reason: string;
+      cost: number;
+    };
+  };
+  executive_summary: string;
+}
+
 // Main Component
 function ResultsContent() {
   const router = useRouter();
@@ -1016,6 +1128,9 @@ function ResultsContent() {
   const [answers, setAnswers] = useState<Answers>({});
   const [onboardingState, setOnboardingState] = useState<OnboardingState | null>(null);
   const [isInitialized, setIsInitialized] = useState(false);
+  const [aiAnalysis, setAiAnalysis] = useState<AIAnalysisResult | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     if (isInitialized) return;
@@ -1053,11 +1168,106 @@ function ResultsContent() {
     }
   }, [searchParams]);
 
+  // Call AI API when answers are available
+  useEffect(() => {
+    if (!isInitialized || !answers.project_name) return;
+    if (aiAnalysis) return; // Don't call again if we already have analysis
+
+    const fetchAnalysis = async () => {
+      setIsLoading(true);
+      setError(null);
+
+      try {
+        const response = await fetch('/api/analyze', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            userContext: answers,
+          }),
+        });
+
+        const data = await response.json();
+
+        if (!response.ok || !data.ok) {
+          throw new Error(data.error || 'Failed to analyze project');
+        }
+
+        if (data.analysis) {
+          setAiAnalysis(data.analysis);
+        }
+      } catch (err) {
+        console.error('[Results] Failed to fetch AI analysis:', err);
+        setError(err instanceof Error ? err.message : 'Failed to load analysis');
+        // Continue with mock data on error
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchAnalysis();
+  }, [isInitialized, answers.project_name, aiAnalysis]);
+
   const productName = answers.product_desc?.split(',')[0] || answers.project_name || BASE_MOCK_DATA.productName;
   const category = answers.category || 'Electronics'; // Default category
   const shippingMethod = inferShippingMethod(answers.priority || '', answers.timeline || '');
-  const costBreakdown = generateCostBreakdown(answers);
+  
+  // Use AI analysis if available, otherwise use generated cost breakdown
+  const costBreakdown = aiAnalysis 
+    ? {
+        factory: { 
+          value: aiAnalysis.cost_breakdown.factory_exw, 
+          percentage: 0, 
+          label: 'Factory (EXW)', 
+          tooltip: 'Ex-Works price from factory' 
+        },
+        shipping: { 
+          value: aiAnalysis.cost_breakdown.shipping, 
+          percentage: 0, 
+          label: `Shipping (${shippingMethod})`, 
+          tooltip: 'Shipping cost' 
+        },
+        duty: { 
+          value: aiAnalysis.cost_breakdown.duty, 
+          percentage: 0, 
+          label: 'Duty', 
+          tooltip: 'Import duty' 
+        },
+        packaging: { 
+          value: aiAnalysis.cost_breakdown.packaging, 
+          percentage: 0, 
+          label: 'Packaging', 
+          tooltip: 'Packaging cost' 
+        },
+        customs: { 
+          value: aiAnalysis.cost_breakdown.customs, 
+          percentage: 0, 
+          label: 'Customs & Fees', 
+          tooltip: 'Customs clearance fees' 
+        },
+        insurance: { 
+          value: aiAnalysis.cost_breakdown.insurance, 
+          percentage: 0, 
+          label: 'Insurance', 
+          tooltip: 'Cargo insurance' 
+        },
+        totalLandedCost: aiAnalysis.financials.estimated_landed_cost,
+      }
+    : generateCostBreakdown(answers);
+  
   const totalLandedCost = costBreakdown.totalLandedCost;
+  
+  // Calculate percentages for AI analysis
+  if (aiAnalysis && typeof costBreakdown === 'object' && 'totalLandedCost' in costBreakdown) {
+    const total = costBreakdown.totalLandedCost;
+    Object.keys(costBreakdown).forEach((key) => {
+      if (key !== 'totalLandedCost' && typeof costBreakdown[key as keyof typeof costBreakdown] === 'object') {
+        const item = costBreakdown[key as keyof typeof costBreakdown] as { value: number; percentage: number };
+        item.percentage = Math.round((item.value / total) * 100);
+      }
+    });
+  }
 
   return (
     <div className="min-h-screen bg-[#09090b] py-8">
@@ -1084,12 +1294,12 @@ function ResultsContent() {
 
           {/* Section 4: Scale Analysis (1 column) */}
           <div className="md:col-span-1">
-            <ScaleAnalysisCard />
+            <ScaleAnalysisCard aiAnalysis={aiAnalysis} />
           </div>
 
           {/* Section 5: Risk Assessment (2 columns) */}
           <div className="md:col-span-2">
-            <RiskAssessmentCard category={category} />
+            <RiskAssessmentCard category={category} aiAnalysis={aiAnalysis} />
           </div>
 
           {/* Section 6: Market Positioning (Full Width) */}

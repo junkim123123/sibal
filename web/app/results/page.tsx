@@ -26,20 +26,236 @@ import { motion } from 'framer-motion';
 
 type Answers = Record<string, string>;
 
+// Dynamic Calculation Functions
+function calculateInsurance(factoryCost: number, units: number): number {
+  // Insurance = Factory Cost * 0.01 (1%) OR minimum $30 divided by units
+  const percentageBased = factoryCost * 0.01;
+  const minimumBased = 30 / units;
+  return Math.max(percentageBased, minimumBased);
+}
+
+function calculateCustomsFee(units: number): number {
+  // Fixed customs entry fee: $100 flat
+  // For low volume, this significantly impacts per-unit cost
+  const fixedFee = 100;
+  const perUnitFee = fixedFee / units;
+  
+  // Additional variable fees (estimated $0.10 per unit)
+  const variableFee = 0.10;
+  
+  return perUnitFee + variableFee;
+}
+
+function extractVolumeFromAnswer(volumeAnswer: string): number {
+  // Parse volume from answer like "Test run (< 50 units)" or "Scale (1000+ units)"
+  if (volumeAnswer.includes('50') || volumeAnswer.includes('Test')) return 50;
+  if (volumeAnswer.includes('100-500') || volumeAnswer.includes('Small')) return 300;
+  if (volumeAnswer.includes('1000') || volumeAnswer.includes('Scale')) return 1000;
+  return 100; // default
+}
+
+function inferShippingMethod(priority: string, timeline: string): 'Air' | 'Sea' {
+  // If priority is "Fastest Speed" or timeline is "Within 1 month", use Air
+  if (priority?.includes('Speed') || timeline?.includes('1 month')) {
+    return 'Air';
+  }
+  // If priority is "Lowest Cost" or timeline is "Flexible", prefer Sea
+  if (priority?.includes('Cost') || timeline?.includes('Flexible')) {
+    return 'Sea';
+  }
+  // Default to Air for safety
+  return 'Air';
+}
+
 // Comprehensive Mock Data (Bluetooth Earphones Example)
-const MOCK_DATA = {
+const BASE_MOCK_DATA = {
   productName: 'Bluetooth Noise-Cancelling Earphones',
   asin: 'B08XYZ1234',
-  totalLandedCost: 12.45,
+  factoryCost: 5.50, // Base factory cost
   estimatedMargin: { min: 15, max: 25 },
-  costBreakdown: {
-    factory: { value: 5.50, percentage: 44, label: 'Factory (EXW)', tooltip: 'Ex-Works price from factory in Shenzhen, China' },
-    shipping: { value: 3.50, percentage: 28, label: 'Shipping (Air)', tooltip: 'Air freight from China to US West Coast (DDP terms)' },
-    duty: { value: 0.83, percentage: 7, label: 'Duty (15%)', tooltip: 'Based on HS Code 8518.30 - Headphones. Standard US import duty rate.' },
-    packaging: { value: 0.95, percentage: 8, label: 'Packaging', tooltip: 'Custom branded packaging and inserts' },
-    customs: { value: 0.67, percentage: 5, label: 'Customs & Fees', tooltip: 'Customs clearance, port fees, and handling charges' },
-    insurance: { value: 1.00, percentage: 8, label: 'Insurance', tooltip: 'Cargo insurance coverage for shipment value' },
-  },
+};
+
+// Generate dynamic cost breakdown based on user answers
+function generateCostBreakdown(answers: Answers) {
+  const factoryCost = BASE_MOCK_DATA.factoryCost;
+  const volume = extractVolumeFromAnswer(answers.volume || 'Test run (< 50 units)');
+  const shippingMethod = inferShippingMethod(answers.priority || '', answers.timeline || '');
+  
+  // Calculate dynamic values
+  const insurance = calculateInsurance(factoryCost, volume);
+  const customs = calculateCustomsFee(volume);
+  
+  // Shipping cost varies by method
+  const shippingCost = shippingMethod === 'Air' ? 3.50 : 1.50; // Sea is cheaper
+  const duty = factoryCost * 0.15; // 15% duty rate (example)
+  const packaging = 0.95; // Fixed packaging cost
+  
+  const totalLandedCost = factoryCost + shippingCost + duty + packaging + customs + insurance;
+  
+  // Calculate percentages
+  const calculatePercentage = (value: number) => (value / totalLandedCost) * 100;
+  
+  return {
+    factory: { 
+      value: factoryCost, 
+      percentage: Math.round(calculatePercentage(factoryCost)), 
+      label: 'Factory (EXW)', 
+      tooltip: 'Ex-Works price from factory in Shenzhen, China' 
+    },
+    shipping: { 
+      value: shippingCost, 
+      percentage: Math.round(calculatePercentage(shippingCost)), 
+      label: `Shipping (${shippingMethod})`, 
+      tooltip: `${shippingMethod === 'Air' ? 'Air' : 'Sea'} freight from China to US West Coast (DDP terms)` 
+    },
+    duty: { 
+      value: duty, 
+      percentage: Math.round(calculatePercentage(duty)), 
+      label: 'Duty (15%)', 
+      tooltip: 'Based on HS Code 8518.30 - Headphones. Standard US import duty rate.' 
+    },
+    packaging: { 
+      value: packaging, 
+      percentage: Math.round(calculatePercentage(packaging)), 
+      label: 'Packaging', 
+      tooltip: 'Custom branded packaging and inserts' 
+    },
+    customs: { 
+      value: customs, 
+      percentage: Math.round(calculatePercentage(customs)), 
+      label: 'Customs & Fees', 
+      tooltip: `Customs clearance, port fees, and handling charges (Fixed $100 entry fee divided by ${volume} units)` 
+    },
+    insurance: { 
+      value: insurance, 
+      percentage: Math.round(calculatePercentage(insurance)), 
+      label: 'Insurance', 
+      tooltip: `Cargo insurance coverage (1% of factory cost or minimum $30/${volume} units)` 
+    },
+    totalLandedCost,
+  };
+}
+
+// Generate category-based risks
+function generateRisks(category: string) {
+  const baseRisks = [
+    {
+      id: 'duty',
+      category: 'Duty Risk',
+      level: 'Low' as const,
+      impact: '$0',
+      description: 'Standard duty rate applies. No special regulations expected.',
+      mitigation: 'Monitor 2025 Trade Policy changes. Consider DDP terms for predictability.',
+      icon: Shield,
+    },
+    {
+      id: 'supplier',
+      category: 'Supplier Risk',
+      level: 'Medium' as const,
+      impact: '$500-1,000',
+      description: 'Category requires supplier verification and quality control.',
+      mitigation: 'Request ISO 9001 certification. Conduct factory audit before first order.',
+      icon: Factory,
+    },
+    {
+      id: 'logistics',
+      category: 'Logistics Risk',
+      level: 'Low' as const,
+      impact: '$0',
+      description: 'Standard shipping routes available. No major port congestion expected.',
+      mitigation: 'Book shipping 2 weeks in advance. Consider LCL for volumes under 5 CBM.',
+      icon: Truck,
+    },
+  ];
+  
+  // Category-specific compliance risk
+  let complianceRisk;
+  if (category?.toLowerCase().includes('electronic') || category?.toLowerCase().includes('battery')) {
+    complianceRisk = {
+      id: 'compliance',
+      category: 'Compliance Risk',
+      level: 'Medium' as const,
+      impact: '$800',
+      description: 'FCC / UL certification required for electronics in US market.',
+      mitigation: 'Budget for FCC certification costs upfront. Factor into launch timeline.',
+      icon: AlertCircle,
+    };
+  } else if (category?.toLowerCase().includes('home') || category?.toLowerCase().includes('kitchen') || category?.toLowerCase().includes('food')) {
+    complianceRisk = {
+      id: 'compliance',
+      category: 'Compliance Risk',
+      level: 'Medium' as const,
+      impact: '$600-1,200',
+      description: 'FDA / Food Contact Safety certification required.',
+      mitigation: 'Ensure food-grade materials. Budget for FDA compliance testing.',
+      icon: AlertCircle,
+    };
+  } else if (category?.toLowerCase().includes('fashion') || category?.toLowerCase().includes('textile')) {
+    complianceRisk = {
+      id: 'compliance',
+      category: 'Compliance Risk',
+      level: 'Low' as const,
+      impact: '$200-400',
+      description: 'Fabric Labeling / Flammability standards apply.',
+      mitigation: 'Ensure proper care labels and flammability testing for textiles.',
+      icon: AlertCircle,
+    };
+  } else {
+    // Default compliance risk
+    complianceRisk = {
+      id: 'compliance',
+      category: 'Compliance Risk',
+      level: 'Low' as const,
+      impact: '$200-500',
+      description: 'Standard compliance requirements apply.',
+      mitigation: 'Review category-specific regulations before launch.',
+      icon: AlertCircle,
+    };
+  }
+  
+  return [...baseRisks, complianceRisk, {
+    id: 'quality',
+    category: 'Quality Risk',
+    level: 'Low' as const,
+    impact: '$200-500',
+    description: 'Low risk for established category. Standard QC protocols apply.',
+    mitigation: 'Request pre-shipment inspection. Set AQL 2.5 for critical components.',
+    icon: CheckCircle2,
+  }];
+}
+
+// Generate roadmap based on shipping method
+function generateRoadmap(shippingMethod: 'Air' | 'Sea', category: string) {
+  const baseRoadmap = [
+    { week: 'Wk 1-2', title: 'Supplier Verification', description: 'Verify credentials, certifications, and factory audit', completed: false },
+  ];
+  
+  // Compliance step varies by category
+  let complianceStep;
+  if (category?.toLowerCase().includes('electronic')) {
+    complianceStep = { week: 'Wk 2-3', title: 'Compliance (FCC)', description: 'Obtain FCC certification for Bluetooth devices', completed: false };
+  } else if (category?.toLowerCase().includes('home') || category?.toLowerCase().includes('food')) {
+    complianceStep = { week: 'Wk 2-3', title: 'Compliance (FDA)', description: 'Obtain FDA certification for food contact products', completed: false };
+  } else {
+    complianceStep = { week: 'Wk 2-3', title: 'Compliance Check', description: 'Verify category-specific compliance requirements', completed: false };
+  }
+  
+  const orderStep = { week: 'Wk 4', title: 'Place Order', description: 'Finalize order details, payment terms, and production schedule', completed: false };
+  
+  // Launch timing depends on shipping method
+  const launchWeek = shippingMethod === 'Air' ? 'Wk 8' : 'Wk 12-14';
+  const launchStep = { 
+    week: launchWeek, 
+    title: 'Launch', 
+    description: `Receive shipment via ${shippingMethod === 'Air' ? 'air freight' : 'sea freight'}, quality check, and launch to Amazon`, 
+    completed: false 
+  };
+  
+  return [...baseRoadmap, complianceStep, orderStep, launchStep];
+}
+
+const MOCK_DATA = {
+  ...BASE_MOCK_DATA,
   scaleScenarios: [
     { units: 100, method: 'Air', cost: 12.45, margin: 48, label: 'Safe Start', recommended: false },
     { units: 500, method: 'Air', cost: 10.95, margin: 55, label: 'Steady Growth', recommended: false },
@@ -131,12 +347,22 @@ const MOCK_DATA = {
   ],
 };
 
-// Cost breakdown for chart
-const costChartData = Object.entries(MOCK_DATA.costBreakdown).map(([key, data]) => ({
-  name: data.label.split('(')[0].trim(),
-  value: data.value,
-  color: key === 'factory' ? '#208094' : key === 'shipping' ? '#34D399' : key === 'duty' ? '#FBBF24' : key === 'packaging' ? '#60A5FA' : '#A78BFA',
-}));
+// Helper function to generate chart data from cost breakdown
+function generateChartData(costBreakdown: ReturnType<typeof generateCostBreakdown>) {
+  return Object.entries(costBreakdown)
+    .filter(([key, data]) => key !== 'totalLandedCost' && typeof data === 'object' && 'label' in data)
+    .map(([key, data]) => {
+      if (typeof data === 'object' && 'label' in data && 'value' in data) {
+        return {
+          name: data.label.split('(')[0].trim(),
+          value: data.value,
+          color: key === 'factory' ? '#208094' : key === 'shipping' ? '#34D399' : key === 'duty' ? '#FBBF24' : key === 'packaging' ? '#60A5FA' : key === 'customs' ? '#A78BFA' : '#F472B6',
+        };
+      }
+      return null;
+    })
+    .filter((item): item is { name: string; value: number; color: string } => item !== null);
+}
 
 // Component: Hero Metric Card
 function HeroMetricCard({ productName, asin, totalLandedCost, margin }: { 
@@ -175,8 +401,10 @@ function HeroMetricCard({ productName, asin, totalLandedCost, margin }: {
 }
 
 // Component: Cost Breakdown Card with Tooltips
-function CostBreakdownCard() {
+function CostBreakdownCard({ answers }: { answers: Answers }) {
   const [tooltipKey, setTooltipKey] = useState<string | null>(null);
+  const costBreakdown = generateCostBreakdown(answers);
+  const costChartData = generateChartData(costBreakdown);
   
   return (
     <Card className="bg-zinc-900 border-zinc-800 p-6">
@@ -220,51 +448,60 @@ function CostBreakdownCard() {
 
         {/* Cost List with Tooltips */}
         <div className="space-y-3">
-          {Object.entries(MOCK_DATA.costBreakdown).map(([key, data]) => {
-            const icons: Record<string, any> = {
-              factory: Factory,
-              shipping: Truck,
-              duty: Shield,
-              packaging: Package,
-              customs: DollarSign,
-              insurance: Shield,
-            };
-            const Icon = icons[key] || DollarSign;
-            
-            return (
-              <div 
-                key={key} 
-                className="relative p-3 rounded-lg bg-zinc-950 border border-zinc-800 hover:border-[#208094]/50 transition-colors"
-                onMouseEnter={() => setTooltipKey(key)}
-                onMouseLeave={() => setTooltipKey(null)}
-              >
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <Icon className="h-4 w-4 text-zinc-400" />
-                    <div>
-                      <div className="flex items-center gap-2">
-                        <span className="text-sm text-zinc-400">{data.label}</span>
-                        <div className="relative">
-                          <HelpCircle className="h-3 w-3 text-zinc-500 cursor-help" />
-                          {tooltipKey === key && (
-                            <div className="absolute bottom-full left-0 mb-2 w-64 p-3 bg-zinc-800 border border-zinc-700 rounded-lg text-xs text-zinc-300 z-10 shadow-xl">
-                              {data.tooltip}
-                            </div>
-                          )}
+          {Object.entries(costBreakdown)
+            .filter(([key, data]) => key !== 'totalLandedCost' && typeof data === 'object' && 'label' in data)
+            .map(([key, data]) => {
+              if (typeof data !== 'object' || !('label' in data) || !('value' in data) || !('percentage' in data) || !('tooltip' in data)) {
+                return null;
+              }
+              
+              const icons: Record<string, any> = {
+                factory: Factory,
+                shipping: Truck,
+                duty: Shield,
+                packaging: Package,
+                customs: DollarSign,
+                insurance: Shield,
+              };
+              const Icon = icons[key] || DollarSign;
+              
+              return (
+                <div 
+                  key={key} 
+                  className="relative p-3 rounded-lg bg-zinc-950 border border-zinc-800 hover:border-[#208094]/50 transition-colors"
+                  onMouseEnter={() => setTooltipKey(key)}
+                  onMouseLeave={() => setTooltipKey(null)}
+                >
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <Icon className="h-4 w-4 text-zinc-400" />
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm text-zinc-400">{data.label}</span>
+                          <div className="relative">
+                            <HelpCircle className="h-3 w-3 text-zinc-500 cursor-help" />
+                            {tooltipKey === key && (
+                              <div className="absolute bottom-full left-0 mb-2 w-64 p-3 bg-zinc-800 border border-zinc-700 rounded-lg text-xs text-zinc-300 z-10 shadow-xl">
+                                {data.tooltip}
+                              </div>
+                            )}
+                          </div>
                         </div>
+                        <span className="text-xs text-zinc-500">{data.percentage}% of total</span>
                       </div>
-                      <span className="text-xs text-zinc-500">{data.percentage}% of total</span>
                     </div>
+                    <span className="text-lg font-mono font-semibold tabular-nums text-white">${data.value.toFixed(2)}</span>
                   </div>
-                  <span className="text-lg font-mono font-semibold tabular-nums text-white">${data.value.toFixed(2)}</span>
                 </div>
-              </div>
-            );
-          })}
+              );
+            })}
           <div className="mt-4 p-4 rounded-lg bg-[#208094]/10 border border-[#208094]/30">
             <p className="text-xs text-zinc-400 mb-1">💡 Insight</p>
             <p className="text-sm text-white">
-              Shipping (Air) is <span className="font-semibold text-[#208094]">28%</span> of your total cost. Consider Sea Freight for volumes above 500 units.
+              {typeof costBreakdown.shipping === 'object' && 'label' in costBreakdown.shipping && costBreakdown.shipping.label.includes('Air')
+                ? `Shipping (Air) is ${typeof costBreakdown.shipping === 'object' && 'percentage' in costBreakdown.shipping ? costBreakdown.shipping.percentage : 0}% of your total cost. Consider Sea Freight for volumes above 500 units.`
+                : `Shipping (Sea) is ${typeof costBreakdown.shipping === 'object' && 'percentage' in costBreakdown.shipping ? costBreakdown.shipping.percentage : 0}% of your total cost. Good choice for cost optimization.`
+              }
             </p>
           </div>
         </div>
@@ -274,18 +511,18 @@ function CostBreakdownCard() {
 }
 
 // Component: Profitability Simulator with Monthly View
-function ProfitabilitySimulator() {
+function ProfitabilitySimulator({ totalLandedCost }: { totalLandedCost: number }) {
   const [retailPrice, setRetailPrice] = useState(49.99);
   
   const referralFee = retailPrice * MOCK_DATA.amazonFees.referral;
   const totalAmazonFees = referralFee + MOCK_DATA.amazonFees.fulfillment + MOCK_DATA.amazonFees.storage;
-  const netProfit = retailPrice - MOCK_DATA.totalLandedCost - totalAmazonFees;
+  const netProfit = retailPrice - totalLandedCost - totalAmazonFees;
   const profitMargin = (netProfit / retailPrice) * 100;
   const monthlyProfit = netProfit * MOCK_DATA.monthlySalesVelocity;
 
   const waterfallData = [
     { name: 'Retail Price', value: retailPrice, color: '#208094' },
-    { name: 'Product Cost', value: -MOCK_DATA.totalLandedCost, color: '#EF4444' },
+    { name: 'Product Cost', value: -totalLandedCost, color: '#EF4444' },
     { name: 'Amazon Fees', value: -totalAmazonFees, color: '#F59E0B' },
     { name: 'Net Profit', value: netProfit, color: '#10B981' },
   ];
@@ -421,7 +658,9 @@ function ScaleAnalysisCard() {
 }
 
 // Component: Risk Assessment (5 Cards)
-function RiskAssessmentCard() {
+function RiskAssessmentCard({ category }: { category: string }) {
+  const risks = generateRisks(category);
+  
   const getRiskStyles = (level: 'Low' | 'Medium' | 'High') => {
     if (level === 'High') return 'bg-red-500/10 border-red-500/30 text-red-400';
     if (level === 'Medium') return 'bg-yellow-500/10 border-yellow-500/30 text-yellow-400';
@@ -442,7 +681,7 @@ function RiskAssessmentCard() {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {MOCK_DATA.risks.map((risk) => {
+        {risks.map((risk) => {
           const Icon = risk.icon;
           return (
             <div
@@ -561,7 +800,9 @@ function MarketPositioningCard() {
 }
 
 // Component: Action Roadmap with Weeks
-function ActionRoadmap() {
+function ActionRoadmap({ shippingMethod, category }: { shippingMethod: 'Air' | 'Sea', category: string }) {
+  const roadmap = generateRoadmap(shippingMethod, category);
+  
   return (
     <Card className="bg-zinc-900 border-zinc-800 p-6">
       <div className="flex items-center gap-2 mb-6">
@@ -570,7 +811,7 @@ function ActionRoadmap() {
       </div>
 
       <div className="space-y-4">
-        {MOCK_DATA.roadmap.map((step, index) => (
+        {roadmap.map((step, index) => (
           <div key={index} className="flex gap-4">
             <div className="flex flex-col items-center">
               <div className={`w-10 h-10 rounded-full flex items-center justify-center font-semibold text-xs ${
@@ -580,7 +821,7 @@ function ActionRoadmap() {
               }`}>
                 {step.completed ? <Check className="h-5 w-5" /> : step.week}
               </div>
-              {index < MOCK_DATA.roadmap.length - 1 && (
+              {index < roadmap.length - 1 && (
                 <div className="w-0.5 h-16 bg-zinc-800 mt-2" />
               )}
             </div>
@@ -716,7 +957,11 @@ function ResultsContent() {
     }
   }, [searchParams]);
 
-  const productName = answers.details?.split(',')[0] || answers.project_name || MOCK_DATA.productName;
+  const productName = answers.product_desc?.split(',')[0] || answers.project_name || BASE_MOCK_DATA.productName;
+  const category = answers.category || 'Electronics'; // Default category
+  const shippingMethod = inferShippingMethod(answers.priority || '', answers.timeline || '');
+  const costBreakdown = generateCostBreakdown(answers);
+  const totalLandedCost = costBreakdown.totalLandedCost;
 
   return (
     <div className="min-h-screen bg-zinc-950 py-8">
@@ -724,21 +969,21 @@ function ResultsContent() {
         {/* Section 1: Hero Metric Card (Full Width) */}
         <HeroMetricCard
           productName={productName}
-          asin={MOCK_DATA.asin}
-          totalLandedCost={MOCK_DATA.totalLandedCost}
-          margin={MOCK_DATA.estimatedMargin}
+          asin={BASE_MOCK_DATA.asin}
+          totalLandedCost={totalLandedCost}
+          margin={BASE_MOCK_DATA.estimatedMargin}
         />
 
         {/* Bento Grid: Sections 2-8 */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {/* Section 2: Cost Breakdown (2 columns) */}
           <div className="md:col-span-2">
-            <CostBreakdownCard />
+            <CostBreakdownCard answers={answers} />
           </div>
 
           {/* Section 3: Profitability Simulator (1 column) */}
           <div className="md:col-span-1">
-            <ProfitabilitySimulator />
+            <ProfitabilitySimulator totalLandedCost={totalLandedCost} />
           </div>
 
           {/* Section 4: Scale Analysis (1 column) */}
@@ -748,7 +993,7 @@ function ResultsContent() {
 
           {/* Section 5: Risk Assessment (2 columns) */}
           <div className="md:col-span-2">
-            <RiskAssessmentCard />
+            <RiskAssessmentCard category={category} />
           </div>
 
           {/* Section 6: Market Positioning (Full Width) */}
@@ -758,7 +1003,7 @@ function ResultsContent() {
 
           {/* Section 7: Action Roadmap (Full Width) */}
           <div className="md:col-span-3">
-            <ActionRoadmap />
+            <ActionRoadmap shippingMethod={shippingMethod} category={category} />
           </div>
 
           {/* Section 8: CTA & Services (Full Width) */}

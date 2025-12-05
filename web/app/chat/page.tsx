@@ -20,80 +20,165 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Send } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 
-// Precision Data Collection Flow - High-Fidelity Questions for Calculation Engine
-const ONBOARDING_STEPS = [
-  // Phase 1: Setup
+// Platform Neutral & General B2B/D2C Sourcing Flow
+const SOURCING_STEPS = [
+  // --- Phase 1: Setup ---
   {
     id: 'project_name',
     type: 'text' as const,
-    question: "Hi, I'm Nexi! Let's analyze your product. What would you like to call this project?",
-    placeholder: "e.g. Japanese Gummy Expansion"
+    question: "Hi, I'm Nexi. Let's analyze your product opportunity. What would you like to call this project?",
+    placeholder: "e.g. Premium Pet Treats – US Launch"
+  },
+  {
+    id: 'business_model',
+    type: 'select' as const,
+    question: "What best describes your business model?",
+    options: [
+      "Brand owner (D2C / Online Store)",
+      "Brand owner (Wholesale / B2B)",
+      "Reseller / Distributor",
+      "Manufacturer / Factory",
+      "Agency / Consultant"
+    ]
   },
   {
     id: 'channel',
     type: 'select' as const,
-    question: "What is your main sales channel?",
-    options: ["Amazon FBA", "Shopify / DTC", "TikTok Shop", "Retail / Wholesale"]
+    question: "Where do you expect most of your sales to come from?",
+    options: [
+      "Direct-to-Consumer (Shopify/Woo)",
+      "Online Marketplaces (Amazon/Walmart)",
+      "Social Commerce (TikTok/Insta)",
+      "B2B Marketplaces (Alibaba/Faire)",
+      "Retail / Wholesale Channels",
+      "Multi-channel Mix",
+      "Not sure yet"
+    ]
   },
   {
     id: 'market',
     type: 'select' as const,
-    question: "Which market are you primarily targeting?",
-    options: ["United States", "Canada", "Europe (EU)", "United Kingdom", "Korea/Japan"]
+    question: "Which geographic market are you primarily targeting for this product?",
+    options: [
+      "North America (US / Canada)",
+      "Europe (EU)",
+      "United Kingdom",
+      "East Asia (Korea / Japan)",
+      "Southeast Asia",
+      "Middle East",
+      "Latin America",
+      "Global / Multi-region"
+    ]
   },
-  // Phase 2: Product (SPLIT into Description & Price)
+
+  // --- Phase 2: Product ---
   {
     id: 'origin',
     type: 'select' as const,
-    question: "Where do you expect to source this product from?",
-    options: ["China", "South Korea", "Vietnam", "Other Asia", "Not sure"]
+    question: "Where do you expect to source or manufacture this product?",
+    options: [
+      "China (Mainland)",
+      "Vietnam",
+      "India",
+      "Mexico",
+      "South Korea",
+      "Taiwan",
+      "Thailand",
+      "Eastern Europe",
+      "Open to recommendations"
+    ]
   },
   {
     id: 'stage',
     type: 'select' as const,
-    question: "What stage is this product at?",
-    options: ["New test product (Feasibility)", "Existing product (Cost check)", "Scaling up"]
+    question: "What stage is this product currently at?",
+    options: [
+      "Just exploring ideas",
+      "Testing new product (Samples)",
+      "Already selling (Checking costs)",
+      "Scaling up proven product",
+      "In trouble (Low margins)"
+    ]
   },
   {
-    id: 'product_desc', // Step 6-A: Description only
+    id: 'product_desc',
     type: 'text' as const,
-    question: "Please describe your product in detail. (What is it? What are the key features?)",
-    placeholder: "e.g. Wireless noise-cancelling headphones, black color, foldable..."
+    question: "Please describe your product in as much detail as you can. What is it and what makes it different?",
+    placeholder: "e.g. Wireless over-ear headphones, ANC, foldable..."
+  },
+  
+  // --- Step 8: Pricing (Split for better UX) ---
+  {
+    id: 'pricing_metric',
+    type: 'select' as const,
+    question: "What do you know about your pricing or margin targets?",
+    options: [
+      "I know my Target Retail Price",
+      "I know my Current Landed Cost",
+      "I know my Target Margin %",
+      "I'm not sure (Show ranges)"
+    ]
   },
   {
-    id: 'target_price', // Step 6-B: Price only
+    id: 'pricing_value',
     type: 'text' as const,
-    question: "What is your target retail price (or target landed cost)?",
-    placeholder: "e.g. Retail $79-99, or Landed <$15"
+    question: "Great. Please enter that value (e.g., '$79-99', '$14/unit', or '40%').",
+    placeholder: "Type your target value..."
   },
-  // Phase 3: Logistics & Strategy
+
+  // --- Phase 3: Logistics & Strategy ---
   {
     id: 'trade_term',
     type: 'select' as const,
-    question: "What trade term do you prefer? (DDP is easiest for beginners)",
-    options: ["DDP (Door-to-door, Duty Paid)", "FOB (Port only)", "Ex-Works (Factory pickup)", "Not sure"]
+    question: "How do you prefer to structure the logistics and responsibilities?",
+    options: [
+      "DDP style (All-inclusive delivery)",
+      "FOB / CIF style (Supplier to Port)",
+      "Ex-Works style (Pickup at Factory)",
+      "Flexible (Recommend best)"
+    ]
   },
   {
     id: 'priority',
     type: 'select' as const,
-    question: "What matters more to you right now?",
-    options: ["Lowest Cost", "Fastest Speed", "Balanced"]
+    question: "Right now, what matters most for this product?",
+    options: [
+      "Maximize Gross Margin",
+      "Minimize Upfront Cash Risk",
+      "Speed to Launch",
+      "Balance (Profit/Speed/Risk)",
+      "Simplest Operations"
+    ]
   },
   {
     id: 'volume',
     type: 'select' as const,
-    question: "Roughly what is your monthly volume plan?",
-    options: ["Test run (< 50 units)", "Small launch (100-500 units)", "Scale (1000+ units)"]
+    question: "Roughly how many units do you expect to move per month?",
+    options: [
+      "Prototype (< 20 units)",
+      "Small Test (20-100 units)",
+      "Launch (100-500 units)",
+      "Growing (500-2,000 units)",
+      "Scaling (2,000-5,000 units)",
+      "High Scale (5,000+ units)",
+      "No idea"
+    ]
   },
   {
     id: 'timeline',
     type: 'select' as const,
-    question: "When do you need the first shipment to arrive?",
-    options: ["Within 1 month", "2-3 months", "Flexible"]
+    question: "When do you ideally need the first shipment or go-live?",
+    options: [
+      "Under 4 weeks (Urgent/Air)",
+      "1-2 months",
+      "2-3 months (Standard)",
+      "3-6 months (Focus on economics)",
+      "No fixed date (Feasibility check)"
+    ]
   }
 ];
 
-type Step = typeof ONBOARDING_STEPS[number] & {
+type Step = typeof SOURCING_STEPS[number] & {
   helperText?: string;
 };
 
@@ -116,8 +201,8 @@ export default function ChatPage() {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  const currentStep = ONBOARDING_STEPS[currentStepIndex];
-  const progress = isCompleted ? 100 : ((currentStepIndex + 1) / ONBOARDING_STEPS.length) * 100;
+  const currentStep = SOURCING_STEPS[currentStepIndex];
+  const progress = isCompleted ? 100 : ((currentStepIndex + 1) / SOURCING_STEPS.length) * 100;
 
   // Initialize with first question
   useEffect(() => {
@@ -158,15 +243,15 @@ export default function ChatPage() {
       }
     }
 
-    // Format price input for target_price (optional formatting)
+    // Format price input for pricing_value (optional formatting)
     let displayValue = textInput.trim();
-    if (currentStep.id === 'target_price') {
+    if (currentStep.id === 'pricing_value') {
       // Try to extract and format price if it looks like a number
       const numValue = parseFloat(textInput.trim().replace(/[$,\s]/g, ''));
       if (!isNaN(numValue) && textInput.trim().match(/\d/)) {
         // If it contains numbers, format it nicely but keep original if it has text
-        if (textInput.trim().toLowerCase().includes('retail') || textInput.trim().toLowerCase().includes('landed')) {
-          displayValue = textInput.trim(); // Keep original if it has descriptive text
+        if (textInput.trim().toLowerCase().includes('retail') || textInput.trim().toLowerCase().includes('landed') || textInput.trim().includes('%')) {
+          displayValue = textInput.trim(); // Keep original if it has descriptive text or percentage
         } else {
           displayValue = textInput.trim(); // Keep original format
         }
@@ -231,9 +316,20 @@ export default function ChatPage() {
     setTimeout(() => {
       setShowTyping(false);
       
-      if (currentStepIndex < ONBOARDING_STEPS.length - 1) {
-        const nextStep = ONBOARDING_STEPS[currentStepIndex + 1];
-        setCurrentStepIndex(prev => prev + 1);
+      if (currentStepIndex < SOURCING_STEPS.length - 1) {
+        let nextIndex = currentStepIndex + 1;
+        let nextStep = SOURCING_STEPS[nextIndex];
+        
+        // Skip pricing_value step if user selected "I'm not sure" in pricing_metric
+        if (currentStep?.id === 'pricing_metric' && selectedOptions['pricing_metric'] === "I'm not sure (Show ranges)") {
+          // Skip pricing_value and go to next step
+          if (nextStep.id === 'pricing_value' && nextIndex < SOURCING_STEPS.length - 1) {
+            nextIndex = nextIndex + 1;
+            nextStep = SOURCING_STEPS[nextIndex];
+          }
+        }
+        
+        setCurrentStepIndex(nextIndex);
         
         // Add next system message
         setMessages(prev => [...prev, {

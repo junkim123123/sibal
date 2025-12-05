@@ -1,0 +1,63 @@
+{
+  "version": "2025",
+  "lastUpdated": "2025-01-01",
+  "description": "COGS benchmarks by category (Factory EXW as % of retail price)",
+  "categories": {
+    "Electronics": {
+      "factory_margin_pct": 0.30,
+      "range": {
+        "low": 0.25,
+        "high": 0.35
+      },
+      "notes": "Higher complexity, more components"
+    },
+    "Home & Kitchen": {
+      "factory_margin_pct": 0.22,
+      "range": {
+        "low": 0.18,
+        "high": 0.25
+      },
+      "notes": "Moderate complexity"
+    },
+    "Sports & Outdoors": {
+      "factory_margin_pct": 0.25,
+      "range": {
+        "low": 0.20,
+        "high": 0.30
+      },
+      "notes": "Varies by product type"
+    },
+    "Health & Beauty": {
+      "factory_margin_pct": 0.28,
+      "range": {
+        "low": 0.22,
+        "high": 0.32
+      },
+      "notes": "Packaging costs significant"
+    },
+    "Fashion": {
+      "factory_margin_pct": 0.18,
+      "range": {
+        "low": 0.15,
+        "high": 0.22
+      },
+      "notes": "Lower margins, higher volume"
+    },
+    "General": {
+      "factory_margin_pct": 0.25,
+      "range": {
+        "low": 0.20,
+        "high": 0.30
+      },
+      "notes": "Default benchmark"
+    }
+  },
+  "materialCostMultipliers": {
+    "Plastic / Silicone": 1.0,
+    "Metal / Stainless Steel": 1.1,
+    "Fabric / Textile": 0.9,
+    "Electronics / Battery": 1.2,
+    "Wood / Paper": 0.8
+  }
+}
+

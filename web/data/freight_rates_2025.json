@@ -1,0 +1,74 @@
+{
+  "version": "2025",
+  "lastUpdated": "2025-01-01",
+  "description": "Freight rates from Asia to US (DDP terms)",
+  "routes": {
+    "china_to_us_west_coast": {
+      "air": {
+        "per_kg": 5.5,
+        "min_charge": 50,
+        "transit_days": 5,
+        "notes": "Express air freight, includes customs clearance"
+      },
+      "sea_lcl": {
+        "per_cbm": 180,
+        "min_charge": 300,
+        "transit_days": 18,
+        "notes": "Less than Container Load, includes port fees"
+      },
+      "sea_fcl": {
+        "per_container_20ft": 3200,
+        "per_container_40ft": 4800,
+        "transit_days": 20,
+        "notes": "Full Container Load, best for 1000+ units"
+      }
+    },
+    "vietnam_to_us_west_coast": {
+      "air": {
+        "per_kg": 6.0,
+        "min_charge": 55,
+        "transit_days": 6
+      },
+      "sea_lcl": {
+        "per_cbm": 200,
+        "min_charge": 350,
+        "transit_days": 22
+      }
+    },
+    "south_korea_to_us_west_coast": {
+      "air": {
+        "per_kg": 5.0,
+        "min_charge": 45,
+        "transit_days": 4
+      },
+      "sea_lcl": {
+        "per_cbm": 160,
+        "min_charge": 280,
+        "transit_days": 16
+      }
+    }
+  },
+  "sizeTierMultipliers": {
+    "XS": {
+      "weight_kg": 0.1,
+      "volume_cbm": 0.0001,
+      "description": "Phone case size"
+    },
+    "S": {
+      "weight_kg": 0.5,
+      "volume_cbm": 0.009,
+      "description": "Shoe box size"
+    },
+    "M": {
+      "weight_kg": 1.5,
+      "volume_cbm": 0.024,
+      "description": "Backpack size"
+    },
+    "L": {
+      "weight_kg": 5.0,
+      "volume_cbm": 0.06,
+      "description": "Microwave size or bigger"
+    }
+  }
+}
+

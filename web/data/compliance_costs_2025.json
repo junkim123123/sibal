@@ -1,0 +1,90 @@
+{
+  "version": "2025",
+  "lastUpdated": "2025-01-01",
+  "description": "Compliance certification costs for US market",
+  "certifications": {
+    "FCC": {
+      "name": "Federal Communications Commission",
+      "required_for": ["Electronics with radio", "Bluetooth devices", "WiFi products"],
+      "cost_range": {
+        "low": 800,
+        "high": 1500,
+        "average": 1200
+      },
+      "timeline_weeks": 4,
+      "notes": "Required for any device that emits radio frequency"
+    },
+    "FDA": {
+      "name": "Food and Drug Administration",
+      "required_for": ["Food contact materials", "Medical devices", "Cosmetics"],
+      "cost_range": {
+        "low": 500,
+        "high": 2000,
+        "average": 1000
+      },
+      "timeline_weeks": 6,
+      "notes": "Food contact items require FDA registration"
+    },
+    "CPC": {
+      "name": "Children's Product Certificate",
+      "required_for": ["Toys", "Children's products", "Items marketed to kids"],
+      "cost_range": {
+        "low": 800,
+        "high": 1500,
+        "average": 1200
+      },
+      "timeline_weeks": 6,
+      "notes": "Required for products intended for children under 12"
+    },
+    "UL": {
+      "name": "Underwriters Laboratories",
+      "required_for": ["Electrical products", "Battery-powered devices"],
+      "cost_range": {
+        "low": 1000,
+        "high": 3000,
+        "average": 2000
+      },
+      "timeline_weeks": 8,
+      "notes": "Often required for insurance and retail acceptance"
+    },
+    "CPSC": {
+      "name": "Consumer Product Safety Commission",
+      "required_for": ["General consumer products", "Textiles", "Furniture"],
+      "cost_range": {
+        "low": 200,
+        "high": 800,
+        "average": 500
+      },
+      "timeline_weeks": 2,
+      "notes": "General safety compliance, often included in other certifications"
+    }
+  },
+  "materialBasedRequirements": {
+    "Plastic / Silicone": {
+      "certifications": ["FDA"],
+      "risk_level": "Medium",
+      "notes": "FDA required if food contact"
+    },
+    "Electronics / Battery": {
+      "certifications": ["FCC", "UL"],
+      "risk_level": "High",
+      "notes": "FCC mandatory for radio devices, UL recommended for batteries"
+    },
+    "Fabric / Textile": {
+      "certifications": ["CPSC"],
+      "risk_level": "Low",
+      "notes": "CPSC for general safety, may need flammability testing"
+    },
+    "Metal / Stainless Steel": {
+      "certifications": [],
+      "risk_level": "Low",
+      "notes": "Generally low compliance risk"
+    },
+    "Wood / Paper": {
+      "certifications": [],
+      "risk_level": "Low",
+      "notes": "Generally low compliance risk"
+    }
+  }
+}
+

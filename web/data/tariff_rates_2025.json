@@ -1,0 +1,60 @@
+{
+  "version": "2025",
+  "lastUpdated": "2025-01-01",
+  "description": "US Import Tariff Rates by HS Code and Origin Country",
+  "rates": {
+    "8518.30": {
+      "description": "Headphones, earphones and combined microphone/speaker sets",
+      "china": 0.0,
+      "vietnam": 0.0,
+      "south_korea": 0.0,
+      "notes": "Most electronics are duty-free under MFN rates"
+    },
+    "8517.12": {
+      "description": "Telephones for cellular networks",
+      "china": 0.0,
+      "vietnam": 0.0,
+      "south_korea": 0.0
+    },
+    "3926.90": {
+      "description": "Other articles of plastics",
+      "china": 6.5,
+      "vietnam": 6.5,
+      "south_korea": 6.5
+    },
+    "7323.93": {
+      "description": "Table, kitchen or other household articles of stainless steel",
+      "china": 0.0,
+      "vietnam": 0.0,
+      "south_korea": 0.0
+    },
+    "6307.90": {
+      "description": "Other made up textile articles",
+      "china": 16.0,
+      "vietnam": 16.0,
+      "south_korea": 16.0,
+      "notes": "Textiles have higher duty rates"
+    },
+    "9403.20": {
+      "description": "Other metal furniture",
+      "china": 0.0,
+      "vietnam": 0.0,
+      "south_korea": 0.0
+    },
+    "4819.50": {
+      "description": "Other paper, paperboard, cellulose wadding",
+      "china": 0.0,
+      "vietnam": 0.0,
+      "south_korea": 0.0
+    }
+  },
+  "defaultRates": {
+    "electronics": 0.0,
+    "metal": 0.0,
+    "plastic": 6.5,
+    "textile": 16.0,
+    "wood": 0.0,
+    "paper": 0.0
+  }
+}
+

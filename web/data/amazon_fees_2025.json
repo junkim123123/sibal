@@ -1,0 +1,56 @@
+{
+  "version": "2025",
+  "lastUpdated": "2025-01-01",
+  "description": "Amazon FBA fee structure for 2025",
+  "referralFees": {
+    "Electronics": 0.15,
+    "Home & Kitchen": 0.15,
+    "Sports & Outdoors": 0.15,
+    "Health & Beauty": 0.15,
+    "Fashion": 0.17,
+    "Default": 0.15
+  },
+  "fulfillmentFees": {
+    "small_standard": {
+      "weight_lbs": "0-0.75",
+      "fee": 3.50,
+      "description": "Small standard size (up to 0.75 lbs)"
+    },
+    "large_standard": {
+      "weight_lbs": "0.75-20",
+      "fee": 4.75,
+      "description": "Large standard size"
+    },
+    "small_oversize": {
+      "weight_lbs": "20-70",
+      "fee": 9.50,
+      "description": "Small oversize"
+    },
+    "large_oversize": {
+      "weight_lbs": "70+",
+      "fee": 15.00,
+      "description": "Large oversize"
+    }
+  },
+  "storageFees": {
+    "monthly": {
+      "jan_oct": 0.83,
+      "nov_dec": 2.40,
+      "unit": "per cubic foot per month",
+      "notes": "Higher rates during Q4 peak season"
+    }
+  },
+  "otherFees": {
+    "label_service": 0.20,
+    "prep_service": 0.50,
+    "removal_order": 0.15,
+    "long_term_storage": 0.15
+  },
+  "sizeTierMapping": {
+    "XS": "small_standard",
+    "S": "small_standard",
+    "M": "large_standard",
+    "L": "small_oversize"
+  }
+}
+

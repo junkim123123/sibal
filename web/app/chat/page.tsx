@@ -20,7 +20,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Send } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 
-// Deep Sourcing Flow - 10 comprehensive steps (extracted from legacy app)
+// Precision Data Collection Flow - High-Fidelity Questions for Calculation Engine
 const ONBOARDING_STEPS = [
   // Phase 1: Setup
   {
@@ -41,7 +41,7 @@ const ONBOARDING_STEPS = [
     question: "Which market are you primarily targeting?",
     options: ["United States", "Canada", "Europe (EU)", "United Kingdom", "Korea/Japan"]
   },
-  // Phase 2: Product
+  // Phase 2: Product (SPLIT into Description & Price)
   {
     id: 'origin',
     type: 'select' as const,
@@ -55,10 +55,16 @@ const ONBOARDING_STEPS = [
     options: ["New test product (Feasibility)", "Existing product (Cost check)", "Scaling up"]
   },
   {
-    id: 'details',
+    id: 'product_desc', // Step 6-A: Description only
     type: 'text' as const,
-    question: "Please describe your product and target retail price. (e.g. 'Wireless noise-cancelling headphones, target $79-99')",
-    placeholder: "Product description..."
+    question: "Please describe your product in detail. (What is it? What are the key features?)",
+    placeholder: "e.g. Wireless noise-cancelling headphones, black color, foldable..."
+  },
+  {
+    id: 'target_price', // Step 6-B: Price only
+    type: 'text' as const,
+    question: "What is your target retail price (or target landed cost)?",
+    placeholder: "e.g. Retail $79-99, or Landed <$15"
   },
   // Phase 3: Logistics & Strategy
   {
@@ -87,7 +93,9 @@ const ONBOARDING_STEPS = [
   }
 ];
 
-type Step = typeof ONBOARDING_STEPS[number];
+type Step = typeof ONBOARDING_STEPS[number] & {
+  helperText?: string;
+};
 
 type Message = {
   id: string;
@@ -104,12 +112,12 @@ export default function ChatPage() {
   const [showTyping, setShowTyping] = useState(false);
   const [showInput, setShowInput] = useState(true);
   const [textInput, setTextInput] = useState('');
-  const [isGeneratingReport, setIsGeneratingReport] = useState(false);
+  const [isCompleted, setIsCompleted] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
   const currentStep = ONBOARDING_STEPS[currentStepIndex];
-  const progress = ((currentStepIndex + 1) / ONBOARDING_STEPS.length) * 100;
+  const progress = isCompleted ? 100 : ((currentStepIndex + 1) / ONBOARDING_STEPS.length) * 100;
 
   // Initialize with first question
   useEffect(() => {
@@ -141,6 +149,36 @@ export default function ChatPage() {
     if (!currentStep || currentStep.type !== 'text') return;
     if (!textInput.trim()) return;
 
+    // Validate link for ref_link step
+    if (currentStep.id === 'ref_link') {
+      const link = textInput.trim();
+      if (!link.includes('http') && !link.includes('www') && !link.includes('amazon') && !link.includes('alibaba')) {
+        // Show validation message (optional - for now just proceed)
+        // In production, you might want to show an error message
+      }
+    }
+
+    // Format price input for target_price (optional formatting)
+    let displayValue = textInput.trim();
+    if (currentStep.id === 'target_price') {
+      // Try to extract and format price if it looks like a number
+      const numValue = parseFloat(textInput.trim().replace(/[$,\s]/g, ''));
+      if (!isNaN(numValue) && textInput.trim().match(/\d/)) {
+        // If it contains numbers, format it nicely but keep original if it has text
+        if (textInput.trim().toLowerCase().includes('retail') || textInput.trim().toLowerCase().includes('landed')) {
+          displayValue = textInput.trim(); // Keep original if it has descriptive text
+        } else {
+          displayValue = textInput.trim(); // Keep original format
+        }
+      }
+    }
+
+    // Save input
+    setSelectedOptions(prev => ({
+      ...prev,
+      [currentStep.id]: textInput.trim(),
+    }));
+
     // Hide input immediately
     setShowInput(false);
 
@@ -148,16 +186,10 @@ export default function ChatPage() {
     const userMessage: Message = {
       id: `user-${Date.now()}`,
       type: 'user',
-      content: textInput.trim(),
+      content: displayValue,
       timestamp: Date.now(),
     };
     setMessages(prev => [...prev, userMessage]);
-
-    // Save input
-    setSelectedOptions(prev => ({
-      ...prev,
-      [currentStep.id]: textInput.trim(),
-    }));
 
     // Clear input
     setTextInput('');
@@ -214,31 +246,48 @@ export default function ChatPage() {
         // Show input for next step
         setShowInput(true);
       } else {
-        // All steps complete - save data and redirect to results
-        setMessages(prev => [...prev, {
-          id: 'complete',
-          type: 'system',
-          content: "Perfect! We have all the information we need. Generating your analysis report...",
-          timestamp: Date.now(),
-        }]);
+        // All steps complete - show calculation messages
         setShowInput(false);
         
-        // Save to localStorage
-        try {
-          const onboardingData = {
-            ...selectedOptions,
-            timestamp: Date.now(),
-          };
-          localStorage.setItem('nexsupply_onboarding_data', JSON.stringify(onboardingData));
-        } catch (error) {
-          console.error('Failed to save onboarding data:', error);
-        }
+        // Show calculation progress messages
+        setMessages(prev => [...prev, {
+          id: 'calculating-1',
+          type: 'system',
+          content: "Calculating Logistics...",
+          timestamp: Date.now(),
+        }]);
         
-        // Show generating state and redirect
-        setIsGeneratingReport(true);
         setTimeout(() => {
-          router.push('/results');
-        }, 2000); // 2 second delay to show "Generating Report..." message
+          setMessages(prev => [...prev, {
+            id: 'calculating-2',
+            type: 'system',
+            content: "Checking Duty Rates...",
+            timestamp: Date.now(),
+          }]);
+        }, 1000);
+        
+        setTimeout(() => {
+          setMessages(prev => [...prev, {
+            id: 'complete',
+            type: 'system',
+            content: "Perfect! We have all the information we need. Your analysis report is ready.",
+            timestamp: Date.now(),
+          }]);
+          
+          // Save to localStorage
+          try {
+            const onboardingData = {
+              ...selectedOptions,
+              timestamp: Date.now(),
+            };
+            localStorage.setItem('nexsupply_onboarding_data', JSON.stringify(onboardingData));
+          } catch (error) {
+            console.error('Failed to save onboarding data:', error);
+          }
+          
+          // Mark as completed (will show button instead of auto-redirect)
+          setIsCompleted(true);
+        }, 2000);
       }
     }, 1500); // Typing indicator duration
   };
@@ -366,7 +415,7 @@ export default function ChatPage() {
 
           {/* Typing Indicator */}
           <AnimatePresence>
-            {(showTyping || isGeneratingReport) && (
+            {showTyping && (
               <motion.div
                 initial="hidden"
                 animate="visible"
@@ -420,7 +469,7 @@ export default function ChatPage() {
 
           {/* Input Area - Select Options or Text Input */}
           <AnimatePresence mode="wait">
-            {showInput && currentStep && (
+            {showInput && currentStep && !isCompleted && (
               <motion.div
                 key={currentStep.id}
                 initial="hidden"
@@ -471,6 +520,28 @@ export default function ChatPage() {
                     </motion.button>
                   </div>
                 )}
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          {/* Completion State - View Analysis Report Button */}
+          <AnimatePresence>
+            {isCompleted && (
+              <motion.div
+                initial="hidden"
+                animate="visible"
+                exit="exit"
+                variants={inputVariants}
+                className="flex justify-center pt-4"
+              >
+                <motion.button
+                  onClick={() => router.push('/results')}
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  className="px-8 py-4 rounded-full bg-neutral-900 text-white text-base font-semibold shadow-lg hover:shadow-xl transition-all focus:outline-none focus:ring-2 focus:ring-neutral-900 focus:ring-offset-2"
+                >
+                  View Analysis Report
+                </motion.button>
               </motion.div>
             )}
           </AnimatePresence>

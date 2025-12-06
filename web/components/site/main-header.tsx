@@ -93,10 +93,10 @@ export function MainHeader() {
                 <Link
                   key={item.href}
                   href={item.href}
-                  className={`text-sm font-medium transition-colors relative ${
+                  className={`text-xs font-normal transition-colors relative ${
                     pathname === item.href
                       ? 'text-black after:absolute after:bottom-0 after:left-0 after:right-0 after:h-0.5 after:bg-black'
-                      : 'text-zinc-600 hover:text-black'
+                      : 'text-zinc-700 hover:text-black'
                   }`}
                 >
                   {item.label}
@@ -108,17 +108,7 @@ export function MainHeader() {
           {/* Right: Action Buttons Group */}
           {!isLoading ? (
             <div className="hidden md:flex md:items-center md:gap-4">
-              {/* Get Started Button (Only when logged out) */}
-              {!isAuthenticated && (
-                <Link
-                  href="/login"
-                  className="rounded-full bg-black px-5 py-2 text-sm font-medium text-white hover:bg-zinc-800 transition-colors"
-                >
-                  Get Started
-                </Link>
-              )}
-              
-              {/* User Icon (Always visible) */}
+              {/* User Icon (Always visible - Left position) */}
               <div className="relative" ref={userMenuRef}>
                 <button
                   onClick={() => {
@@ -128,10 +118,10 @@ export function MainHeader() {
                       router.push('/login');
                     }
                   }}
-                  className="flex items-center justify-center w-9 h-9 rounded-full border border-gray-300 text-gray-700 hover:border-gray-400 hover:text-black transition-colors"
+                  className="flex items-center justify-center w-10 h-10 rounded-full border border-gray-400 text-gray-800 hover:border-gray-500 hover:text-black transition-colors"
                   aria-label="User menu"
                 >
-                  <User className="h-5 w-5" />
+                  <User className="h-6 w-6" />
                 </button>
 
                 {/* User Dropdown Menu (Logged in only) */}
@@ -153,6 +143,16 @@ export function MainHeader() {
                   </div>
                 )}
               </div>
+
+              {/* Get Started Button (Only when logged out - Right position) */}
+              {!isAuthenticated && (
+                <Link
+                  href="/login"
+                  className="rounded-full bg-black px-5 py-2 text-xs font-medium text-white hover:bg-zinc-800 transition-colors"
+                >
+                  Get Started
+                </Link>
+              )}
             </div>
           ) : (
             <div className="hidden md:flex md:items-center">

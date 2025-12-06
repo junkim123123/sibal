@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
-import { ChevronRight, Package, Truck, Settings } from 'lucide-react'
+import { ChevronRight, Package, Truck } from 'lucide-react'
 
 // Dummy data for estimates
 const dummyEstimates = [
@@ -164,10 +164,6 @@ export default function DashboardPage() {
             active={activeTab === 'shipments'}
             onClick={() => setActiveTab('shipments')}
           />
-          <TabLinkButton
-            label="Settings"
-            href="/account"
-          />
         </div>
 
         {/* Content Area */}
@@ -211,24 +207,6 @@ function TabButton({
         <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-black border-b-2 border-black" />
       )}
     </button>
-  )
-}
-
-// Tab Link Button for Settings (goes to /account)
-function TabLinkButton({
-  label,
-  href,
-}: {
-  label: string
-  href: string
-}) {
-  return (
-    <Link
-      href={href}
-      className="pb-4 px-1 text-sm font-medium text-zinc-500 hover:text-black transition-colors relative"
-    >
-      {label}
-    </Link>
   )
 }
 

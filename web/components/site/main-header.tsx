@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { Menu, X, User, LogOut } from 'lucide-react';
+import { Menu, X, User, LogOut, LayoutDashboard, LifeBuoy, Settings } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 import { signOut } from '@/app/login/actions';
 
@@ -63,6 +63,7 @@ export function MainHeader() {
     { label: 'Use Cases', href: '/use-cases' },
     { label: 'Pricing', href: '/pricing' },
     { label: 'Resources', href: '/resources' },
+    { label: 'Support', href: '/support' },
   ];
 
   return (
@@ -110,25 +111,51 @@ export function MainHeader() {
                   {userEmail ? userEmail.charAt(0).toUpperCase() : <User className="h-5 w-5" />}
                 </button>
                 {userMenuOpen && (
-                  <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg border border-neutral-200 py-1 z-50">
-                    <div className="px-4 py-2 border-b border-neutral-100">
-                      <p className="text-xs text-neutral-500">Signed in as</p>
-                      <p className="text-sm font-medium text-neutral-900 truncate">{userEmail}</p>
+                  <div className="absolute right-0 mt-2 w-56 bg-white rounded-xl shadow-xl border border-gray-200 py-2 z-50">
+                    {/* Header */}
+                    <div className="px-4 py-3 border-b border-gray-100">
+                      <p className="text-xs text-zinc-500 uppercase tracking-wide mb-1">Signed in as</p>
+                      <p className="text-sm font-semibold text-black truncate">{userEmail}</p>
                     </div>
-                    <Link
-                      href="/dashboard"
-                      onClick={() => setUserMenuOpen(false)}
-                      className="block px-4 py-2 text-sm text-neutral-700 hover:bg-neutral-50 transition-colors"
-                    >
-                      Dashboard
-                    </Link>
-                    <button
-                      onClick={handleSignOut}
-                      className="w-full text-left block px-4 py-2 text-sm text-neutral-700 hover:bg-neutral-50 transition-colors flex items-center gap-2"
-                    >
-                      <LogOut className="h-4 w-4" />
-                      Sign out
-                    </button>
+                    
+                    {/* Menu Items */}
+                    <div className="py-1">
+                      <Link
+                        href="/dashboard"
+                        onClick={() => setUserMenuOpen(false)}
+                        className="flex items-center gap-3 px-4 py-3 text-sm text-zinc-700 hover:bg-gray-50 transition-colors"
+                      >
+                        <LayoutDashboard className="h-4 w-4 flex-shrink-0" />
+                        Dashboard
+                      </Link>
+                      <Link
+                        href="/support"
+                        onClick={() => setUserMenuOpen(false)}
+                        className="flex items-center gap-3 px-4 py-3 text-sm text-zinc-700 hover:bg-gray-50 transition-colors"
+                      >
+                        <LifeBuoy className="h-4 w-4 flex-shrink-0" />
+                        Support
+                      </Link>
+                      <Link
+                        href="/account"
+                        onClick={() => setUserMenuOpen(false)}
+                        className="flex items-center gap-3 px-4 py-3 text-sm text-zinc-700 hover:bg-gray-50 transition-colors"
+                      >
+                        <Settings className="h-4 w-4 flex-shrink-0" />
+                        Account
+                      </Link>
+                    </div>
+                    
+                    {/* Footer */}
+                    <div className="border-t border-gray-100 pt-1">
+                      <button
+                        onClick={handleSignOut}
+                        className="w-full text-left flex items-center gap-3 px-4 py-3 text-sm text-red-600 hover:bg-gray-50 transition-colors"
+                      >
+                        <LogOut className="h-4 w-4 flex-shrink-0" />
+                        Log out
+                      </button>
+                    </div>
                   </div>
                 )}
               </div>

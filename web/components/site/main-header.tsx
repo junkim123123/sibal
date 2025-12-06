@@ -1,13 +1,62 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
-import { Menu, X, User } from 'lucide-react';
+import { usePathname, useRouter } from 'next/navigation';
+import { Menu, X, User, LogOut } from 'lucide-react';
+import { createClient } from '@/lib/supabase/client';
+import { signOut } from '@/app/login/actions';
 
 export function MainHeader() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [userMenuOpen, setUserMenuOpen] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [userEmail, setUserEmail] = useState<string | null>(null);
   const pathname = usePathname();
+  const router = useRouter();
+  const menuRef = useRef<HTMLDivElement>(null);
+
+  // Check authentication status
+  useEffect(() => {
+    async function checkAuth() {
+      try {
+        const supabase = createClient();
+        const { data: { user } } = await supabase.auth.getUser();
+        setIsAuthenticated(!!user);
+        setUserEmail(user?.email || null);
+      } catch (error) {
+        setIsAuthenticated(false);
+        setUserEmail(null);
+      } finally {
+        setIsLoading(false);
+      }
+    }
+    checkAuth();
+  }, []);
+
+  // Close menu when clicking outside
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+        setUserMenuOpen(false);
+      }
+    }
+
+    if (userMenuOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [userMenuOpen]);
+
+  const handleSignOut = async () => {
+    await signOut();
+    setUserMenuOpen(false);
+    router.refresh();
+  };
 
   const navItems = [
     { label: 'How It Works', href: '/how-it-works' },
@@ -44,14 +93,53 @@ export function MainHeader() {
 
           {/* Desktop CTA */}
           <div className="hidden md:flex md:items-center md:gap-4">
-            <button
-              onClick={() => alert('See you soon')}
-              className="p-2 text-neutral-600 hover:text-neutral-900 transition-colors"
-              title="Sign in"
-              aria-label="Sign in"
-            >
-              <User className="h-5 w-5" />
-            </button>
+            {/* User - Sign In button or Avatar Dropdown */}
+            {isLoading ? (
+              <div className="px-4 py-2 text-neutral-400 text-sm font-medium">
+                Loading...
+              </div>
+            ) : isAuthenticated ? (
+              <div className="relative" ref={menuRef}>
+                <button
+                  onClick={() => setUserMenuOpen(!userMenuOpen)}
+                  className="flex items-center justify-center w-9 h-9 rounded-full bg-neutral-900 text-white text-sm font-medium hover:bg-neutral-800 transition-colors cursor-pointer"
+                  title="User menu"
+                  aria-label="User menu"
+                  aria-expanded={userMenuOpen}
+                >
+                  {userEmail ? userEmail.charAt(0).toUpperCase() : <User className="h-5 w-5" />}
+                </button>
+                {userMenuOpen && (
+                  <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg border border-neutral-200 py-1 z-50">
+                    <div className="px-4 py-2 border-b border-neutral-100">
+                      <p className="text-xs text-neutral-500">Signed in as</p>
+                      <p className="text-sm font-medium text-neutral-900 truncate">{userEmail}</p>
+                    </div>
+                    <Link
+                      href="/dashboard"
+                      onClick={() => setUserMenuOpen(false)}
+                      className="block px-4 py-2 text-sm text-neutral-700 hover:bg-neutral-50 transition-colors"
+                    >
+                      Dashboard
+                    </Link>
+                    <button
+                      onClick={handleSignOut}
+                      className="w-full text-left block px-4 py-2 text-sm text-neutral-700 hover:bg-neutral-50 transition-colors flex items-center gap-2"
+                    >
+                      <LogOut className="h-4 w-4" />
+                      Sign out
+                    </button>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <Link
+                href="/login"
+                className="px-4 py-2 text-sm font-medium text-neutral-700 hover:text-neutral-900 transition-colors"
+              >
+                Sign In
+              </Link>
+            )}
             <Link
               href="/chat"
               className="rounded-full bg-neutral-900 px-6 py-2 text-sm font-medium text-white hover:bg-neutral-800 transition-colors"
@@ -91,15 +179,39 @@ export function MainHeader() {
               </Link>
             ))}
             <div className="border-t border-neutral-200 pt-4">
-              <button
-                onClick={() => {
-                  alert('See you soon');
-                  setMobileMenuOpen(false);
-                }}
-                className="block w-full text-left rounded-md px-3 py-2 text-base font-medium text-neutral-600 hover:bg-neutral-50 hover:text-neutral-900"
-              >
-                Sign in
-              </button>
+              {isLoading ? (
+                <div className="block w-full text-left rounded-md px-3 py-2 text-base font-medium text-neutral-400">
+                  Loading...
+                </div>
+              ) : isAuthenticated ? (
+                <>
+                  <Link
+                    href="/dashboard"
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="block w-full text-left rounded-md px-3 py-2 text-base font-medium text-neutral-600 hover:bg-neutral-50 hover:text-neutral-900"
+                  >
+                    Dashboard
+                  </Link>
+                  <button
+                    onClick={async () => {
+                      await handleSignOut();
+                      setMobileMenuOpen(false);
+                    }}
+                    className="block w-full text-left rounded-md px-3 py-2 text-base font-medium text-neutral-600 hover:bg-neutral-50 hover:text-neutral-900 flex items-center gap-2"
+                  >
+                    <LogOut className="h-4 w-4" />
+                    Sign out
+                  </button>
+                </>
+              ) : (
+                <Link
+                  href="/login"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="block w-full text-left rounded-md px-3 py-2 text-base font-medium text-neutral-600 hover:bg-neutral-50 hover:text-neutral-900"
+                >
+                  Sign in
+                </Link>
+              )}
               <Link
                 href="/chat"
                 className="mt-2 block w-full rounded-full bg-neutral-900 px-6 py-2 text-center text-sm font-medium text-white hover:bg-neutral-800 transition-colors"

@@ -1,9 +1,11 @@
 'use client'
 
 import { useState } from 'react'
+import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { login, signup } from './actions'
 import { Button } from '@/components/ui/button'
+import { Chrome } from 'lucide-react'
 
 export default function LoginPage() {
   const [isSignUp, setIsSignUp] = useState(false)
@@ -35,125 +37,184 @@ export default function LoginPage() {
         router.refresh()
       }
     } catch (err) {
-      setError('알 수 없는 오류가 발생했습니다.')
+      setError('An unexpected error occurred.')
       setIsLoading(false)
     }
   }
 
+  const handleGoogleSignIn = () => {
+    // Placeholder for Google OAuth
+    alert('Google sign-in coming soon')
+  }
+
   return (
-    <div className="min-h-screen bg-background flex items-center justify-center px-4 py-12">
-      <div className="w-full max-w-md">
-        <div className="bg-card border border-subtle-border rounded-lg p-8 shadow-lg">
-          {/* Header */}
-          <div className="text-center mb-8">
-            <h1 className="text-3xl font-bold text-foreground mb-2">
-              {isSignUp ? '회원가입' : '로그인'}
-            </h1>
-            <p className="text-sm text-muted-foreground">
-              {isSignUp
-                ? '새 계정을 만들어 시작하세요'
-                : '계정에 로그인하세요'}
-            </p>
-          </div>
+    <div className="min-h-screen bg-white flex">
+      {/* Left Side - Login Form */}
+      <div className="flex-1 flex flex-col bg-white lg:w-1/2">
+        {/* Logo */}
+        <div className="p-6 lg:p-8">
+          <Link href="/" className="inline-block">
+            <span className="text-2xl font-bold text-neutral-900">NexSupply</span>
+          </Link>
+        </div>
 
-          {/* Error Message */}
-          {error && (
-            <div className="mb-6 p-4 bg-destructive/10 border border-destructive/20 rounded-lg">
-              <p className="text-sm text-destructive">{error}</p>
-            </div>
-          )}
-
-          {/* Form */}
-          <form onSubmit={handleSubmit} className="space-y-6">
-            {/* Email Input */}
-            <div>
-              <label
-                htmlFor="email"
-                className="block text-sm font-medium text-foreground mb-2"
-              >
-                이메일
-              </label>
-              <input
-                id="email"
-                name="email"
-                type="email"
-                autoComplete="email"
-                required
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="w-full px-4 py-3 bg-input border border-subtle-border rounded-lg text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent transition-all"
-                placeholder="your@email.com"
-                disabled={isLoading}
-              />
+        {/* Form Container */}
+        <div className="flex-1 flex items-center justify-center px-6 lg:px-12">
+          <div className="w-full max-w-md">
+            {/* Header */}
+            <div className="mb-8">
+              <h1 className="text-3xl font-bold text-neutral-900 mb-2">
+                Welcome back
+              </h1>
+              <p className="text-sm text-neutral-600">
+                {isSignUp
+                  ? 'Create your account to get started'
+                  : 'Sign in to your account to continue'}
+              </p>
             </div>
 
-            {/* Password Input */}
-            <div>
-              <label
-                htmlFor="password"
-                className="block text-sm font-medium text-foreground mb-2"
-              >
-                비밀번호
-              </label>
-              <input
-                id="password"
-                name="password"
-                type="password"
-                autoComplete={isSignUp ? 'new-password' : 'current-password'}
-                required
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="w-full px-4 py-3 bg-input border border-subtle-border rounded-lg text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent transition-all"
-                placeholder="••••••••"
-                disabled={isLoading}
-                minLength={6}
-              />
-              {isSignUp && (
-                <p className="mt-2 text-xs text-muted-foreground">
-                  비밀번호는 최소 6자 이상이어야 합니다
-                </p>
-              )}
-            </div>
+            {/* Error Message */}
+            {error && (
+              <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
+                <p className="text-sm text-red-600">{error}</p>
+              </div>
+            )}
 
-            {/* Submit Button */}
-            <Button
-              type="submit"
-              variant="primary"
-              size="lg"
-              className="w-full"
-              disabled={isLoading}
-            >
-              {isLoading
-                ? '처리 중...'
-                : isSignUp
-                ? '회원가입'
-                : '로그인'}
-            </Button>
-          </form>
-
-          {/* Toggle Sign Up/Login */}
-          <div className="mt-6 text-center">
+            {/* Google Sign In Button */}
             <button
               type="button"
-              onClick={() => {
-                setIsSignUp(!isSignUp)
-                setError(null)
-              }}
-              className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+              onClick={handleGoogleSignIn}
               disabled={isLoading}
+              className="w-full flex items-center justify-center gap-3 px-4 py-3 border border-neutral-300 rounded-lg text-sm font-medium text-neutral-700 bg-white hover:bg-neutral-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed mb-6"
             >
-              {isSignUp ? (
-                <>
-                  이미 계정이 있으신가요?{' '}
-                  <span className="font-medium text-primary">로그인</span>
-                </>
-              ) : (
-                <>
-                  계정이 없으신가요?{' '}
-                  <span className="font-medium text-primary">회원가입</span>
-                </>
-              )}
+              <Chrome className="h-5 w-5" />
+              Continue with Google
             </button>
+
+            {/* Divider */}
+            <div className="relative mb-6">
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t border-neutral-200"></div>
+              </div>
+              <div className="relative flex justify-center text-xs uppercase">
+                <span className="bg-white px-2 text-neutral-500">
+                  Or sign in with email
+                </span>
+              </div>
+            </div>
+
+            {/* Form */}
+            <form onSubmit={handleSubmit} className="space-y-5">
+              {/* Email Input */}
+              <div>
+                <label
+                  htmlFor="email"
+                  className="block text-sm font-medium text-neutral-900 mb-2"
+                >
+                  Email
+                </label>
+                <input
+                  id="email"
+                  name="email"
+                  type="email"
+                  autoComplete="email"
+                  required
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="w-full px-4 py-3 border border-neutral-300 rounded-lg text-neutral-900 placeholder:text-neutral-400 bg-white focus:outline-none focus:ring-2 focus:ring-neutral-900 focus:border-transparent transition-all text-sm"
+                  placeholder="you@example.com"
+                  disabled={isLoading}
+                />
+              </div>
+
+              {/* Password Input */}
+              <div>
+                <label
+                  htmlFor="password"
+                  className="block text-sm font-medium text-neutral-900 mb-2"
+                >
+                  Password
+                </label>
+                <input
+                  id="password"
+                  name="password"
+                  type="password"
+                  autoComplete={isSignUp ? 'new-password' : 'current-password'}
+                  required
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="w-full px-4 py-3 border border-neutral-300 rounded-lg text-neutral-900 placeholder:text-neutral-400 bg-white focus:outline-none focus:ring-2 focus:ring-neutral-900 focus:border-transparent transition-all text-sm"
+                  placeholder="••••••••"
+                  disabled={isLoading}
+                  minLength={6}
+                />
+                {isSignUp && (
+                  <p className="mt-2 text-xs text-neutral-500">
+                    Password must be at least 6 characters
+                  </p>
+                )}
+              </div>
+
+              {/* Submit Button */}
+              <Button
+                type="submit"
+                variant="primary"
+                size="lg"
+                className="w-full bg-neutral-900 hover:bg-neutral-800 text-white"
+                disabled={isLoading}
+              >
+                {isLoading ? 'Processing...' : isSignUp ? 'Sign up' : 'Sign in'}
+              </Button>
+            </form>
+
+            {/* Toggle Sign Up/Login */}
+            <div className="mt-6 text-center">
+              <button
+                type="button"
+                onClick={() => {
+                  setIsSignUp(!isSignUp)
+                  setError(null)
+                }}
+                className="text-sm text-neutral-600 hover:text-neutral-900 transition-colors"
+                disabled={isLoading}
+              >
+                {isSignUp ? (
+                  <>
+                    Already have an account?{' '}
+                    <span className="font-medium text-neutral-900">Sign in</span>
+                  </>
+                ) : (
+                  <>
+                    Don't have an account?{' '}
+                    <span className="font-medium text-neutral-900">Sign up</span>
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Right Side - Dark Section */}
+      <div className="hidden lg:flex lg:w-1/2 bg-neutral-900 relative overflow-hidden">
+        {/* Background Pattern */}
+        <div className="absolute inset-0 opacity-5">
+          <div className="absolute inset-0" style={{
+            backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='1'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
+          }}></div>
+        </div>
+
+        {/* Quote Content */}
+        <div className="relative z-10 flex items-center justify-center h-full px-12">
+          <div className="text-center max-w-md">
+            <blockquote className="text-3xl lg:text-4xl font-bold text-white leading-tight mb-4">
+              Shipping simplified.
+              <br />
+              Costs clarified.
+            </blockquote>
+            <p className="text-lg text-neutral-400 mt-6">
+              Your all-in-one platform for intelligent sourcing decisions.
+            </p>
           </div>
         </div>
       </div>

@@ -83,7 +83,7 @@ export function MainHeader() {
         <div className="flex h-[72px] items-center justify-between">
           {/* Left: Logo */}
           <Link href="/" className="flex items-center">
-            <span className="text-xl font-bold text-black">NexSupply</span>
+            <span className="text-2xl font-bold text-black">NexSupply</span>
           </Link>
 
           {/* Center: Navigation Links (Based on Page Type) */}
@@ -93,7 +93,7 @@ export function MainHeader() {
                 <Link
                   key={item.href}
                   href={item.href}
-                  className={`text-xs font-normal transition-colors relative ${
+                  className={`text-sm font-normal transition-colors relative ${
                     pathname === item.href
                       ? 'text-black after:absolute after:bottom-0 after:left-0 after:right-0 after:h-0.5 after:bg-black'
                       : 'text-zinc-700 hover:text-black'
@@ -108,7 +108,17 @@ export function MainHeader() {
           {/* Right: Action Buttons Group */}
           {!isLoading ? (
             <div className="hidden md:flex md:items-center md:gap-4">
-              {/* User Icon (Always visible - Left position) */}
+              {/* Get Started Button (Show on marketing pages, regardless of auth status - Left position) */}
+              {!isAppPage && (
+                <Link
+                  href="/chat"
+                  className="rounded-full bg-black px-5 py-2 text-sm font-medium text-white hover:bg-zinc-800 transition-colors"
+                >
+                  Get Started
+                </Link>
+              )}
+
+              {/* User Icon (Always visible - Right position) */}
               <div className="relative" ref={userMenuRef}>
                 <button
                   onClick={() => {
@@ -143,16 +153,6 @@ export function MainHeader() {
                   </div>
                 )}
               </div>
-
-              {/* Get Started Button (Show on marketing pages, regardless of auth status) */}
-              {!isAppPage && (
-                <Link
-                  href="/chat"
-                  className="rounded-full bg-black px-5 py-2 text-xs font-medium text-white hover:bg-zinc-800 transition-colors"
-                >
-                  Get Started
-                </Link>
-              )}
             </div>
           ) : (
             <div className="hidden md:flex md:items-center">

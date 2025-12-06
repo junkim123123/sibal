@@ -3,16 +3,18 @@
 import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { Menu, X, LogOut } from 'lucide-react';
+import { Menu, X, User } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 import { signOut } from '@/app/login/actions';
 
 export function MainHeader() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [userMenuOpen, setUserMenuOpen] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const pathname = usePathname();
   const router = useRouter();
+  const userMenuRef = useRef<HTMLDivElement>(null);
 
   // Check authentication status
   useEffect(() => {
@@ -30,98 +32,129 @@ export function MainHeader() {
     checkAuth();
   }, []);
 
+  // Close user menu when clicking outside
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (userMenuRef.current && !userMenuRef.current.contains(event.target as Node)) {
+        setUserMenuOpen(false);
+      }
+    }
+
+    if (userMenuOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [userMenuOpen]);
+
   const handleSignOut = async () => {
     await signOut();
+    setUserMenuOpen(false);
     router.refresh();
   };
 
-  // Simplified marketing menu (logged out)
+  // Determine if current page is an app page
+  const isAppPage = pathname?.startsWith('/dashboard') || 
+                    pathname?.startsWith('/account') || 
+                    pathname?.startsWith('/support');
+
+  // Marketing navigation (for landing pages)
   const marketingNavItems = [
-    { label: 'Solutions', href: '/how-it-works' }, // Merges How it works & Use cases
-    { label: 'Pricing', href: '/pricing' },
-    { label: 'Resources', href: '/resources' }, // Merges Resources & Support
+    { label: 'Solutions', href: '/how-it-works' },
+    { label: 'Use Cases', href: '/use-cases' },
+    { label: 'Resources', href: '/resources' },
   ];
 
-  // App navigation (logged in)
+  // App navigation (for app pages)
   const appNavItems = [
     { label: 'Dashboard', href: '/dashboard' },
     { label: 'Support', href: '/support' },
     { label: 'Account', href: '/account' },
   ];
 
+  // Navigation items based on current page type
+  const currentNavItems = isAppPage ? appNavItems : marketingNavItems;
+
   return (
     <header className="sticky top-0 z-50 w-full border-b border-gray-200 bg-white">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="flex h-16 items-center justify-between">
-          {/* Logo */}
+        <div className="flex h-[72px] items-center justify-between">
+          {/* Left: Logo */}
           <Link href="/" className="flex items-center">
             <span className="text-xl font-bold text-black">NexSupply</span>
           </Link>
 
-          {/* Desktop Navigation - Center/Right */}
+          {/* Center: Navigation Links (Based on Page Type) */}
+          {!isLoading && (
+            <nav className="hidden md:flex md:items-center md:gap-8 md:absolute md:left-1/2 md:-translate-x-1/2">
+              {currentNavItems.map((item) => (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className={`text-sm font-medium transition-colors relative ${
+                    pathname === item.href
+                      ? 'text-black after:absolute after:bottom-0 after:left-0 after:right-0 after:h-0.5 after:bg-black'
+                      : 'text-zinc-600 hover:text-black'
+                  }`}
+                >
+                  {item.label}
+                </Link>
+              ))}
+            </nav>
+          )}
+
+          {/* Right: Action Buttons Group */}
           {!isLoading ? (
-            <>
-              {isAuthenticated ? (
-                // Logged In: Show App Navigation (Dr. B Style - Right Aligned)
-                <nav className="hidden md:flex md:items-center md:gap-8">
-                  {appNavItems.map((item) => (
-                    <Link
-                      key={item.href}
-                      href={item.href}
-                      className={`text-sm font-medium transition-colors relative ${
-                        pathname === item.href
-                          ? 'text-black after:absolute after:bottom-0 after:left-0 after:right-0 after:h-0.5 after:bg-black'
-                          : 'text-zinc-600 hover:text-black'
-                      }`}
-                    >
-                      {item.label}
-                    </Link>
-                  ))}
-                  <button
-                    onClick={handleSignOut}
-                    className="text-sm font-medium text-zinc-500 hover:text-red-500 transition-colors"
-                  >
-                    Log out
-                  </button>
-                </nav>
-              ) : (
-                // Logged Out: Show Marketing Navigation + Sign In + Get Started
-                <>
-                  <nav className="hidden md:flex md:items-center md:gap-8">
-                    {marketingNavItems.map((item) => (
-                      <Link
-                        key={item.href}
-                        href={item.href}
-                        className={`text-sm font-medium transition-colors relative ${
-                          pathname === item.href
-                            ? 'text-black after:absolute after:bottom-0 after:left-0 after:right-0 after:h-0.5 after:bg-black'
-                            : 'text-zinc-600 hover:text-black'
-                        }`}
-                      >
-                        {item.label}
-                      </Link>
-                    ))}
-                  </nav>
-                  {/* Right Side Actions - Logged Out */}
-                  <div className="hidden md:flex md:items-center md:gap-4">
-                    <Link
-                      href="/login"
-                      className="text-sm font-medium text-zinc-600 hover:text-black transition-colors"
-                    >
-                      Sign In
-                    </Link>
-                    <Link
-                      href="/chat"
-                      className="rounded-full bg-black px-5 py-2 text-sm font-medium text-white hover:bg-zinc-800 transition-colors"
-                    >
-                      Get Started
-                    </Link>
-                  </div>
-                </>
+            <div className="hidden md:flex md:items-center md:gap-4">
+              {/* Get Started Button (Only when logged out) */}
+              {!isAuthenticated && (
+                <Link
+                  href="/login"
+                  className="rounded-full bg-black px-5 py-2 text-sm font-medium text-white hover:bg-zinc-800 transition-colors"
+                >
+                  Get Started
+                </Link>
               )}
-            </>
+              
+              {/* User Icon (Always visible) */}
+              <div className="relative" ref={userMenuRef}>
+                <button
+                  onClick={() => {
+                    if (isAuthenticated) {
+                      setUserMenuOpen(!userMenuOpen);
+                    } else {
+                      router.push('/login');
+                    }
+                  }}
+                  className="flex items-center justify-center w-9 h-9 rounded-full border border-gray-300 text-gray-700 hover:border-gray-400 hover:text-black transition-colors"
+                  aria-label="User menu"
+                >
+                  <User className="h-5 w-5" />
+                </button>
+
+                {/* User Dropdown Menu (Logged in only) */}
+                {isAuthenticated && userMenuOpen && (
+                  <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-50">
+                    <Link
+                      href="/dashboard"
+                      onClick={() => setUserMenuOpen(false)}
+                      className="block px-4 py-2 text-sm font-semibold text-black hover:bg-gray-50 transition-colors"
+                    >
+                      My dashboard
+                    </Link>
+                    <button
+                      onClick={handleSignOut}
+                      className="block w-full text-left px-4 py-2 text-sm text-zinc-600 hover:bg-gray-50 hover:text-black transition-colors"
+                    >
+                      Sign out
+                    </button>
+                  </div>
+                )}
+              </div>
+            </div>
           ) : (
-            // Loading State
             <div className="hidden md:flex md:items-center">
               <div className="px-4 py-2 text-zinc-400 text-sm font-medium">
                 Loading...
@@ -153,33 +186,10 @@ export function MainHeader() {
               <div className="block w-full text-left rounded-md px-3 py-2 text-base font-medium text-zinc-400">
                 Loading...
               </div>
-            ) : isAuthenticated ? (
-              // Logged In: Show App Navigation
-              <>
-                {appNavItems.map((item) => (
-                  <Link
-                    key={item.href}
-                    href={item.href}
-                    onClick={() => setMobileMenuOpen(false)}
-                    className="block rounded-md px-3 py-2 text-base font-medium text-black hover:bg-gray-50 transition-colors"
-                  >
-                    {item.label}
-                  </Link>
-                ))}
-                <button
-                  onClick={async () => {
-                    await handleSignOut();
-                    setMobileMenuOpen(false);
-                  }}
-                  className="block w-full text-left rounded-md px-3 py-2 text-base font-medium text-zinc-500 hover:bg-gray-50 hover:text-red-500 transition-colors"
-                >
-                  Log out
-                </button>
-              </>
             ) : (
-              // Logged Out: Show Marketing Navigation + Sign In + Get Started
               <>
-                {marketingNavItems.map((item) => (
+                {/* Navigation Links (Based on Page Type) */}
+                {currentNavItems.map((item) => (
                   <Link
                     key={item.href}
                     href={item.href}
@@ -189,21 +199,47 @@ export function MainHeader() {
                     {item.label}
                   </Link>
                 ))}
+                
+                {/* Action Buttons */}
                 <div className="border-t border-gray-200 pt-4 space-y-2">
-                  <Link
-                    href="/login"
-                    onClick={() => setMobileMenuOpen(false)}
-                    className="block w-full text-left rounded-md px-3 py-2 text-base font-medium text-black hover:bg-gray-50 transition-colors"
-                  >
-                    Sign In
-                  </Link>
-                  <Link
-                    href="/chat"
-                    className="block w-full rounded-full bg-black px-6 py-2 text-center text-sm font-medium text-white hover:bg-zinc-800 transition-colors"
-                    onClick={() => setMobileMenuOpen(false)}
-                  >
-                    Get Started
-                  </Link>
+                  {!isAuthenticated && (
+                    <>
+                      <Link
+                        href="/login"
+                        onClick={() => setMobileMenuOpen(false)}
+                        className="block w-full text-left rounded-md px-3 py-2 text-base font-medium text-black hover:bg-gray-50 transition-colors"
+                      >
+                        Sign In
+                      </Link>
+                      <Link
+                        href="/login"
+                        className="block w-full rounded-full bg-black px-6 py-2 text-center text-sm font-medium text-white hover:bg-zinc-800 transition-colors"
+                        onClick={() => setMobileMenuOpen(false)}
+                      >
+                        Get Started
+                      </Link>
+                    </>
+                  )}
+                  {isAuthenticated && (
+                    <>
+                      <Link
+                        href="/dashboard"
+                        onClick={() => setMobileMenuOpen(false)}
+                        className="block w-full text-left rounded-md px-3 py-2 text-base font-medium text-black hover:bg-gray-50 transition-colors"
+                      >
+                        My dashboard
+                      </Link>
+                      <button
+                        onClick={async () => {
+                          await handleSignOut();
+                          setMobileMenuOpen(false);
+                        }}
+                        className="block w-full text-left rounded-md px-3 py-2 text-base font-medium text-zinc-600 hover:bg-gray-50 hover:text-black transition-colors"
+                      >
+                        Sign out
+                      </button>
+                    </>
+                  )}
                 </div>
               </>
             )}

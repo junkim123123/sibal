@@ -76,7 +76,7 @@ export const howItWorksPageConfig: HowItWorksPageConfig = {
     cta: {
       primary: {
         label: 'Get an analysis',
-        href: '/analyze',
+        href: '/chat',
       },
       secondary: {
         label: 'See use cases',
@@ -199,7 +199,7 @@ export const howItWorksPageConfig: HowItWorksPageConfig = {
     title: 'Ready to test your next import?',
     description: 'Start with one product, one box and see how NexSupply fits your workflow.',
     buttonLabel: 'Get an analysis',
-    buttonHref: '/analyze',
+    buttonHref: '/chat',
   },
 };
 

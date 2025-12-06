@@ -144,10 +144,10 @@ export function MainHeader() {
                 )}
               </div>
 
-              {/* Get Started Button (Only when logged out - Right position) */}
-              {!isAuthenticated && (
+              {/* Get Started Button (Show on marketing pages, regardless of auth status) */}
+              {!isAppPage && (
                 <Link
-                  href="/login"
+                  href="/chat"
                   className="rounded-full bg-black px-5 py-2 text-xs font-medium text-white hover:bg-zinc-800 transition-colors"
                 >
                   Get Started
@@ -203,22 +203,23 @@ export function MainHeader() {
                 {/* Action Buttons */}
                 <div className="border-t border-gray-200 pt-4 space-y-2">
                   {!isAuthenticated && (
-                    <>
-                      <Link
-                        href="/login"
-                        onClick={() => setMobileMenuOpen(false)}
-                        className="block w-full text-left rounded-md px-3 py-2 text-base font-medium text-black hover:bg-gray-50 transition-colors"
-                      >
-                        Sign In
-                      </Link>
-                      <Link
-                        href="/login"
-                        className="block w-full rounded-full bg-black px-6 py-2 text-center text-sm font-medium text-white hover:bg-zinc-800 transition-colors"
-                        onClick={() => setMobileMenuOpen(false)}
-                      >
-                        Get Started
-                      </Link>
-                    </>
+                    <Link
+                      href="/login"
+                      onClick={() => setMobileMenuOpen(false)}
+                      className="block w-full text-left rounded-md px-3 py-2 text-base font-medium text-black hover:bg-gray-50 transition-colors"
+                    >
+                      Sign In
+                    </Link>
+                  )}
+                  {/* Get Started Button (Show on marketing pages, regardless of auth status) */}
+                  {!isAppPage && (
+                    <Link
+                      href="/chat"
+                      className="block w-full rounded-full bg-black px-6 py-2 text-center text-sm font-medium text-white hover:bg-zinc-800 transition-colors"
+                      onClick={() => setMobileMenuOpen(false)}
+                    >
+                      Get Started
+                    </Link>
                   )}
                   {isAuthenticated && (
                     <>

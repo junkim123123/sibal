@@ -31,12 +31,8 @@ export function StartAnalysisButton({ href, label, className }: StartAnalysisBut
     
     if (isLoading) return
     
-    if (!isAuthenticated) {
-      router.push('/login')
-      return
-    }
-    
-    router.push(href)
+    // Always redirect to /chat for unified chat experience
+    router.push('/chat')
   }
 
   if (isLoading) {

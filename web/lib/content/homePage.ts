@@ -105,7 +105,7 @@ export const homePageConfig: HomePageConfig = {
     cta: {
       primary: {
         label: 'Start with one product',
-        href: '/analyze',
+        href: '/chat',
       },
       secondary: {
         label: 'See how NexSupply fits into your workflow',
@@ -211,7 +211,7 @@ export const homePageConfig: HomePageConfig = {
     title: 'Ready to test your next import?',
     description: 'Start with one product. We will run a full landed cost and risk review, usually within one day.',
     buttonLabel: 'Get an analysis',
-    buttonHref: '/analyze',
+    buttonHref: '/chat',
   },
   reviewsSection: {
     eyebrow: 'Showing featured reviews',

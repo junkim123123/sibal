@@ -83,7 +83,7 @@ export const useCasesPageContent: UseCasesPageContent = {
     subtitle:
       'From Amazon sellers to retail buyers and trading teams, NexSupply gives each channel a clear view of margin, risk, and execution—all in one place.',
     ctaLabel: 'Start a project',
-    ctaHref: '/start',
+    ctaHref: '/chat',
   },
   segments: [
     {
@@ -246,7 +246,7 @@ export const useCasesPageContent: UseCasesPageContent = {
       'Pick your seller type and project goal above, then request your first analysis.',
     subtitle2: 'We typically respond within 24 hours via email, and schedule a call if needed.',
     ctaLabel: 'Start a project',
-    ctaHref: '/start',
+    ctaHref: '/chat',
   },
 } as const;
 

@@ -302,7 +302,7 @@ export const useCasesPageConfig: UseCasesPageConfig = {
     title: 'Ready to analyze your product',
     description: 'Pick your seller type and project above then request your first analysis. We usually respond within one business day by email and can schedule a call if you prefer.',
     buttonLabel: 'Start a project',
-    buttonHref: '/analyze',
+    buttonHref: '/chat',
   },
 };
 

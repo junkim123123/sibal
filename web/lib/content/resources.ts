@@ -43,7 +43,7 @@ const startHereSection: StartHereSection = {
       cta: {
         id: 'start-analysis',
         label: 'Start an analysis →',
-        href: '/start',
+        href: '/chat',
       },
     },
   ],

@@ -15,6 +15,7 @@
 
 import { useState, useRef, useEffect } from 'react';
 import { Loader2, Send, AlertTriangle, Camera } from 'lucide-react';
+import Link from 'next/link';
 import type { ProductAnalysis } from '@/lib/product-analysis/schema';
 import { ProductAnalysisCard } from '@/components/ProductAnalysisCard';
 import LimitReachedCard from '@/components/LimitReachedCard';
@@ -403,7 +404,9 @@ export default function CopilotPage() {
       <div className="flex flex-col h-screen max-w-4xl mx-auto">
         {/* Header */}
         <div className="border-b border-subtle-border p-4 sm:p-6">
-          <h1 className="text-2xl font-bold">NexSupply Copilot</h1>
+          <Link href="/" className="cursor-pointer hover:opacity-80 transition-opacity inline-block">
+            <h1 className="text-2xl font-bold">NexSupply Copilot</h1>
+          </Link>
           <p className="text-sm text-muted-foreground mt-1.5">
             I'll ask 3-5 quick questions about your product, then generate a comprehensive landed cost and risk report. Just describe your product or paste an Alibaba link to get started.
           </p>

@@ -17,6 +17,7 @@
 
 import { useState, useRef, useEffect, ReactNode, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
+import Link from 'next/link';
 import { Send, Upload, X, CheckCircle2, Loader2 } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -822,7 +823,9 @@ function SourcingBriefPageContent() {
       {/* Header */}
       <header className="border-b border-neutral-200 bg-white px-4 sm:px-6 py-4 flex items-center justify-between">
         <div className="flex items-center gap-4">
-          <h1 className="text-xl font-bold">NexSupply</h1>
+          <Link href="/" className="cursor-pointer hover:opacity-80 transition-opacity">
+            <h1 className="text-xl font-bold">NexSupply</h1>
+          </Link>
           {currentStepIndex >= 0 && (
             <div className="hidden sm:flex items-center gap-2 text-sm text-neutral-500">
               <span>•</span>

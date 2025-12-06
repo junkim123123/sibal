@@ -16,7 +16,7 @@ function AnalyzePageContent() {
   useEffect(() => {
     if (!leadId) {
       // No leadId, redirect to chat flow
-      router.push('/analyze/chat');
+      router.push('/chat');
       return;
     }
 

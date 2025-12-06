@@ -235,7 +235,7 @@ export default function ContactPage() {
                 </Button>
                 <Button
                   variant="default"
-                  onClick={() => router.push('/analyze/chat')}
+                  onClick={() => router.push('/chat')}
                   className="w-full sm:w-auto"
                 >
                   Analyze another product

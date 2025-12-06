@@ -129,6 +129,16 @@ export interface UseCasesPage {
   ctaButtonUrl?: string;
 }
 
+// Helper function to add timeout to fetch operations
+function withTimeout<T>(promise: Promise<T>, timeoutMs: number = 5000): Promise<T> {
+  return Promise.race([
+    promise,
+    new Promise<T>((_, reject) =>
+      setTimeout(() => reject(new Error(`Operation timed out after ${timeoutMs}ms`)), timeoutMs)
+    ),
+  ]);
+}
+
 // Helper functions
 export async function getSiteSettings(): Promise<SiteSettings | null> {
   try {
@@ -136,7 +146,10 @@ export async function getSiteSettings(): Promise<SiteSettings | null> {
       return null;
     }
     const query = `*[_type == "siteSettings"][0]`;
-    const data = await sanityClient.fetch<SiteSettings>(query);
+    const data = await withTimeout(
+      sanityClient.fetch<SiteSettings>(query),
+      5000 // 5 second timeout
+    );
     return data || null;
   } catch (error) {
     console.error('[Sanity] Failed to fetch site settings:', error);
@@ -163,7 +176,10 @@ export async function getHomePage(): Promise<HomePage | null> {
         }
       }
     }`;
-    const data = await sanityClient.fetch<HomePage>(query);
+    const data = await withTimeout(
+      sanityClient.fetch<HomePage>(query),
+      5000 // 5 second timeout
+    );
     return data || null;
   } catch (error) {
     console.error('[Sanity] Failed to fetch home page:', error);
@@ -177,7 +193,10 @@ export async function getHowItWorksPage(): Promise<HowItWorksPage | null> {
       return null;
     }
     const query = `*[_type == "howItWorksPage"][0]`;
-    const data = await sanityClient.fetch<HowItWorksPage>(query);
+    const data = await withTimeout(
+      sanityClient.fetch<HowItWorksPage>(query),
+      5000 // 5 second timeout
+    );
     return data || null;
   } catch (error) {
     console.error('[Sanity] Failed to fetch how it works page:', error);
@@ -191,7 +210,10 @@ export async function getUseCasesPage(): Promise<UseCasesPage | null> {
       return null;
     }
     const query = `*[_type == "useCasesPage"][0]`;
-    const data = await sanityClient.fetch<UseCasesPage>(query);
+    const data = await withTimeout(
+      sanityClient.fetch<UseCasesPage>(query),
+      5000 // 5 second timeout
+    );
     return data || null;
   } catch (error) {
     console.error('[Sanity] Failed to fetch use cases page:', error);

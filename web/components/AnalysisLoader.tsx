@@ -92,23 +92,23 @@ export default function AnalysisLoader() {
         <div className="bg-zinc-900/50 border border-zinc-800/50 rounded-2xl p-8 shadow-[0_0_30px_-10px_rgba(6,182,212,0.3)] backdrop-blur-sm">
           <div className="space-y-6">
             {/* Pulsing Radar Icon with Multiple Rings */}
-            <div className="flex justify-center">
-              <motion.div
-                animate={{
+        <div className="flex justify-center">
+          <motion.div
+            animate={{
                   scale: [1, 1.05, 1],
                   opacity: [0.8, 1, 0.8],
-                }}
-                transition={{
-                  duration: 2,
-                  repeat: Infinity,
-                  ease: 'easeInOut',
-                }}
+            }}
+            transition={{
+              duration: 2,
+              repeat: Infinity,
+              ease: 'easeInOut',
+            }}
                 className="relative w-24 h-24 flex items-center justify-center"
-              >
+          >
                 {/* Icon Container */}
                 <div className="relative z-10 w-20 h-20 rounded-full bg-cyan-500/10 border-2 border-cyan-500/50 flex items-center justify-center backdrop-blur-sm">
-                  <Icon className="w-10 h-10 text-cyan-400" />
-                </div>
+              <Icon className="w-10 h-10 text-cyan-400" />
+            </div>
                 
                 {/* Pulsing Ring 1 (Inner) */}
                 <motion.div
@@ -141,21 +141,21 @@ export default function AnalysisLoader() {
                 />
                 
                 {/* Pulsing Ring 3 (Outer) */}
-                <motion.div
-                  animate={{
+            <motion.div
+              animate={{
                     scale: [1, 1.9, 1.9],
                     opacity: [0.3, 0, 0],
-                  }}
-                  transition={{
-                    duration: 2,
-                    repeat: Infinity,
-                    ease: 'easeOut',
+              }}
+              transition={{
+                duration: 2,
+                repeat: Infinity,
+                ease: 'easeOut',
                     delay: 0.8,
-                  }}
+              }}
                   className="absolute inset-0 rounded-full border border-cyan-400/30"
-                />
-              </motion.div>
-            </div>
+            />
+          </motion.div>
+        </div>
 
             {/* Typography: Large Percentage Number */}
             <div className="text-center">
@@ -172,34 +172,34 @@ export default function AnalysisLoader() {
 
             {/* Status Text */}
             <div className="h-12 flex items-center justify-center">
-              <AnimatePresence mode="wait">
-                <motion.div
-                  key={currentStep}
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -10 }}
-                  transition={{ duration: 0.5 }}
-                  className="text-center"
-                >
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={currentStep}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              transition={{ duration: 0.5 }}
+              className="text-center"
+            >
                   <p className="text-sm text-zinc-400 font-mono tracking-wide">
-                    {currentStepData.text}
+                  {currentStepData.text}
                   </p>
-                </motion.div>
-              </AnimatePresence>
-            </div>
+            </motion.div>
+          </AnimatePresence>
+        </div>
 
             {/* Refined Progress Bar */}
-            <div className="space-y-2">
+        <div className="space-y-2">
               <div className="h-0.5 bg-zinc-800/50 rounded-full overflow-hidden">
-                <motion.div
-                  initial={{ width: 0 }}
-                  animate={{ width: `${progress}%` }}
-                  transition={{ duration: 0.3, ease: 'easeOut' }}
+            <motion.div
+              initial={{ width: 0 }}
+              animate={{ width: `${progress}%` }}
+              transition={{ duration: 0.3, ease: 'easeOut' }}
                   className="h-full bg-gradient-to-r from-cyan-400 to-cyan-500 rounded-full shadow-[0_0_8px_cyan]"
-                />
-              </div>
-            </div>
+            />
           </div>
+          </div>
+        </div>
         </div>
       </div>
     </div>

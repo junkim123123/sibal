@@ -20,10 +20,15 @@ import { homePageConfig } from '@/lib/content/homePage';
 export const revalidate = 60;
 
 export default async function HomePage() {
+  // Add timeout to prevent blocking if Sanity is slow
   const [site, page] = await Promise.all([
     getSiteSettings(),
     getHomePage(),
-  ]);
+  ]).catch((error) => {
+    console.error('[HomePage] Failed to fetch data:', error);
+    // Return null values to allow page to render without data
+    return [null, null] as const;
+  });
 
   return (
     <div className="bg-white">

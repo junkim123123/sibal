@@ -92,6 +92,6 @@ npm install
 ## 다음 단계
 
 1. 온보딩 채팅 테스트: `http://localhost:3000/chat`
-2. Analyze 페이지 테스트: `http://localhost:3000/analyze/chat`
+2. Chat 페이지 테스트: `http://localhost:3000/chat`
 3. Copilot 테스트: `http://localhost:3000/copilot`
 

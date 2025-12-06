@@ -19,38 +19,29 @@ import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Send } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 
-// Platform Neutral & General B2B/D2C Sourcing Flow
+// Sourcing Flow 5.0: Streamlined & Non-Redundant
 const SOURCING_STEPS = [
-  // --- Phase 1: Setup ---
+  // --- Step 1: Product (통합: Name + Description) ---
   {
-    id: 'project_name',
+    id: 'product_info',
     type: 'text' as const,
-    question: "Hi, I'm Nexi. Let's analyze your product opportunity. What would you like to call this project?",
-    placeholder: "e.g. Premium Pet Treats – US Launch"
+    question: "Hi, I'm Nexi. What product are you looking to source? (Describe the product and your project name if you have one)",
+    placeholder: "e.g. Premium Pet Treats for US market - organic dog biscuits in 2lb bags"
   },
+  
+  // --- Step 2: Sales Channel (통합: Business Model + Channel) ---
   {
-    id: 'business_model',
+    id: 'sales_channel',
     type: 'select' as const,
-    question: "What best describes your business model?",
+    question: "Where will you primarily sell this product?",
     options: [
-      "Brand owner (D2C / Online Store)",
-      "Brand owner (Wholesale / B2B)",
-      "Reseller / Distributor",
-      "Manufacturer / Factory",
-      "Agency / Consultant"
-    ]
-  },
-  {
-    id: 'channel',
-    type: 'select' as const,
-    question: "Where do you expect most of your sales to come from?",
-    options: [
-      "Direct-to-Consumer (Shopify/Woo)",
-      "Online Marketplaces (Amazon/Walmart)",
-      "Social Commerce (TikTok/Insta)",
-      "B2B Marketplaces (Alibaba/Faire)",
-      "Retail / Wholesale Channels",
+      "Direct-to-Consumer (Shopify / My Website)",
+      "Online Marketplaces (Amazon / Walmart)",
+      "Social Commerce (TikTok Shop / Instagram)",
+      "B2B / Wholesale (Alibaba / Faire / Distributors)",
+      "Retail Stores (Physical retail)",
       "Multi-channel Mix",
       "Not sure yet"
     ]
@@ -88,26 +79,23 @@ const SOURCING_STEPS = [
       "Open to recommendations"
     ]
   },
+  // --- Step 4: Reference Link (AI 분석의 핵심) ---
   {
-    id: 'stage',
-    type: 'select' as const,
-    question: "What stage is this product currently at?",
-    options: [
-      "Just exploring ideas",
-      "Testing new product (Samples)",
-      "Already selling (Checking costs)",
-      "Scaling up proven product",
-      "In trouble (Low margins)"
-    ]
-  },
-  {
-    id: 'product_desc',
+    id: 'ref_link',
     type: 'text' as const,
-    question: "Please describe your product in as much detail as you can. What is it and what makes it different?",
-    placeholder: "e.g. Wireless over-ear headphones, ANC, foldable..."
+    question: "Do you have a reference link? (Amazon competitor, Alibaba supplier, or similar product). This helps us analyze specs accurately.",
+    placeholder: "Paste a URL (Optional - type 'Skip' if none)"
   },
   
-  // --- Step 8: Pricing (Split for better UX) ---
+  // --- Step 5: Product Specs (통합: Material + Size - 선택사항) ---
+  {
+    id: 'product_specs',
+    type: 'text' as const,
+    question: "Product specs (Optional): Material type and packaging size? (e.g., 'Plastic, Shoe box size' or 'Skip if unsure')",
+    placeholder: "e.g. Plastic/Silicone, S (Shoe Box size) or type 'Skip'"
+  },
+  
+  // --- Step 10: Pricing (Split for better UX) ---
   {
     id: 'pricing_metric',
     type: 'select' as const,
@@ -126,54 +114,64 @@ const SOURCING_STEPS = [
     placeholder: "Type your target value..."
   },
 
-  // --- Phase 3: Logistics & Strategy ---
+  // --- Step 6: Pricing ---
   {
-    id: 'trade_term',
+    id: 'pricing_metric',
     type: 'select' as const,
-    question: "How do you prefer to structure the logistics and responsibilities?",
+    question: "What do you know about your pricing or margin targets?",
     options: [
-      "DDP style (All-inclusive delivery)",
-      "FOB / CIF style (Supplier to Port)",
-      "Ex-Works style (Pickup at Factory)",
-      "Flexible (Recommend best)"
+      "I know my Target Retail Price",
+      "I know my Current Landed Cost",
+      "I know my Target Margin %",
+      "I'm not sure (Show ranges)"
     ]
   },
   {
-    id: 'priority',
-    type: 'select' as const,
-    question: "Right now, what matters most for this product?",
-    options: [
-      "Maximize Gross Margin",
-      "Minimize Upfront Cash Risk",
-      "Speed to Launch",
-      "Balance (Profit/Speed/Risk)",
-      "Simplest Operations"
-    ]
+    id: 'pricing_value',
+    type: 'text' as const,
+    question: "Great. Please enter that value (e.g., '$79-99', '$14/unit', or '40%').",
+    placeholder: "Type your target value..."
   },
+  
+  // --- Step 7: Volume & Timeline ---
   {
     id: 'volume',
     type: 'select' as const,
-    question: "Roughly how many units do you expect to move per month?",
+    question: "Roughly how many units per month?",
     options: [
       "Prototype (< 20 units)",
       "Small Test (20-100 units)",
       "Launch (100-500 units)",
       "Growing (500-2,000 units)",
-      "Scaling (2,000-5,000 units)",
-      "High Scale (5,000+ units)",
+      "Scaling (2,000-10,000 units)",
+      "High Scale (100,000+ units)",
       "No idea"
     ]
   },
   {
     id: 'timeline',
     type: 'select' as const,
-    question: "When do you ideally need the first shipment or go-live?",
+    question: "When do you need the first shipment?",
     options: [
       "Under 4 weeks (Urgent/Air)",
       "1-2 months",
-      "2-3 months (Standard)",
-      "3-6 months (Focus on economics)",
+      "6 months (Standard)",
+      "6-12 months (Focus on economics)",
       "No fixed date (Feasibility check)"
+    ]
+  },
+  
+  // --- Step 8: Priority (간소화) ---
+  {
+    id: 'priority',
+    type: 'select' as const,
+    question: "What matters most right now?",
+    options: [
+      "Maximize Gross Margin",
+      "Minimize Upfront Cash Risk",
+      "Speed to Launch",
+      "Balance (Profit/Speed/Risk)",
+      "Simplest Operations"
     ]
   }
 ];
@@ -465,7 +463,9 @@ export default function ChatPage() {
       <header className="sticky top-0 z-50 bg-white border-b border-neutral-200">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex items-center justify-center">
-            <h1 className="text-2xl font-serif font-bold text-neutral-900">NexSupply</h1>
+            <Link href="/" className="cursor-pointer hover:opacity-80 transition-opacity">
+              <h1 className="text-2xl font-serif font-bold text-neutral-900">NexSupply</h1>
+            </Link>
           </div>
         </div>
         

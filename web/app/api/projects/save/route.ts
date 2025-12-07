@@ -31,12 +31,14 @@ export async function POST(req: Request) {
     console.log('[Save Project] User authenticated:', user.id);
 
     const body = await req.json();
-    const { project_id, answers, ai_analysis } = body;
+    const { project_id, answers, ai_analysis, messages } = body;
 
     console.log('[Save Project] Request data:', {
       hasProjectId: !!project_id,
       hasAnswers: !!answers,
       hasAiAnalysis: !!ai_analysis,
+      hasMessages: !!messages,
+      messagesCount: Array.isArray(messages) ? messages.length : 0,
     });
 
     const adminClient = getAdminClient();
@@ -220,9 +222,72 @@ export async function POST(req: Request) {
       }
     }
 
-    // answers를 메시지로 저장 (선택적 - 하위 호환성)
-    if (answers && Object.keys(answers).length > 0) {
-      // 주요 답변들을 하나의 메시지로 저장
+    // 채팅 메시지 저장 (messages 배열이 제공된 경우)
+    if (Array.isArray(messages) && messages.length > 0) {
+      console.log('[Save Project] Saving chat messages:', messages.length);
+      
+      try {
+        // 기존 메시지 확인 (중복 저장 방지)
+        const { data: existingMessages } = await adminClient
+          .from('messages')
+          .select('id, content, role, timestamp')
+          .eq('project_id', finalProjectId)
+          .order('timestamp', { ascending: true });
+
+        const existingContentSet = new Set(
+          (existingMessages || []).map((msg: any) => `${msg.role}:${msg.content.substring(0, 100)}`)
+        );
+
+        // 메시지 데이터 준비 및 중복 필터링
+        const messagesToInsert = messages
+          .filter((msg: any) => {
+            // 유효한 메시지만 필터링
+            if (!msg || !msg.content || !msg.role) return false;
+            
+            // 중복 체크 (내용의 첫 100자로 비교)
+            const contentKey = `${msg.role === 'assistant' ? 'ai' : msg.role}:${String(msg.content).substring(0, 100)}`;
+            if (existingContentSet.has(contentKey)) {
+              console.log('[Save Project] Skipping duplicate message:', contentKey);
+              return false;
+            }
+            
+            return true;
+          })
+          .map((msg: any) => ({
+            project_id: finalProjectId,
+            role: msg.role === 'assistant' ? 'ai' : (msg.role === 'ai' ? 'ai' : 'user'), // role 정규화
+            content: typeof msg.content === 'string' ? msg.content.trim() : JSON.stringify(msg.content),
+            timestamp: msg.timestamp || new Date().toISOString(),
+          }));
+
+        if (messagesToInsert.length > 0) {
+          console.log('[Save Project] Inserting', messagesToInsert.length, 'new messages');
+          
+          // 배치로 메시지 저장
+          const { data: insertedMessages, error: messagesError } = await adminClient
+            .from('messages')
+            .insert(messagesToInsert)
+            .select();
+
+          if (messagesError) {
+            console.error('[Save Project] Failed to save messages:', messagesError);
+            console.error('[Save Project] Messages error details:', JSON.stringify(messagesError, null, 2));
+            // 메시지 저장 실패는 치명적이지 않으므로 경고만 남김
+            console.warn('[Save Project] Continuing despite message save failure');
+          } else {
+            console.log('[Save Project] Successfully saved messages:', insertedMessages?.length || 0);
+          }
+        } else {
+          console.log('[Save Project] No new messages to insert (all messages already exist)');
+        }
+      } catch (messageError) {
+        console.error('[Save Project] Error saving messages:', messageError);
+        // 메시지 저장 실패는 치명적이지 않으므로 경고만 남김
+        console.warn('[Save Project] Continuing despite message save error');
+      }
+    } else if (answers && Object.keys(answers).length > 0) {
+      // messages 배열이 없으면 answers를 요약 메시지로 저장 (하위 호환성)
+      console.log('[Save Project] No messages array provided, saving answers as summary message');
       const answersText = Object.entries(answers)
         .filter(([key, value]) => value && value !== 'skip' && value !== 'Skip')
         .map(([key, value]) => `${key}: ${value}`)
@@ -237,9 +302,9 @@ export async function POST(req: Request) {
               role: 'user',
               content: `Analysis Summary:\n${answersText}`,
             });
+          console.log('[Save Project] Saved answers as summary message');
         } catch (messageError) {
-          // 메시지 저장 실패는 치명적이지 않으므로 로그만 남김
-          console.warn('[Save Project] Failed to save message (non-critical):', messageError);
+          console.warn('[Save Project] Failed to save summary message (non-critical):', messageError);
         }
       }
     }

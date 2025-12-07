@@ -251,11 +251,12 @@ export async function middleware(request: NextRequest) {
         
         // Super Admin: redirect to /admin if trying to access other pages
         if (userEmail === 'k.myungjun@nexsupply.net') {
-          // Allow access to /admin routes, /login, /auth/callback, /auth/verify-email
+          // Allow access to /admin routes, /login, /auth/callback, /auth/verify-email, /auth/auth-code-error
           if (!pathname.startsWith('/admin') && 
               !pathname.startsWith('/login') && 
               !pathname.startsWith('/auth/callback') &&
               !pathname.startsWith('/auth/verify-email') &&
+              !pathname.startsWith('/auth/auth-code-error') &&
               !pathname.startsWith('/api') &&
               !pathname.startsWith('/_next')) {
             return NextResponse.redirect(new URL('/admin', request.url))
@@ -267,11 +268,12 @@ export async function middleware(request: NextRequest) {
                                (userEmail.endsWith('@nexsupply.net') && userEmail !== 'k.myungjun@nexsupply.net')
         
         if (isManagerEmail) {
-          // Allow access to /manager routes, /login, /auth/callback, /auth/verify-email
+          // Allow access to /manager routes, /login, /auth/callback, /auth/verify-email, /auth/auth-code-error
           if (!pathname.startsWith('/manager') && 
               !pathname.startsWith('/login') && 
               !pathname.startsWith('/auth/callback') &&
               !pathname.startsWith('/auth/verify-email') &&
+              !pathname.startsWith('/auth/auth-code-error') &&
               !pathname.startsWith('/api') &&
               !pathname.startsWith('/_next')) {
             return NextResponse.redirect(new URL('/manager/dashboard', request.url))
@@ -290,6 +292,7 @@ export async function middleware(request: NextRequest) {
                 !pathname.startsWith('/login') && 
                 !pathname.startsWith('/auth/callback') &&
                 !pathname.startsWith('/auth/verify-email') &&
+                !pathname.startsWith('/auth/auth-code-error') &&
                 !pathname.startsWith('/api') &&
                 !pathname.startsWith('/_next')) {
               return NextResponse.redirect(new URL('/manager/dashboard', request.url))
@@ -326,8 +329,9 @@ export const config = {
      * - api/auth (next-auth routes)
      * - auth/callback (Supabase auth callback)
      * - auth/verify-email (Email verification page)
+     * - auth/auth-code-error (Auth code error page)
      * - public folder
      */
-    '/((?!_next/static|_next/image|favicon.ico|api/auth|auth/callback|auth/verify-email|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
+    '/((?!_next/static|_next/image|favicon.ico|api/auth|auth/callback|auth/verify-email|auth/auth-code-error|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
   ],
 }

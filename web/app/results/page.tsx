@@ -946,6 +946,55 @@ function ResultsActionButtons({ projectId, answers, aiAnalysis }: { projectId?: 
         hasAiAnalysis: !!aiAnalysis,
       });
 
+      // 프로젝트의 기존 메시지 불러오기 (있는 경우)
+      let existingMessages: any[] = [];
+      if (projectId) {
+        try {
+          const messagesResponse = await fetch(`/api/messages?project_id=${projectId}`);
+          const messagesData = await messagesResponse.json();
+          if (messagesData.ok && messagesData.messages) {
+            existingMessages = messagesData.messages.map((msg: any) => ({
+              role: msg.role,
+              content: msg.content,
+              timestamp: msg.timestamp,
+            }));
+            console.log('[Save Report] Loaded existing messages:', existingMessages.length);
+          }
+        } catch (error) {
+          console.warn('[Save Report] Failed to load existing messages:', error);
+        }
+      }
+
+      // answers와 ai_analysis에서 메시지 생성 (기존 메시지가 없는 경우)
+      const messagesToSave: any[] = [...existingMessages];
+      
+      // answers가 있으면 사용자 메시지로 추가
+      if (answers && Object.keys(answers).length > 0 && existingMessages.length === 0) {
+        const answersText = Object.entries(answers)
+          .filter(([key, value]) => value && value !== 'skip' && value !== 'Skip')
+          .map(([key, value]) => `${key}: ${value}`)
+          .join('\n');
+        
+        if (answersText) {
+          messagesToSave.push({
+            role: 'user',
+            content: `Product Analysis Request:\n${answersText}`,
+          });
+        }
+      }
+
+      // ai_analysis가 있으면 AI 메시지로 추가
+      if (aiAnalysis && existingMessages.length === 0) {
+        const analysisSummary = aiAnalysis.executive_summary || 
+                               `Analysis completed for ${answers?.product_info || answers?.project_name || 'product'}`;
+        messagesToSave.push({
+          role: 'ai',
+          content: analysisSummary,
+        });
+      }
+
+      console.log('[Save Report] Messages to save:', messagesToSave.length);
+
       // 프로젝트 저장 API 호출
       const response = await fetch('/api/projects/save', {
         method: 'POST',
@@ -956,6 +1005,7 @@ function ResultsActionButtons({ projectId, answers, aiAnalysis }: { projectId?: 
           project_id: projectId,
           answers: answers,
           ai_analysis: aiAnalysis, // AI 분석 결과 전달
+          messages: messagesToSave.length > 0 ? messagesToSave : undefined, // 메시지 배열 전달
         }),
       });
 
@@ -1622,19 +1672,74 @@ function ResultsContent() {
 
   // project_id가 있지만 분석 데이터를 불러오지 못한 경우
   if (isInitialized && projectId && !aiAnalysis && !isLoading && !error) {
+    // answers가 있으면 분석을 다시 생성할 수 있음
+    const canRegenerate = Object.keys(answers).length > 0 && 
+                          (answers.project_name || answers.product_info);
+    
     return (
       <div className="min-h-screen bg-[#09090b] flex items-center justify-center p-4">
         <div className="text-center max-w-md">
           <div className="text-white text-xl mb-2">No Analysis Available</div>
           <div className="text-zinc-400 text-sm mb-4">
-            This saved project does not have analysis data. Please complete the chat flow first.
+            {canRegenerate 
+              ? 'This saved project does not have analysis data. You can regenerate the analysis using the saved information.'
+              : 'This saved project does not have analysis data. Please complete the chat flow first.'
+            }
           </div>
-          <Link 
-            href="/chat"
-            className="inline-block px-6 py-3 bg-neutral-800 text-white rounded-lg hover:bg-neutral-700 transition-colors"
-          >
-            Go to Chat
-          </Link>
+          <div className="flex flex-col gap-3">
+            {canRegenerate ? (
+              <button
+                onClick={async () => {
+                  // answers가 있으면 분석 재생성
+                  setIsLoading(true);
+                  setError(null);
+                  
+                  try {
+                    const response = await fetch('/api/analyze', {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify({ 
+                        userContext: answers,
+                        project_id: projectId,
+                      }),
+                    });
+
+                    const data = await response.json();
+
+                    if (!response.ok || !data.ok) {
+                      if (data.error_code === 'CRITICAL_RISK') {
+                        setCriticalRisk(true);
+                        setBlacklistDetails(data.blacklist_details);
+                        setIsLoading(false);
+                        return;
+                      }
+                      throw new Error(data.error || 'Failed to analyze project');
+                    }
+
+                    if (data.analysis) {
+                      setAiAnalysis(data.analysis);
+                    } else {
+                      throw new Error('No analysis data in response');
+                    }
+                  } catch (err) {
+                    console.error('[Results] Failed to regenerate analysis:', err);
+                    setError(err instanceof Error ? err.message : 'Failed to load analysis');
+                  } finally {
+                    setIsLoading(false);
+                  }
+                }}
+                className="inline-block px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+              >
+                Regenerate Analysis
+              </button>
+            ) : null}
+            <Link 
+              href="/chat"
+              className="inline-block px-6 py-3 bg-neutral-800 text-white rounded-lg hover:bg-neutral-700 transition-colors"
+            >
+              {canRegenerate ? 'Start New Analysis' : 'Go to Chat'}
+            </Link>
+          </div>
         </div>
       </div>
     );

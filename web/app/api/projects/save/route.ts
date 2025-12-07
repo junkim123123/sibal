@@ -191,7 +191,36 @@ export async function POST(req: Request) {
       user_id: savedProject.user_id,
     });
 
-    // answers를 메시지로 저장 (선택적)
+    // answers와 ai_analysis를 analysis_data JSONB 필드에 저장
+    if (answers || ai_analysis) {
+      const analysisData: any = {};
+      if (answers && Object.keys(answers).length > 0) {
+        analysisData.answers = answers;
+      }
+      if (ai_analysis) {
+        analysisData.ai_analysis = ai_analysis;
+      }
+
+      if (Object.keys(analysisData).length > 0) {
+        try {
+          const { error: updateAnalysisError } = await adminClient
+            .from('projects')
+            .update({ analysis_data: analysisData })
+            .eq('id', finalProjectId)
+            .eq('user_id', user.id);
+
+          if (updateAnalysisError) {
+            console.warn('[Save Project] Failed to save analysis_data (non-critical):', updateAnalysisError);
+          } else {
+            console.log('[Save Project] Analysis data saved successfully');
+          }
+        } catch (analysisError) {
+          console.warn('[Save Project] Failed to save analysis_data (non-critical):', analysisError);
+        }
+      }
+    }
+
+    // answers를 메시지로 저장 (선택적 - 하위 호환성)
     if (answers && Object.keys(answers).length > 0) {
       // 주요 답변들을 하나의 메시지로 저장
       const answersText = Object.entries(answers)

@@ -1336,54 +1336,58 @@ function ResultsContent() {
   const [blacklistDetails, setBlacklistDetails] = useState<any>(null);
   const projectId = searchParams?.get('project_id') || null;
 
-  // 프로젝트 메시지에서 answers 로드
+  // 프로젝트 분석 데이터 로드 (project_id가 있을 때)
   useEffect(() => {
-    const loadProjectMessages = async () => {
+    const loadProjectAnalysis = async () => {
       if (!projectId) {
         setIsInitialized(true);
         return;
       }
       
       try {
-        const response = await fetch(`/api/messages?project_id=${projectId}`);
+        console.log('[Results] Loading project analysis data for project:', projectId);
+        
+        // 프로젝트 분석 데이터 API 호출
+        const response = await fetch(`/api/projects/${projectId}/analysis`);
         const data = await response.json();
         
-        if (data.ok && data.messages) {
-          // 메시지에서 사용자 입력 추출
-          const userAnswers: Answers = {};
-          data.messages.forEach((msg: any) => {
-            if (msg.role === 'user') {
-              // 메시지 내용을 answers로 파싱 (간단한 구현)
-              // 실제로는 메시지 구조에 따라 다르게 처리해야 함
-            }
+        if (data.ok) {
+          console.log('[Results] Project analysis data loaded:', {
+            hasAnswers: !!data.answers,
+            hasAiAnalysis: !!data.ai_analysis,
           });
           
-          // 또는 프로젝트 정보에서 answers 로드
-          // 임시로 URL 파라미터에서 로드
-          const paramsAnswers: Answers = {};
-          searchParams?.forEach((value, key) => {
-            if (key !== 'project_id') {
-              try {
-                paramsAnswers[key] = JSON.parse(value);
-              } catch {
-                paramsAnswers[key] = value;
-              }
-            }
-          });
-          
-          if (Object.keys(paramsAnswers).length > 0) {
-            setAnswers(paramsAnswers);
+          // answers 복원
+          if (data.answers && Object.keys(data.answers).length > 0) {
+            console.log('[Results] Restoring answers:', Object.keys(data.answers));
+            setAnswers(data.answers);
           }
+          
+          // ai_analysis 복원
+          if (data.ai_analysis) {
+            console.log('[Results] Restoring AI analysis');
+            setAiAnalysis(data.ai_analysis);
+          }
+          
+          // answers나 ai_analysis가 없으면 경고
+          if (!data.answers || Object.keys(data.answers).length === 0) {
+            console.warn('[Results] No answers data found in project analysis');
+          }
+          if (!data.ai_analysis) {
+            console.warn('[Results] No AI analysis data found in project analysis');
+          }
+        } else {
+          console.error('[Results] Failed to load project analysis:', data.error);
         }
       } catch (error) {
-        console.error('[Results] Failed to load project messages:', error);
+        console.error('[Results] Failed to load project analysis:', error);
       }
       
       setIsInitialized(true);
     };
     
-    loadProjectMessages();
-  }, [projectId, searchParams]);
+    loadProjectAnalysis();
+  }, [projectId]);
 
   // sessionStorage 또는 URL 파라미터에서 answers 로드
   useEffect(() => {
@@ -1436,6 +1440,13 @@ function ResultsContent() {
 
   useEffect(() => {
     if (!isInitialized) return;
+    
+    // 이미 aiAnalysis가 있으면 (저장된 데이터에서 불러온 경우) 재분석 불필요
+    if (aiAnalysis) {
+      console.log('[Results] AI analysis already loaded, skipping fetch');
+      return;
+    }
+    
     const hasAnswers = Object.keys(answers).length > 0;
     if (!hasAnswers) {
       console.warn('[Results] No answers data available. Please complete the chat flow first.');
@@ -1445,7 +1456,6 @@ function ResultsContent() {
       console.warn('[Results] Missing required fields: project_name or product_info');
       return;
     }
-    if (aiAnalysis) return;
 
     const fetchAnalysis = async () => {
       setIsLoading(true);
@@ -1490,7 +1500,7 @@ function ResultsContent() {
     };
 
     fetchAnalysis();
-  }, [isInitialized, answers, aiAnalysis]);
+  }, [isInitialized, answers, aiAnalysis, projectId]);
 
   if (isLoading) {
     return <AnalysisLoader />;
@@ -1541,8 +1551,19 @@ function ResultsContent() {
     );
   }
 
+  // 로딩 중이면 로더 표시
+  if (isLoading) {
+    return <AnalysisLoader />;
+  }
+
+  // project_id가 있지만 아직 초기화 중이면 로딩 표시
+  if (projectId && !isInitialized) {
+    return <AnalysisLoader />;
+  }
+
   // answers가 없거나 필수 필드가 없으면 안내 메시지 표시
-  if (isInitialized && !isLoading && !error && Object.keys(answers).length === 0) {
+  // 단, project_id가 있고 아직 데이터를 불러오는 중이 아닐 때만
+  if (isInitialized && !isLoading && !error && Object.keys(answers).length === 0 && !projectId) {
     return (
       <div className="min-h-screen bg-[#09090b] flex items-center justify-center p-4">
         <div className="text-center max-w-md">
@@ -1561,7 +1582,28 @@ function ResultsContent() {
     );
   }
 
-  if (!aiAnalysis && !isLoading && !error) {
+  // project_id가 있지만 분석 데이터를 불러오지 못한 경우
+  if (isInitialized && projectId && !aiAnalysis && !isLoading && !error) {
+    return (
+      <div className="min-h-screen bg-[#09090b] flex items-center justify-center p-4">
+        <div className="text-center max-w-md">
+          <div className="text-white text-xl mb-2">No Analysis Available</div>
+          <div className="text-zinc-400 text-sm mb-4">
+            This saved project does not have analysis data. Please complete the chat flow first.
+          </div>
+          <Link 
+            href="/chat"
+            className="inline-block px-6 py-3 bg-neutral-800 text-white rounded-lg hover:bg-neutral-700 transition-colors"
+          >
+            Go to Chat
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
+  // aiAnalysis가 없고 answers도 없으면 안내 메시지
+  if (!aiAnalysis && !isLoading && !error && Object.keys(answers).length === 0) {
     return (
       <div className="min-h-screen bg-[#09090b] flex items-center justify-center p-4">
         <div className="text-center max-w-md">
@@ -1574,17 +1616,22 @@ function ResultsContent() {
     );
   }
 
-  if (!aiAnalysis) {
-    return (
-      <div className="min-h-screen bg-[#f9fafb] flex items-center justify-center p-4">
-        <div className="text-center max-w-md">
-          <div className="text-gray-900 text-xl mb-2">No Analysis Available</div>
-          <div className="text-gray-500 text-sm mb-4">
-            Analysis is being generated. Please wait...
+  // aiAnalysis가 없으면 로딩 또는 에러 상태
+  if (!aiAnalysis && !isLoading && !error) {
+    // answers가 있으면 분석 중이거나 대기 중
+    if (Object.keys(answers).length > 0) {
+      return (
+        <div className="min-h-screen bg-[#09090b] flex items-center justify-center p-4">
+          <div className="text-center max-w-md">
+            <div className="text-white text-xl mb-2">Generating Analysis...</div>
+            <div className="text-zinc-400 text-sm mb-4">
+              Please wait while we analyze your product.
+            </div>
           </div>
         </div>
-      </div>
-    );
+      );
+    }
+    return null;
   }
 
   const { 

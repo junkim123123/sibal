@@ -24,6 +24,15 @@ export async function login(formData: FormData) {
 
   if (error) {
     console.error('[Login] Auth error:', error)
+    
+    // 이메일 확인 에러에 대한 친절한 메시지
+    if (error.message?.toLowerCase().includes('email not confirmed') || 
+        error.message?.toLowerCase().includes('email_not_confirmed')) {
+      return { 
+        error: 'Email not confirmed. Please check your email inbox and click the confirmation link to verify your account.' 
+      }
+    }
+    
     return { error: error.message }
   }
 

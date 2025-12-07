@@ -908,7 +908,7 @@ function ActionRoadmap({ answers, aiAnalysis }: { answers: Answers; aiAnalysis?:
 }
 
 // Results Action Buttons Component (Enhanced with Service Value Props & Agreement)
-function ResultsActionButtons({ projectId, answers }: { projectId?: string | null; answers: Answers }) {
+function ResultsActionButtons({ projectId, answers, aiAnalysis }: { projectId?: string | null; answers: Answers; aiAnalysis?: AIAnalysisResult | null }) {
   const [isSaving, setIsSaving] = useState(false);
   const [isProcessingPayment, setIsProcessingPayment] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -940,6 +940,12 @@ function ResultsActionButtons({ projectId, answers }: { projectId?: string | nul
     setIsSaving(true);
     
     try {
+      console.log('[Save Report] Starting save process...', {
+        projectId,
+        hasAnswers: !!answers && Object.keys(answers).length > 0,
+        hasAiAnalysis: !!aiAnalysis,
+      });
+
       // 프로젝트 저장 API 호출
       const response = await fetch('/api/projects/save', {
         method: 'POST',
@@ -949,15 +955,19 @@ function ResultsActionButtons({ projectId, answers }: { projectId?: string | nul
         body: JSON.stringify({
           project_id: projectId,
           answers: answers,
+          ai_analysis: aiAnalysis, // AI 분석 결과 전달
         }),
       });
 
+      console.log('[Save Report] API response status:', response.status);
+
       const data = await response.json();
+      console.log('[Save Report] API response data:', data);
 
       if (data.ok) {
         console.log('[Save Report] Project saved successfully:', data.project_id);
         // 대시보드의 Saved Products 탭으로 이동 (전체 페이지 리로드로 확실히 새로고침)
-        window.location.href = '/dashboard?tab=products';
+        window.location.href = '/dashboard?tab=products&refresh=true';
       } else {
         console.error('[Save Report] Save failed:', data);
         const errorMessage = data.details 
@@ -1679,7 +1689,7 @@ function ResultsContent() {
           <ActionRoadmap answers={answers} aiAnalysis={aiAnalysis} />
 
           {/* Results Action Buttons - 3-Button Layout */}
-          <ResultsActionButtons projectId={projectId} answers={answers} />
+          <ResultsActionButtons projectId={projectId} answers={answers} aiAnalysis={aiAnalysis} />
         </div>
       </div>
     </div>

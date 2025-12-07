@@ -14,19 +14,30 @@ import { getAdminClient } from '@/lib/supabase/admin';
  */
 export async function POST(req: Request) {
   try {
+    console.log('[Save Project] Starting save process...');
+    
     // 사용자 인증 확인
     const supabase = await createClient();
     const { data: { user }, error: authError } = await supabase.auth.getUser();
 
     if (authError || !user) {
+      console.error('[Save Project] Authentication failed:', authError);
       return NextResponse.json(
         { ok: false, error: 'Unauthorized' },
         { status: 401 }
       );
     }
 
+    console.log('[Save Project] User authenticated:', user.id);
+
     const body = await req.json();
-    const { project_id, answers } = body;
+    const { project_id, answers, ai_analysis } = body;
+
+    console.log('[Save Project] Request data:', {
+      hasProjectId: !!project_id,
+      hasAnswers: !!answers,
+      hasAiAnalysis: !!ai_analysis,
+    });
 
     const adminClient = getAdminClient();
 
@@ -37,37 +48,77 @@ export async function POST(req: Request) {
                        answers?.project_name || 
                        'Saved Analysis';
 
+    // AI 분석 결과에서 데이터 추출
+    const totalLandedCost = ai_analysis?.financials?.estimated_landed_cost || null;
+    const initialRiskScore = ai_analysis?.osint_risk_score || null;
+
+    console.log('[Save Project] Extracted data:', {
+      productName,
+      totalLandedCost,
+      initialRiskScore,
+    });
+
     let finalProjectId = project_id;
 
     // 프로젝트가 없으면 생성 (Save Report 버튼을 누르면 saved 상태로 생성)
     if (!finalProjectId) {
+      const insertData: any = {
+        user_id: user.id,
+        name: productName,
+        status: 'saved', // Save Report 버튼을 누르면 saved 상태로 생성
+      };
+
+      // AI 분석 결과가 있으면 추가 데이터 포함
+      if (totalLandedCost !== null) {
+        insertData.total_landed_cost = totalLandedCost;
+      }
+      if (initialRiskScore !== null) {
+        insertData.initial_risk_score = initialRiskScore;
+      }
+
+      console.log('[Save Project] Creating new project with data:', insertData);
+
       const { data: project, error: projectError } = await adminClient
         .from('projects')
-        .insert({
-          user_id: user.id,
-          name: productName,
-          status: 'saved', // Save Report 버튼을 누르면 saved 상태로 생성
-        })
+        .insert(insertData)
         .select()
         .single();
 
       if (projectError) {
         console.error('[Save Project] Failed to create project:', projectError);
+        console.error('[Save Project] Error details:', JSON.stringify(projectError, null, 2));
         return NextResponse.json(
-          { ok: false, error: 'Failed to create project' },
+          { 
+            ok: false, 
+            error: 'Failed to create project',
+            details: projectError,
+          },
           { status: 500 }
         );
       }
 
+      console.log('[Save Project] Project created successfully:', project.id);
       finalProjectId = project.id;
     } else {
       // 프로젝트가 있으면 이름 업데이트 및 saved 상태로 변경
+      const updateData: any = {
+        name: productName,
+        status: 'saved', // Save Report 버튼을 누르면 saved 상태로 변경
+      };
+
+      // AI 분석 결과가 있으면 추가 데이터 포함
+      if (totalLandedCost !== null) {
+        updateData.total_landed_cost = totalLandedCost;
+      }
+      if (initialRiskScore !== null) {
+        updateData.initial_risk_score = initialRiskScore;
+      }
+
+      console.log('[Save Project] Updating project with data:', updateData);
+
       const { data: updatedProject, error: updateError } = await adminClient
         .from('projects')
-        .update({
-          name: productName,
-          status: 'saved', // Save Report 버튼을 누르면 saved 상태로 변경
-        })
+        .update(updateData)
         .eq('id', finalProjectId)
         .eq('user_id', user.id)
         .select()

@@ -17,95 +17,127 @@ export async function GET(request: Request) {
   const type = requestUrl.searchParams.get('type')
   const next = requestUrl.searchParams.get('next') ?? '/dashboard'
 
+  console.log('[Auth Callback] Received request:', {
+    hasCode: !!code,
+    hasTokenHash: !!token_hash,
+    type,
+    url: requestUrl.toString(),
+  })
+
   const supabase = await createClient()
 
   // code 파라미터가 있는 경우 (최신 Supabase 형식)
   if (code) {
-    const { error } = await supabase.auth.exchangeCodeForSession(code)
+    console.log('[Auth Callback] Processing code exchange...')
+    const { error, data } = await supabase.auth.exchangeCodeForSession(code)
 
     if (!error) {
+      console.log('[Auth Callback] Code exchange successful')
       // 인증 성공
       revalidatePath('/', 'layout')
       
       // 사용자 정보 가져오기
-      const { data: { user } } = await supabase.auth.getUser()
+      const { data: { user }, error: userError } = await supabase.auth.getUser()
       
-      if (user) {
-        // 이메일 도메인 기반 자동 리다이렉트
-        const email = user.email?.toLowerCase() || ''
-        
-        // Super Admin: k.myungjun@nexsupply.net
-        if (email === 'k.myungjun@nexsupply.net') {
-          return NextResponse.redirect(new URL('/admin', requestUrl.origin))
-        }
-        
-        // Manager: 하드코딩된 이메일
-        if (email === 'junkimfrom82@gmail.com') {
-          return NextResponse.redirect(new URL('/manager/dashboard', requestUrl.origin))
-        }
-        
-        // Manager: 모든 @nexsupply.net 도메인 (super admin 제외)
-        if (email.endsWith('@nexsupply.net') && email !== 'k.myungjun@nexsupply.net') {
-          return NextResponse.redirect(new URL('/manager/dashboard', requestUrl.origin))
-        }
+      if (userError) {
+        console.error('[Auth Callback] Failed to get user after code exchange:', userError)
+        const verifyUrl = new URL('/auth/verify-email', requestUrl.origin)
+        return NextResponse.redirect(verifyUrl)
       }
       
-      // 일반 사용자 또는 기본 리다이렉트
-      return NextResponse.redirect(new URL(next, requestUrl.origin))
+      if (user) {
+        console.log('[Auth Callback] User found, email confirmed:', {
+          email: user.email,
+          emailConfirmed: !!user.email_confirmed_at,
+        })
+        
+        // 이메일 도메인 기반 자동 리다이렉트
+        const email = user.email?.toLowerCase() || ''
+        let redirectPath = '/dashboard'
+        
+        if (email === 'k.myungjun@nexsupply.net') {
+          redirectPath = '/admin'
+        } else if (email === 'junkimfrom82@gmail.com' || 
+                   (email.endsWith('@nexsupply.net') && email !== 'k.myungjun@nexsupply.net')) {
+          redirectPath = '/manager/dashboard'
+        }
+        
+        console.log('[Auth Callback] Redirecting to:', redirectPath)
+        // 이메일 확인 완료 후 바로 대시보드로 리다이렉트
+        return NextResponse.redirect(new URL(redirectPath, requestUrl.origin))
+      }
+      
+      // 사용자 정보를 가져올 수 없는 경우
+      console.error('[Auth Callback] User not found after code exchange')
+      const verifyUrl = new URL('/auth/verify-email', requestUrl.origin)
+      return NextResponse.redirect(verifyUrl)
     } else {
       console.error('[Auth Callback] Code exchange error:', error)
-      const loginUrl = new URL('/login', requestUrl.origin)
-      loginUrl.searchParams.set('error', '이메일 확인에 실패했습니다. 링크가 만료되었거나 이미 사용되었을 수 있습니다.')
-      return NextResponse.redirect(loginUrl)
+      const verifyUrl = new URL('/auth/verify-email', requestUrl.origin)
+      verifyUrl.searchParams.set('error', 'verification_failed')
+      return NextResponse.redirect(verifyUrl)
     }
   }
 
   // token_hash 파라미터가 있는 경우 (구형 Supabase 형식)
   if (token_hash && type) {
+    console.log('[Auth Callback] Processing OTP verification...')
     const { error } = await supabase.auth.verifyOtp({
       type: type as any,
       token_hash,
     })
 
     if (!error) {
+      console.log('[Auth Callback] OTP verification successful')
       // 인증 성공
       revalidatePath('/', 'layout')
       
       // 사용자 정보 가져오기
-      const { data: { user } } = await supabase.auth.getUser()
+      const { data: { user }, error: userError } = await supabase.auth.getUser()
       
-      if (user) {
-        // 이메일 도메인 기반 자동 리다이렉트
-        const email = user.email?.toLowerCase() || ''
-        
-        // Super Admin: k.myungjun@nexsupply.net
-        if (email === 'k.myungjun@nexsupply.net') {
-          return NextResponse.redirect(new URL('/admin', requestUrl.origin))
-        }
-        
-        // Manager: 하드코딩된 이메일
-        if (email === 'junkimfrom82@gmail.com') {
-          return NextResponse.redirect(new URL('/manager/dashboard', requestUrl.origin))
-        }
-        
-        // Manager: 모든 @nexsupply.net 도메인 (super admin 제외)
-        if (email.endsWith('@nexsupply.net') && email !== 'k.myungjun@nexsupply.net') {
-          return NextResponse.redirect(new URL('/manager/dashboard', requestUrl.origin))
-        }
+      if (userError) {
+        console.error('[Auth Callback] Failed to get user after OTP verification:', userError)
+        const verifyUrl = new URL('/auth/verify-email', requestUrl.origin)
+        return NextResponse.redirect(verifyUrl)
       }
       
-      // 일반 사용자 또는 기본 리다이렉트
-      return NextResponse.redirect(new URL(next, requestUrl.origin))
+      if (user) {
+        console.log('[Auth Callback] User found, email confirmed:', {
+          email: user.email,
+          emailConfirmed: !!user.email_confirmed_at,
+        })
+        
+        // 이메일 도메인 기반 자동 리다이렉트
+        const email = user.email?.toLowerCase() || ''
+        let redirectPath = '/dashboard'
+        
+        if (email === 'k.myungjun@nexsupply.net') {
+          redirectPath = '/admin'
+        } else if (email === 'junkimfrom82@gmail.com' || 
+                   (email.endsWith('@nexsupply.net') && email !== 'k.myungjun@nexsupply.net')) {
+          redirectPath = '/manager/dashboard'
+        }
+        
+        console.log('[Auth Callback] Redirecting to:', redirectPath)
+        // 이메일 확인 완료 후 바로 대시보드로 리다이렉트
+        return NextResponse.redirect(new URL(redirectPath, requestUrl.origin))
+      }
+      
+      // 사용자 정보를 가져올 수 없는 경우
+      console.error('[Auth Callback] User not found after OTP verification')
+      const verifyUrl = new URL('/auth/verify-email', requestUrl.origin)
+      return NextResponse.redirect(verifyUrl)
     } else {
       console.error('[Auth Callback] OTP verification error:', error)
-      const loginUrl = new URL('/login', requestUrl.origin)
-      loginUrl.searchParams.set('error', '이메일 확인에 실패했습니다. 링크가 만료되었거나 이미 사용되었을 수 있습니다.')
-      return NextResponse.redirect(loginUrl)
+      const verifyUrl = new URL('/auth/verify-email', requestUrl.origin)
+      verifyUrl.searchParams.set('error', 'verification_failed')
+      return NextResponse.redirect(verifyUrl)
     }
   }
 
-  // 토큰이 없는 경우 - 로그인 페이지로 리다이렉트
-  const loginUrl = new URL('/login', requestUrl.origin)
-  loginUrl.searchParams.set('error', '유효하지 않은 확인 링크입니다.')
-  return NextResponse.redirect(loginUrl)
+  // 토큰이 없는 경우 - 이메일 확인 페이지로 리다이렉트
+  console.log('[Auth Callback] No code or token_hash found, redirecting to verify-email page')
+  const verifyUrl = new URL('/auth/verify-email', requestUrl.origin)
+  verifyUrl.searchParams.set('error', 'invalid_link')
+  return NextResponse.redirect(verifyUrl)
 }

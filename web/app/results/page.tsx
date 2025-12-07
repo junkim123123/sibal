@@ -1450,8 +1450,51 @@ function ResultsContent() {
       return;
     }
     
-    // 3. project_id가 있지만 answers가 없으면 메시지에서 재구성 시도 (나중에 구현)
-    console.warn('[Results] No answers data found in sessionStorage or URL params.');
+    // 3. project_id가 있으면 저장된 프로젝트 데이터 불러오기
+    if (projectId && Object.keys(paramsAnswers).length === 0) {
+      console.log('[Results] Loading saved project data for project_id:', projectId);
+      
+      const loadSavedProject = async () => {
+        try {
+          const response = await fetch(`/api/projects/${projectId}/analysis`);
+          const data = await response.json();
+          
+          if (data.ok) {
+            console.log('[Results] Saved project data loaded:', {
+              hasAnswers: !!data.answers,
+              hasAiAnalysis: !!data.ai_analysis,
+            });
+            
+            // answers 복원
+            if (data.answers && Object.keys(data.answers).length > 0) {
+              setAnswers(data.answers);
+            }
+            
+            // ai_analysis 복원
+            if (data.ai_analysis) {
+              setAiAnalysis(data.ai_analysis);
+            }
+            
+            setIsInitialized(true);
+          } else {
+            console.error('[Results] Failed to load saved project:', data.error);
+            setIsInitialized(true);
+          }
+        } catch (error) {
+          console.error('[Results] Error loading saved project:', error);
+          setIsInitialized(true);
+        }
+      };
+      
+      loadSavedProject();
+      return;
+    }
+    
+    // 4. project_id도 없고 answers도 없으면 경고
+    if (!projectId && Object.keys(paramsAnswers).length === 0) {
+      console.warn('[Results] No project_id and no answers data found.');
+    }
+    
     setIsInitialized(true);
   }, [isInitialized, searchParams, projectId]);
 

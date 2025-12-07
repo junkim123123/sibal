@@ -65,11 +65,35 @@ export async function GET(
     const answers = analysisData.answers || null;
     const aiAnalysis = analysisData.ai_analysis || null;
 
+    // 메시지도 함께 불러오기 (채팅 내역)
+    let messages: any[] = [];
+    try {
+      const { data: messagesData, error: messagesError } = await adminClient
+        .from('messages')
+        .select('id, role, content, timestamp')
+        .eq('project_id', projectId)
+        .order('timestamp', { ascending: true });
+
+      if (!messagesError && messagesData) {
+        messages = messagesData.map((msg: any) => ({
+          role: msg.role,
+          content: msg.content,
+          timestamp: msg.timestamp,
+        }));
+        console.log('[Get Project Analysis] Loaded messages:', messages.length);
+      } else if (messagesError) {
+        console.warn('[Get Project Analysis] Failed to load messages (non-critical):', messagesError);
+      }
+    } catch (messagesError) {
+      console.warn('[Get Project Analysis] Error loading messages (non-critical):', messagesError);
+    }
+
     console.log('[Get Project Analysis] Retrieved data:', {
       projectId: project.id,
       hasAnswers: !!answers,
       hasAiAnalysis: !!aiAnalysis,
       answersKeys: answers ? Object.keys(answers).length : 0,
+      messagesCount: messages.length,
     });
 
     return NextResponse.json({
@@ -81,6 +105,7 @@ export async function GET(
       },
       answers: answers,
       ai_analysis: aiAnalysis,
+      messages: messages.length > 0 ? messages : undefined,
     });
   } catch (error) {
     console.error('[Get Project Analysis] Server error:', error);

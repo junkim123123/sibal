@@ -7,8 +7,6 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { createClient } from '@/lib/supabase/client';
-import { getAdminClient } from '@/lib/supabase/admin';
 import { MessageSquare, Loader2, User } from 'lucide-react';
 
 interface ClientProject {
@@ -33,83 +31,34 @@ export function ClientList({ onProjectSelect, selectedProjectId }: ClientListPro
   useEffect(() => {
     const loadClients = async () => {
       try {
-        const supabase = createClient();
-        const { data: { user } } = await supabase.auth.getUser();
+        setIsLoading(true);
 
-        if (!user) return;
+        // API Route를 통해 서버 사이드에서 데이터 가져오기
+        const response = await fetch('/api/manager/projects', {
+          method: 'GET',
+          credentials: 'include',
+          headers: { 'Content-Type': 'application/json' },
+        });
 
-        const adminClient = getAdminClient();
+        const data = await response.json();
 
-        // 매니저가 할당된 프로젝트들 로드
-        const { data: projects, error: projectsError } = await adminClient
-          .from('projects')
-          .select(`
-            id,
-            name,
-            status,
-            user_id,
-            profiles!projects_user_id_fkey(
-              name,
-              email
-            )
-          `)
-          .eq('manager_id', user.id)
-          .in('status', ['active', 'in_progress'])
-          .order('updated_at', { ascending: false });
-
-        if (projectsError || !projects) {
-          console.error('[ClientList] Failed to load projects:', projectsError);
+        if (!data.ok) {
+          console.error('[ClientList] Failed to load projects:', data.error);
           return;
         }
 
-        // 각 프로젝트의 읽지 않은 메시지 수 조회
-        const clientsWithUnread: ClientProject[] = [];
+        console.log('[ClientList] Loaded projects:', data.projects?.length || 0);
 
-        for (const project of projects) {
-          // 채팅 세션 찾기
-          const { data: session } = await adminClient
-            .from('chat_sessions')
-            .select('id')
-            .eq('project_id', project.id)
-            .eq('manager_id', user.id)
-            .maybeSingle();
-
-          let unreadCount = 0;
-          let lastMessageAt: string | null = null;
-
-          if (session) {
-            // 읽지 않은 메시지 수 (간단한 구현 - 실제로는 read_at 필드 사용)
-            const { count } = await adminClient
-              .from('chat_messages')
-              .select('*', { count: 'exact', head: true })
-              .eq('session_id', session.id)
-              .neq('sender_id', user.id)
-              .is('read_at', null);
-
-            unreadCount = count || 0;
-
-            // 최근 메시지 시간
-            const { data: lastMessage } = await adminClient
-              .from('chat_messages')
-              .select('created_at')
-              .eq('session_id', session.id)
-              .order('created_at', { ascending: false })
-              .limit(1)
-              .maybeSingle();
-
-            lastMessageAt = lastMessage?.created_at || null;
-          }
-
-          clientsWithUnread.push({
-            id: project.id,
-            name: project.name,
-            client_name: project.profiles?.name || project.profiles?.email || 'Client',
-            client_email: project.profiles?.email || '',
-            status: project.status,
-            unread_count: unreadCount,
-            last_message_at: lastMessageAt,
-          });
-        }
+        // API에서 받은 데이터를 ClientProject 형식으로 변환
+        const clientsWithUnread: ClientProject[] = (data.projects || []).map((project: any) => ({
+          id: project.id,
+          name: project.name,
+          client_name: project.client_name,
+          client_email: project.client_email,
+          status: project.status,
+          unread_count: project.unread_count || 0,
+          last_message_at: project.last_message_at,
+        }));
 
         setClients(clientsWithUnread);
       } catch (error) {

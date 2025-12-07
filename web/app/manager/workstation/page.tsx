@@ -9,7 +9,6 @@
 import { useState, useEffect, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
-import { getAdminClient } from '@/lib/supabase/admin';
 import { ManagerChat } from '@/components/ManagerChat';
 import { MilestoneTracker } from '@/components/MilestoneTracker';
 import { ClientList } from '@/components/ClientList';
@@ -68,41 +67,29 @@ function WorkstationPageContent() {
 
   const loadProject = async (projectId: string, managerUserId: string) => {
     try {
-      const adminClient = getAdminClient();
+      // API Route를 통해 서버 사이드에서 프로젝트 정보 가져오기
+      const response = await fetch(`/api/manager/projects/${projectId}`, {
+        method: 'GET',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+      });
 
-      // 프로젝트 정보 로드 (클라이언트 정보 포함)
-      const { data: projectData, error: projectError } = await adminClient
-        .from('projects')
-        .select(`
-          id,
-          name,
-          user_id,
-          status,
-          total_landed_cost,
-          created_at,
-          profiles!projects_user_id_fkey(
-            name,
-            email
-          )
-        `)
-        .eq('id', projectId)
-        .eq('manager_id', managerUserId)
-        .single();
+      const data = await response.json();
 
-      if (projectError || !projectData) {
-        console.error('[Workstation] Failed to load project:', projectError);
+      if (!data.ok || !data.project) {
+        console.error('[Workstation] Failed to load project:', data.error);
         return;
       }
 
       setProject({
-        id: projectData.id,
-        name: projectData.name,
-        user_id: projectData.user_id,
-        client_name: projectData.profiles?.name || projectData.profiles?.email || 'Client',
-        client_email: projectData.profiles?.email || '',
-        status: projectData.status,
-        total_landed_cost: projectData.total_landed_cost,
-        created_at: projectData.created_at,
+        id: data.project.id,
+        name: data.project.name,
+        user_id: data.project.user_id,
+        client_name: data.project.client_name,
+        client_email: data.project.client_email,
+        status: data.project.status,
+        total_landed_cost: data.project.total_landed_cost,
+        created_at: data.project.created_at,
       });
 
       // 채팅 세션 로드 또는 생성
@@ -114,52 +101,24 @@ function WorkstationPageContent() {
 
   const loadOrCreateChatSession = async (projectId: string, managerUserId: string) => {
     try {
-      const adminClient = getAdminClient();
+      // API Route를 통해 서버 사이드에서 채팅 세션 로드 또는 생성
+      const response = await fetch(
+        `/api/manager/chat-sessions?project_id=${projectId}&manager_id=${managerUserId}`,
+        {
+          method: 'GET',
+          credentials: 'include',
+          headers: { 'Content-Type': 'application/json' },
+        }
+      );
 
-      // 기존 세션 확인 (매니저가 할당된 세션)
-      const { data: existingSession } = await adminClient
-        .from('chat_sessions')
-        .select('id')
-        .eq('project_id', projectId)
-        .eq('manager_id', managerUserId)
-        .in('status', ['open', 'in_progress'])
-        .maybeSingle();
+      const data = await response.json();
 
-      if (existingSession) {
-        setChatSessionId(existingSession.id);
+      if (!data.ok || !data.session) {
+        console.error('[Workstation] Failed to load/create session:', data.error);
         return;
       }
 
-      // 프로젝트 정보 가져오기 (user_id 필요)
-      const { data: projectData } = await adminClient
-        .from('projects')
-        .select('user_id')
-        .eq('id', projectId)
-        .single();
-
-      if (!projectData) {
-        console.error('[Workstation] Project not found');
-        return;
-      }
-
-      // 세션이 없으면 생성 (매니저 ID 할당)
-      const { data: newSession, error: sessionError } = await adminClient
-        .from('chat_sessions')
-        .insert({
-          project_id: projectId,
-          user_id: projectData.user_id,
-          manager_id: managerUserId,
-          status: 'in_progress',
-        })
-        .select()
-        .single();
-
-      if (sessionError || !newSession) {
-        console.error('[Workstation] Failed to create session:', sessionError);
-        return;
-      }
-
-      setChatSessionId(newSession.id);
+      setChatSessionId(data.session.id);
     } catch (error) {
       console.error('[Workstation] Failed to load/create session:', error);
     }

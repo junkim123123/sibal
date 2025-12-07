@@ -58,9 +58,15 @@ function DashboardPageContent() {
         
         // 프로젝트 데이터 로드
         await loadProjects(user.id)
-        // 사용량 데이터 로드
-        await loadUsageData(user.id)
+        // 사용량 데이터 로드 (선택적 - 에러가 나도 계속 진행)
+        try {
+          await loadUsageData(user.id)
+        } catch (usageError) {
+          console.error('[Dashboard] Failed to load usage data:', usageError)
+          // 사용량 데이터 로드 실패는 치명적이지 않으므로 계속 진행
+        }
       } catch (error) {
+        console.error('[Dashboard] Auth check error:', error)
         window.location.href = '/login'
       }
     }
@@ -133,6 +139,44 @@ function DashboardPageContent() {
       console.error('[Dashboard] Failed to load projects:', error)
     } finally {
       setIsLoading(false)
+    }
+  }
+
+  // 사용량 데이터 로드
+  async function loadUsageData(userId: string) {
+    try {
+      const supabase = createClient()
+      
+      const { data: profile, error: profileError } = await supabase
+        .from('profiles')
+        .select('has_active_subscription, analysis_count')
+        .eq('id', userId)
+        .single()
+
+      if (profileError || !profile) {
+        console.error('[Dashboard] Failed to load usage data:', profileError)
+        // 기본값 설정
+        setUsageData({
+          hasActiveSubscription: false,
+          analysisCount: 0,
+          limit: 30,
+        })
+        return
+      }
+
+      setUsageData({
+        hasActiveSubscription: profile.has_active_subscription || false,
+        analysisCount: profile.analysis_count || 0,
+        limit: 30,
+      })
+    } catch (error) {
+      console.error('[Dashboard] Failed to load usage data:', error)
+      // 기본값 설정
+      setUsageData({
+        hasActiveSubscription: false,
+        analysisCount: 0,
+        limit: 30,
+      })
     }
   }
 

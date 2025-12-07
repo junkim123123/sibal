@@ -143,9 +143,16 @@ export function MilestoneTracker({ projectId, managerId }: MilestoneTrackerProps
     );
   }
 
-  const currentIndex = milestones.findIndex(
-    (m) => m.status === 'in_progress' || (m.status === 'completed' && milestones.indexOf(m) === milestones.length - 1)
-  );
+  // 현재 진행 중인 마일스톤 인덱스 찾기
+  const currentIndex = milestones.findIndex((m) => m.status === 'in_progress');
+  // 완료된 마일스톤 중 가장 마지막 인덱스 찾기
+  const lastCompletedIndex = milestones.map((m, idx) => ({ status: m.status, idx }))
+    .filter(({ status }) => status === 'completed')
+    .map(({ idx }) => idx)
+    .sort((a, b) => b - a)[0] ?? -1;
+
+  // 다음 업데이트 가능한 마일스톤 인덱스
+  const nextUpdatableIndex = currentIndex >= 0 ? currentIndex : (lastCompletedIndex + 1);
 
   return (
     <div className="bg-white rounded-lg border border-gray-200 p-4 h-full flex flex-col">
@@ -158,8 +165,8 @@ export function MilestoneTracker({ projectId, managerId }: MilestoneTrackerProps
         {milestones.map((milestone, idx) => {
           const isCompleted = milestone.status === 'completed';
           const isInProgress = milestone.status === 'in_progress';
-          const isNext = idx <= (currentIndex >= 0 ? currentIndex + 1 : 0) && !isCompleted;
-          const canUpdate = isInProgress || (isNext && idx === (currentIndex >= 0 ? currentIndex + 1 : 0));
+          // 현재 진행 중이거나, 다음 업데이트 가능한 마일스톤이면 버튼 표시
+          const canUpdate = isInProgress || (idx === nextUpdatableIndex && !isCompleted);
 
           return (
             <div key={idx} className="relative flex items-start gap-3 pb-6 last:pb-0">

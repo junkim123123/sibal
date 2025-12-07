@@ -156,9 +156,9 @@ function DashboardPageContent() {
       console.log('[Dashboard] Projects with saved status:', savedCount);
 
       if (data.ok && data.projects) {
-        // Recent Estimates: status가 'active'인 프로젝트들 (최근 분석)
+        // Recent Estimates: status가 'active' 또는 'in_progress'인 프로젝트들 (최근 분석)
         const activeProjects = data.projects
-          .filter((p: any) => p.status === 'active')
+          .filter((p: any) => p.status === 'active' || p.status === 'in_progress')
           .map((p: any) => ({
             id: p.id,
             productName: p.name,
@@ -306,9 +306,9 @@ function DashboardPageContent() {
     try {
       const supabase = createClient()
       
-      // 1. status='active'인 프로젝트들 (새로 생성된 소싱 요청)
+      // 1. status='active' 또는 'in_progress'인 프로젝트들 (새로 생성된 소싱 요청 또는 매니저가 할당된 프로젝트)
       const activeProjects = projects
-        .filter((p: any) => p.status === 'active')
+        .filter((p: any) => p.status === 'active' || p.status === 'in_progress')
         .map((p: any) => ({
           id: p.id,
           batchName: p.name,
@@ -318,10 +318,11 @@ function DashboardPageContent() {
             day: 'numeric', 
             year: 'numeric' 
           }),
-          status: 'Processing', // 새로 생성된 프로젝트는 Processing 상태
+          status: p.status === 'in_progress' ? 'In Progress' : 'Processing', // 매니저가 할당되면 In Progress, 아니면 Processing
           projectName: p.name,
           href: `/dashboard/chat?project_id=${p.id}`, // 매니저 채팅 페이지로 이동
-          isNewRequest: true, // 새 소싱 요청인지 구분
+          isNewRequest: p.status === 'active', // active 상태면 새 소싱 요청
+          hasManager: p.status === 'in_progress', // in_progress 상태면 매니저가 할당됨
         }))
 
       // 2. 선택된 견적이 있는 프로젝트 ID 목록 가져오기
@@ -452,17 +453,45 @@ function DashboardPageContent() {
         .filter((s: any) => s !== null)
 
       // 6. 세 리스트 합치기 (새 소싱 요청 + 매니저 대기 중 + 진행 중인 주문)
-      // 중복 제거: 이미 진행 중인 주문에 포함된 프로젝트는 제외
-      const activeProjectIds = new Set(activeProjects.map((p: any) => p.id))
+      // 중복 제거: Set을 사용하여 프로젝트 ID 기준으로 중복 제거
       const orderProjectIdsSet = new Set(orderProjectIds)
       const awaitingManagerIds = new Set(projectsAwaitingManager.map((p: any) => p.id))
       
       // 진행 중인 주문에 포함되지 않은 새 소싱 요청만 추가
-      const newRequestsOnly = activeProjects.filter((p: any) => 
-        !orderProjectIdsSet.has(p.id) && !awaitingManagerIds.has(p.id)
-      )
+      // 매니저가 할당된 프로젝트(in_progress)는 항상 포함
+      const newRequestsOnly = activeProjects.filter((p: any) => {
+        // 진행 중인 주문에 포함된 프로젝트는 제외
+        if (orderProjectIdsSet.has(p.id)) {
+          return false;
+        }
+        // 매니저 대기 중인 프로젝트는 제외 (별도 섹션에 표시)
+        if (awaitingManagerIds.has(p.id)) {
+          return false;
+        }
+        // 나머지는 모두 포함 (active 또는 in_progress)
+        return true;
+      })
       
-      const allOrders = [...newRequestsOnly, ...projectsAwaitingManager, ...ordersInProgress]
+      // 모든 주문 합치기 (중복 제거)
+      const allOrdersMap = new Map<string, any>();
+      
+      // 1. 새 소싱 요청 추가
+      newRequestsOnly.forEach((order: any) => {
+        allOrdersMap.set(order.id, order);
+      });
+      
+      // 2. 매니저 대기 중인 프로젝트 추가
+      projectsAwaitingManager.forEach((order: any) => {
+        allOrdersMap.set(order.id, order);
+      });
+      
+      // 3. 진행 중인 주문 추가
+      ordersInProgress.forEach((order: any) => {
+        allOrdersMap.set(order.id, order);
+      });
+      
+      // Map을 배열로 변환하고 정렬
+      const allOrders = Array.from(allOrdersMap.values())
         .sort((a: any, b: any) => {
           // 최신순 정렬 (created_at 기준)
           const projectA = projects.find((p: any) => p.id === a.id)

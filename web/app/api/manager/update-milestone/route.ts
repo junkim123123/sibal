@@ -94,12 +94,27 @@ export async function PATCH(req: Request) {
       }
     }
 
-    // DB 업데이트
+    // 마일스톤에 따른 프로젝트 상태 매핑
+    const milestoneStatusMap: { [key: string]: string } = {
+      'Sourcing Started': 'active',
+      'Supplier Verified': 'in_progress',
+      'Samples Ordered': 'in_progress',
+      'QC Inspection': 'in_progress',
+      'Shipping Arranged': 'in_progress',
+      'Final Delivery': 'completed',
+    };
+
+    const currentMilestone = updatedMilestones[milestone_index];
+    const projectStatus = milestoneStatusMap[currentMilestone?.title] || 'in_progress';
+
+    // DB 업데이트 (마일스톤 + 프로젝트 상태)
     const { error: updateError } = await adminClient
       .from('projects')
       .update({
         milestones: updatedMilestones,
         current_milestone_index: milestone_index,
+        status: projectStatus, // 마일스톤에 따라 프로젝트 상태 업데이트
+        updated_at: new Date().toISOString(),
       })
       .eq('id', project_id);
 

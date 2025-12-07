@@ -81,18 +81,29 @@ export function ManagerChat({
     const loadMessages = async () => {
       setIsLoading(true);
       try {
+        console.log('[ManagerChat] Loading messages for session:', sessionId);
         const { data, error } = await supabase
           .from('chat_messages')
           .select('*')
           .eq('session_id', sessionId)
           .order('created_at', { ascending: true });
 
-        if (error) throw error;
+        if (error) {
+          console.error('[ManagerChat] Error loading messages:', error);
+          throw error;
+        }
+        
         if (data) {
+          console.log('[ManagerChat] Loaded messages:', data.length);
+          console.log('[ManagerChat] Messages:', data.map(m => ({ id: m.id, role: m.role, sender_id: m.sender_id, content: m.content?.substring(0, 50) })));
           setMessages(data);
+        } else {
+          console.log('[ManagerChat] No messages found');
+          setMessages([]);
         }
       } catch (error) {
         console.error('[ManagerChat] Failed to load messages:', error);
+        setMessages([]);
       } finally {
         setIsLoading(false);
       }
@@ -108,6 +119,8 @@ export function ManagerChat({
       return;
     }
 
+    console.log('[ManagerChat] Setting up Realtime subscription for session:', sessionId);
+
     const channel = supabase
       .channel(`chat-session-${sessionId}`)
       .on(
@@ -119,13 +132,27 @@ export function ManagerChat({
           filter: `session_id=eq.${sessionId}`,
         },
         (payload) => {
+          console.log('[ManagerChat] New message received via Realtime:', payload.new);
           const newMessage = payload.new as ChatMessage;
-          setMessages((prev) => [...prev, newMessage]);
+          
+          // 중복 메시지 체크 (이미 있는 메시지는 추가하지 않음)
+          setMessages((prev) => {
+            const exists = prev.some((msg) => msg.id === newMessage.id);
+            if (exists) {
+              console.log('[ManagerChat] Message already exists, skipping:', newMessage.id);
+              return prev;
+            }
+            console.log('[ManagerChat] Adding new message to state');
+            return [...prev, newMessage];
+          });
         }
       )
-      .subscribe();
+      .subscribe((status) => {
+        console.log('[ManagerChat] Realtime subscription status:', status);
+      });
 
     return () => {
+      console.log('[ManagerChat] Cleaning up Realtime subscription');
       supabase.removeChannel(channel);
     };
   }, [sessionId, supabase]);
@@ -205,16 +232,31 @@ export function ManagerChat({
 
       // 성공 시 임시 메시지를 실제 메시지로 교체
       if (data.message) {
-        setMessages((prev) => 
-          prev.map((msg) => 
-            msg.id === tempMessageId 
-              ? {
-                  ...data.message,
-                  sender_id: userId,
-                }
-              : msg
-          )
-        );
+        setMessages((prev) => {
+          // 임시 메시지 찾기
+          const tempIndex = prev.findIndex((msg) => msg.id === tempMessageId);
+          if (tempIndex >= 0) {
+            // 임시 메시지를 실제 메시지로 교체
+            const updated = [...prev];
+            updated[tempIndex] = {
+              ...data.message,
+              sender_id: userId,
+              role: isManager ? 'manager' : 'user',
+            };
+            return updated;
+          } else {
+            // 임시 메시지가 없으면 (이미 Realtime으로 추가되었을 수 있음) 그냥 추가
+            const exists = prev.some((msg) => msg.id === data.message.id);
+            if (!exists) {
+              return [...prev, {
+                ...data.message,
+                sender_id: userId,
+                role: isManager ? 'manager' : 'user',
+              }];
+            }
+            return prev;
+          }
+        });
       }
     } catch (error) {
       console.error('[ManagerChat] Failed to send message:', error);
@@ -291,7 +333,16 @@ export function ManagerChat({
           messages.map((message) => {
             const isManagerMessage = message.role === 'manager';
             const isSystemMessage = message.content.startsWith('System:');
-            const isOwnMessage = (isManager && isManagerMessage) || (!isManager && !isManagerMessage && message.sender_id === userId);
+            
+            // 자신의 메시지인지 확인
+            // 매니저일 때: role이 'manager'이고 sender_id가 자신의 userId
+            // 클라이언트일 때: role이 'user'이고 sender_id가 자신의 userId
+            const isOwnMessage = 
+              (isManager && isManagerMessage && message.sender_id === userId) ||
+              (!isManager && !isManagerMessage && message.sender_id === userId);
+            
+            // 상대방 메시지 (항상 표시되어야 함)
+            const isOtherMessage = !isOwnMessage && !isSystemMessage;
             
             return (
               <div
@@ -310,7 +361,22 @@ export function ManagerChat({
                   {isSystemMessage && (
                     <p className="text-xs font-semibold text-yellow-700 mb-1">System</p>
                   )}
+                  {isOtherMessage && (
+                    <p className="text-xs font-medium text-gray-600 mb-1">
+                      {isManagerMessage ? 'Manager' : 'You'}
+                    </p>
+                  )}
                   <p className="text-sm whitespace-pre-wrap">{message.content}</p>
+                  {message.file_url && (
+                    <a
+                      href={message.file_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-xs underline mt-1 block"
+                    >
+                      📎 {message.file_name || 'File'}
+                    </a>
+                  )}
                   <p className={`text-xs mt-1 ${
                     isOwnMessage 
                       ? 'text-blue-100' 

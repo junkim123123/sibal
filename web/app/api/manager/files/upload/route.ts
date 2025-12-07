@@ -73,6 +73,30 @@ export async function POST(req: Request) {
     const fileName = `${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
     const filePath = `projects/${projectId}/${fileName}`;
 
+    // Storage 버킷 확인 및 생성 (없으면 에러 반환)
+    const { data: buckets, error: bucketsError } = await supabase.storage.listBuckets();
+    
+    if (bucketsError) {
+      console.error('[File Upload API] Failed to list buckets:', bucketsError);
+      return NextResponse.json(
+        { ok: false, error: 'Storage service unavailable. Please contact support.' },
+        { status: 500 }
+      );
+    }
+
+    const projectFilesBucket = buckets?.find(b => b.name === 'project-files');
+    
+    if (!projectFilesBucket) {
+      console.error('[File Upload API] project-files bucket not found');
+      return NextResponse.json(
+        { 
+          ok: false, 
+          error: 'Storage bucket not configured. Please create "project-files" bucket in Supabase Storage.' 
+        },
+        { status: 500 }
+      );
+    }
+
     const { data: uploadData, error: uploadError } = await supabase.storage
       .from('project-files')
       .upload(filePath, file, {
@@ -82,8 +106,18 @@ export async function POST(req: Request) {
 
     if (uploadError) {
       console.error('[File Upload API] Storage upload error:', uploadError);
+      console.error('[File Upload API] Upload error details:', JSON.stringify(uploadError, null, 2));
+      
+      // 더 자세한 에러 메시지 제공
+      let errorMessage = 'Failed to upload file';
+      if (uploadError.message) {
+        errorMessage = uploadError.message;
+      } else if (uploadError.error) {
+        errorMessage = uploadError.error;
+      }
+      
       return NextResponse.json(
-        { ok: false, error: 'Failed to upload file' },
+        { ok: false, error: errorMessage },
         { status: 500 }
       );
     }

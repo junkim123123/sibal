@@ -73,6 +73,30 @@ function DashboardPageContent() {
     checkAuth()
   }, [])
 
+  // 페이지 포커스 시 또는 URL 파라미터 변경 시 데이터 다시 불러오기
+  useEffect(() => {
+    const handleFocus = () => {
+      if (userId && isAuthenticated) {
+        loadProjects(userId)
+      }
+    }
+
+    // 페이지 포커스 시 데이터 새로고침
+    window.addEventListener('focus', handleFocus)
+    
+    // URL 파라미터에 refresh 플래그가 있으면 데이터 새로고침
+    const shouldRefresh = searchParams?.get('refresh') === 'true'
+    if (shouldRefresh && userId && isAuthenticated) {
+      loadProjects(userId)
+      // URL에서 refresh 파라미터 제거
+      router.replace('/dashboard?tab=' + (searchParams?.get('tab') || 'estimates'), { scroll: false })
+    }
+
+    return () => {
+      window.removeEventListener('focus', handleFocus)
+    }
+  }, [userId, isAuthenticated, searchParams, router])
+
   // 프로젝트 데이터 로드
   async function loadProjects(userId: string) {
     try {

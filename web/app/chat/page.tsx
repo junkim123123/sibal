@@ -111,7 +111,7 @@ const SOURCING_STEPS = [
   {
     id: 'pricing_value',
     type: 'text' as const,
-    question: "Please enter your value.", // Will be dynamically replaced based on pricing_metric selection
+    question: "What price are you planning to sell this at?", // Will be dynamically replaced based on pricing_metric selection
     placeholder: "Type your value..."
   },
   

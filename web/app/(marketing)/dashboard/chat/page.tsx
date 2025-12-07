@@ -6,7 +6,7 @@
 
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { ManagerChat } from '@/components/ManagerChat';
 import { createClient } from '@/lib/supabase/client';
@@ -14,7 +14,7 @@ import { getAdminClient } from '@/lib/supabase/admin';
 import { Loader2, ArrowLeft, MessageSquare } from 'lucide-react';
 import Link from 'next/link';
 
-export default function ClientChatPage() {
+function ClientChatContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const projectId = searchParams.get('project_id');
@@ -181,6 +181,20 @@ export default function ClientChatPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function ClientChatPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen bg-white flex items-center justify-center">
+          <Loader2 className="w-6 h-6 animate-spin text-gray-400" />
+        </div>
+      }
+    >
+      <ClientChatContent />
+    </Suspense>
   );
 }
 

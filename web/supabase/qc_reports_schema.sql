@@ -221,3 +221,4 @@ CREATE TRIGGER calculate_qc_report_defect_rate
 -- 2. Storage 버킷 생성 (qc-images) - 이미지 업로드용
 -- 3. Storage 정책 설정 (매니저만 업로드 가능)
 -- ============================================================================
+

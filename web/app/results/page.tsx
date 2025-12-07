@@ -913,7 +913,6 @@ function ResultsActionButtons({ projectId, answers, aiAnalysis }: { projectId?: 
   const [isProcessingPayment, setIsProcessingPayment] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isAgreed, setIsAgreed] = useState(false);
-  const [isModalOpen, setIsModalOpen] = useState(false);
 
   // 인증 상태 확인
   useEffect(() => {
@@ -1034,8 +1033,8 @@ function ResultsActionButtons({ projectId, answers, aiAnalysis }: { projectId?: 
     }
   };
 
-  // Hire 버튼 클릭 핸들러 (모달 열기)
-  const handleRequestQuote = () => {
+  // Start Sourcing Request 핸들러 (결제 없이 즉시 프로젝트 생성)
+  const handleStartSourcing = async () => {
     if (!isAuthenticated) {
       window.location.href = '/login?redirect=/results';
       return;
@@ -1046,76 +1045,105 @@ function ResultsActionButtons({ projectId, answers, aiAnalysis }: { projectId?: 
       return;
     }
 
-    // 모달 열기
-    setIsModalOpen(true);
-  };
-
-  // 구독 결제 프로세스 시작 (모달 내부에서 호출)
-  const handleSubscribe = async () => {
     setIsProcessingPayment(true);
     
     try {
-      // Lemon Squeezy 구독 체크아웃 URL 생성 API 호출
-      const response = await fetch('/api/payment/subscribe', {
+      console.log('[Start Sourcing] Starting project submission...', {
+        projectId,
+        hasAnswers: !!answers && Object.keys(answers).length > 0,
+        hasAiAnalysis: !!aiAnalysis,
+      });
+
+      // 프로젝트의 기존 메시지 불러오기 (있는 경우)
+      let existingMessages: any[] = [];
+      if (projectId) {
+        try {
+          const messagesResponse = await fetch(`/api/messages?project_id=${projectId}`);
+          const messagesData = await messagesResponse.json();
+          if (messagesData.ok && messagesData.messages) {
+            existingMessages = messagesData.messages.map((msg: any) => ({
+              role: msg.role,
+              content: msg.content,
+              timestamp: msg.timestamp,
+            }));
+            console.log('[Start Sourcing] Loaded existing messages:', existingMessages.length);
+          }
+        } catch (error) {
+          console.warn('[Start Sourcing] Failed to load existing messages:', error);
+        }
+      }
+
+      // answers와 ai_analysis에서 메시지 생성 (기존 메시지가 없는 경우)
+      const messagesToSave: any[] = [...existingMessages];
+      
+      // answers가 있으면 사용자 메시지로 추가
+      if (answers && Object.keys(answers).length > 0 && existingMessages.length === 0) {
+        const answersText = Object.entries(answers)
+          .filter(([key, value]) => value && value !== 'skip' && value !== 'Skip')
+          .map(([key, value]) => `${key}: ${value}`)
+          .join('\n');
+        
+        if (answersText) {
+          messagesToSave.push({
+            role: 'user',
+            content: `Product Analysis Request:\n${answersText}`,
+          });
+        }
+      }
+
+      // ai_analysis가 있으면 AI 메시지로 추가
+      if (aiAnalysis && existingMessages.length === 0) {
+        const analysisSummary = aiAnalysis.executive_summary || 
+                               `Analysis completed for ${answers?.product_info || answers?.project_name || 'product'}`;
+        messagesToSave.push({
+          role: 'ai',
+          content: analysisSummary,
+        });
+      }
+
+      console.log('[Start Sourcing] Messages to save:', messagesToSave.length);
+
+      // 프로젝트 이름 추출
+      const productName = answers?.product_info?.split('-')[0]?.trim() || 
+                         answers?.product_info?.split(',')[0]?.trim() ||
+                         answers?.product_desc?.split(',')[0] || 
+                         answers?.project_name || 
+                         'New Sourcing Project';
+
+      // 프로젝트 제출 API 호출
+      const response = await fetch('/api/projects/submit', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          project_id: projectId,
+          name: productName,
+          answers: answers,
+          ai_analysis: aiAnalysis,
+          messages: messagesToSave.length > 0 ? messagesToSave : undefined,
         }),
       });
 
-      // 응답 상태 확인
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
-        console.error('[Subscribe] API error response:', {
-          status: response.status,
-          statusText: response.statusText,
-          error: errorData,
-        });
-        
-        // 상세한 에러 메시지 구성
-        let errorMessage = errorData.error || 'Failed to create checkout URL';
-        if (errorData.details) {
-          errorMessage += `\n\nDetails: ${errorData.details}`;
-        }
-        if (errorData.lemonSqueezyError) {
-          const lsError = errorData.lemonSqueezyError;
-          if (lsError.errors && lsError.errors[0]) {
-            errorMessage += `\n\nLemon Squeezy Error: ${lsError.errors[0].detail || lsError.errors[0].title || 'Unknown error'}`;
-          }
-        }
-        
-        alert(errorMessage);
-        setIsProcessingPayment(false);
-        return;
-      }
+      console.log('[Start Sourcing] API response status:', response.status);
 
       const data = await response.json();
+      console.log('[Start Sourcing] API response data:', data);
 
-      if (data.ok && data.checkout_url) {
-        // Lemon Squeezy 결제 페이지로 리다이렉트
-        window.location.href = data.checkout_url;
+      if (data.ok && data.projectId) {
+        console.log('[Start Sourcing] Project created successfully:', data.projectId);
+        // 대시보드로 리다이렉트 (Active Orders 탭에 표시됨)
+        window.location.href = '/dashboard?new=true&tab=active';
       } else {
-        // 상세한 에러 메시지 표시
-        let errorMessage = data.error || 'Failed to create checkout URL. Please try again.';
-        if (data.details) {
-          errorMessage += `\n\nDetails: ${data.details}`;
-        }
-        if (data.lemonSqueezyError) {
-          const lsError = data.lemonSqueezyError;
-          if (lsError.errors && lsError.errors[0]) {
-            errorMessage += `\n\nLemon Squeezy Error: ${lsError.errors[0].detail || lsError.errors[0].title || 'Unknown error'}`;
-          }
-        }
+        console.error('[Start Sourcing] Submission failed:', data);
+        const errorMessage = data.details 
+          ? `${data.error}\n\nDetails: ${JSON.stringify(data.details, null, 2)}`
+          : data.error || 'Failed to start sourcing request. Please try again.';
         alert(errorMessage);
         setIsProcessingPayment(false);
       }
     } catch (error) {
-      console.error('[Subscribe] Failed to create checkout URL:', error);
-      const errorMessage = error instanceof Error ? error.message : 'Payment system error. Please contact support.';
-      alert(`Payment Error: ${errorMessage}\n\nPlease check the browser console for more details.`);
+      console.error('[Start Sourcing] Failed to submit:', error);
+      alert(`Failed to start sourcing request: ${error instanceof Error ? error.message : 'Unknown error'}`);
       setIsProcessingPayment(false);
     }
   };
@@ -1190,22 +1218,26 @@ function ResultsActionButtons({ projectId, answers, aiAnalysis }: { projectId?: 
               {/* Main CTA Button */}
               <div className="w-full">
                 <Button
-                  onClick={handleRequestQuote}
+                  onClick={handleStartSourcing}
                   disabled={isProcessingPayment || !isAgreed}
                   className={`w-full bg-gray-900 hover:bg-gray-800 text-white font-semibold py-3 px-6 ${
                     !isAgreed ? 'opacity-50 cursor-not-allowed' : ''
                   }`}
                 >
-                  <div className="flex items-center justify-between w-full">
-                    <span className="text-base">👔 Hire My Sourcing Expert</span>
-                    <span className="text-sm font-bold">$50/mo</span>
-                  </div>
+                  {isProcessingPayment ? (
+                    <span className="flex items-center gap-2">
+                      <span className="animate-spin">⏳</span>
+                      <span>Creating Project...</span>
+                    </span>
+                  ) : (
+                    <span className="text-base">🚀 Start Sourcing Request (Free)</span>
+                  )}
                 </Button>
-                {/* Credit Badge */}
+                {/* Info Badge */}
                 <div className="mt-2 text-center">
-                  <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-emerald-600">
+                  <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-gray-600">
                     <CheckCircle2 className="w-3.5 h-3.5" />
-                    100% Credited to first order
+                    Start chatting with an agent immediately. Pay later when you approve the quote.
                   </span>
                 </div>
               </div>
@@ -1265,22 +1297,26 @@ function ResultsActionButtons({ projectId, answers, aiAnalysis }: { projectId?: 
               </Button>
               <div className="flex-[7]">
                 <Button
-                  onClick={handleRequestQuote}
+                  onClick={handleStartSourcing}
                   disabled={isProcessingPayment || !isAgreed}
                   className={`w-full bg-gray-900 hover:bg-gray-800 text-white font-semibold text-xs py-2 ${
                     !isAgreed ? 'opacity-50 cursor-not-allowed' : ''
                   }`}
                 >
-                  <div className="flex items-center justify-between w-full">
-                    <span>👔 Hire My Expert</span>
-                    <span className="font-bold">$50/mo</span>
-                  </div>
+                  {isProcessingPayment ? (
+                    <span className="flex items-center gap-1">
+                      <span className="animate-spin text-[10px]">⏳</span>
+                      <span>Creating...</span>
+                    </span>
+                  ) : (
+                    <span>🚀 Start Sourcing (Free)</span>
+                  )}
                 </Button>
-                {/* Credit Badge (Mobile) */}
+                {/* Info Badge (Mobile) */}
                 <div className="mt-1.5 text-center">
-                  <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-emerald-600">
+                  <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-gray-600">
                     <CheckCircle2 className="w-3 h-3" />
-                    100% Credited
+                    Chat now, pay later
                   </span>
                 </div>
               </div>
@@ -1300,114 +1336,7 @@ function ResultsActionButtons({ projectId, answers, aiAnalysis }: { projectId?: 
         </div>
       </div>
 
-      {/* Confirmation Modal */}
-      <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-        <DialogContent className="sm:max-w-[500px] bg-white border-gray-200 pb-8">
-          <DialogHeader>
-            <DialogTitle className="text-2xl font-bold text-gray-900">
-              Confirm Expert Hiring
-            </DialogTitle>
-            <DialogDescription className="text-sm text-gray-600 mt-1">
-              Secure your dedicated sourcing manager today.
-            </DialogDescription>
-          </DialogHeader>
-
-          <div className="space-y-6 py-4">
-            {/* Price Section */}
-            <div className="text-center">
-              <div className="text-4xl font-bold text-gray-900 mb-2">
-                $50 <span className="text-lg font-normal text-gray-600">/ month</span>
-              </div>
-            </div>
-
-            {/* Benefit Badge */}
-            <div className="bg-emerald-50 border border-emerald-200 rounded-lg p-4 text-center">
-              <div className="flex items-center justify-center gap-2 text-emerald-700 font-semibold">
-                <span className="text-lg">✨</span>
-                <span className="text-sm">100% Credited back on your first order</span>
-              </div>
-            </div>
-
-            {/* Policy */}
-            <div className="text-center">
-              <p className="text-xs text-gray-500">
-                No lock-in contract. Cancel anytime.
-              </p>
-            </div>
-
-            {/* Scope of Work */}
-            <div className="border-t border-gray-200 pt-4 space-y-3">
-              <h4 className="text-sm font-semibold text-gray-900 mb-3">Scope of Work</h4>
-              
-              {/* Included Services */}
-              <div className="space-y-2">
-                <p className="text-xs font-medium text-gray-700 mb-1.5">Included (✅):</p>
-                <ul className="space-y-1.5 text-xs text-gray-600 ml-4">
-                  <li className="flex items-start gap-2">
-                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 mt-0.5 flex-shrink-0" />
-                    <span>Factory Sourcing</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 mt-0.5 flex-shrink-0" />
-                    <span>Negotiation</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 mt-0.5 flex-shrink-0" />
-                    <span>QC Management</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 mt-0.5 flex-shrink-0" />
-                    <span>Logistics Setup</span>
-                  </li>
-                </ul>
-              </div>
-
-              {/* Not Included Services */}
-              <div className="space-y-2 pt-2 border-t border-gray-100">
-                <p className="text-xs font-medium text-gray-700 mb-1.5">Not Included (❌):</p>
-                <ul className="space-y-1.5 text-xs text-gray-600 ml-4">
-                  <li className="flex items-start gap-2">
-                    <XCircle className="w-3.5 h-3.5 text-gray-400 mt-0.5 flex-shrink-0" />
-                    <span>Logo/Package Design</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <XCircle className="w-3.5 h-3.5 text-gray-400 mt-0.5 flex-shrink-0" />
-                    <span>Marketing Strategy</span>
-                  </li>
-                </ul>
-              </div>
-            </div>
-          </div>
-
-          <DialogFooter className="gap-2 sm:gap-0 mt-6 pt-4 border-t border-gray-200">
-            <Button
-              variant="outline"
-              onClick={() => setIsModalOpen(false)}
-              disabled={isProcessingPayment}
-              className="w-full sm:w-auto border-gray-300 text-gray-700 hover:bg-gray-50"
-            >
-              Cancel
-            </Button>
-            <Button
-              onClick={handleSubscribe}
-              disabled={isProcessingPayment}
-              className="w-full sm:w-auto bg-gray-900 hover:bg-gray-800 text-white"
-            >
-              {isProcessingPayment ? (
-                <span className="flex items-center gap-2">
-                  <span className="animate-spin">⏳</span>
-                  Processing...
-                </span>
-              ) : (
-                <span className="flex items-center gap-2">
-                  Proceed to Checkout
-                  <span>→</span>
-                </span>
-              )}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      {/* 결제 모달 제거됨 - 즉시 프로젝트 생성으로 변경 */}
     </div>
   );
 }

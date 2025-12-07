@@ -52,7 +52,7 @@ function ClientChatContent() {
       const adminClient = getAdminClient();
       const { data: project, error: projectError } = await adminClient
         .from('projects')
-        .select('name, manager_id, is_paid_subscription, user_id, status')
+        .select('name, manager_id, user_id, status')
         .eq('id', projectId)
         .single();
 

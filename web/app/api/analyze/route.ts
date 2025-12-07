@@ -235,8 +235,13 @@ ${priority && priority.includes('Maximize Gross Margin') ?
    - Compliance Risk: Based on material type and target market regulations
 
 6. **Scale Analysis:**
-   - Current volume scenario (as specified)
-   - 10x volume scenario with Sea freight (if applicable)
+   - MUST provide exactly 4 scenarios:
+     * 500 units (small test batch, typically Air freight)
+     * 5,000 units (launch volume, Air or Sea)
+     * 10,000 units (growing scale, typically Sea freight)
+     * 100,000 units (high scale, Sea freight with volume discounts)
+   - Calculate unit_cost and margin for each scenario
+   - Higher volumes should show lower unit_cost due to economies of scale
 
 **Output Requirements:**
 - Be professional, conservative, and realistic
@@ -255,6 +260,22 @@ You MUST use every single piece of user context to fill out all the fields in th
 3. **Market Benchmark (If Ref Link Provided):** Analyze the link context to estimate competitor retail price, calculate your price advantage, and suggest a specific differentiation strategy.
 
 4. **Strategic Advice:** Provide specific advice tailored to their exact sales channel and priority.
+
+5. **Compliance Checklist (Level 2):** If the product requires regulatory compliance (FDA, CE, etc.), provide a detailed checklist with:
+   - Specific form numbers (e.g., "FDA 2541e")
+   - Required certifications
+   - Links to official resources when possible
+   - Mark which items are mandatory vs. recommended
+
+6. **Market Trends (Level 2):** Use your knowledge of current market trends (especially for social commerce/TikTok Shop):
+   - Identify 3-5 trending keywords in the target market
+   - Recommend specific product variations that align with trends
+   - Estimate potential CTR boost if following the recommendation
+
+7. **Shadow Sourcing (Level 2):** Based on the product category, recommend suppliers or regions known for:
+   - Exporting similar products to the target market
+   - OEM relationships with major brands (if applicable)
+   - Strong track record in the category
 
 Return ONLY valid JSON matching this exact schema (no markdown, no code blocks):
 {
@@ -313,8 +334,30 @@ Return ONLY valid JSON matching this exact schema (no markdown, no code blocks):
     "for_business_model": "string identifying the business model",
     "key_action": "string with specific actionable advice"
   },
-  "executive_summary": "1-2 sentences summarizing the analysis and key recommendations",
-  "osint_risk_score": number (0-100, based on OSINT data analysis from 500 supplier database)
+  "executive_summary": "1-2 sentences summarizing the analysis and key recommendations. If the product has critical regulatory risks (e.g., tobacco, FDA-regulated food, etc.), start with 'IMMEDIATE HALT & PIVOT' or 'Do not proceed' to warn users.",
+  "osint_risk_score": number (0-100, based on OSINT data analysis from 500 supplier database),
+  "compliance_checklist": [
+    {
+      "item": "string (e.g., 'DUNS Number')",
+      "description": "string explaining what this is and why it's needed",
+      "link": "string (optional URL to official form or guide)",
+      "required": boolean
+    }
+  ],
+  "market_trends": {
+    "trending_keywords": ["string array of current trending keywords in target market"],
+    "recommendation": "string with specific product variation recommendation based on trends",
+    "ctr_boost": "string (e.g., '300% CTR boost expected')"
+  },
+  "shadow_sourcing": {
+    "recommended_suppliers": [
+      {
+        "name": "string (supplier name or region)",
+        "reason": "string explaining why this supplier is recommended",
+        "oem_history": "string (optional, e.g., 'OEM for Haribo, Trolli')"
+      }
+    ]
+  }
 }`;
 }
 

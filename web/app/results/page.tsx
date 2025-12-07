@@ -66,6 +66,24 @@ interface AIAnalysisResult {
   };
   executive_summary?: string;
   osint_risk_score?: number; // OSINT Risk Score (0-100)
+  compliance_checklist?: Array<{
+    item: string;
+    description: string;
+    link?: string;
+    required: boolean;
+  }>;
+  market_trends?: {
+    trending_keywords: string[];
+    recommendation: string;
+    ctr_boost?: string;
+  };
+  shadow_sourcing?: {
+    recommended_suppliers: Array<{
+      name: string;
+      reason: string;
+      oem_history?: string;
+    }>;
+  };
   [key: string]: any;
 }
 
@@ -195,22 +213,77 @@ function CostBreakdown({ costBreakdown, totalLandedCost }: { costBreakdown: any;
 }
 
 // Profitability Simulator Component
-function ProfitabilitySimulator({ totalLandedCost, answers }: { totalLandedCost: number; answers: Answers }) {
-  const [retailPrice, setRetailPrice] = useState(49.99);
+function ProfitabilitySimulator({ totalLandedCost, answers, costBreakdown, aiAnalysis }: { 
+  totalLandedCost: number; 
+  answers: Answers;
+  costBreakdown?: any;
+  aiAnalysis?: AIAnalysisResult | null;
+}) {
+  // Product Cost: Use factory_exw from cost_breakdown if available, otherwise use totalLandedCost
+  const productCost = costBreakdown?.factory_exw || totalLandedCost;
   
-  const channelFees = retailPrice * 0.15; // 15% channel fees (example)
-  const netProfit = retailPrice - totalLandedCost - channelFees;
-  const profitMargin = (netProfit / retailPrice) * 100;
+  // Calculate price range based on product cost (min: 1.2x, max: 5x product cost, but at least $10-$100)
+  const minPrice = Math.max(10, Math.ceil(productCost * 1.2));
+  const maxPrice = Math.max(100, Math.ceil(productCost * 5));
+  const defaultPrice = Math.max(minPrice, Math.min(maxPrice, productCost * 2.5));
+  
+  const [retailPrice, setRetailPrice] = useState(defaultPrice);
+  
+  // Calculate Channel & Fulfillment costs based on sales channel
+  const salesChannel = answers.sales_channel?.toLowerCase() || answers.channel?.toLowerCase() || '';
+  let channelFees = 0;
+  let channelFeeLabel = 'Channel & Fulfillment';
+  
+  if (salesChannel.includes('amazon') || salesChannel.includes('fba')) {
+    // Amazon: 15% referral + $3-5 FBA fees (use $4 as average)
+    const referralFee = retailPrice * 0.15;
+    const fbaFee = 4; // Average FBA fee
+    channelFees = referralFee + fbaFee;
+    channelFeeLabel = 'Amazon Fees (15% + FBA)';
+  } else if (salesChannel.includes('shopify') || salesChannel.includes('dtc') || salesChannel.includes('direct')) {
+    // Shopify/DTC: 2.9% payment processing + $3-5 3PL fulfillment (use $4 as average)
+    const paymentFee = retailPrice * 0.029;
+    const fulfillmentFee = 4; // Average 3PL fulfillment fee
+    channelFees = paymentFee + fulfillmentFee;
+    channelFeeLabel = 'Payment & Fulfillment';
+  } else if (salesChannel.includes('wholesale') || salesChannel.includes('b2b')) {
+    // Wholesale/B2B: 2-5% handling fees (use 3.5% as average)
+    channelFees = retailPrice * 0.035;
+    channelFeeLabel = 'Wholesale Fees';
+  } else {
+    // Default: 15% channel fees (fallback)
+    channelFees = retailPrice * 0.15;
+  }
+  
+  // Use product cost (factory_exw) instead of totalLandedCost for profitability calculation
+  const netProfit = retailPrice - productCost - channelFees;
+  const profitMargin = retailPrice > 0 ? (netProfit / retailPrice) * 100 : 0;
   
   // Calculate Break-Even ROAS: (Net Profit / Retail Price) * 100
   const breakEvenROAS = netProfit > 0 ? ((netProfit / retailPrice) * 100).toFixed(1) : '0.0';
   
   // Calculate Min. Sell Price: The price where profit becomes $0
-  // netProfit = price - totalLandedCost - (price * 0.15) = 0
-  // price - price * 0.15 = totalLandedCost
-  // price * (1 - 0.15) = totalLandedCost
-  // price = totalLandedCost / 0.85
-  const minSellPrice = (totalLandedCost / 0.85).toFixed(2);
+  // netProfit = price - productCost - channelFees = 0
+  // For percentage-based fees: price - productCost - (price * feeRate) = 0
+  // price * (1 - feeRate) = productCost + fixedFee
+  // price = (productCost + fixedFee) / (1 - feeRate)
+  let minSellPrice = 0;
+  if (salesChannel.includes('amazon') || salesChannel.includes('fba')) {
+    // Amazon: price - productCost - (price * 0.15 + 4) = 0
+    // price * 0.85 = productCost + 4
+    minSellPrice = (productCost + 4) / 0.85;
+  } else if (salesChannel.includes('shopify') || salesChannel.includes('dtc') || salesChannel.includes('direct')) {
+    // Shopify: price - productCost - (price * 0.029 + 4) = 0
+    // price * 0.971 = productCost + 4
+    minSellPrice = (productCost + 4) / 0.971;
+  } else if (salesChannel.includes('wholesale') || salesChannel.includes('b2b')) {
+    // Wholesale: price - productCost - (price * 0.035) = 0
+    // price * 0.965 = productCost
+    minSellPrice = productCost / 0.965;
+  } else {
+    // Default: price - productCost - (price * 0.15) = 0
+    minSellPrice = productCost / 0.85;
+  }
 
   return (
     <Card className="bg-white border border-gray-200 p-6 shadow-sm h-full min-h-[400px] flex flex-col">
@@ -221,17 +294,17 @@ function ProfitabilitySimulator({ totalLandedCost, answers }: { totalLandedCost:
           <label className="text-sm text-gray-700 mb-2 block font-medium">Target Retail Price</label>
           <input
             type="range"
-            min="10"
-            max="100"
+            min={minPrice}
+            max={maxPrice}
             step="0.01"
             value={retailPrice}
             onChange={(e) => setRetailPrice(parseFloat(e.target.value))}
             className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-blue-600"
           />
           <div className="flex justify-between text-xs text-gray-500 mt-1">
-            <span>$10</span>
+            <span>${minPrice}</span>
             <span className="text-blue-600 font-bold font-mono">${retailPrice.toFixed(2)}</span>
-            <span>$100</span>
+            <span>${maxPrice}</span>
           </div>
         </div>
 
@@ -242,10 +315,10 @@ function ProfitabilitySimulator({ totalLandedCost, answers }: { totalLandedCost:
           </div>
           <div className="flex justify-between text-sm py-1">
             <span className="text-gray-500">Product Cost</span>
-            <span className="text-red-600 font-mono">-${totalLandedCost.toFixed(2)}</span>
+            <span className="text-red-600 font-mono">-${productCost.toFixed(2)}</span>
           </div>
           <div className="flex justify-between text-sm py-1">
-            <span className="text-gray-500">Channel & Fulfillment</span>
+            <span className="text-gray-500">{channelFeeLabel}</span>
             <span className="text-red-600 font-mono">-${channelFees.toFixed(2)}</span>
           </div>
           <div className="flex justify-between text-sm pt-2 pb-1 border-t border-gray-300">
@@ -269,7 +342,7 @@ function ProfitabilitySimulator({ totalLandedCost, answers }: { totalLandedCost:
             <div className="bg-gray-50 rounded-lg p-3 border border-gray-200">
               <div className="flex justify-between items-center mb-1">
                 <span className="text-xs text-gray-500 uppercase tracking-wide">Min. Sell Price</span>
-                <span className="text-orange-600 font-bold font-mono text-sm">${minSellPrice}</span>
+                <span className="text-orange-600 font-bold font-mono text-sm">${minSellPrice.toFixed(2)}</span>
               </div>
               <p className="text-xs text-gray-600 leading-relaxed">Minimum price to break even (0% profit)</p>
             </div>
@@ -281,17 +354,80 @@ function ProfitabilitySimulator({ totalLandedCost, answers }: { totalLandedCost:
 }
 
 // Scale Analysis Component
-function ScaleAnalysis({ scaleAnalysis }: { scaleAnalysis: any[] }) {
+function ScaleAnalysis({ scaleAnalysis, totalLandedCost, costBreakdown }: { 
+  scaleAnalysis: any[];
+  totalLandedCost?: number;
+  costBreakdown?: any;
+}) {
+  // Ensure we have 4 scenarios: 500, 5,000, 10,000, 100,000
+  const requiredQuantities = [500, 5000, 10000, 100000];
+  
+  // Create a map of existing scenarios by quantity
+  const existingScenarios = new Map(
+    (scaleAnalysis || []).map(s => [s.qty, s])
+  );
+  
+  // Fill in missing scenarios with estimated values
+  const completeScenarios = requiredQuantities.map(qty => {
+    if (existingScenarios.has(qty)) {
+      return existingScenarios.get(qty);
+    }
+    
+    // Estimate unit cost based on volume (economies of scale)
+    // Higher volume = lower per-unit cost
+    const baseCost = totalLandedCost || (costBreakdown?.factory_exw || 0);
+    let estimatedUnitCost = baseCost;
+    
+    if (qty === 500) {
+      // Small batch: higher per-unit cost (Air freight, no volume discount)
+      estimatedUnitCost = baseCost * 1.2;
+    } else if (qty === 5000) {
+      // Launch volume: moderate cost (mix of Air/Sea)
+      estimatedUnitCost = baseCost * 0.95;
+    } else if (qty === 10000) {
+      // Growing scale: lower cost (Sea freight, some volume discount)
+      estimatedUnitCost = baseCost * 0.85;
+    } else if (qty === 100000) {
+      // High scale: lowest cost (Sea freight, significant volume discount)
+      estimatedUnitCost = baseCost * 0.70;
+    }
+    
+    // Determine shipping mode
+    const mode = qty >= 10000 ? 'Sea' : qty >= 5000 ? 'Sea/Air' : 'Air';
+    
+    // Estimate margin (assuming retail price around 3x cost)
+    const estimatedRetailPrice = estimatedUnitCost * 3;
+    const estimatedMargin = estimatedRetailPrice > 0 
+      ? ((estimatedRetailPrice - estimatedUnitCost) / estimatedRetailPrice) * 100 
+      : 0;
+    
+    return {
+      qty,
+      mode,
+      unit_cost: estimatedUnitCost,
+      margin: estimatedMargin,
+      isEstimated: true
+    };
+  });
+  
   return (
     <Card className="bg-white border border-gray-200 p-6 shadow-sm">
       <h2 className="text-sm font-semibold text-gray-500 uppercase mb-4 tracking-wide">Scale Analysis</h2>
       <div className="space-y-3">
-        {scaleAnalysis.map((scenario, index) => (
-          <div key={index} className="bg-gray-50 rounded-lg p-4 border border-gray-200">
+        {completeScenarios.map((scenario, index) => (
+          <div 
+            key={index} 
+            className={`bg-gray-50 rounded-lg p-4 border border-gray-200 ${
+              scenario.isEstimated ? 'opacity-75' : ''
+            }`}
+          >
             <div className="flex items-center justify-between mb-2">
-              <div>
+              <div className="flex items-center gap-2">
                 <span className="text-gray-900 font-medium">{scenario.qty?.toLocaleString() || 'N/A'} Units</span>
-                <span className="text-gray-500 text-xs ml-2">({scenario.mode || 'N/A'})</span>
+                <span className="text-gray-500 text-xs">({scenario.mode || 'N/A'})</span>
+                {scenario.isEstimated && (
+                  <span className="text-xs text-gray-400 italic">(estimated)</span>
+                )}
               </div>
               <div className="text-right">
                 <div className="text-blue-600 font-bold font-mono">${scenario.unit_cost?.toFixed(2) || '0.00'}</div>
@@ -492,6 +628,128 @@ function LogisticsDutyIntelligence({
   );
 }
 
+// Interactive Compliance Checklist Component (Level 2 Feature)
+function ComplianceChecklist({ checklist, hsCode, market }: { 
+  checklist?: Array<{ item: string; description: string; link?: string; required: boolean }>;
+  hsCode?: string;
+  market?: string;
+}) {
+  if (!checklist || checklist.length === 0) return null;
+
+  return (
+    <Card className="bg-white border border-gray-200 p-6 shadow-sm">
+      <h2 className="text-sm font-semibold text-gray-500 uppercase mb-4 tracking-wide">🇺🇸 Compliance Checklist</h2>
+      <p className="text-xs text-gray-500 mb-4">
+        Required documents and certifications for {market || 'target market'} import
+      </p>
+      
+      <div className="space-y-3">
+        {checklist.map((item, index) => (
+          <div key={index} className="flex items-start gap-3 p-3 bg-gray-50 rounded-lg border border-gray-200">
+            <input 
+              type="checkbox" 
+              className="mt-1 w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+              disabled
+            />
+            <div className="flex-1">
+              <div className="flex items-center gap-2 mb-1">
+                <span className="text-gray-900 font-medium text-sm">{item.item}</span>
+                {item.required && (
+                  <span className="px-2 py-0.5 bg-red-100 text-red-700 text-xs font-semibold rounded">Required</span>
+                )}
+              </div>
+              <p className="text-gray-600 text-xs leading-relaxed mb-2">{item.description}</p>
+              {item.link && (
+                <a 
+                  href={item.link} 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="text-blue-600 hover:underline text-xs inline-flex items-center gap-1"
+                >
+                  Learn more <span>→</span>
+                </a>
+              )}
+            </div>
+          </div>
+        ))}
+      </div>
+    </Card>
+  );
+}
+
+// Market Trend Component (Level 2 Feature)
+function MarketTrend({ marketTrends }: { marketTrends?: { trending_keywords: string[]; recommendation: string; ctr_boost?: string } }) {
+  if (!marketTrends || !marketTrends.trending_keywords || marketTrends.trending_keywords.length === 0) return null;
+
+  return (
+    <Card className="bg-white border border-gray-200 p-6 shadow-sm">
+      <h2 className="text-sm font-semibold text-gray-500 uppercase mb-4 tracking-wide">📈 Real-Time Market Trends</h2>
+      
+      <div className="space-y-4">
+        <div className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg p-4 border border-blue-200">
+          <p className="text-xs text-gray-500 uppercase mb-2 tracking-wide">Current Trending Keywords</p>
+          <div className="flex flex-wrap gap-2 mb-3">
+            {marketTrends.trending_keywords.map((keyword, index) => (
+              <span 
+                key={index}
+                className="px-3 py-1 bg-white border border-blue-300 rounded-full text-sm font-medium text-blue-700"
+              >
+                {keyword}
+              </span>
+            ))}
+          </div>
+          {marketTrends.ctr_boost && (
+            <div className="bg-emerald-100 border border-emerald-300 rounded p-2 mb-2">
+              <p className="text-emerald-800 text-xs font-semibold">
+                Expected CTR Boost: {marketTrends.ctr_boost}
+              </p>
+            </div>
+          )}
+        </div>
+        
+        <div className="bg-gray-50 rounded-lg p-3 border border-gray-200">
+          <p className="text-gray-500 text-xs font-medium mb-1">AI Recommendation</p>
+          <p className="text-gray-700 text-sm leading-relaxed">{marketTrends.recommendation}</p>
+        </div>
+      </div>
+    </Card>
+  );
+}
+
+// Shadow Sourcing Component (Level 2 Feature)
+function ShadowSourcing({ shadowSourcing }: { 
+  shadowSourcing?: { recommended_suppliers: Array<{ name: string; reason: string; oem_history?: string }> }
+}) {
+  if (!shadowSourcing || !shadowSourcing.recommended_suppliers || shadowSourcing.recommended_suppliers.length === 0) return null;
+
+  return (
+    <Card className="bg-white border border-gray-200 p-6 shadow-sm">
+      <h2 className="text-sm font-semibold text-gray-500 uppercase mb-4 tracking-wide">🕵️ Shadow Sourcing Intelligence</h2>
+      <p className="text-xs text-gray-500 mb-4">
+        Recommended suppliers based on actual export history and OEM relationships
+      </p>
+      
+      <div className="space-y-3">
+        {shadowSourcing.recommended_suppliers.map((supplier, index) => (
+          <div key={index} className="bg-gray-50 rounded-lg p-4 border border-gray-200">
+            <div className="flex items-start justify-between mb-2">
+              <div>
+                <span className="text-gray-900 font-semibold text-sm">{supplier.name}</span>
+                {supplier.oem_history && (
+                  <span className="ml-2 px-2 py-0.5 bg-blue-100 text-blue-700 text-xs font-medium rounded">
+                    {supplier.oem_history}
+                  </span>
+                )}
+              </div>
+            </div>
+            <p className="text-gray-600 text-xs leading-relaxed">{supplier.reason}</p>
+          </div>
+        ))}
+      </div>
+    </Card>
+  );
+}
+
 // Competitor Benchmark Component (업그레이드)
 function CompetitorBenchmark({ marketBenchmark, refLink }: { marketBenchmark?: any; refLink?: string }) {
   if (!marketBenchmark) return null;
@@ -542,35 +800,104 @@ function CompetitorBenchmark({ marketBenchmark, refLink }: { marketBenchmark?: a
 }
 
 // Action Roadmap Component (Full-width Timeline)
-function ActionRoadmap({ answers }: { answers: Answers }) {
-  const roadmapSteps = [
+function ActionRoadmap({ answers, aiAnalysis }: { answers: Answers; aiAnalysis?: AIAnalysisResult | null }) {
+  // Check for IMMEDIATE HALT conditions
+  const executiveSummary = aiAnalysis?.executive_summary || '';
+  const strategicAdvice = aiAnalysis?.strategic_advice?.key_action || '';
+  const osintRiskScore = aiAnalysis?.osint_risk_score || 0;
+  const complianceRisk = aiAnalysis?.risks?.compliance?.level || '';
+  
+  const hasImmediateHalt = 
+    executiveSummary.toLowerCase().includes('immediate halt') ||
+    executiveSummary.toLowerCase().includes('do not proceed') ||
+    strategicAdvice.toLowerCase().includes('halt') ||
+    strategicAdvice.toLowerCase().includes('stop') ||
+    osintRiskScore >= 90 ||
+    (complianceRisk.toLowerCase() === 'high' && osintRiskScore >= 70);
+
+  // Critical Risk Roadmap (when IMMEDIATE HALT is detected)
+  const criticalRoadmapSteps: Array<{ week: string; task: string; description: string; icon?: string; color?: string }> = [
+    { 
+      week: 'Immediate', 
+      task: 'Stop Sourcing', 
+      description: 'Do not proceed with this product. The regulatory and financial risks are too high.',
+      icon: '🚫',
+      color: 'bg-red-600'
+    },
+    { 
+      week: 'Wk 1-2', 
+      task: 'Pivot Strategy', 
+      description: 'Consider alternative product categories with lower regulatory barriers. Review similar non-regulated items.',
+      icon: '🔄',
+      color: 'bg-orange-600'
+    },
+    { 
+      week: 'Wk 2-3', 
+      task: 'Legal Consult', 
+      description: 'Consult with a trade attorney specializing in your target market regulations before any sourcing decision.',
+      icon: '⚖️',
+      color: 'bg-yellow-600'
+    },
+    { 
+      week: 'Wk 4+', 
+      task: 'Alternative Research', 
+      description: 'Use our platform to analyze alternative products that meet your business goals without regulatory risks.',
+      icon: '🔍',
+      color: 'bg-blue-600'
+    },
+  ];
+
+  // Normal Roadmap Steps
+  const normalRoadmapSteps: Array<{ week: string; task: string; description: string; icon?: string; color?: string }> = [
     { week: 'Wk 1-2', task: 'Supplier Verification', description: 'Verify credentials, certifications, and factory audit' },
     { week: 'Wk 2-3', task: 'Compliance & Certifications', description: 'Obtain required certifications for target market' },
     { week: 'Wk 4', task: 'Place Order', description: 'Finalize order details, payment terms, and production schedule' },
     { week: 'Wk 8', task: 'Channel Launch & Fulfillment', description: 'Receive shipment, quality check, and launch to sales channel' },
   ];
 
+  const roadmapSteps = hasImmediateHalt ? criticalRoadmapSteps : normalRoadmapSteps;
+
   return (
-    <Card className="col-span-2 bg-white border border-gray-200 p-6 shadow-sm">
-      <h2 className="text-sm font-semibold text-gray-500 uppercase mb-4 tracking-wide">Action Roadmap</h2>
+    <Card className={`col-span-2 bg-white border ${hasImmediateHalt ? 'border-red-200' : 'border-gray-200'} p-6 shadow-sm`}>
+      <div className="flex items-center gap-2 mb-4">
+        <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wide">Action Roadmap</h2>
+        {hasImmediateHalt && (
+          <span className="px-2 py-1 bg-red-100 text-red-700 text-xs font-semibold rounded">CRITICAL RISK</span>
+        )}
+      </div>
+      
+      {hasImmediateHalt && (
+        <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
+          <div className="flex items-start gap-3">
+            <div className="text-2xl">⚠️</div>
+            <div>
+              <p className="text-red-900 font-semibold text-sm mb-1">IMMEDIATE HALT RECOMMENDED</p>
+              <p className="text-red-700 text-sm leading-relaxed">
+                This product category has critical regulatory or compliance risks that make it unsuitable for sourcing at this time. 
+                Please review the risk assessment above and consider alternative products.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
       
       <div className="space-y-4">
         {roadmapSteps.map((step, index) => (
           <div key={index} className="flex gap-4">
             <div className="flex flex-col items-center">
-              <div className="w-10 h-10 rounded-full bg-blue-600 flex items-center justify-center text-white font-bold text-sm">
-                {index + 1}
+              <div className={`w-10 h-10 rounded-full ${hasImmediateHalt && step.color ? step.color : 'bg-blue-600'} flex items-center justify-center text-white font-bold text-sm`}>
+                {hasImmediateHalt && step.icon ? step.icon : (index + 1)}
               </div>
               {index < roadmapSteps.length - 1 && (
-                <div className="w-0.5 h-full bg-gray-300 mt-2" />
+                <div className={`w-0.5 h-full ${hasImmediateHalt ? 'bg-red-300' : 'bg-gray-300'} mt-2`} />
               )}
             </div>
             <div className="flex-1 pb-6">
               <div className="flex items-center gap-2 mb-1">
                 <span className="text-xs text-gray-500 font-medium">{step.week}</span>
-                <span className="text-gray-900 font-semibold">{step.task}</span>
+                <span className={`font-semibold ${hasImmediateHalt ? 'text-red-900' : 'text-gray-900'}`}>{step.task}</span>
               </div>
-              <p className="text-gray-600 text-sm">{step.description}</p>
+              <p className={`text-sm ${hasImmediateHalt ? 'text-red-700' : 'text-gray-600'}`}>{step.description}</p>
             </div>
           </div>
         ))}
@@ -579,8 +906,9 @@ function ActionRoadmap({ answers }: { answers: Answers }) {
   );
 }
 
-// Pricing CTA Component (Three-column pricing table)
-function PricingCTA() {
+// Results Action Buttons Component (3-Button Layout)
+function ResultsActionButtons({ projectId, answers }: { projectId?: string | null; answers: Answers }) {
+  const [isSaving, setIsSaving] = useState(false);
   const [isProcessingPayment, setIsProcessingPayment] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
@@ -599,10 +927,47 @@ function PricingCTA() {
     checkAuth();
   }, []);
 
-  // Validator 결제 버튼 핸들러
-  const handleValidatorPayment = async () => {
+  // Save Report 핸들러
+  const handleSaveReport = async () => {
     if (!isAuthenticated) {
-      // 로그인 페이지로 리다이렉트
+      window.location.href = '/login?redirect=/results';
+      return;
+    }
+
+    setIsSaving(true);
+    
+    try {
+      // 프로젝트 저장 API 호출
+      const response = await fetch('/api/projects/save', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          project_id: projectId,
+          answers: answers,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (data.ok) {
+        // 대시보드의 Saved Products 탭으로 이동
+        window.location.href = '/dashboard?tab=products';
+      } else {
+        alert(data.error || 'Failed to save report. Please try again.');
+        setIsSaving(false);
+      }
+    } catch (error) {
+      console.error('[Save Report] Failed to save:', error);
+      alert('Failed to save report. Please try again.');
+      setIsSaving(false);
+    }
+  };
+
+  // Request Real Quote 핸들러 (Lemon Squeezy 월 구독)
+  const handleRequestQuote = async () => {
+    if (!isAuthenticated) {
       window.location.href = '/login?redirect=/results';
       return;
     }
@@ -610,8 +975,17 @@ function PricingCTA() {
     setIsProcessingPayment(true);
     
     try {
-      // Checkout URL 생성 API 호출
-      const response = await fetch('/api/payment/create-checkout-url');
+      // Lemon Squeezy 월 구독 체크아웃 URL 생성 API 호출
+      const response = await fetch('/api/payment/create-subscription-checkout', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          project_id: projectId,
+        }),
+      });
+
       const data = await response.json();
 
       if (data.ok && data.checkout_url) {
@@ -628,96 +1002,101 @@ function PricingCTA() {
     }
   };
 
-  const tiers = [
-    {
-      name: 'Starter',
-      subtitle: 'AI Scout',
-      price: '$0',
-      period: '/ mo',
-      features: [
-        'Real-Time Cost & Risk Analysis',
-        '30 Reports/month',
-        'Platform-neutral insights',
-        'Basic supplier database access',
-      ],
-      cta: 'Start Analysis',
-      ctaHref: '/chat',
-      onClick: undefined, // 기본 href 사용
-    },
-    {
-      name: 'Validator',
-      subtitle: 'Entry',
-      price: '$199',
-      period: '(Retainer)',
-      features: [
-        'Get Verified Quote',
-        'Supplier Vetting',
-        '100% Credited on Order ($5k+)',
-        'Priority support',
-        'Dedicated quote specialist',
-      ],
-      cta: 'Request Quote',
-      ctaHref: '/contact',
-      onClick: handleValidatorPayment, // 커스텀 결제 핸들러
-      popular: true,
-    },
-    {
-      name: 'Executor',
-      subtitle: 'Full Service',
-      price: '3% - 9%',
-      period: 'Commission',
-      features: [
-        'Module A or B Selection',
-        'QC & Logistics',
-        'Dedicated Manager',
-        'Global Sync Time',
-        '24-hour response (Mon-Fri)',
-      ],
-      cta: 'Get Started',
-      ctaHref: '/contact',
-      onClick: undefined, // 기본 href 사용
-    },
-  ];
-
   return (
-    <Card className="col-span-2 bg-white border border-gray-200 p-6 shadow-sm">
-      <h2 className="text-sm font-semibold text-gray-500 uppercase mb-6 tracking-wide">Get Started</h2>
-      
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        {tiers.map((tier, index) => (
-          <div
-            key={index}
-            className={`bg-white rounded-lg p-6 border-2 ${tier.popular ? 'border-blue-600 shadow-md' : 'border-gray-200'}`}
+    <div className="col-span-2 w-full">
+      {/* Desktop Layout */}
+      <div className="hidden md:flex items-center justify-between gap-4">
+        {/* Button 1: Analyze Another (Ghost) */}
+        <Link
+          href="/chat"
+          className="text-gray-600 hover:text-gray-900 text-sm font-medium transition-colors flex items-center gap-1"
+        >
+          <span>🔄</span>
+          <span>Analyze Another</span>
+        </Link>
+
+        {/* Button 2: Save Report (Outline) */}
+        <Button
+          variant="outline"
+          onClick={handleSaveReport}
+          disabled={isSaving}
+          className="flex-1 max-w-xs border-gray-900 text-gray-900 hover:bg-gray-50"
+        >
+          {isSaving ? 'Saving...' : '💾 Save Report'}
+        </Button>
+
+        {/* Button 3: Hire My Sourcing Expert (Solid Black - Primary) */}
+        <div className="flex-1 max-w-md">
+          <Button
+            onClick={handleRequestQuote}
+            disabled={isProcessingPayment}
+            className="w-full bg-gray-900 hover:bg-gray-800 text-white font-semibold py-3 px-6"
           >
-            {tier.popular && (
-              <div className="text-xs text-blue-600 font-semibold mb-2 uppercase tracking-wide">Most Popular</div>
-            )}
-            <h3 className="text-gray-900 font-bold text-lg mb-1">{tier.name}</h3>
-            <p className="text-gray-500 text-sm mb-4">{tier.subtitle}</p>
-            <div className="mb-4">
-              <span className="text-3xl font-bold text-gray-900">{tier.price}</span>
-              <span className="text-gray-500 text-sm ml-1">{tier.period}</span>
+            <div className="flex flex-col items-center">
+              <span className="text-base">👔 Hire My Sourcing Expert</span>
+              <span className="text-xs text-gray-300 mt-0.5"><strong className="text-white">$50/mo</strong></span>
             </div>
-            <ul className="space-y-2 mb-6">
-              {tier.features.map((feature, fIndex) => (
-                <li key={fIndex} className="text-gray-700 text-sm flex items-start gap-2">
-                  <CheckCircle2 className="w-4 h-4 text-blue-600 mt-0.5 flex-shrink-0" />
-                  <span>{feature}</span>
-                </li>
-              ))}
-            </ul>
-            <Button
-              variant={tier.popular ? 'primary' : 'outline'}
-              className={`w-full ${tier.popular ? 'bg-gray-900 hover:bg-gray-800 text-white' : 'border-gray-300 text-gray-700 hover:bg-gray-50'}`}
-              onClick={tier.onClick || (() => window.location.href = tier.ctaHref)}
-              disabled={isProcessingPayment && tier.name === 'Validator'}
-            >
-              {isProcessingPayment && tier.name === 'Validator' ? 'Processing...' : tier.cta}
-            </Button>
+          </Button>
+          {/* Value Proposition */}
+          <div className="mt-2 text-center">
+            <p className="text-xs text-gray-600 leading-relaxed">
+              Get dedicated support for negotiating, QC, and logistics.
+            </p>
+            <p className="text-xs text-gray-500 mt-1">
+              Cancel anytime.
+            </p>
           </div>
-        ))}
+        </div>
       </div>
-    </Card>
+
+      {/* Mobile Layout */}
+      <div className="md:hidden space-y-3">
+        {/* Save and Request Quote in one row (3:7 ratio) */}
+        <div className="flex gap-3">
+          <Button
+            variant="outline"
+            onClick={handleSaveReport}
+            disabled={isSaving}
+            className="flex-[3] border-gray-900 text-gray-900 hover:bg-gray-50 text-sm"
+          >
+            {isSaving ? 'Saving...' : '💾 Save'}
+          </Button>
+
+          <div className="flex-[7]">
+            <Button
+              onClick={handleRequestQuote}
+              disabled={isProcessingPayment}
+              className="w-full bg-gray-900 hover:bg-gray-800 text-white font-semibold text-sm py-3"
+            >
+              <div className="flex flex-col items-center">
+                <span>👔 Hire My Expert</span>
+                <span className="text-xs text-gray-300 mt-0.5">$50/mo</span>
+              </div>
+            </Button>
+            {/* Value Proposition (Mobile) */}
+            <div className="mt-1.5 text-center">
+              <p className="text-[10px] text-gray-600 leading-tight">
+                Dedicated support for negotiating, QC, and logistics.
+              </p>
+              <p className="text-[10px] text-gray-500 mt-0.5">
+                Cancel anytime.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* Analyze Another as small text link below */}
+        <div className="text-center">
+          <Link
+            href="/chat"
+            className="text-gray-500 hover:text-gray-700 text-xs transition-colors inline-flex items-center gap-1"
+          >
+            <span>🔄</span>
+            <span>Analyze Another Product</span>
+          </Link>
+        </div>
+      </div>
+    </div>
   );
 }
 
@@ -971,6 +1350,19 @@ function ResultsContent() {
     );
   }
 
+  if (!aiAnalysis) {
+    return (
+      <div className="min-h-screen bg-[#f9fafb] flex items-center justify-center p-4">
+        <div className="text-center max-w-md">
+          <div className="text-gray-900 text-xl mb-2">No Analysis Available</div>
+          <div className="text-gray-500 text-sm mb-4">
+            Analysis is being generated. Please wait...
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   const { 
     financials, 
     cost_breakdown, 
@@ -1034,30 +1426,47 @@ function ResultsContent() {
           <ProfitabilitySimulator 
             totalLandedCost={totalLandedCost}
             answers={answers}
+            costBreakdown={cost_breakdown}
+            aiAnalysis={aiAnalysis}
           />
 
           {/* Scale Analysis */}
           <ScaleAnalysis 
             scaleAnalysis={scale_analysis || []}
+            totalLandedCost={totalLandedCost}
+            costBreakdown={cost_breakdown}
           />
 
           {/* Risk Assessment */}
-          <RiskAssessment 
+          <RiskAssessment
             risks={risks || {}}
             osintRiskScore={aiAnalysis?.osint_risk_score}
           />
 
+          {/* Level 2 Features: Compliance Checklist */}
+          <ComplianceChecklist
+            checklist={aiAnalysis?.compliance_checklist}
+            hsCode={duty_analysis?.hs_code}
+            market={answers.market}
+          />
+
+          {/* Level 2 Features: Market Trend */}
+          <MarketTrend marketTrends={aiAnalysis?.market_trends} />
+
+          {/* Level 2 Features: Shadow Sourcing */}
+          <ShadowSourcing shadowSourcing={aiAnalysis?.shadow_sourcing} />
+
           {/* Competitor Benchmark - Full Width (Market Positioning 대체) */}
-          <CompetitorBenchmark 
+          <CompetitorBenchmark
             marketBenchmark={market_benchmark}
             refLink={answers.ref_link}
           />
 
           {/* Action Roadmap - Full Width */}
-          <ActionRoadmap answers={answers} />
+          <ActionRoadmap answers={answers} aiAnalysis={aiAnalysis} />
 
-          {/* Pricing CTA - Full Width */}
-          <PricingCTA />
+          {/* Results Action Buttons - 3-Button Layout */}
+          <ResultsActionButtons projectId={projectId} answers={answers} />
         </div>
       </div>
     </div>

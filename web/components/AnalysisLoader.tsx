@@ -35,7 +35,7 @@ const ANALYSIS_STEPS = [
 // Background Pattern Component (Hex Grid)
 function HexGridPattern() {
   return (
-    <div className="absolute inset-0 overflow-hidden opacity-5">
+    <div className="absolute inset-0 overflow-hidden opacity-[0.03]">
       <svg className="w-full h-full" xmlns="http://www.w3.org/2000/svg">
         <defs>
           <pattern id="hexGrid" width="40" height="34.64" patternUnits="userSpaceOnUse">
@@ -44,7 +44,7 @@ function HexGridPattern() {
               fill="none"
               stroke="currentColor"
               strokeWidth="0.5"
-              className="text-cyan-500"
+              className="text-neutral-900"
             />
           </pattern>
         </defs>
@@ -83,13 +83,13 @@ export default function AnalysisLoader() {
   const Icon = currentStepData.icon;
 
   return (
-    <div className="min-h-screen bg-neutral-950 flex items-center justify-center p-6 relative">
+    <div className="min-h-screen bg-white flex items-center justify-center p-6 relative">
       {/* Background Pattern */}
       <HexGridPattern />
       
       {/* Main Card Container */}
       <div className="relative z-10 w-full max-w-md">
-        <div className="bg-zinc-900/50 border border-zinc-800/50 rounded-2xl p-8 shadow-[0_0_30px_-10px_rgba(6,182,212,0.3)] backdrop-blur-sm">
+        <div className="bg-white border border-neutral-200 rounded-2xl p-8 shadow-lg backdrop-blur-sm">
           <div className="space-y-6">
             {/* Pulsing Radar Icon with Multiple Rings */}
         <div className="flex justify-center">
@@ -106,15 +106,15 @@ export default function AnalysisLoader() {
                 className="relative w-24 h-24 flex items-center justify-center"
           >
                 {/* Icon Container */}
-                <div className="relative z-10 w-20 h-20 rounded-full bg-cyan-500/10 border-2 border-cyan-500/50 flex items-center justify-center backdrop-blur-sm">
-              <Icon className="w-10 h-10 text-cyan-400" />
+                <div className="relative z-10 w-20 h-20 rounded-full bg-blue-50 border-2 border-blue-200 flex items-center justify-center">
+              <Icon className="w-10 h-10 text-blue-600" />
             </div>
                 
                 {/* Pulsing Ring 1 (Inner) */}
                 <motion.div
                   animate={{
                     scale: [1, 1.3, 1.3],
-                    opacity: [0.6, 0, 0],
+                    opacity: [0.5, 0, 0],
                   }}
                   transition={{
                     duration: 2,
@@ -122,14 +122,14 @@ export default function AnalysisLoader() {
                     ease: 'easeOut',
                     delay: 0,
                   }}
-                  className="absolute inset-0 rounded-full border border-cyan-400/60"
+                  className="absolute inset-0 rounded-full border border-blue-300"
                 />
                 
                 {/* Pulsing Ring 2 (Middle) */}
                 <motion.div
                   animate={{
                     scale: [1, 1.6, 1.6],
-                    opacity: [0.4, 0, 0],
+                    opacity: [0.3, 0, 0],
                   }}
                   transition={{
                     duration: 2,
@@ -137,14 +137,14 @@ export default function AnalysisLoader() {
                     ease: 'easeOut',
                     delay: 0.4,
                   }}
-                  className="absolute inset-0 rounded-full border border-cyan-400/40"
+                  className="absolute inset-0 rounded-full border border-blue-200"
                 />
                 
                 {/* Pulsing Ring 3 (Outer) */}
             <motion.div
               animate={{
                     scale: [1, 1.9, 1.9],
-                    opacity: [0.3, 0, 0],
+                    opacity: [0.2, 0, 0],
               }}
               transition={{
                 duration: 2,
@@ -152,7 +152,7 @@ export default function AnalysisLoader() {
                 ease: 'easeOut',
                     delay: 0.8,
               }}
-                  className="absolute inset-0 rounded-full border border-cyan-400/30"
+                  className="absolute inset-0 rounded-full border border-blue-100"
             />
           </motion.div>
         </div>
@@ -164,7 +164,7 @@ export default function AnalysisLoader() {
                 initial={{ scale: 1.1, opacity: 0.8 }}
                 animate={{ scale: 1, opacity: 1 }}
                 transition={{ duration: 0.3 }}
-                className="text-5xl font-bold text-cyan-400 font-mono tracking-tight"
+                className="text-5xl font-bold text-blue-600 font-mono tracking-tight"
               >
                 {Math.round(progress)}%
               </motion.div>
@@ -181,7 +181,7 @@ export default function AnalysisLoader() {
               transition={{ duration: 0.5 }}
               className="text-center"
             >
-                  <p className="text-sm text-zinc-400 font-mono tracking-wide">
+                  <p className="text-sm text-neutral-600 font-medium tracking-wide">
                   {currentStepData.text}
                   </p>
             </motion.div>
@@ -190,12 +190,12 @@ export default function AnalysisLoader() {
 
             {/* Refined Progress Bar */}
         <div className="space-y-2">
-              <div className="h-0.5 bg-zinc-800/50 rounded-full overflow-hidden">
+              <div className="h-1 bg-neutral-200 rounded-full overflow-hidden">
             <motion.div
               initial={{ width: 0 }}
               animate={{ width: `${progress}%` }}
               transition={{ duration: 0.3, ease: 'easeOut' }}
-                  className="h-full bg-gradient-to-r from-cyan-400 to-cyan-500 rounded-full shadow-[0_0_8px_cyan]"
+                  className="h-full bg-gradient-to-r from-blue-500 to-blue-600 rounded-full"
             />
           </div>
           </div>

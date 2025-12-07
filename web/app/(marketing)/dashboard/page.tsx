@@ -1,107 +1,38 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
+import { useState, useEffect, Suspense } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
 import { ChevronRight, Package, Truck, Folder, MessageSquare } from 'lucide-react'
 import { AssetLibrary } from '@/components/AssetLibrary'
 import { ClientMessagesList } from '@/components/ClientMessagesList'
+import { Loader2 } from 'lucide-react'
 
-// Dummy data for estimates
-const dummyEstimates = [
-  {
-    id: '1',
-    productName: 'Bluetooth Speaker V2',
-    landedCost: '$4.20',
-    date: 'Dec 6, 2025',
-    status: 'Completed',
-    href: '/dashboard/estimates/1',
-  },
-  {
-    id: '2',
-    productName: 'Wireless Earbuds Pro',
-    landedCost: '$12.50',
-    date: 'Dec 4, 2025',
-    status: 'Draft',
-    href: '/dashboard/estimates/2',
-  },
-  {
-    id: '3',
-    productName: 'USB-C Charging Cable',
-    landedCost: '$2.80',
-    date: 'Dec 2, 2025',
-    status: 'Completed',
-    href: '/dashboard/estimates/3',
-  },
-  {
-    id: '4',
-    productName: 'Laptop Stand Aluminum',
-    landedCost: '$8.90',
-    date: 'Nov 28, 2025',
-    status: 'Completed',
-    href: '/dashboard/estimates/4',
-  },
-]
+// 더미 데이터 제거 - 실제 Supabase 데이터 사용
 
-// Dummy data for saved products
-const dummyProducts = [
-  {
-    id: '1',
-    productName: 'Wireless Mouse',
-    category: 'Electronics',
-    date: 'Dec 5, 2025',
-    status: 'Saved',
-  },
-  {
-    id: '2',
-    productName: 'Mechanical Keyboard',
-    category: 'Electronics',
-    date: 'Dec 3, 2025',
-    status: 'Saved',
-  },
-  {
-    id: '3',
-    productName: 'USB Hub',
-    category: 'Accessories',
-    date: 'Nov 30, 2025',
-    status: 'Saved',
-  },
-]
+type TabType = 'estimates' | 'products' | 'orders' | 'documents' | 'agent'
 
-// Dummy data for shipments
-const dummyShipments = [
-  {
-    id: '1',
-    batchName: 'Sea Freight - Batch #204',
-    destination: 'Los Angeles, CA',
-    date: 'Dec 15, 2025',
-    status: 'In Transit',
-  },
-  {
-    id: '2',
-    batchName: 'Sea Freight - Batch #203',
-    destination: 'New York, NY',
-    date: 'Dec 10, 2025',
-    status: 'Completed',
-  },
-  {
-    id: '3',
-    batchName: 'Air Freight - Batch #102',
-    destination: 'Chicago, IL',
-    date: 'Dec 8, 2025',
-    status: 'Customs Clearance',
-  },
-]
-
-type TabType = 'estimates' | 'products' | 'shipments' | 'documents' | 'messages'
-
-export default function DashboardPage() {
-  const [activeTab, setActiveTab] = useState<TabType>('estimates')
+function DashboardPageContent() {
+  const searchParams = useSearchParams()
+  const initialTab = (searchParams?.get('tab') as TabType) || 'estimates'
+  const [activeTab, setActiveTab] = useState<TabType>(initialTab)
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null)
   const [userName, setUserName] = useState<string>('')
   const [userId, setUserId] = useState<string | null>(null)
+  const [estimates, setEstimates] = useState<any[]>([])
+  const [savedProducts, setSavedProducts] = useState<any[]>([])
+  const [shipments, setShipments] = useState<any[]>([])
+  const [isLoading, setIsLoading] = useState(true)
   const router = useRouter()
+
+  // URL 파라미터에서 탭 변경 감지
+  useEffect(() => {
+    const tab = searchParams?.get('tab') as TabType
+    if (tab && ['estimates', 'products', 'orders', 'documents', 'agent'].includes(tab)) {
+      setActiveTab(tab)
+    }
+  }, [searchParams])
 
   useEffect(() => {
     async function checkAuth() {
@@ -119,12 +50,197 @@ export default function DashboardPage() {
                      user.email?.split('@')[0] ||
                      'Founder'
         setUserName(name)
+        
+        // 프로젝트 데이터 로드
+        await loadProjects(user.id)
       } catch (error) {
         window.location.href = '/login'
       }
     }
     checkAuth()
   }, [])
+
+  // 프로젝트 데이터 로드
+  async function loadProjects(userId: string) {
+    try {
+      setIsLoading(true)
+      const response = await fetch('/api/projects')
+      const data = await response.json()
+
+      if (data.ok && data.projects) {
+        // Recent Estimates: status가 'active'인 프로젝트들 (최근 분석)
+        const activeProjects = data.projects
+          .filter((p: any) => p.status === 'active')
+          .map((p: any) => ({
+            id: p.id,
+            productName: p.name,
+            landedCost: p.total_landed_cost ? `$${p.total_landed_cost.toFixed(2)}` : 'N/A',
+            date: new Date(p.created_at).toLocaleDateString('en-US', { 
+              month: 'short', 
+              day: 'numeric', 
+              year: 'numeric' 
+            }),
+            status: 'Completed',
+            href: `/results?project_id=${p.id}`,
+          }))
+          .sort((a: any, b: any) => {
+            // 최신순 정렬
+            const projectA = data.projects.find((p: any) => p.id === a.id)
+            const projectB = data.projects.find((p: any) => p.id === b.id)
+            return new Date(projectB.created_at).getTime() - new Date(projectA.created_at).getTime()
+          })
+
+        // Saved Products: status가 'saved'인 프로젝트들
+        const savedProjects = data.projects
+          .filter((p: any) => p.status === 'saved')
+          .map((p: any) => {
+            // 프로젝트 이름에서 카테고리 추출 시도 (없으면 기본값)
+            const category = 'Product' // 기본 카테고리
+            return {
+              id: p.id,
+              productName: p.name,
+              category: category,
+              date: new Date(p.created_at).toLocaleDateString('en-US', { 
+                month: 'short', 
+                day: 'numeric', 
+                year: 'numeric' 
+              }),
+              status: 'Saved',
+              href: `/results?project_id=${p.id}`,
+            }
+          })
+          .sort((a: any, b: any) => {
+            // 최신순 정렬
+            const projectA = data.projects.find((p: any) => p.id === a.id)
+            const projectB = data.projects.find((p: any) => p.id === b.id)
+            return new Date(projectB.created_at).getTime() - new Date(projectA.created_at).getTime()
+          })
+
+        setEstimates(activeProjects)
+        setSavedProducts(savedProjects)
+
+        // Active Orders: 견적이 선택되고 QC 리포트가 승인된 프로젝트들
+        await loadShipments(userId, data.projects)
+      }
+    } catch (error) {
+      console.error('[Dashboard] Failed to load projects:', error)
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  // Active Orders 데이터 로드 (견적 선택 + QC 승인된 프로젝트)
+  async function loadShipments(userId: string, projects: any[]) {
+    try {
+      const supabase = createClient()
+      
+      // 1. 선택된 견적이 있는 프로젝트 ID 목록 가져오기
+      const { data: selectedQuotes, error: quotesError } = await supabase
+        .from('factory_quotes')
+        .select('project_id, factory_name, created_at')
+        .eq('status', 'selected')
+        .order('created_at', { ascending: false })
+
+      if (quotesError) {
+        console.error('[Dashboard] Failed to load quotes:', quotesError)
+        return
+      }
+
+      // 2. 승인된 QC 리포트가 있는 프로젝트 ID 목록 가져오기
+      const { data: approvedQCReports, error: qcError } = await supabase
+        .from('qc_reports')
+        .select('project_id, inspection_date, created_at')
+        .eq('status', 'approved')
+        .order('created_at', { ascending: false })
+
+      if (qcError) {
+        console.error('[Dashboard] Failed to load QC reports:', qcError)
+        return
+      }
+
+      // 3. 견적이 선택되고 QC 리포트가 승인된 프로젝트 찾기
+      const projectIdsWithQuotes = new Set(selectedQuotes?.map((q: any) => q.project_id) || [])
+      const projectIdsWithQC = new Set(approvedQCReports?.map((qc: any) => qc.project_id) || [])
+      
+      // 두 조건을 모두 만족하는 프로젝트 ID
+      const orderProjectIds = Array.from(projectIdsWithQuotes).filter((id: string) => 
+        projectIdsWithQC.has(id)
+      )
+
+      // 4. 프로젝트 정보와 견적 정보를 결합하여 Active Orders 데이터 생성
+      const ordersData = orderProjectIds
+        .map((projectId: string) => {
+          const project = projects.find((p: any) => p.id === projectId)
+          if (!project) return null
+
+          const quote = selectedQuotes?.find((q: any) => q.project_id === projectId)
+          const qcReport = approvedQCReports?.find((qc: any) => qc.project_id === projectId)
+
+          // 배송 타입 결정 (견적 정보나 프로젝트 정보 기반)
+          const shippingType = quote?.factory_name ? 'Sea Freight' : 'Air Freight'
+          const batchNumber = `#${projectId.substring(0, 8).toUpperCase()}`
+          
+          // 목적지 (프로젝트 정보에서 추출하거나 기본값)
+          const destination = 'TBD' // 나중에 프로젝트 정보에서 추출 가능
+          
+          // 날짜 (QC 리포트 승인일 또는 견적 선택일)
+          const shipmentDate = qcReport?.inspection_date 
+            ? new Date(qcReport.inspection_date).toLocaleDateString('en-US', { 
+                month: 'short', 
+                day: 'numeric', 
+                year: 'numeric' 
+              })
+            : quote?.created_at 
+            ? new Date(quote.created_at).toLocaleDateString('en-US', { 
+                month: 'short', 
+                day: 'numeric', 
+                year: 'numeric' 
+              })
+            : new Date(project.created_at).toLocaleDateString('en-US', { 
+                month: 'short', 
+                day: 'numeric', 
+                year: 'numeric' 
+              })
+
+          // 배송 상태 결정
+          // QC 승인 후 시간 경과에 따라 상태 결정 (간단한 로직)
+          const qcDate = qcReport?.inspection_date 
+            ? new Date(qcReport.inspection_date)
+            : qcReport?.created_at 
+            ? new Date(qcReport.created_at)
+            : null
+
+          let status = 'In Transit'
+          if (qcDate) {
+            const daysSinceQC = Math.floor((Date.now() - qcDate.getTime()) / (1000 * 60 * 60 * 24))
+            if (daysSinceQC > 30) {
+              status = 'Completed'
+            } else if (daysSinceQC > 14) {
+              status = 'Customs Clearance'
+            }
+          }
+
+          return {
+            id: projectId,
+            batchName: `${shippingType} - Batch ${batchNumber}`,
+            destination: destination,
+            date: shipmentDate,
+            status: status,
+            projectName: project.name,
+            href: `/results?project_id=${projectId}`,
+          }
+        })
+        .filter((s: any) => s !== null)
+        .sort((a: any, b: any) => {
+          // 최신순 정렬
+          return new Date(b.date).getTime() - new Date(a.date).getTime()
+        })
+
+      setShipments(ordersData)
+    } catch (error) {
+      console.error('[Dashboard] Failed to load shipments:', error)
+    }
+  }
 
   if (isAuthenticated === null) {
     return (
@@ -164,9 +280,9 @@ export default function DashboardPage() {
             onClick={() => setActiveTab('products')}
           />
           <TabButton
-            label="Shipments"
-            active={activeTab === 'shipments'}
-            onClick={() => setActiveTab('shipments')}
+            label="Active Orders"
+            active={activeTab === 'orders'}
+            onClick={() => setActiveTab('orders')}
           />
           <TabButton
             label="Documents"
@@ -174,28 +290,36 @@ export default function DashboardPage() {
             onClick={() => setActiveTab('documents')}
           />
           <TabButton
-            label="Messages"
-            active={activeTab === 'messages'}
-            onClick={() => setActiveTab('messages')}
+            label="Your Agent"
+            active={activeTab === 'agent'}
+            onClick={() => setActiveTab('agent')}
           />
         </div>
 
         {/* Content Area */}
         <div className="space-y-3">
-          {activeTab === 'estimates' && (
-            <EstimatesList estimates={dummyEstimates} />
-          )}
-          {activeTab === 'products' && (
-            <ProductsList products={dummyProducts} />
-          )}
-          {activeTab === 'shipments' && (
-            <ShipmentsList shipments={dummyShipments} />
-          )}
-          {activeTab === 'documents' && userId && (
-            <AssetLibrary userId={userId} />
-          )}
-          {activeTab === 'messages' && userId && (
-            <ClientMessagesList userId={userId} />
+          {isLoading ? (
+            <div className="bg-white border border-gray-200 rounded-xl p-12 text-center">
+              <div className="text-zinc-400">Loading...</div>
+            </div>
+          ) : (
+            <>
+              {activeTab === 'estimates' && (
+                <EstimatesList estimates={estimates} />
+              )}
+              {activeTab === 'products' && (
+                <ProductsList products={savedProducts} />
+              )}
+              {activeTab === 'shipments' && (
+                <ShipmentsList shipments={shipments} />
+              )}
+              {activeTab === 'documents' && userId && (
+                <AssetLibrary userId={userId} />
+              )}
+              {activeTab === 'agent' && userId && (
+                <ClientMessagesList userId={userId} />
+              )}
+            </>
           )}
         </div>
       </div>
@@ -231,7 +355,7 @@ function TabButton({
 }
 
 // Estimates List Component
-function EstimatesList({ estimates }: { estimates: typeof dummyEstimates }) {
+function EstimatesList({ estimates }: { estimates: any[] }) {
   if (estimates.length === 0) {
     return (
       <EmptyState
@@ -278,7 +402,7 @@ function EstimatesList({ estimates }: { estimates: typeof dummyEstimates }) {
 }
 
 // Products List Component
-function ProductsList({ products }: { products: typeof dummyProducts }) {
+function ProductsList({ products }: { products: any[] }) {
   if (products.length === 0) {
     return (
       <EmptyState
@@ -294,7 +418,11 @@ function ProductsList({ products }: { products: typeof dummyProducts }) {
   return (
     <>
       {products.map((product) => (
-        <div key={product.id} className="group">
+        <Link
+          key={product.id}
+          href={product.href || `/results?project_id=${product.id}`}
+          className="group block"
+        >
           <DashboardCard
             icon={<Package className="h-5 w-5" />}
             title={product.productName}
@@ -306,22 +434,22 @@ function ProductsList({ products }: { products: typeof dummyProducts }) {
               </div>
             }
           />
-        </div>
+        </Link>
       ))}
     </>
   )
 }
 
-// Shipments List Component
-function ShipmentsList({ shipments }: { shipments: typeof dummyShipments }) {
+// Active Orders List Component
+function ShipmentsList({ shipments }: { shipments: any[] }) {
   if (shipments.length === 0) {
     return (
       <EmptyState
         icon={<Truck className="h-12 w-12" />}
-        title="No shipments yet"
-        description="Your active shipments will appear here."
-        actionLabel="Create estimate"
-        actionHref="/analyze"
+        title="No active orders yet"
+        description="Active orders will appear here once you select a quote and approve QC reports."
+        actionLabel="View projects"
+        actionHref="/dashboard?tab=estimates"
       />
     )
   }
@@ -329,7 +457,11 @@ function ShipmentsList({ shipments }: { shipments: typeof dummyShipments }) {
   return (
     <>
       {shipments.map((shipment) => (
-        <div key={shipment.id} className="group">
+        <Link
+          key={shipment.id}
+          href={shipment.href || `/results?project_id=${shipment.id}`}
+          className="group block"
+        >
           <DashboardCard
             icon={<Truck className="h-5 w-5" />}
             title={shipment.batchName}
@@ -341,7 +473,7 @@ function ShipmentsList({ shipments }: { shipments: typeof dummyShipments }) {
               </div>
             }
           />
-        </div>
+        </Link>
       ))}
     </>
   )
@@ -438,5 +570,18 @@ function StatusBadge({ status }: { status: string }) {
     >
       {status}
     </span>
+  )
+}
+
+// Main export with Suspense wrapper
+export default function DashboardPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-white flex items-center justify-center">
+        <Loader2 className="w-6 h-6 animate-spin text-blue-600" />
+      </div>
+    }>
+      <DashboardPageContent />
+    </Suspense>
   )
 }

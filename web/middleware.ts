@@ -195,7 +195,7 @@ export async function middleware(request: NextRequest) {
       return NextResponse.redirect(loginUrl)
     }
   } else {
-    // For non-manager routes, just refresh session
+    // For non-manager/admin routes, check if user is manager or admin and redirect them
     try {
       const supabase = createServerClient(
         process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -242,6 +242,58 @@ export async function middleware(request: NextRequest) {
           },
         }
       )
+
+      const { data: { user }, error: authError } = await supabase.auth.getUser()
+
+      // Only check redirect if user is authenticated
+      if (!authError && user) {
+        const userEmail = user.email?.toLowerCase() || ''
+        
+        // Super Admin: redirect to /admin if trying to access other pages
+        if (userEmail === 'k.myungjun@nexsupply.net') {
+          // Allow access to /admin routes, /login, /auth/callback
+          if (!pathname.startsWith('/admin') && 
+              !pathname.startsWith('/login') && 
+              !pathname.startsWith('/auth/callback') &&
+              !pathname.startsWith('/api') &&
+              !pathname.startsWith('/_next')) {
+            return NextResponse.redirect(new URL('/admin', request.url))
+          }
+        }
+        
+        // Manager: redirect to /manager/dashboard if trying to access other pages
+        const isManagerEmail = userEmail === 'junkimfrom82@gmail.com' || 
+                               (userEmail.endsWith('@nexsupply.net') && userEmail !== 'k.myungjun@nexsupply.net')
+        
+        if (isManagerEmail) {
+          // Allow access to /manager routes, /login, /auth/callback
+          if (!pathname.startsWith('/manager') && 
+              !pathname.startsWith('/login') && 
+              !pathname.startsWith('/auth/callback') &&
+              !pathname.startsWith('/api') &&
+              !pathname.startsWith('/_next')) {
+            return NextResponse.redirect(new URL('/manager/dashboard', request.url))
+          }
+        } else {
+          // Check database for manager flag
+          const { data: profile } = await supabase
+            .from('profiles')
+            .select('is_manager, role')
+            .eq('id', user.id)
+            .single()
+
+          if (profile?.is_manager === true || profile?.role === 'admin') {
+            // Manager detected - redirect to /manager/dashboard
+            if (!pathname.startsWith('/manager') && 
+                !pathname.startsWith('/login') && 
+                !pathname.startsWith('/auth/callback') &&
+                !pathname.startsWith('/api') &&
+                !pathname.startsWith('/_next')) {
+              return NextResponse.redirect(new URL('/manager/dashboard', request.url))
+            }
+          }
+        }
+      }
 
       // Refresh session if expired - required for Server Components
       await Promise.race([

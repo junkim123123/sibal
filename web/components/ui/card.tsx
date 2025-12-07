@@ -52,3 +52,11 @@ export function CardContent({ children, className }: { children: ReactNode; clas
   );
 }
 
+export function CardDescription({ children, className }: { children: ReactNode; className?: string }) {
+  return (
+    <p className={cn('text-sm text-neutral-600', className)}>
+      {children}
+    </p>
+  );
+}
+

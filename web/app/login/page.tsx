@@ -3,9 +3,9 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { login, signup } from './actions'
+import { login, signup, managerLogin } from './actions'
 import { Button } from '@/components/ui/button'
-import { Chrome } from 'lucide-react'
+import { Chrome, Shield } from 'lucide-react'
 
 export default function LoginPage() {
   const [isSignUp, setIsSignUp] = useState(false)
@@ -13,6 +13,13 @@ export default function LoginPage() {
   const [password, setPassword] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(false)
+  
+  // Manager login state
+  const [managerEmail, setManagerEmail] = useState('')
+  const [managerPassword, setManagerPassword] = useState('')
+  const [managerError, setManagerError] = useState<string | null>(null)
+  const [isManagerLoading, setIsManagerLoading] = useState(false)
+  
   const router = useRouter()
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -47,8 +54,33 @@ export default function LoginPage() {
     alert('Google sign-in coming soon')
   }
 
+  const handleManagerSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault()
+    setManagerError(null)
+    setIsManagerLoading(true)
+
+    const formData = new FormData()
+    formData.append('email', managerEmail)
+    formData.append('password', managerPassword)
+
+    try {
+      const result = await managerLogin(formData)
+
+      if (result?.error) {
+        setManagerError(result.error)
+        setIsManagerLoading(false)
+      } else {
+        router.push('/manager/dashboard')
+        router.refresh()
+      }
+    } catch (err) {
+      setManagerError('An unexpected error occurred.')
+      setIsManagerLoading(false)
+    }
+  }
+
   return (
-    <div className="min-h-screen bg-white flex">
+    <div className="min-h-screen bg-white flex flex-col">
       {/* Left Side - Login Form */}
       <div className="flex-1 flex flex-col bg-white lg:w-1/2">
         {/* Logo */}
@@ -216,6 +248,84 @@ export default function LoginPage() {
               Your all-in-one platform for intelligent sourcing decisions.
             </p>
           </div>
+        </div>
+      </div>
+
+      {/* Manager Login Section */}
+      <div className="w-full border-t border-neutral-200 bg-neutral-50 py-8 px-6 lg:px-12">
+        <div className="max-w-4xl mx-auto">
+          <div className="flex items-center gap-2 mb-4">
+            <Shield className="h-5 w-5 text-neutral-600" />
+            <h2 className="text-lg font-semibold text-neutral-900">Manager Login</h2>
+          </div>
+          <p className="text-sm text-neutral-600 mb-6">
+            매니저 전용 로그인입니다. 매니저 계정이 있는 경우에만 접근 가능합니다.
+          </p>
+
+          {/* Manager Error Message */}
+          {managerError && (
+            <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
+              <p className="text-sm text-red-600">{managerError}</p>
+            </div>
+          )}
+
+          {/* Manager Login Form */}
+          <form onSubmit={handleManagerSubmit} className="space-y-4 max-w-md">
+            {/* Manager Email Input */}
+            <div>
+              <label
+                htmlFor="manager-email"
+                className="block text-sm font-medium text-neutral-900 mb-2"
+              >
+                Manager Email
+              </label>
+              <input
+                id="manager-email"
+                name="manager-email"
+                type="email"
+                autoComplete="email"
+                required
+                value={managerEmail}
+                onChange={(e) => setManagerEmail(e.target.value)}
+                className="w-full px-4 py-3 border border-neutral-300 rounded-lg text-neutral-900 placeholder:text-neutral-400 bg-white focus:outline-none focus:ring-2 focus:ring-neutral-900 focus:border-transparent transition-all text-sm"
+                placeholder="manager@nexsupply.com"
+                disabled={isManagerLoading}
+              />
+            </div>
+
+            {/* Manager Password Input */}
+            <div>
+              <label
+                htmlFor="manager-password"
+                className="block text-sm font-medium text-neutral-900 mb-2"
+              >
+                Password
+              </label>
+              <input
+                id="manager-password"
+                name="manager-password"
+                type="password"
+                autoComplete="current-password"
+                required
+                value={managerPassword}
+                onChange={(e) => setManagerPassword(e.target.value)}
+                className="w-full px-4 py-3 border border-neutral-300 rounded-lg text-neutral-900 placeholder:text-neutral-400 bg-white focus:outline-none focus:ring-2 focus:ring-neutral-900 focus:border-transparent transition-all text-sm"
+                placeholder="••••••••"
+                disabled={isManagerLoading}
+              />
+            </div>
+
+            {/* Manager Submit Button */}
+            <Button
+              type="submit"
+              variant="primary"
+              size="lg"
+              className="w-full bg-neutral-900 hover:bg-neutral-800 text-white"
+              disabled={isManagerLoading}
+            >
+              {isManagerLoading ? 'Logging in...' : 'Manager Sign In'}
+            </Button>
+          </form>
         </div>
       </div>
     </div>

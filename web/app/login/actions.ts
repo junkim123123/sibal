@@ -43,9 +43,29 @@ export async function login(formData: FormData) {
     redirect('/admin')
   }
   
-  // Manager: 모든 @nexsupply.net 도메인 (super admin 제외)
-  if (email.endsWith('@nexsupply.net') && email !== 'k.myungjun@nexsupply.net') {
-    console.log('[Login] Manager detected, redirecting to /manager/dashboard')
+  // Manager 확인: 데이터베이스에서 is_manager 또는 role 확인
+  const adminClient = getAdminClient()
+  const { data: profile, error: profileError } = await adminClient
+    .from('profiles')
+    .select('is_manager, role')
+    .eq('id', authData.user.id)
+    .single()
+
+  // Manager 체크: 
+  // 1. @nexsupply.net 도메인 (super admin 제외)
+  // 2. 또는 데이터베이스에서 is_manager = TRUE
+  // 3. 또는 role = 'admin'
+  const isNexsupplyDomain = email.endsWith('@nexsupply.net') && email !== 'k.myungjun@nexsupply.net'
+  const isManagerInDB = profile && (profile.is_manager === true || profile.role === 'admin')
+  
+  if (isNexsupplyDomain || isManagerInDB) {
+    console.log('[Login] Manager detected, redirecting to /manager/dashboard', {
+      email,
+      isNexsupplyDomain,
+      isManagerInDB,
+      profile: profile ? { is_manager: profile.is_manager, role: profile.role } : null,
+      profileError: profileError?.message
+    })
     redirect('/manager/dashboard')
   }
 

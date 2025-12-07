@@ -7,8 +7,6 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { createClient } from '@/lib/supabase/client';
-import { getAdminClient } from '@/lib/supabase/admin';
 import { AlertCircle, TrendingUp, Users, UserCheck, Loader2, DollarSign } from 'lucide-react';
 
 interface DashboardStats {
@@ -47,44 +45,27 @@ export default function SuperAdminDashboard() {
   const loadDashboardStats = async () => {
     try {
       setIsLoading(true);
-      const adminClient = getAdminClient();
 
-      // Unassigned Projects (status = 'active' AND manager_id IS NULL)
-      // Active Orders에서 생성된 프로젝트들이 여기에 포함됨
-      const { count: unassignedCount } = await adminClient
-        .from('projects')
-        .select('*', { count: 'exact', head: true })
-        .eq('status', 'active')
-        .is('manager_id', null);
-
-      // Active Projects
-      const { count: activeCount } = await adminClient
-        .from('projects')
-        .select('*', { count: 'exact', head: true })
-        .in('status', ['active', 'in_progress']);
-
-      // Total Revenue (this month) - 계산 로직 필요
-      // TODO: Lemon Squeezy API 연동 또는 payment 기록에서 계산
-      const totalRevenue = 0; // Placeholder
-
-      // Manager Utilization
-      const { data: managers } = await adminClient
-        .from('profiles')
-        .select('id, availability_status, workload_score')
-        .eq('is_manager', true);
-
-      const totalManagers = managers?.length || 0;
-      const availableManagers = managers?.filter(m => m.availability_status === 'available').length || 0;
-
-      setStats({
-        unassignedProjects: unassignedCount || 0,
-        activeProjects: activeCount || 0,
-        totalRevenue,
-        managerUtilization: {
-          available: availableManagers,
-          total: totalManagers,
-        },
+      // API Route를 통해 서버 사이드에서 데이터 가져오기
+      const response = await fetch('/api/admin/stats', {
+        method: 'GET',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
       });
+
+      const data = await response.json();
+
+      if (!data.ok) {
+        console.error('[Super Admin Dashboard] Failed to load stats:', data.error);
+        return;
+      }
+
+      console.log('[Super Admin Dashboard] Stats loaded:', data.stats);
+      if (data.debug?.unassignedProjectsSample) {
+        console.log('[Super Admin Dashboard] Unassigned projects sample:', data.debug.unassignedProjectsSample);
+      }
+
+      setStats(data.stats);
     } catch (error) {
       console.error('[Super Admin Dashboard] Failed to load stats:', error);
     } finally {

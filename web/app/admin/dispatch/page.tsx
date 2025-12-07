@@ -7,7 +7,6 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { getAdminClient } from '@/lib/supabase/admin';
 import { assignManagerToProject } from '../actions';
 import { Loader2, UserCheck, AlertCircle, CheckCircle2 } from 'lucide-react';
 
@@ -53,63 +52,25 @@ export default function DispatchCenterPage() {
   const loadData = async () => {
     try {
       setIsLoading(true);
-      const adminClient = getAdminClient();
 
-      // Unassigned Projects (status = 'active' AND manager_id IS NULL)
-      // Active Orders에서 생성된 프로젝트들이 여기에 표시됨
-      const { data: projects, error: projectsError } = await adminClient
-        .from('projects')
-        .select(`
-          id,
-          name,
-          user_id,
-          status,
-          payment_date,
-          created_at,
-          profiles!projects_user_id_fkey(
-            name,
-            email
-          )
-        `)
-        .eq('status', 'active')
-        .is('manager_id', null)
-        .order('created_at', { ascending: false });
+      // API Route를 통해 서버 사이드에서 데이터 가져오기
+      const response = await fetch('/api/admin/dispatch/projects', {
+        method: 'GET',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+      });
 
-      if (projectsError) throw projectsError;
+      const data = await response.json();
 
-      const formattedProjects: UnassignedProject[] = (projects || []).map((p: any) => ({
-        id: p.id,
-        name: p.name,
-        user_id: p.user_id,
-        user_name: p.profiles?.name || p.profiles?.email?.split('@')[0] || 'Unknown',
-        user_email: p.profiles?.email || '',
-        payment_date: p.payment_date,
-        created_at: p.created_at,
-      }));
+      if (!data.ok) {
+        console.error('[Dispatch Center] Failed to load data:', data.error);
+        return;
+      }
 
-      console.log('[Dispatch Center] Loaded unassigned projects:', formattedProjects.length);
+      console.log('[Dispatch Center] Loaded unassigned projects:', data.projects?.length || 0);
 
-      setUnassignedProjects(formattedProjects);
-
-      // Manager Pool
-      const { data: managerData, error: managersError } = await adminClient
-        .from('profiles')
-        .select('id, name, email, workload_score, availability_status, expertise')
-        .eq('is_manager', true)
-        .order('workload_score', { ascending: true });
-
-      if (managersError) throw managersError;
-
-      const formattedManagers: Manager[] = (managerData || []).map((m: any) => ({
-        id: m.id,
-        name: m.name || m.email?.split('@')[0] || 'Unknown',
-        email: m.email,
-        workload_score: m.workload_score || 0,
-        availability_status: m.availability_status || 'available',
-        expertise: m.expertise || null,
-      }));
-
-      setManagers(formattedManagers);
+      setUnassignedProjects(data.projects || []);
+      setManagers(data.managers || []);
     } catch (error) {
       console.error('[Dispatch Center] Failed to load data:', error);
     } finally {

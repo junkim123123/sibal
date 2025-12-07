@@ -23,10 +23,15 @@ export async function POST(req: Request) {
     const body = await req.json();
     const { project_id } = body;
 
-    // Lemon Squeezy API 키 확인
-    const lemonSqueezyApiKey = process.env.LEMONSQUEEZY_API_KEY;
-    const storeId = process.env.LEMONSQUEEZY_STORE_ID;
-    const variantId = process.env.LEMONSQUEEZY_SUBSCRIPTION_VARIANT_ID || process.env.NEXT_PUBLIC_LEMONSQUEEZY_SUBSCRIPTION_VARIANT_ID;
+    // Lemon Squeezy API 키 확인 (두 가지 변수명 모두 지원)
+    const lemonSqueezyApiKey = process.env.LEMONSQUEEZY_API_KEY || 
+                                process.env.LEMON_SQUEEZY_API_KEY;
+    const storeId = process.env.LEMONSQUEEZY_STORE_ID || 
+                    process.env.LEMON_SQUEEZY_STORE_ID;
+    const variantId = process.env.LEMON_SQUEEZY_SUBSCRIPTION_VARIANT_ID || 
+                      process.env.LEMONSQUEEZY_SUBSCRIPTION_VARIANT_ID || 
+                      process.env.NEXT_PUBLIC_LEMONSQUEEZY_SUBSCRIPTION_VARIANT_ID ||
+                      process.env.NEXT_PUBLIC_LEMON_SQUEEZY_SUBSCRIPTION_VARIANT_ID;
 
     if (!lemonSqueezyApiKey || !storeId || !variantId) {
       console.error('[Subscription Checkout] Missing Lemon Squeezy configuration');

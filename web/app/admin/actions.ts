@@ -170,8 +170,11 @@ export async function getSalesStats() {
     }
 
     // 환경 변수 확인
-    const apiKey = process.env.LEMONSQUEEZY_API_KEY;
-    const storeId = process.env.LEMONSQUEEZY_STORE_ID;
+    // Lemon Squeezy API 키 확인 (두 가지 변수명 모두 지원)
+    const apiKey = process.env.LEMONSQUEEZY_API_KEY || 
+                    process.env.LEMON_SQUEEZY_API_KEY;
+    const storeId = process.env.LEMONSQUEEZY_STORE_ID || 
+                    process.env.LEMON_SQUEEZY_STORE_ID;
 
     if (!apiKey || !storeId) {
       console.error('[Sales Stats] Missing Lemon Squeezy credentials:', {

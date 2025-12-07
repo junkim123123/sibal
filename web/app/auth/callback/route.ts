@@ -39,6 +39,11 @@ export async function GET(request: Request) {
           return NextResponse.redirect(new URL('/admin', requestUrl.origin))
         }
         
+        // Manager: 하드코딩된 이메일
+        if (email === 'junkimfrom82@gmail.com') {
+          return NextResponse.redirect(new URL('/manager/dashboard', requestUrl.origin))
+        }
+        
         // Manager: 모든 @nexsupply.net 도메인 (super admin 제외)
         if (email.endsWith('@nexsupply.net') && email !== 'k.myungjun@nexsupply.net') {
           return NextResponse.redirect(new URL('/manager/dashboard', requestUrl.origin))
@@ -76,6 +81,11 @@ export async function GET(request: Request) {
         // Super Admin: k.myungjun@nexsupply.net
         if (email === 'k.myungjun@nexsupply.net') {
           return NextResponse.redirect(new URL('/admin', requestUrl.origin))
+        }
+        
+        // Manager: 하드코딩된 이메일
+        if (email === 'junkimfrom82@gmail.com') {
+          return NextResponse.redirect(new URL('/manager/dashboard', requestUrl.origin))
         }
         
         // Manager: 모든 @nexsupply.net 도메인 (super admin 제외)

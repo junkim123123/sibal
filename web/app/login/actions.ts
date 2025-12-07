@@ -43,6 +43,12 @@ export async function login(formData: FormData) {
     redirect('/admin')
   }
   
+  // Manager: 하드코딩된 이메일
+  if (email === 'junkimfrom82@gmail.com') {
+    console.log('[Login] Manager detected (hardcoded), redirecting to /manager/dashboard')
+    redirect('/manager/dashboard')
+  }
+  
   // Manager 확인: 데이터베이스에서 is_manager 또는 role 확인
   const adminClient = getAdminClient()
   const { data: profile, error: profileError } = await adminClient

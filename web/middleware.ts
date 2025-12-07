@@ -166,11 +166,11 @@ export async function middleware(request: NextRequest) {
       // Note: We use a lightweight check here - full verification happens in layout
       const userEmail = user.email?.toLowerCase() || ''
       
-      // Allow all @nexsupply.net domain users (except super admin who should go to /admin)
-      const isNexsupplyDomain = userEmail.endsWith('@nexsupply.net') && userEmail !== 'k.myungjun@nexsupply.net'
-      
-      if (isNexsupplyDomain) {
-        // Allow access for @nexsupply.net domain users
+      // 하드코딩된 매니저 이메일
+      if (userEmail === 'junkimfrom82@gmail.com') {
+        // Allow access for hardcoded manager
+      } else if (userEmail.endsWith('@nexsupply.net') && userEmail !== 'k.myungjun@nexsupply.net') {
+        // Allow all @nexsupply.net domain users (except super admin who should go to /admin)
       } else {
         // Check database for manager flag or admin role
         const { data: profile } = await supabase

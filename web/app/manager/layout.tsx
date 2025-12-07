@@ -52,6 +52,14 @@ export default function ManagerLayout({
         // 매니저 권한 확인 (이메일 도메인 기반)
         const userEmail = user.email?.toLowerCase() || '';
         
+        // 하드코딩된 매니저 이메일
+        if (userEmail === 'junkimfrom82@gmail.com') {
+          setIsManager(true);
+          setIsAuthenticated(true);
+          setUserName(user.email?.split('@')[0] || 'Manager');
+          return;
+        }
+        
         // @nexsupply.net 도메인 사용자는 자동으로 매니저로 인식 (super admin 제외)
         const isNexsupplyDomain = userEmail.endsWith('@nexsupply.net') && userEmail !== 'k.myungjun@nexsupply.net';
         

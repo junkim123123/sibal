@@ -1456,13 +1456,36 @@ function ResultsContent() {
       
       const loadSavedProject = async () => {
         try {
-          const response = await fetch(`/api/projects/${projectId}/analysis`);
+          console.log('[Results] Fetching saved project data...', { projectId });
+          
+          const response = await fetch(`/api/projects/${projectId}/analysis`, {
+            method: 'GET',
+            credentials: 'include', // 쿠키 포함
+            headers: {
+              'Content-Type': 'application/json',
+            },
+          });
+          
+          console.log('[Results] API response status:', response.status);
+          
           const data = await response.json();
+          console.log('[Results] API response data:', data);
+          
+          if (!response.ok) {
+            if (response.status === 401) {
+              console.error('[Results] Unauthorized - user not authenticated');
+              // 인증되지 않은 경우 로그인 페이지로 리다이렉트
+              window.location.href = '/login?redirect=' + encodeURIComponent(window.location.pathname + window.location.search);
+              return;
+            }
+            throw new Error(data.error || `HTTP ${response.status}: ${response.statusText}`);
+          }
           
           if (data.ok) {
             console.log('[Results] Saved project data loaded:', {
               hasAnswers: !!data.answers,
               hasAiAnalysis: !!data.ai_analysis,
+              messagesCount: data.messages ? data.messages.length : 0,
             });
             
             // answers 복원
@@ -1478,10 +1501,12 @@ function ResultsContent() {
             setIsInitialized(true);
           } else {
             console.error('[Results] Failed to load saved project:', data.error);
+            setError(data.error || 'Failed to load saved project');
             setIsInitialized(true);
           }
         } catch (error) {
           console.error('[Results] Error loading saved project:', error);
+          setError(error instanceof Error ? error.message : 'Failed to load saved project');
           setIsInitialized(true);
         }
       };

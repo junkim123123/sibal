@@ -62,6 +62,12 @@ export function ManagerChat({
 
   // 기존 메시지 로드
   useEffect(() => {
+    if (!sessionId) {
+      console.warn('[ManagerChat] No sessionId provided, skipping message load');
+      setIsLoading(false);
+      return;
+    }
+
     const loadMessages = async () => {
       setIsLoading(true);
       try {
@@ -87,6 +93,11 @@ export function ManagerChat({
 
   // Supabase Realtime 구독
   useEffect(() => {
+    if (!sessionId) {
+      console.warn('[ManagerChat] No sessionId provided, skipping realtime subscription');
+      return;
+    }
+
     const channel = supabase
       .channel(`chat-session-${sessionId}`)
       .on(

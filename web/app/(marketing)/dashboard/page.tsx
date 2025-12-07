@@ -7,6 +7,7 @@ import { createClient } from '@/lib/supabase/client'
 import { ChevronRight, Package, Truck, Folder, MessageSquare } from 'lucide-react'
 import { AssetLibrary } from '@/components/AssetLibrary'
 import { ClientMessagesList } from '@/components/ClientMessagesList'
+import { UsageCard } from '@/components/dashboard/usage-card'
 import { Loader2 } from 'lucide-react'
 
 // 더미 데이터 제거 - 실제 Supabase 데이터 사용
@@ -28,6 +29,7 @@ function DashboardPageContent() {
     hasActiveSubscription: boolean;
     analysisCount: number;
     limit: number;
+    userRole?: string;
   } | null>(null)
   const router = useRouter()
 
@@ -96,6 +98,7 @@ function DashboardPageContent() {
     const handleFocus = () => {
       console.log('[Dashboard] Page focused, reloading data...')
       loadProjects(userId)
+      loadUsageData(userId) // 사용량 데이터도 새로고침
     }
 
     // 페이지 포커스 시 데이터 새로고침
@@ -241,7 +244,7 @@ function DashboardPageContent() {
       
       const { data: profile, error: profileError } = await supabase
         .from('profiles')
-        .select('has_active_subscription, analysis_count')
+        .select('has_active_subscription, analysis_count, role, last_analysis_date')
         .eq('id', userId)
         .single()
 
@@ -252,14 +255,37 @@ function DashboardPageContent() {
           hasActiveSubscription: false,
           analysisCount: 0,
           limit: 30,
+          userRole: 'free',
         })
         return
       }
 
+      // 월 단위 리셋 체크 (analyze API와 동일한 로직)
+      const now = new Date()
+      const lastAnalysisDate = profile.last_analysis_date 
+        ? new Date(profile.last_analysis_date) 
+        : null
+
+      let currentCount = profile.analysis_count || 0
+
+      // 월이 바뀌면 카운트 리셋 (클라이언트 측에서만 표시용으로 처리)
+      if (lastAnalysisDate) {
+        const lastMonth = lastAnalysisDate.getMonth()
+        const lastYear = lastAnalysisDate.getFullYear()
+        const currentMonth = now.getMonth()
+        const currentYear = now.getFullYear()
+
+        if (lastMonth !== currentMonth || lastYear !== currentYear) {
+          // 월이 바뀌었으므로 카운트는 0으로 표시 (실제 DB 업데이트는 analyze API에서 처리)
+          currentCount = 0
+        }
+      }
+
       setUsageData({
         hasActiveSubscription: profile.has_active_subscription || false,
-        analysisCount: profile.analysis_count || 0,
+        analysisCount: currentCount,
         limit: 30,
+        userRole: profile.role || 'free',
       })
     } catch (error) {
       console.error('[Dashboard] Failed to load usage data:', error)
@@ -268,6 +294,7 @@ function DashboardPageContent() {
         hasActiveSubscription: false,
         analysisCount: 0,
         limit: 30,
+        userRole: 'free',
       })
     }
   }
@@ -471,15 +498,30 @@ function DashboardPageContent() {
 
   return (
     <div className="min-h-screen bg-white">
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        {/* Header - Welcome Message */}
-        <div className="mb-12">
-          <h1 className="text-4xl md:text-5xl font-bold text-black tracking-tight mb-2">
-            Welcome back, {userName}.
-          </h1>
-          <p className="text-zinc-600 text-lg">
-            Manage your sourcing estimates and track shipments.
-          </p>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        {/* Header - Welcome Message + Usage Card */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+          {/* Left: Welcome Message (2 columns) */}
+          <div className="md:col-span-2">
+            <h1 className="text-4xl md:text-5xl font-bold text-black tracking-tight mb-2">
+              Welcome back, {userName}.
+            </h1>
+            <p className="text-zinc-600 text-lg">
+              Manage your sourcing estimates and track shipments.
+            </p>
+          </div>
+
+          {/* Right: Usage Card (1 column) */}
+          <div className="md:col-span-1">
+            {usageData && (
+              <UsageCard
+                usedCount={usageData.analysisCount}
+                limit={usageData.limit}
+                hasActiveSubscription={usageData.hasActiveSubscription}
+                userRole={usageData.userRole || 'free'}
+              />
+            )}
+          </div>
         </div>
 
         {/* Tabs Navigation - Dr. B Style */}

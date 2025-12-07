@@ -10,7 +10,6 @@ import { useState, useEffect, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { ManagerChat } from '@/components/ManagerChat';
 import { createClient } from '@/lib/supabase/client';
-import { getAdminClient } from '@/lib/supabase/admin';
 import { Loader2, ArrowLeft, MessageSquare } from 'lucide-react';
 import Link from 'next/link';
 
@@ -27,7 +26,9 @@ function ClientChatContent() {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    initializeChat();
+    if (projectId) {
+      initializeChat();
+    }
   }, [projectId, sessionIdParam]);
 
   const initializeChat = async () => {
@@ -48,9 +49,8 @@ function ClientChatContent() {
         return;
       }
 
-      // 프로젝트 정보 가져오기
-      const adminClient = getAdminClient();
-      const { data: project, error: projectError } = await adminClient
+      // 프로젝트 정보 가져오기 (클라이언트에서는 createClient 사용)
+      const { data: project, error: projectError } = await supabase
         .from('projects')
         .select('name, manager_id, user_id, status')
         .eq('id', projectId)
@@ -75,7 +75,13 @@ function ClientChatContent() {
       // 매니저가 없어도 채팅 세션 생성 가능 (매니저 배당 대기 중일 수 있음)
       if (!sessionId) {
         const finalSessionId = await loadOrCreateSession(projectId, user.id, project?.manager_id);
-        setSessionId(finalSessionId);
+        if (finalSessionId) {
+          setSessionId(finalSessionId);
+        } else {
+          console.error('[ClientChatPage] Failed to create or load session, but continuing anyway');
+          // 세션 생성 실패해도 계속 진행 (나중에 재시도 가능)
+          // 대신 에러 메시지를 표시하지 않고 빈 세션으로 진행
+        }
       }
     } catch (error) {
       console.error('[ClientChatPage] Initialization error:', error);
@@ -90,23 +96,33 @@ function ClientChatContent() {
     managerId: string | null | undefined
   ): Promise<string | null> => {
     try {
-      const adminClient = getAdminClient();
+      const supabase = createClient();
+
+      console.log('[ClientChatPage] Loading or creating session:', { projectId, userId, managerId });
 
       // 기존 세션 찾기
-      const { data: existingSession } = await adminClient
+      const { data: existingSession, error: findError } = await supabase
         .from('chat_sessions')
         .select('id')
         .eq('project_id', projectId)
         .eq('user_id', userId)
         .maybeSingle();
 
+      if (findError) {
+        console.error('[ClientChatPage] Error finding existing session:', findError);
+        console.error('[ClientChatPage] Find error details:', JSON.stringify(findError, null, 2));
+      }
+
       if (existingSession) {
+        console.log('[ClientChatPage] Found existing session:', existingSession.id);
         return existingSession.id;
       }
 
+      console.log('[ClientChatPage] No existing session found, creating new one...');
+
       // 세션이 없으면 생성 (매니저가 없어도 생성 가능 - 매니저 배당 대기 중일 수 있음)
       // 매니저가 있으면 manager_id 할당, 없으면 null로 생성
-      const { data: newSession, error: sessionError } = await adminClient
+      const { data: newSession, error: sessionError } = await supabase
         .from('chat_sessions')
         .insert({
           project_id: projectId,
@@ -117,14 +133,27 @@ function ClientChatContent() {
         .select()
         .single();
 
-      if (sessionError || !newSession) {
+      if (sessionError) {
         console.error('[ClientChatPage] Failed to create session:', sessionError);
+        console.error('[ClientChatPage] Session error details:', JSON.stringify(sessionError, null, 2));
+        console.error('[ClientChatPage] Session error code:', sessionError.code);
+        console.error('[ClientChatPage] Session error message:', sessionError.message);
         return null;
       }
 
+      if (!newSession) {
+        console.error('[ClientChatPage] Session created but no data returned');
+        return null;
+      }
+
+      console.log('[ClientChatPage] Successfully created session:', newSession.id);
       return newSession.id;
     } catch (error) {
-      console.error('[ClientChatPage] Failed to load/create session:', error);
+      console.error('[ClientChatPage] Exception in loadOrCreateSession:', error);
+      if (error instanceof Error) {
+        console.error('[ClientChatPage] Error message:', error.message);
+        console.error('[ClientChatPage] Error stack:', error.stack);
+      }
       return null;
     }
   };
@@ -137,7 +166,8 @@ function ClientChatContent() {
     );
   }
 
-  if (!sessionId || !userId || !projectId) {
+  // 세션이 없어도 프로젝트와 사용자가 있으면 채팅 화면 표시 (세션은 나중에 생성 가능)
+  if (!userId || !projectId) {
     return (
       <div className="min-h-screen bg-white flex items-center justify-center p-4">
         <div className="text-center max-w-md">
@@ -148,7 +178,7 @@ function ClientChatContent() {
           <p className="text-gray-600 mb-6">
             {!projectId 
               ? 'Project not found. Please select a project from the dashboard.'
-              : 'Chat session could not be created. Please try again or contact support.'
+              : 'Unable to initialize chat. Please try again or contact support.'
             }
           </p>
           <Link
@@ -159,6 +189,16 @@ function ClientChatContent() {
             Back to Dashboard
           </Link>
         </div>
+      </div>
+    );
+  }
+
+  // 세션이 없어도 채팅 화면 표시 (세션은 나중에 생성 가능)
+  // 단, 세션 생성 중이면 로딩 표시
+  if (!sessionId && isLoading) {
+    return (
+      <div className="min-h-screen bg-white flex items-center justify-center">
+        <Loader2 className="w-6 h-6 animate-spin text-blue-600" />
       </div>
     );
   }
@@ -186,13 +226,23 @@ function ClientChatContent() {
 
         {/* Chat Component */}
         <div className="bg-white rounded-lg border border-gray-200 shadow-sm h-[calc(100vh-12rem)]">
-          <ManagerChat
-            sessionId={sessionId}
-            projectId={projectId}
-            userId={userId}
-            isManager={false}
-            showQuickReplies={false}
-          />
+          {sessionId ? (
+            <ManagerChat
+              sessionId={sessionId}
+              projectId={projectId}
+              userId={userId}
+              isManager={false}
+              showQuickReplies={false}
+            />
+          ) : (
+            <div className="flex items-center justify-center h-full p-8">
+              <div className="text-center">
+                <Loader2 className="w-8 h-8 animate-spin text-blue-600 mx-auto mb-4" />
+                <p className="text-gray-600">Setting up chat session...</p>
+                <p className="text-sm text-gray-400 mt-2">This may take a moment</p>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>

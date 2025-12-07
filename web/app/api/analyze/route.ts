@@ -484,6 +484,95 @@ export async function POST(req: Request) {
     }
 
     // ============================================================================
+    // 사용량 제한 체크 (Analysis Usage Limit)
+    // ============================================================================
+    
+    const { createClient } = await import('@/lib/supabase/server');
+    const supabase = await createClient();
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
+
+    if (authError || !user) {
+      return NextResponse.json(
+        { ok: false, error: 'Unauthorized' },
+        { status: 401 }
+      );
+    }
+
+    // 프로필 정보 가져오기
+    const { getAdminClient } = await import('@/lib/supabase/admin');
+    const adminClient = getAdminClient();
+    
+    const { data: profile, error: profileError } = await adminClient
+      .from('profiles')
+      .select('has_active_subscription, analysis_count, last_analysis_date')
+      .eq('id', user.id)
+      .single();
+
+    if (profileError || !profile) {
+      console.error('[Analyze API] Failed to fetch user profile:', profileError);
+      return NextResponse.json(
+        { ok: false, error: 'Failed to fetch user profile' },
+        { status: 500 }
+      );
+    }
+
+    // 유료 구독자면 무제한 통과
+    if (profile.has_active_subscription) {
+      console.log('[Analyze API] User has active subscription - unlimited access');
+    } else {
+      // 무료 유저: 월 단위 리셋 체크
+      const now = new Date();
+      const lastAnalysisDate = profile.last_analysis_date 
+        ? new Date(profile.last_analysis_date) 
+        : null;
+
+      // 월이 바뀌면 카운트 리셋
+      if (lastAnalysisDate) {
+        const lastMonth = lastAnalysisDate.getMonth();
+        const lastYear = lastAnalysisDate.getFullYear();
+        const currentMonth = now.getMonth();
+        const currentYear = now.getFullYear();
+
+        if (lastMonth !== currentMonth || lastYear !== currentYear) {
+          // 월이 바뀌었으므로 카운트 리셋
+          await adminClient
+            .from('profiles')
+            .update({ 
+              analysis_count: 0,
+              last_analysis_date: now.toISOString(),
+            })
+            .eq('id', user.id);
+          
+          console.log('[Analyze API] Month changed - reset analysis count');
+        }
+      }
+
+      // 현재 사용량 확인 (리셋 후 다시 가져오기)
+      const { data: updatedProfile } = await adminClient
+        .from('profiles')
+        .select('analysis_count')
+        .eq('id', user.id)
+        .single();
+
+      const currentCount = updatedProfile?.analysis_count || 0;
+      const MONTHLY_LIMIT = 30;
+
+      // 제한 확인
+      if (currentCount >= MONTHLY_LIMIT) {
+        return NextResponse.json(
+          {
+            ok: false,
+            error: 'Monthly limit exceeded. Subscribe to unlock unlimited analysis.',
+            error_code: 'USAGE_LIMIT_EXCEEDED',
+            current_count: currentCount,
+            limit: MONTHLY_LIMIT,
+          },
+          { status: 403 }
+        );
+      }
+    }
+
+    // ============================================================================
     // 블랙리스트 체크 (Kill Switch)
     // ============================================================================
     
@@ -582,6 +671,39 @@ export async function POST(req: Request) {
       } catch (dbError) {
         // DB 업데이트 실패해도 분석 결과는 반환
         console.error('[Analyze API] Failed to update project:', dbError);
+      }
+    }
+
+    // ============================================================================
+    // 분석 성공 후 사용량 카운트 증가 (무료 유저만)
+    // ============================================================================
+    
+    if (!profile.has_active_subscription) {
+      try {
+        const now = new Date();
+        
+        // 현재 카운트 가져오기 (리셋 후 최신 값)
+        const { data: currentProfile } = await adminClient
+          .from('profiles')
+          .select('analysis_count')
+          .eq('id', user.id)
+          .single();
+
+        const newCount = (currentProfile?.analysis_count || 0) + 1;
+
+        // 카운트 증가 및 마지막 분석 날짜 업데이트
+        await adminClient
+          .from('profiles')
+          .update({
+            analysis_count: newCount,
+            last_analysis_date: now.toISOString(),
+          })
+          .eq('id', user.id);
+
+        console.log('[Analyze API] Analysis count incremented:', newCount);
+      } catch (countError) {
+        // 카운트 증가 실패해도 분석 결과는 반환
+        console.error('[Analyze API] Failed to increment analysis count:', countError);
       }
     }
 

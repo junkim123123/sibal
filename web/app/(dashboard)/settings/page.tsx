@@ -160,12 +160,29 @@ export default function SettingsPage() {
     }
   }
 
-  function handleOpenLemonSqueezy() {
-    window.open(
-      'https://nexsupply.lemonsqueezy.com/buy/54fac477-2cf4-467f-b995-a2e760e5a02b',
-      '_blank',
-      'noopener,noreferrer'
-    );
+  async function handleOpenLemonSqueezy() {
+    try {
+      // Lemon Squeezy Customer Portal URL 가져오기
+      // 사용자 이메일을 기반으로 고객 포털 링크 생성
+      const supabase = createClient();
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      if (!user?.email) {
+        setError('이메일 정보를 찾을 수 없습니다.');
+        return;
+      }
+
+      // Lemon Squeezy Customer Portal은 일반적으로 이메일 기반으로 접근
+      // 실제 운영 환경에서는 Lemon Squeezy API를 통해 고객 포털 URL을 가져와야 함
+      // 여기서는 간단히 고정된 포털 링크 사용 (또는 환경 변수에서 가져오기)
+      const portalUrl = process.env.NEXT_PUBLIC_LEMON_SQUEEZY_CUSTOMER_PORTAL_URL || 
+                        'https://app.lemonsqueezy.com/my-orders';
+      
+      window.open(portalUrl, '_blank', 'noopener,noreferrer');
+    } catch (error) {
+      console.error('[Settings] Failed to open customer portal:', error);
+      setError('고객 포털을 열 수 없습니다. 나중에 다시 시도해주세요.');
+    }
   }
 
   // 로딩 상태

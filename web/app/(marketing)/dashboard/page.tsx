@@ -24,6 +24,11 @@ function DashboardPageContent() {
   const [savedProducts, setSavedProducts] = useState<any[]>([])
   const [shipments, setShipments] = useState<any[]>([])
   const [isLoading, setIsLoading] = useState(true)
+  const [usageData, setUsageData] = useState<{
+    hasActiveSubscription: boolean;
+    analysisCount: number;
+    limit: number;
+  } | null>(null)
   const router = useRouter()
 
   // URL 파라미터에서 탭 변경 감지
@@ -53,6 +58,8 @@ function DashboardPageContent() {
         
         // 프로젝트 데이터 로드
         await loadProjects(user.id)
+        // 사용량 데이터 로드
+        await loadUsageData(user.id)
       } catch (error) {
         window.location.href = '/login'
       }

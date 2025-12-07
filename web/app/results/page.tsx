@@ -11,7 +11,8 @@ import { useEffect, useState, Suspense } from 'react';
 import Link from 'next/link';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { AlertCircle, CheckCircle2, XCircle, TrendingUp, Factory, Shield, Truck, Package, DollarSign, BarChart3, Calendar, Rocket, Download } from 'lucide-react';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { AlertCircle, CheckCircle2, XCircle, TrendingUp, Factory, Shield, Truck, Package, DollarSign, BarChart3, Calendar, Rocket, Download, Info, Check } from 'lucide-react';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend, BarChart, Bar, XAxis, YAxis, CartesianGrid } from 'recharts';
 import AnalysisLoader from '@/components/AnalysisLoader';
 
@@ -906,11 +907,13 @@ function ActionRoadmap({ answers, aiAnalysis }: { answers: Answers; aiAnalysis?:
   );
 }
 
-// Results Action Buttons Component (3-Button Layout)
+// Results Action Buttons Component (Enhanced with Service Value Props & Agreement)
 function ResultsActionButtons({ projectId, answers }: { projectId?: string | null; answers: Answers }) {
   const [isSaving, setIsSaving] = useState(false);
   const [isProcessingPayment, setIsProcessingPayment] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isAgreed, setIsAgreed] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   // 인증 상태 확인
   useEffect(() => {
@@ -965,18 +968,29 @@ function ResultsActionButtons({ projectId, answers }: { projectId?: string | nul
     }
   };
 
-  // Request Real Quote 핸들러 (Lemon Squeezy 월 구독)
-  const handleRequestQuote = async () => {
+  // Hire 버튼 클릭 핸들러 (모달 열기)
+  const handleRequestQuote = () => {
     if (!isAuthenticated) {
       window.location.href = '/login?redirect=/results';
       return;
     }
 
+    if (!isAgreed) {
+      alert('Please agree to the service scope before proceeding.');
+      return;
+    }
+
+    // 모달 열기
+    setIsModalOpen(true);
+  };
+
+  // 구독 결제 프로세스 시작 (모달 내부에서 호출)
+  const handleSubscribe = async () => {
     setIsProcessingPayment(true);
     
     try {
-      // Lemon Squeezy 월 구독 체크아웃 URL 생성 API 호출
-      const response = await fetch('/api/payment/create-subscription-checkout', {
+      // Lemon Squeezy 구독 체크아웃 URL 생성 API 호출
+      const response = await fetch('/api/payment/subscribe', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -996,7 +1010,7 @@ function ResultsActionButtons({ projectId, answers }: { projectId?: string | nul
         setIsProcessingPayment(false);
       }
     } catch (error) {
-      console.error('[Payment] Failed to create checkout URL:', error);
+      console.error('[Subscribe] Failed to create checkout URL:', error);
       alert('Payment system error. Please contact support.');
       setIsProcessingPayment(false);
     }
@@ -1004,98 +1018,292 @@ function ResultsActionButtons({ projectId, answers }: { projectId?: string | nul
 
   return (
     <div className="col-span-2 w-full">
-      {/* Desktop Layout */}
-      <div className="hidden md:flex items-center justify-between gap-4">
-        {/* Button 1: Analyze Another (Ghost) */}
-        <Link
-          href="/chat"
-          className="text-gray-600 hover:text-gray-900 text-sm font-medium transition-colors flex items-center gap-1"
-        >
-          <span>🔄</span>
-          <span>Analyze Another</span>
-        </Link>
-
-        {/* Button 2: Save Report (Outline) */}
-        <Button
-          variant="outline"
-          onClick={handleSaveReport}
-          disabled={isSaving}
-          className="flex-1 max-w-xs border-gray-900 text-gray-900 hover:bg-gray-50"
-        >
-          {isSaving ? 'Saving...' : '💾 Save Report'}
-        </Button>
-
-        {/* Button 3: Hire My Sourcing Expert (Solid Black - Primary) */}
-        <div className="flex-1 max-w-md">
-          <Button
-            onClick={handleRequestQuote}
-            disabled={isProcessingPayment}
-            className="w-full bg-gray-900 hover:bg-gray-800 text-white font-semibold py-3 px-6"
-          >
-            <div className="flex flex-col items-center">
-              <span className="text-base">👔 Hire My Sourcing Expert</span>
-              <span className="text-xs text-gray-300 mt-0.5"><strong className="text-white">$50/mo</strong></span>
-            </div>
-          </Button>
-          {/* Value Proposition */}
-          <div className="mt-2 text-center">
-            <p className="text-xs text-gray-600 leading-relaxed">
-              Get dedicated support for negotiating, QC, and logistics.
-            </p>
-            <p className="text-xs text-gray-500 mt-1">
-              Cancel anytime.
-            </p>
-          </div>
-        </div>
-      </div>
-
-      {/* Mobile Layout */}
-      <div className="md:hidden space-y-3">
-        {/* Save and Request Quote in one row (3:7 ratio) */}
-        <div className="flex gap-3">
-          <Button
-            variant="outline"
-            onClick={handleSaveReport}
-            disabled={isSaving}
-            className="flex-[3] border-gray-900 text-gray-900 hover:bg-gray-50 text-sm"
-          >
-            {isSaving ? 'Saving...' : '💾 Save'}
-          </Button>
-
-          <div className="flex-[7]">
-            <Button
-              onClick={handleRequestQuote}
-              disabled={isProcessingPayment}
-              className="w-full bg-gray-900 hover:bg-gray-800 text-white font-semibold text-sm py-3"
-            >
-              <div className="flex flex-col items-center">
-                <span>👔 Hire My Expert</span>
-                <span className="text-xs text-gray-300 mt-0.5">$50/mo</span>
+      {/* Sticky Bottom Action Bar */}
+      <div className="sticky bottom-0 left-0 right-0 bg-white shadow-lg border-t border-gray-200 z-50">
+        <div className="max-w-7xl mx-auto px-4 py-4 md:py-5">
+          {/* Desktop Layout */}
+          <div className="hidden md:flex items-start justify-between gap-6">
+            {/* Left: Service Value Props List */}
+            <div className="flex-1 space-y-2.5">
+              <div className="flex items-start gap-2.5">
+                <CheckCircle2 className="w-5 h-5 text-emerald-600 mt-0.5 flex-shrink-0" />
+                <div>
+                  <p className="text-sm font-semibold text-gray-900">Sourcing & Negotiation</p>
+                  <p className="text-xs text-gray-600">Factory finding, Price bargaining</p>
+                </div>
               </div>
-            </Button>
-            {/* Value Proposition (Mobile) */}
-            <div className="mt-1.5 text-center">
-              <p className="text-[10px] text-gray-600 leading-tight">
-                Dedicated support for negotiating, QC, and logistics.
-              </p>
-              <p className="text-[10px] text-gray-500 mt-0.5">
-                Cancel anytime.
-              </p>
+              <div className="flex items-start gap-2.5">
+                <CheckCircle2 className="w-5 h-5 text-emerald-600 mt-0.5 flex-shrink-0" />
+                <div>
+                  <p className="text-sm font-semibold text-gray-900">Manage QC, Labeling & Kitting</p>
+                  <p className="text-xs text-gray-600">Using our owned Packing Hub</p>
+                </div>
+              </div>
+              <div className="flex items-start gap-2.5">
+                <CheckCircle2 className="w-5 h-5 text-emerald-600 mt-0.5 flex-shrink-0" />
+                <div>
+                  <p className="text-sm font-semibold text-gray-900">End-to-End Logistics</p>
+                  <p className="text-xs text-gray-600">DDP Shipping setup</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Right: Action Buttons & Agreement */}
+            <div className="flex flex-col items-end gap-3 min-w-[320px]">
+              {/* Secondary Actions Row */}
+              <div className="flex items-center gap-3 w-full">
+                <Link
+                  href="/chat"
+                  className="text-gray-600 hover:text-gray-900 text-sm font-medium transition-colors flex items-center gap-1.5"
+                >
+                  <span>🔄</span>
+                  <span>Analyze Another</span>
+                </Link>
+                <Button
+                  variant="outline"
+                  onClick={handleSaveReport}
+                  disabled={isSaving}
+                  className="flex-1 border-gray-900 text-gray-900 hover:bg-gray-50"
+                >
+                  {isSaving ? 'Saving...' : '💾 Save Report'}
+                </Button>
+              </div>
+
+              {/* Agreement Checkbox */}
+              <div className="flex items-start gap-2 w-full">
+                <input
+                  type="checkbox"
+                  id="service-agreement"
+                  checked={isAgreed}
+                  onChange={(e) => setIsAgreed(e.target.checked)}
+                  className="mt-1 w-4 h-4 text-emerald-600 border-gray-300 rounded focus:ring-emerald-500 focus:ring-2"
+                />
+                <label htmlFor="service-agreement" className="text-xs text-gray-700 leading-relaxed cursor-pointer">
+                  I understand this service covers <strong>Ops & Logistics only</strong>. (Design/Marketing excluded)
+                </label>
+              </div>
+
+              {/* Main CTA Button */}
+              <div className="w-full">
+                <Button
+                  onClick={handleRequestQuote}
+                  disabled={isProcessingPayment || !isAgreed}
+                  className={`w-full bg-gray-900 hover:bg-gray-800 text-white font-semibold py-3 px-6 ${
+                    !isAgreed ? 'opacity-50 cursor-not-allowed' : ''
+                  }`}
+                >
+                  <div className="flex items-center justify-between w-full">
+                    <span className="text-base">👔 Hire My Sourcing Expert</span>
+                    <span className="text-sm font-bold">$50/mo</span>
+                  </div>
+                </Button>
+                {/* Credit Badge */}
+                <div className="mt-2 text-center">
+                  <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-emerald-600">
+                    <CheckCircle2 className="w-3.5 h-3.5" />
+                    100% Credited to first order
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Mobile Layout */}
+          <div className="md:hidden space-y-4">
+            {/* Service Value Props List (Top) */}
+            <div className="space-y-2.5">
+              <div className="flex items-start gap-2.5">
+                <CheckCircle2 className="w-4 h-4 text-emerald-600 mt-0.5 flex-shrink-0" />
+                <div>
+                  <p className="text-xs font-semibold text-gray-900">Sourcing & Negotiation</p>
+                  <p className="text-[10px] text-gray-600">Factory finding, Price bargaining</p>
+                </div>
+              </div>
+              <div className="flex items-start gap-2.5">
+                <CheckCircle2 className="w-4 h-4 text-emerald-600 mt-0.5 flex-shrink-0" />
+                <div>
+                  <p className="text-xs font-semibold text-gray-900">Manage QC, Labeling & Kitting</p>
+                  <p className="text-[10px] text-gray-600">Using our owned Packing Hub</p>
+                </div>
+              </div>
+              <div className="flex items-start gap-2.5">
+                <CheckCircle2 className="w-4 h-4 text-emerald-600 mt-0.5 flex-shrink-0" />
+                <div>
+                  <p className="text-xs font-semibold text-gray-900">End-to-End Logistics</p>
+                  <p className="text-[10px] text-gray-600">DDP Shipping setup</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Agreement Checkbox */}
+            <div className="flex items-start gap-2">
+              <input
+                type="checkbox"
+                id="service-agreement-mobile"
+                checked={isAgreed}
+                onChange={(e) => setIsAgreed(e.target.checked)}
+                className="mt-0.5 w-3.5 h-3.5 text-emerald-600 border-gray-300 rounded focus:ring-emerald-500 focus:ring-1"
+              />
+              <label htmlFor="service-agreement-mobile" className="text-[10px] text-gray-700 leading-relaxed cursor-pointer">
+                I understand this service covers <strong>Ops & Logistics only</strong>. (Design/Marketing excluded)
+              </label>
+            </div>
+
+            {/* Action Buttons Row */}
+            <div className="flex gap-2">
+              <Button
+                variant="outline"
+                onClick={handleSaveReport}
+                disabled={isSaving}
+                className="flex-[3] border-gray-900 text-gray-900 hover:bg-gray-50 text-xs py-2"
+              >
+                {isSaving ? 'Saving...' : '💾 Save'}
+              </Button>
+              <div className="flex-[7]">
+                <Button
+                  onClick={handleRequestQuote}
+                  disabled={isProcessingPayment || !isAgreed}
+                  className={`w-full bg-gray-900 hover:bg-gray-800 text-white font-semibold text-xs py-2 ${
+                    !isAgreed ? 'opacity-50 cursor-not-allowed' : ''
+                  }`}
+                >
+                  <div className="flex items-center justify-between w-full">
+                    <span>👔 Hire My Expert</span>
+                    <span className="font-bold">$50/mo</span>
+                  </div>
+                </Button>
+                {/* Credit Badge (Mobile) */}
+                <div className="mt-1.5 text-center">
+                  <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-emerald-600">
+                    <CheckCircle2 className="w-3 h-3" />
+                    100% Credited
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            {/* Analyze Another Link */}
+            <div className="text-center pt-1">
+              <Link
+                href="/chat"
+                className="text-gray-600 hover:text-gray-900 text-xs font-medium transition-colors flex items-center justify-center gap-1"
+              >
+                <span>🔄</span>
+                <span>Analyze Another Product</span>
+              </Link>
             </div>
           </div>
         </div>
-
-        {/* Analyze Another as small text link below */}
-        <div className="text-center">
-          <Link
-            href="/chat"
-            className="text-gray-500 hover:text-gray-700 text-xs transition-colors inline-flex items-center gap-1"
-          >
-            <span>🔄</span>
-            <span>Analyze Another Product</span>
-          </Link>
-        </div>
       </div>
+
+      {/* Confirmation Modal */}
+      <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
+        <DialogContent className="sm:max-w-[500px]">
+          <DialogHeader>
+            <DialogTitle className="text-2xl font-bold text-gray-900">
+              Confirm Expert Hiring
+            </DialogTitle>
+            <DialogDescription className="text-sm text-gray-600 mt-1">
+              Secure your dedicated sourcing manager today.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-6 py-4">
+            {/* Price Section */}
+            <div className="text-center">
+              <div className="text-4xl font-bold text-gray-900 mb-2">
+                $50 <span className="text-lg font-normal text-gray-600">/ month</span>
+              </div>
+            </div>
+
+            {/* Benefit Badge */}
+            <div className="bg-emerald-50 border border-emerald-200 rounded-lg p-4 text-center">
+              <div className="flex items-center justify-center gap-2 text-emerald-700 font-semibold">
+                <span className="text-lg">✨</span>
+                <span className="text-sm">100% Credited back on your first order</span>
+              </div>
+            </div>
+
+            {/* Policy */}
+            <div className="text-center">
+              <p className="text-xs text-gray-500">
+                No lock-in contract. Cancel anytime.
+              </p>
+            </div>
+
+            {/* Scope of Work */}
+            <div className="border-t border-gray-200 pt-4 space-y-3">
+              <h4 className="text-sm font-semibold text-gray-900 mb-3">Scope of Work</h4>
+              
+              {/* Included Services */}
+              <div className="space-y-2">
+                <p className="text-xs font-medium text-gray-700 mb-1.5">Included (✅):</p>
+                <ul className="space-y-1.5 text-xs text-gray-600 ml-4">
+                  <li className="flex items-start gap-2">
+                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 mt-0.5 flex-shrink-0" />
+                    <span>Factory Sourcing</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 mt-0.5 flex-shrink-0" />
+                    <span>Negotiation</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 mt-0.5 flex-shrink-0" />
+                    <span>QC Management</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 mt-0.5 flex-shrink-0" />
+                    <span>Logistics Setup</span>
+                  </li>
+                </ul>
+              </div>
+
+              {/* Not Included Services */}
+              <div className="space-y-2 pt-2 border-t border-gray-100">
+                <p className="text-xs font-medium text-gray-700 mb-1.5">Not Included (❌):</p>
+                <ul className="space-y-1.5 text-xs text-gray-600 ml-4">
+                  <li className="flex items-start gap-2">
+                    <XCircle className="w-3.5 h-3.5 text-gray-400 mt-0.5 flex-shrink-0" />
+                    <span>Logo/Package Design</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <XCircle className="w-3.5 h-3.5 text-gray-400 mt-0.5 flex-shrink-0" />
+                    <span>Marketing Strategy</span>
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <DialogFooter className="gap-2 sm:gap-0">
+            <Button
+              variant="outline"
+              onClick={() => setIsModalOpen(false)}
+              disabled={isProcessingPayment}
+              className="w-full sm:w-auto"
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={handleSubscribe}
+              disabled={isProcessingPayment}
+              className="w-full sm:w-auto bg-gray-900 hover:bg-gray-800 text-white"
+            >
+              {isProcessingPayment ? (
+                <span className="flex items-center gap-2">
+                  <span className="animate-spin">⏳</span>
+                  Processing...
+                </span>
+              ) : (
+                <span className="flex items-center gap-2">
+                  Proceed to Checkout
+                  <span>→</span>
+                </span>
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

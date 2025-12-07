@@ -47,17 +47,44 @@ function ClientChatContent() {
         return;
       }
 
-      // 프로젝트 정보 가져오기
+      // 프로젝트 정보 가져오기 및 구독 확인
       const adminClient = getAdminClient();
-      const { data: project } = await adminClient
+      const { data: project, error: projectError } = await adminClient
         .from('projects')
-        .select('name, manager_id')
+        .select('name, manager_id, is_paid_subscription, user_id')
         .eq('id', projectId)
         .single();
 
-      if (project) {
-        setProjectName(project.name);
+      if (projectError || !project) {
+        console.error('[ClientChatPage] Project not found:', projectError);
+        router.push('/dashboard');
+        return;
       }
+
+      // 프로젝트 소유권 확인
+      if (project.user_id !== user.id) {
+        router.push('/dashboard');
+        return;
+      }
+
+      // 구독 확인: is_paid_subscription이 false이면 결제 안내
+      // Note: 컬럼이 없을 수 있으므로 null 체크 포함
+      if (project.is_paid_subscription === false) {
+        // 결제 안내 모달 또는 리다이렉트
+        const shouldProceed = window.confirm(
+          '이 프로젝트는 매니저 고용이 필요합니다. 결제 페이지로 이동하시겠습니까?'
+        );
+        
+        if (shouldProceed) {
+          // 결과 페이지로 이동하여 결제 모달 표시
+          router.push(`/results?project_id=${projectId}`);
+        } else {
+          router.push('/dashboard');
+        }
+        return;
+      }
+
+      setProjectName(project.name);
 
       // 세션이 없으면 생성 또는 찾기
       if (!sessionId) {

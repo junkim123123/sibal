@@ -97,7 +97,10 @@ export async function POST(req: Request) {
     });
 
     // 결제 성공 후 리다이렉트 URL
-    const successUrl = `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/dashboard?payment=success`;
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL || 
+                   process.env.NEXT_PUBLIC_SITE_URL || 
+                   'http://localhost:3000';
+    const successUrl = `${appUrl}/dashboard?payment=success`;
 
     // Lemon Squeezy Checkout 생성 (try/catch로 감싸서 상세한 에러 캡처)
     let checkoutResponse: Response;

@@ -1,13 +1,66 @@
 -- ============================================================================
--- Fix Infinite Recursion in factory_quotes RLS Policies
+-- Fix Infinite Recursion in RLS Policies (Complete Fix)
 -- ============================================================================
 -- 
--- 문제: factory_quotes의 RLS 정책이 projects를 조회할 때,
---      projects의 RLS 정책이 profiles를 조회하고,
---      profiles의 RLS 정책이 다시 profiles를 조회하면서 무한 재귀 발생
+-- 문제: 
+-- 1. factory_quotes의 RLS 정책이 projects를 조회할 때,
+--    projects의 RLS 정책이 profiles를 조회하고,
+--    profiles의 RLS 정책이 다시 profiles를 조회하면서 무한 재귀 발생
+-- 2. profiles 테이블 자체의 RLS 정책도 무한 재귀를 일으킬 수 있음
 -- 
--- 해결: factory_quotes의 RLS 정책을 직접적으로 수정하여
---      projects 테이블의 user_id와 manager_id를 직접 비교
+-- 해결: 
+-- 1. factory_quotes의 RLS 정책을 직접적으로 수정하여
+--    projects 테이블의 user_id와 manager_id를 직접 비교
+-- 2. profiles 테이블의 RLS 정책을 단순화하여 무한 재귀 방지
+-- 3. projects 테이블의 Manager 정책도 최적화
+-- ============================================================================
+
+-- ============================================================================
+-- 1. profiles 테이블 RLS 정책 초기화 및 재생성 (무한 재귀 방지)
+-- ============================================================================
+
+-- 기존 정책 삭제 (모든 가능한 정책명 포함)
+DROP POLICY IF EXISTS "Public profiles are viewable by everyone." ON profiles;
+DROP POLICY IF EXISTS "Users can insert their own profile." ON profiles;
+DROP POLICY IF EXISTS "Users can update own profile." ON profiles;
+DROP POLICY IF EXISTS "Users can view own profile" ON profiles;
+DROP POLICY IF EXISTS "Users can update own profile" ON profiles;
+DROP POLICY IF EXISTS "Super admins can view all profiles" ON profiles;
+DROP POLICY IF EXISTS "Super admins can update all profiles" ON profiles;
+DROP POLICY IF EXISTS "Admins can view all profiles" ON profiles;
+
+-- 깔끔한 새 정책 생성 (무한 루프 방지)
+-- (1) 내 프로필은 내가 볼 수 있다
+CREATE POLICY "Users can view own profile" 
+    ON profiles FOR SELECT 
+    USING (auth.uid() = id);
+
+-- (2) 내 프로필은 내가 수정할 수 있다
+CREATE POLICY "Users can update own profile" 
+    ON profiles FOR UPDATE 
+    USING (auth.uid() = id);
+
+-- (3) 새 가입자는 프로필을 만들 수 있다
+CREATE POLICY "Users can insert own profile" 
+    ON profiles FOR INSERT 
+    WITH CHECK (auth.uid() = id);
+
+-- (4) Super Admin은 모든 프로필을 볼 수 있다 (무한 재귀 방지)
+-- 주의: 이 정책은 profiles 테이블을 다시 조회하지 않고 auth.users를 직접 사용
+-- 또는 더 안전하게: Service Role Key를 사용하는 경우 이 정책이 필요 없을 수 있음
+-- 필요시에만 활성화하세요
+-- CREATE POLICY "Super admins can view all profiles"
+--     ON profiles FOR SELECT
+--     USING (
+--         EXISTS (
+--             SELECT 1 FROM auth.users
+--             WHERE auth.users.id = auth.uid()
+--             AND (auth.users.raw_user_meta_data->>'role')::text = 'super_admin'
+--         )
+--     );
+
+-- ============================================================================
+-- 2. factory_quotes 테이블 RLS 정책 수정
 -- ============================================================================
 
 -- 기존 정책 삭제

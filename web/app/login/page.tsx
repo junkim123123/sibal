@@ -71,21 +71,27 @@ function LoginPageContent() {
         ? await signup(formData)
         : await login(formData)
 
-      // redirect()가 호출되면 result가 undefined가 됨 (예외를 던지므로)
-      // 따라서 result가 없으면 정상적인 리다이렉트로 간주
+      // redirect()가 호출되면 이 코드는 실행되지 않음 (예외를 던지므로)
+      // result가 있으면 에러 메시지 표시
       if (result?.error) {
         setError(result.error)
         setIsLoading(false)
       }
-      // result가 없으면 redirect()가 호출된 것이므로 클라이언트에서 추가 작업 불필요
-      // Next.js가 자동으로 리다이렉트 처리
     } catch (err: any) {
-      // redirect()는 NextRedirect 에러를 던지므로, 이것은 정상적인 리다이렉트
-      if (err?.digest?.startsWith('NEXT_REDIRECT')) {
-        // 정상적인 리다이렉트이므로 에러로 처리하지 않음
+      // redirect()는 NEXT_REDIRECT 에러를 던지는데, 이것은 정상적인 리다이렉트입니다
+      // Next.js가 자동으로 리다이렉트를 처리하므로 클라이언트에서는 아무것도 하지 않습니다
+      const isRedirect = err?.digest?.startsWith('NEXT_REDIRECT') || 
+                         err?.message?.includes('NEXT_REDIRECT') ||
+                         err?.name === 'NEXT_REDIRECT'
+      
+      if (isRedirect) {
+        // 정상적인 리다이렉트 - 아무것도 하지 않음
         // Next.js가 자동으로 리다이렉트 처리
+        // 브라우저 콘솔에 에러가 표시되지 않도록 조용히 처리
         return
       }
+      
+      // 실제 에러인 경우에만 처리
       console.error('[Login] Error:', err)
       setError(err?.message || '예기치 않은 오류가 발생했습니다.')
       setIsLoading(false)

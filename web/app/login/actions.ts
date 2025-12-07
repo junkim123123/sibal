@@ -6,58 +6,52 @@ import { createClient } from '@/lib/supabase/server'
 import { getAdminClient } from '@/lib/supabase/admin'
 
 export async function login(formData: FormData) {
-  try {
-    const supabase = await createClient()
+  const supabase = await createClient()
 
-    const data = {
-      email: formData.get('email') as string,
-      password: formData.get('password') as string,
-    }
-
-    if (!data.email || !data.password) {
-      return { error: '이메일과 비밀번호를 입력해주세요.' }
-    }
-
-    const { error, data: authData } = await supabase.auth.signInWithPassword({
-      email: data.email,
-      password: data.password,
-    })
-
-    if (error) {
-      console.error('[Login] Auth error:', error)
-      return { error: error.message }
-    }
-
-    if (!authData.user) {
-      return { error: '로그인에 실패했습니다. 다시 시도해주세요.' }
-    }
-
-    // 이메일 도메인 기반 자동 리다이렉트
-    const email = data.email.toLowerCase()
-    
-    revalidatePath('/', 'layout')
-    
-    // Super Admin: k.myungjun@nexsupply.net
-    if (email === 'k.myungjun@nexsupply.net') {
-      console.log('[Login] Super admin detected, redirecting to /admin')
-      redirect('/admin')
-    }
-    
-    // Manager: 모든 @nexsupply.net 도메인 (super admin 제외)
-    if (email.endsWith('@nexsupply.net') && email !== 'k.myungjun@nexsupply.net') {
-      console.log('[Login] Manager detected, redirecting to /manager/dashboard')
-      redirect('/manager/dashboard')
-    }
-
-    // 일반 사용자
-    console.log('[Login] Regular user, redirecting to /dashboard')
-    redirect('/dashboard')
-  } catch (error) {
-    console.error('[Login] Unexpected error:', error)
-    return { 
-      error: error instanceof Error ? error.message : '로그인 중 오류가 발생했습니다.' 
-    }
+  const data = {
+    email: formData.get('email') as string,
+    password: formData.get('password') as string,
   }
+
+  if (!data.email || !data.password) {
+    return { error: '이메일과 비밀번호를 입력해주세요.' }
+  }
+
+  const { error, data: authData } = await supabase.auth.signInWithPassword({
+    email: data.email,
+    password: data.password,
+  })
+
+  if (error) {
+    console.error('[Login] Auth error:', error)
+    return { error: error.message }
+  }
+
+  if (!authData.user) {
+    return { error: '로그인에 실패했습니다. 다시 시도해주세요.' }
+  }
+
+  // 이메일 도메인 기반 자동 리다이렉트
+  // redirect()는 항상 예외를 던지므로 try-catch 밖에서 호출
+  const email = data.email.toLowerCase()
+  
+  revalidatePath('/', 'layout')
+  
+  // Super Admin: k.myungjun@nexsupply.net
+  if (email === 'k.myungjun@nexsupply.net') {
+    console.log('[Login] Super admin detected, redirecting to /admin')
+    redirect('/admin')
+  }
+  
+  // Manager: 모든 @nexsupply.net 도메인 (super admin 제외)
+  if (email.endsWith('@nexsupply.net') && email !== 'k.myungjun@nexsupply.net') {
+    console.log('[Login] Manager detected, redirecting to /manager/dashboard')
+    redirect('/manager/dashboard')
+  }
+
+  // 일반 사용자
+  console.log('[Login] Regular user, redirecting to /dashboard')
+  redirect('/dashboard')
 }
 
 export async function signup(formData: FormData) {

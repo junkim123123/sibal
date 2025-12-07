@@ -14,10 +14,14 @@ import { getAdminClient } from '@/lib/supabase/admin';
  */
 export async function GET(
   req: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> | { id: string } }
 ) {
   try {
-    console.log('[Get Project Analysis] Starting...', { projectId: params.id });
+    // Next.js 15+ 호환: params가 Promise일 수 있음
+    const resolvedParams = await Promise.resolve(params);
+    const projectId = resolvedParams.id;
+    
+    console.log('[Get Project Analysis] Starting...', { projectId });
     
     // 사용자 인증 확인
     const supabase = await createClient();
@@ -30,8 +34,6 @@ export async function GET(
         { status: 401 }
       );
     }
-
-    const projectId = params.id;
 
     if (!projectId) {
       return NextResponse.json(

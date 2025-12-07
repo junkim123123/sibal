@@ -15,43 +15,113 @@ import { createClient } from '@/lib/supabase/server';
  */
 export async function assignManagerToProject(projectId: string, managerId: string) {
   try {
+    console.log('[Assign Manager] Starting assignment:', { projectId, managerId });
+
     // 권한 확인
     const supabase = await createClient();
     const { data: { user }, error: authError } = await supabase.auth.getUser();
 
     if (authError || !user) {
+      console.error('[Assign Manager] Authentication failed:', authError);
       return { success: false, error: 'Unauthorized' };
     }
 
+    console.log('[Assign Manager] User authenticated:', { userId: user.id, email: user.email });
+
     // 슈퍼 어드민 권한 확인
     const adminClient = getAdminClient();
-    const { data: profile } = await adminClient
+    const { data: profile, error: profileError } = await adminClient
       .from('profiles')
-      .select('role')
+      .select('role, email')
       .eq('id', user.id)
       .single();
 
-    if (profile?.role !== 'super_admin') {
+    if (profileError) {
+      console.error('[Assign Manager] Failed to fetch profile:', profileError);
+      return { success: false, error: 'Failed to verify permissions' };
+    }
+
+    // 이메일로도 super admin 확인 (k.myungjun@nexsupply.net)
+    const userEmail = user.email?.toLowerCase() || '';
+    const isSuperAdminEmail = userEmail === 'k.myungjun@nexsupply.net';
+    const isSuperAdminRole = profile?.role === 'super_admin';
+
+    if (!isSuperAdminEmail && !isSuperAdminRole) {
+      console.error('[Assign Manager] Access denied:', {
+        userId: user.id,
+        email: userEmail,
+        role: profile?.role,
+      });
       return { success: false, error: 'Forbidden: Super admin access required' };
     }
 
+    console.log('[Assign Manager] Permission verified:', {
+      userId: user.id,
+      email: userEmail,
+      role: profile?.role,
+      isSuperAdminEmail,
+      isSuperAdminRole,
+    });
+
+    // 프로젝트 존재 및 현재 상태 확인
+    const { data: existingProject, error: fetchError } = await adminClient
+      .from('projects')
+      .select('id, name, status, manager_id')
+      .eq('id', projectId)
+      .single();
+
+    if (fetchError || !existingProject) {
+      console.error('[Assign Manager] Project not found:', fetchError);
+      return { success: false, error: 'Project not found' };
+    }
+
+    console.log('[Assign Manager] Current project state:', {
+      id: existingProject.id,
+      name: existingProject.name,
+      currentStatus: existingProject.status,
+      currentManagerId: existingProject.manager_id,
+    });
+
+    // 매니저가 이미 할당되어 있는지 확인
+    if (existingProject.manager_id && existingProject.manager_id !== managerId) {
+      console.warn('[Assign Manager] Project already has a manager:', existingProject.manager_id);
+      return { success: false, error: 'Project already has a manager assigned' };
+    }
+
     // 프로젝트 업데이트
-    const { error: updateError } = await adminClient
+    const { data: updatedProject, error: updateError } = await adminClient
       .from('projects')
       .update({
         manager_id: managerId,
         status: 'in_progress',
         dispatched_at: new Date().toISOString(),
       })
-      .eq('id', projectId);
+      .eq('id', projectId)
+      .select()
+      .single();
 
     if (updateError) {
       console.error('[Assign Manager] Failed to update project:', updateError);
-      return { success: false, error: updateError.message };
+      console.error('[Assign Manager] Update error details:', JSON.stringify(updateError, null, 2));
+      return { 
+        success: false, 
+        error: updateError.message || 'Failed to update project. Please check server logs.' 
+      };
     }
 
+    console.log('[Assign Manager] Project updated successfully:', {
+      id: updatedProject?.id,
+      manager_id: updatedProject?.manager_id,
+      status: updatedProject?.status,
+    });
+
     // 매니저 워크로드 업데이트 (트리거가 자동으로 처리하지만, 명시적으로 업데이트)
-    await updateManagerWorkload(managerId);
+    try {
+      await updateManagerWorkload(managerId);
+    } catch (workloadError) {
+      console.warn('[Assign Manager] Failed to update manager workload (non-critical):', workloadError);
+      // 워크로드 업데이트 실패는 치명적이지 않으므로 계속 진행
+    }
 
     revalidatePath('/admin/dispatch');
     revalidatePath('/admin');
@@ -59,6 +129,9 @@ export async function assignManagerToProject(projectId: string, managerId: strin
     return { success: true };
   } catch (error) {
     console.error('[Assign Manager] Unexpected error:', error);
+    if (error instanceof Error) {
+      console.error('[Assign Manager] Error stack:', error.stack);
+    }
     return { 
       success: false, 
       error: error instanceof Error ? error.message : 'Unknown error' 
@@ -73,18 +146,29 @@ async function updateManagerWorkload(managerId: string) {
   try {
     const adminClient = getAdminClient();
     
-    const { count } = await adminClient
+    const { count, error: countError } = await adminClient
       .from('projects')
       .select('*', { count: 'exact', head: true })
       .eq('manager_id', managerId)
       .in('status', ['active', 'in_progress']);
 
-    await adminClient
+    if (countError) {
+      console.error('[Update Manager Workload] Error counting projects:', countError);
+      return;
+    }
+
+    const { error: updateError } = await adminClient
       .from('profiles')
       .update({ workload_score: count || 0 })
       .eq('id', managerId);
+
+    if (updateError) {
+      console.error('[Update Manager Workload] Error updating profile:', updateError);
+    } else {
+      console.log('[Update Manager Workload] Updated workload for manager:', managerId, 'to', count || 0);
+    }
   } catch (error) {
-    console.error('[Update Manager Workload] Error:', error);
+    console.error('[Update Manager Workload] Unexpected error:', error);
   }
 }
 

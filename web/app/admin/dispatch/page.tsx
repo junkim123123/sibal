@@ -88,7 +88,14 @@ export default function DispatchCenterPage() {
     setAssignMessage(null);
 
     try {
+      console.log('[Dispatch Center] Assigning manager:', {
+        projectId: selectedProjectId,
+        managerId: selectedManagerId,
+      });
+
       const result = await assignManagerToProject(selectedProjectId, selectedManagerId);
+
+      console.log('[Dispatch Center] Assign result:', result);
 
       if (result.success) {
         setAssignMessage({ type: 'success', text: 'Manager assigned successfully!' });
@@ -101,10 +108,14 @@ export default function DispatchCenterPage() {
           setAssignMessage(null);
         }, 1500);
       } else {
-        setAssignMessage({ type: 'error', text: result.error || 'Failed to assign manager' });
+        const errorMessage = result.error || 'Failed to assign manager';
+        console.error('[Dispatch Center] Assignment failed:', errorMessage);
+        setAssignMessage({ type: 'error', text: errorMessage });
       }
     } catch (error) {
-      setAssignMessage({ type: 'error', text: 'An unexpected error occurred' });
+      console.error('[Dispatch Center] Unexpected error during assignment:', error);
+      const errorMessage = error instanceof Error ? error.message : 'An unexpected error occurred';
+      setAssignMessage({ type: 'error', text: `Error: ${errorMessage}` });
     } finally {
       setIsAssigning(false);
     }

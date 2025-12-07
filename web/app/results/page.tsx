@@ -955,8 +955,9 @@ function ResultsActionButtons({ projectId, answers }: { projectId?: string | nul
       const data = await response.json();
 
       if (data.ok) {
-        // 대시보드의 Saved Products 탭으로 이동 (refresh 플래그 추가하여 데이터 새로고침)
-        window.location.href = '/dashboard?tab=products&refresh=true';
+        console.log('[Save Report] Project saved successfully:', data.project_id);
+        // 대시보드의 Saved Products 탭으로 이동 (전체 페이지 리로드로 확실히 새로고침)
+        window.location.href = '/dashboard?tab=products';
       } else {
         alert(data.error || 'Failed to save report. Please try again.');
         setIsSaving(false);

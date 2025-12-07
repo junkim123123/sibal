@@ -31,13 +31,18 @@ function DashboardPageContent() {
   } | null>(null)
   const router = useRouter()
 
-  // URL 파라미터에서 탭 변경 감지
+  // URL 파라미터에서 탭 변경 감지 및 데이터 새로고침
   useEffect(() => {
     const tab = searchParams?.get('tab') as TabType
     if (tab && ['estimates', 'products', 'orders', 'documents', 'agent'].includes(tab)) {
       setActiveTab(tab)
+      
+      // 탭 변경 시 데이터 새로고침 (특히 products 탭)
+      if (userId && isAuthenticated) {
+        loadProjects(userId)
+      }
     }
-  }, [searchParams])
+  }, [searchParams, userId, isAuthenticated])
 
   useEffect(() => {
     async function checkAuth() {
@@ -73,29 +78,22 @@ function DashboardPageContent() {
     checkAuth()
   }, [])
 
-  // 페이지 포커스 시 또는 URL 파라미터 변경 시 데이터 다시 불러오기
+  // 페이지 포커스 시 데이터 다시 불러오기
   useEffect(() => {
+    if (!userId || !isAuthenticated) return
+
     const handleFocus = () => {
-      if (userId && isAuthenticated) {
-        loadProjects(userId)
-      }
+      console.log('[Dashboard] Page focused, reloading data...')
+      loadProjects(userId)
     }
 
     // 페이지 포커스 시 데이터 새로고침
     window.addEventListener('focus', handleFocus)
-    
-    // URL 파라미터에 refresh 플래그가 있으면 데이터 새로고침
-    const shouldRefresh = searchParams?.get('refresh') === 'true'
-    if (shouldRefresh && userId && isAuthenticated) {
-      loadProjects(userId)
-      // URL에서 refresh 파라미터 제거
-      router.replace('/dashboard?tab=' + (searchParams?.get('tab') || 'estimates'), { scroll: false })
-    }
 
     return () => {
       window.removeEventListener('focus', handleFocus)
     }
-  }, [userId, isAuthenticated, searchParams, router])
+  }, [userId, isAuthenticated])
 
   // 프로젝트 데이터 로드
   async function loadProjects(userId: string) {
@@ -103,6 +101,9 @@ function DashboardPageContent() {
       setIsLoading(true)
       const response = await fetch('/api/projects')
       const data = await response.json()
+
+      console.log('[Dashboard] Loaded projects:', data.projects?.length || 0, 'projects')
+      console.log('[Dashboard] Projects with saved status:', data.projects?.filter((p: any) => p.status === 'saved').length || 0)
 
       if (data.ok && data.projects) {
         // Recent Estimates: status가 'active'인 프로젝트들 (최근 분석)
@@ -153,8 +154,9 @@ function DashboardPageContent() {
             return new Date(projectB.created_at).getTime() - new Date(projectA.created_at).getTime()
           })
 
+        console.log('[Dashboard] Setting saved products:', savedProducts.length)
         setEstimates(activeProjects)
-        setSavedProducts(savedProjects)
+        setSavedProducts(savedProducts)
 
         // Active Orders: 견적이 선택되고 QC 리포트가 승인된 프로젝트들
         await loadShipments(userId, data.projects)

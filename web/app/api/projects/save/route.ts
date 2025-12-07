@@ -62,14 +62,26 @@ export async function POST(req: Request) {
       finalProjectId = project.id;
     } else {
       // 프로젝트가 있으면 이름 업데이트 및 saved 상태로 변경
-      await adminClient
+      const { data: updatedProject, error: updateError } = await adminClient
         .from('projects')
         .update({
           name: productName,
           status: 'saved', // Save Report 버튼을 누르면 saved 상태로 변경
         })
         .eq('id', finalProjectId)
-        .eq('user_id', user.id);
+        .eq('user_id', user.id)
+        .select()
+        .single();
+
+      if (updateError) {
+        console.error('[Save Project] Failed to update project:', updateError);
+        return NextResponse.json(
+          { ok: false, error: 'Failed to update project status' },
+          { status: 500 }
+        );
+      }
+
+      console.log('[Save Project] Project updated to saved status:', finalProjectId, updatedProject?.status);
     }
 
     // answers를 메시지로 저장 (선택적)

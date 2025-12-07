@@ -120,6 +120,13 @@ export function ClientList({ onProjectSelect, selectedProjectId }: ClientListPro
     };
 
     loadClients();
+    
+    // 30초마다 자동 새로고침 (새로 할당된 프로젝트 감지)
+    const interval = setInterval(() => {
+      loadClients();
+    }, 30000); // 30초
+
+    return () => clearInterval(interval);
   }, []);
 
   if (isLoading) {
@@ -143,7 +150,7 @@ export function ClientList({ onProjectSelect, selectedProjectId }: ClientListPro
         {clients.length === 0 ? (
           <div className="p-6 text-center text-gray-500">
             <User className="w-8 h-8 mx-auto mb-2 text-gray-400" />
-            <p className="text-sm">할당된 프로젝트가 없습니다</p>
+            <p className="text-sm">No assigned projects</p>
           </div>
         ) : (
           clients.map((client) => (
@@ -169,7 +176,7 @@ export function ClientList({ onProjectSelect, selectedProjectId }: ClientListPro
                   <p className="text-xs text-gray-500 truncate">{client.name}</p>
                   {client.last_message_at && (
                     <p className="text-xs text-gray-400 mt-1">
-                      {new Date(client.last_message_at).toLocaleTimeString('ko-KR', {
+                      {new Date(client.last_message_at).toLocaleTimeString('en-US', {
                         month: 'short',
                         day: 'numeric',
                         hour: '2-digit',

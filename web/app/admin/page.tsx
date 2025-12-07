@@ -35,6 +35,13 @@ export default function SuperAdminDashboard() {
 
   useEffect(() => {
     loadDashboardStats();
+    
+    // 30초마다 자동 새로고침 (새로운 Active Orders 감지)
+    const interval = setInterval(() => {
+      loadDashboardStats();
+    }, 30000); // 30초
+
+    return () => clearInterval(interval);
   }, []);
 
   const loadDashboardStats = async () => {
@@ -42,11 +49,12 @@ export default function SuperAdminDashboard() {
       setIsLoading(true);
       const adminClient = getAdminClient();
 
-      // Unassigned Pro Projects (payment_status = 'paid' AND manager_id IS NULL)
+      // Unassigned Projects (status = 'active' AND manager_id IS NULL)
+      // Active Orders에서 생성된 프로젝트들이 여기에 포함됨
       const { count: unassignedCount } = await adminClient
         .from('projects')
         .select('*', { count: 'exact', head: true })
-        .eq('payment_status', 'paid')
+        .eq('status', 'active')
         .is('manager_id', null);
 
       // Active Projects

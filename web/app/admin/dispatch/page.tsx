@@ -41,6 +41,13 @@ export default function DispatchCenterPage() {
 
   useEffect(() => {
     loadData();
+    
+    // 30초마다 자동 새로고침 (새로운 Active Orders 감지)
+    const interval = setInterval(() => {
+      loadData();
+    }, 30000); // 30초
+
+    return () => clearInterval(interval);
   }, []);
 
   const loadData = async () => {
@@ -48,13 +55,15 @@ export default function DispatchCenterPage() {
       setIsLoading(true);
       const adminClient = getAdminClient();
 
-      // Unassigned Projects (payment_status = 'paid' AND manager_id IS NULL)
+      // Unassigned Projects (status = 'active' AND manager_id IS NULL)
+      // Active Orders에서 생성된 프로젝트들이 여기에 표시됨
       const { data: projects, error: projectsError } = await adminClient
         .from('projects')
         .select(`
           id,
           name,
           user_id,
+          status,
           payment_date,
           created_at,
           profiles!projects_user_id_fkey(
@@ -62,7 +71,7 @@ export default function DispatchCenterPage() {
             email
           )
         `)
-        .eq('payment_status', 'paid')
+        .eq('status', 'active')
         .is('manager_id', null)
         .order('created_at', { ascending: false });
 
@@ -77,6 +86,8 @@ export default function DispatchCenterPage() {
         payment_date: p.payment_date,
         created_at: p.created_at,
       }));
+
+      console.log('[Dispatch Center] Loaded unassigned projects:', formattedProjects.length);
 
       setUnassignedProjects(formattedProjects);
 
@@ -185,7 +196,9 @@ export default function DispatchCenterPage() {
                 </span>
               )}
             </div>
-            <p className="text-sm text-gray-500 mt-1">Select a project to assign a manager</p>
+            <p className="text-sm text-gray-500 mt-1">
+              Select a project to assign a manager. Active orders appear here automatically.
+            </p>
           </div>
 
           <div className="p-6 max-h-[calc(100vh-20rem)] overflow-y-auto">
@@ -215,9 +228,13 @@ export default function DispatchCenterPage() {
                     </div>
                     <p className="text-sm text-gray-600 mb-1">{project.user_name}</p>
                     <p className="text-xs text-gray-500">
-                      {project.payment_date
-                        ? `Paid: ${new Date(project.payment_date).toLocaleDateString()}`
-                        : `Created: ${new Date(project.created_at).toLocaleDateString()}`}
+                      Created: {new Date(project.created_at).toLocaleDateString('en-US', {
+                        month: 'short',
+                        day: 'numeric',
+                        year: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit',
+                      })}
                     </p>
                   </button>
                 ))}

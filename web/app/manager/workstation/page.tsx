@@ -53,7 +53,7 @@ function WorkstationPageContent() {
 
         // URL에서 project_id가 있으면 로드
         const projectId = searchParams.get('project_id');
-        if (projectId) {
+        if (projectId && projectId !== selectedProjectId) {
           await loadProject(projectId, user.id);
         }
       } catch (error) {
@@ -165,11 +165,13 @@ function WorkstationPageContent() {
     }
   };
 
-  const handleProjectSelect = (projectId: string) => {
+  const handleProjectSelect = async (projectId: string) => {
     setSelectedProjectId(projectId);
+    setChatSessionId(null); // Reset chat session
+    setProject(null); // Reset project data
     router.push(`/manager/workstation?project_id=${projectId}`, { scroll: false });
     if (managerId) {
-      loadProject(projectId, managerId);
+      await loadProject(projectId, managerId);
     }
   };
 
@@ -211,6 +213,13 @@ function WorkstationPageContent() {
               showQuickReplies={true}
               isManager={true}
             />
+          ) : selectedProjectId && managerId ? (
+            <div className="h-full bg-white rounded-lg border border-gray-200 flex items-center justify-center">
+              <div className="text-center">
+                <Loader2 className="w-8 h-8 mx-auto mb-4 animate-spin text-blue-600" />
+                <p className="text-gray-500">Setting up chat session...</p>
+              </div>
+            </div>
           ) : (
             <div className="h-full bg-white rounded-lg border border-gray-200 flex items-center justify-center">
               <div className="text-center">

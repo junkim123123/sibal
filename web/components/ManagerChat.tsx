@@ -9,8 +9,15 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { createClient } from '@/lib/supabase/client';
-import { Send, Loader2 } from 'lucide-react';
+import { Send, Loader2, FileText, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from '@/components/ui/dialog';
 
 interface ChatMessage {
   id: string;
@@ -52,6 +59,9 @@ export function ManagerChat({
   const [inputMessage, setInputMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [isSending, setIsSending] = useState(false);
+  const [showAnalysisModal, setShowAnalysisModal] = useState(false);
+  const [analysisData, setAnalysisData] = useState<any>(null);
+  const [isLoadingAnalysis, setIsLoadingAnalysis] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const supabase = createClient();
 
@@ -120,11 +130,58 @@ export function ManagerChat({
     };
   }, [sessionId, supabase]);
 
+  // AI 분석 데이터 로드
+  const handleViewAnalysis = async () => {
+    if (!projectId || isLoadingAnalysis) return;
+
+    setIsLoadingAnalysis(true);
+    setShowAnalysisModal(true);
+
+    try {
+      const response = await fetch(`/api/projects/${projectId}/analysis`, {
+        method: 'GET',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+      });
+
+      const data = await response.json();
+      if (data.ok) {
+        setAnalysisData({
+          answers: data.answers,
+          ai_analysis: data.ai_analysis,
+        });
+      } else {
+        console.error('[ManagerChat] Failed to load analysis:', data.error);
+        setAnalysisData(null);
+      }
+    } catch (error) {
+      console.error('[ManagerChat] Error loading analysis:', error);
+      setAnalysisData(null);
+    } finally {
+      setIsLoadingAnalysis(false);
+    }
+  };
+
   // 메시지 전송
   const handleSendMessage = async () => {
-    if (!inputMessage.trim() || isSending) return;
+    if (!inputMessage.trim() || isSending || !sessionId) return;
 
     const messageContent = inputMessage.trim();
+    const tempMessageId = `temp-${Date.now()}`;
+    
+    // Optimistic update: 즉시 UI에 메시지 추가
+    const optimisticMessage: ChatMessage = {
+      id: tempMessageId,
+      sender_id: userId,
+      role: isManager ? 'manager' : 'user',
+      content: messageContent,
+      created_at: new Date().toISOString(),
+      file_url: null,
+      file_type: null,
+      file_name: null,
+    };
+    
+    setMessages((prev) => [...prev, optimisticMessage]);
     setInputMessage('');
     setIsSending(true);
 
@@ -145,9 +202,25 @@ export function ManagerChat({
       if (!data.ok) {
         throw new Error(data.error || 'Failed to send message');
       }
+
+      // 성공 시 임시 메시지를 실제 메시지로 교체
+      if (data.message) {
+        setMessages((prev) => 
+          prev.map((msg) => 
+            msg.id === tempMessageId 
+              ? {
+                  ...data.message,
+                  sender_id: userId,
+                }
+              : msg
+          )
+        );
+      }
     } catch (error) {
       console.error('[ManagerChat] Failed to send message:', error);
-      setInputMessage(messageContent); // 실패 시 입력 복원
+      // 실패 시 optimistic update 제거 및 입력 복원
+      setMessages((prev) => prev.filter((msg) => msg.id !== tempMessageId));
+      setInputMessage(messageContent);
     } finally {
       setIsSending(false);
     }
@@ -166,19 +239,38 @@ export function ManagerChat({
       {/* Chat Header */}
       <div className="flex items-center justify-between p-4 border-b border-gray-200">
         <div>
-          <h3 className="font-semibold text-gray-900">실시간 채팅</h3>
-          <p className="text-xs text-gray-500">NexSupply 전문가와 소통하세요</p>
+          <h3 className="font-semibold text-gray-900">Live Chat</h3>
+          <p className="text-xs text-gray-500">Chat with your NexSupply expert</p>
         </div>
-        {onClose && (
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={onClose}
-            className="text-gray-500 hover:text-gray-700"
-          >
-            닫기
-          </Button>
-        )}
+        <div className="flex items-center gap-2">
+          {/* View AI Analysis Button (Manager Only) */}
+          {isManager && projectId && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleViewAnalysis}
+              disabled={isLoadingAnalysis}
+              className="flex items-center gap-2"
+            >
+              {isLoadingAnalysis ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : (
+                <FileText className="w-4 h-4" />
+              )}
+              View AI Analysis
+            </Button>
+          )}
+          {onClose && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={onClose}
+              className="text-gray-500 hover:text-gray-700"
+            >
+              Close
+            </Button>
+          )}
+        </div>
       </div>
 
       {/* Messages */}
@@ -186,11 +278,11 @@ export function ManagerChat({
         {messages.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-full text-gray-500 text-sm space-y-3">
             <div className="text-center">
-              <p className="mb-2">아직 메시지가 없습니다.</p>
+              <p className="mb-2">No messages yet.</p>
               <p className="text-xs text-gray-400">
                 {!projectId || !sessionId 
-                  ? '채팅 세션을 준비 중입니다...'
-                  : '첫 메시지를 보내주세요. 매니저가 배당되면 답변을 드립니다.'
+                  ? 'Preparing chat session...'
+                  : 'Send your first message. Your manager will respond once assigned.'
                 }
               </p>
             </div>
@@ -199,7 +291,7 @@ export function ManagerChat({
           messages.map((message) => {
             const isManagerMessage = message.role === 'manager';
             const isSystemMessage = message.content.startsWith('System:');
-            const isOwnMessage = isManager && isManagerMessage;
+            const isOwnMessage = (isManager && isManagerMessage) || (!isManager && !isManagerMessage && message.sender_id === userId);
             
             return (
               <div
@@ -226,7 +318,7 @@ export function ManagerChat({
                       ? 'text-yellow-600'
                       : 'text-gray-500'
                   }`}>
-                    {new Date(message.created_at).toLocaleTimeString('ko-KR', {
+                    {new Date(message.created_at).toLocaleTimeString('en-US', {
                       hour: '2-digit',
                       minute: '2-digit',
                     })}
@@ -272,8 +364,8 @@ export function ManagerChat({
                 handleSendMessage();
               }
             }}
-            placeholder="메시지를 입력하세요..."
-            className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            placeholder="Type your message..."
+            className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 bg-white"
             disabled={isSending}
           />
           <Button
@@ -289,6 +381,153 @@ export function ManagerChat({
           </Button>
         </div>
       </div>
+
+      {/* AI Analysis Modal */}
+      <Dialog open={showAnalysisModal} onOpenChange={setShowAnalysisModal}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>AI Analysis Preview</DialogTitle>
+            <DialogDescription>
+              Review the AI-generated analysis for this project
+            </DialogDescription>
+          </DialogHeader>
+
+          {isLoadingAnalysis ? (
+            <div className="flex items-center justify-center py-12">
+              <Loader2 className="w-6 h-6 animate-spin text-blue-600" />
+            </div>
+          ) : analysisData ? (
+            <div className="space-y-6 mt-4">
+              {/* Answers Section */}
+              {analysisData.answers && (
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-3">Project Details</h3>
+                  <div className="bg-gray-50 rounded-lg p-4 space-y-2">
+                    {Object.entries(analysisData.answers).map(([key, value]: [string, any]) => {
+                      if (!value || value === 'skip' || value === 'Skip') return null;
+                      return (
+                        <div key={key} className="border-b border-gray-200 pb-2 last:border-0">
+                          <p className="text-sm font-medium text-gray-700 capitalize">
+                            {key.replace(/_/g, ' ')}:
+                          </p>
+                          <p className="text-sm text-gray-900 mt-1">{String(value)}</p>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+
+              {/* AI Analysis Section */}
+              {analysisData.ai_analysis && (
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-3">AI Analysis</h3>
+                  <div className="bg-blue-50 rounded-lg p-4 space-y-4">
+                    {analysisData.ai_analysis.summary && (
+                      <div>
+                        <p className="text-sm font-medium text-gray-700 mb-2">Summary</p>
+                        <p className="text-sm text-gray-900 whitespace-pre-wrap">
+                          {analysisData.ai_analysis.summary}
+                        </p>
+                      </div>
+                    )}
+                    {analysisData.ai_analysis.recommendations && (
+                      <div>
+                        <p className="text-sm font-medium text-gray-700 mb-2">Recommendations</p>
+                        <ul className="list-disc list-inside text-sm text-gray-900 space-y-1">
+                          {Array.isArray(analysisData.ai_analysis.recommendations)
+                            ? analysisData.ai_analysis.recommendations.map((rec: string, idx: number) => (
+                                <li key={idx}>{rec}</li>
+                              ))
+                            : Object.entries(analysisData.ai_analysis.recommendations || {}).map(
+                                ([key, value]: [string, any]) => (
+                                  <li key={key}>
+                                    <strong>{key}:</strong> {String(value)}
+                                  </li>
+                                )
+                              )}
+                        </ul>
+                      </div>
+                    )}
+                    {analysisData.ai_analysis.financials && (
+                      <div>
+                        <p className="text-sm font-medium text-gray-700 mb-2">Financial Analysis</p>
+                        <div className="bg-white rounded p-3 text-sm text-gray-900">
+                          {analysisData.ai_analysis.financials.estimated_landed_cost && (
+                            <p>
+                              <strong>Estimated Landed Cost:</strong> $
+                              {Number(analysisData.ai_analysis.financials.estimated_landed_cost).toFixed(2)}
+                            </p>
+                          )}
+                          {analysisData.ai_analysis.financials.breakdown && (
+                            <div className="mt-2">
+                              <p className="font-medium mb-1">Cost Breakdown:</p>
+                              <pre className="text-xs bg-gray-100 p-2 rounded overflow-x-auto">
+                                {JSON.stringify(analysisData.ai_analysis.financials.breakdown, null, 2)}
+                              </pre>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    )}
+                    {analysisData.ai_analysis.risk_assessment && (
+                      <div>
+                        <p className="text-sm font-medium text-gray-700 mb-2">Risk Assessment</p>
+                        <div className="bg-white rounded p-3 text-sm text-gray-900">
+                          {analysisData.ai_analysis.risk_assessment.overall_risk && (
+                            <p>
+                              <strong>Overall Risk:</strong>{' '}
+                              {String(analysisData.ai_analysis.risk_assessment.overall_risk)}
+                            </p>
+                          )}
+                          {analysisData.ai_analysis.risk_assessment.risk_factors && (
+                            <div className="mt-2">
+                              <p className="font-medium mb-1">Risk Factors:</p>
+                              <ul className="list-disc list-inside space-y-1">
+                                {Array.isArray(analysisData.ai_analysis.risk_assessment.risk_factors)
+                                  ? analysisData.ai_analysis.risk_assessment.risk_factors.map(
+                                      (factor: string, idx: number) => <li key={idx}>{factor}</li>
+                                    )
+                                  : Object.entries(
+                                      analysisData.ai_analysis.risk_assessment.risk_factors || {}
+                                    ).map(([key, value]: [string, any]) => (
+                                      <li key={key}>
+                                        <strong>{key}:</strong> {String(value)}
+                                      </li>
+                                    ))}
+                              </ul>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    )}
+                    {/* Full AI Analysis JSON (for debugging) */}
+                    <details className="mt-4">
+                      <summary className="text-sm font-medium text-gray-700 cursor-pointer">
+                        View Full Analysis (JSON)
+                      </summary>
+                      <pre className="mt-2 text-xs bg-gray-100 p-3 rounded overflow-x-auto max-h-64">
+                        {JSON.stringify(analysisData.ai_analysis, null, 2)}
+                      </pre>
+                    </details>
+                  </div>
+                </div>
+              )}
+
+              {!analysisData.answers && !analysisData.ai_analysis && (
+                <div className="text-center py-8 text-gray-500">
+                  <FileText className="w-12 h-12 mx-auto mb-4 text-gray-400" />
+                  <p>No analysis data available for this project</p>
+                </div>
+              )}
+            </div>
+          ) : (
+            <div className="text-center py-8 text-gray-500">
+              <p>Failed to load analysis data</p>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

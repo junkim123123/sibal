@@ -77,12 +77,24 @@ export async function GET(
     const adminClient = getAdminClient();
 
     // 프로젝트 조회 (analysis_data 포함)
+    // 매니저도 접근 가능하도록 수정 (manager_id로도 확인)
     const { data: project, error: projectError } = await adminClient
       .from('projects')
-      .select('id, name, status, user_id, analysis_data')
+      .select('id, name, status, user_id, manager_id, analysis_data')
       .eq('id', projectId)
-      .eq('user_id', user.id) // 사용자 본인의 프로젝트만 조회
       .single();
+
+    // 권한 확인: 프로젝트 소유자 또는 할당된 매니저
+    const isOwner = project?.user_id === user.id;
+    const isManager = project?.manager_id === user.id;
+
+    if (!isOwner && !isManager) {
+      console.error('[Get Project Analysis] Access denied:', { userId: user.id, projectUserId: project?.user_id, projectManagerId: project?.manager_id });
+      return NextResponse.json(
+        { ok: false, error: 'Access denied' },
+        { status: 403 }
+      );
+    }
 
     if (projectError || !project) {
       console.error('[Get Project Analysis] Failed to fetch project:', projectError);

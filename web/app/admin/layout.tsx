@@ -46,6 +46,19 @@ export default function SuperAdminLayout({
         }
 
         // Super admin 권한 확인
+        // 이메일로 먼저 체크 (k.myungjun@nexsupply.net)
+        const userEmail = user.email?.toLowerCase() || '';
+        const isSuperAdminEmail = userEmail === 'k.myungjun@nexsupply.net';
+
+        if (isSuperAdminEmail) {
+          // 이메일로 super admin 확인됨
+          setIsSuperAdmin(true);
+          setIsAuthenticated(true);
+          setUserName(user.email?.split('@')[0] || 'Super Admin');
+          return;
+        }
+
+        // 이메일이 아니면 데이터베이스에서 role 확인
         const { data: profile, error: profileError } = await supabase
           .from('profiles')
           .select('role, name, email')

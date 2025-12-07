@@ -1,25 +1,37 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect, Suspense } from 'react'
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { login, signup } from './actions'
 import { Button } from '@/components/ui/button'
 import { Chrome } from 'lucide-react'
 
-export default function LoginPage() {
+function LoginPageContent() {
   const [isSignUp, setIsSignUp] = useState(false)
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(false)
+  const searchParams = useSearchParams()
+  const router = useRouter()
+
+  // URL에서 에러 메시지 확인 (이메일 확인 실패 등)
+  useEffect(() => {
+    const errorParam = searchParams.get('error')
+    if (errorParam) {
+      setError(errorParam)
+      // URL에서 에러 파라미터 제거
+      const newUrl = new URL(window.location.href)
+      newUrl.searchParams.delete('error')
+      router.replace(newUrl.pathname + newUrl.search, { scroll: false })
+    }
+  }, [searchParams, router])
   
   // Sign up additional fields
   const [name, setName] = useState('')
   const [company, setCompany] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
-  
-  const router = useRouter()
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
@@ -59,15 +71,23 @@ export default function LoginPage() {
         ? await signup(formData)
         : await login(formData)
 
+      // redirect()가 호출되면 result가 undefined가 됨 (예외를 던지므로)
+      // 따라서 result가 없으면 정상적인 리다이렉트로 간주
       if (result?.error) {
         setError(result.error)
         setIsLoading(false)
-      } else {
-        router.push('/')
-        router.refresh()
       }
-    } catch (err) {
-      setError('An unexpected error occurred.')
+      // result가 없으면 redirect()가 호출된 것이므로 클라이언트에서 추가 작업 불필요
+      // Next.js가 자동으로 리다이렉트 처리
+    } catch (err: any) {
+      // redirect()는 NextRedirect 에러를 던지므로, 이것은 정상적인 리다이렉트
+      if (err?.digest?.startsWith('NEXT_REDIRECT')) {
+        // 정상적인 리다이렉트이므로 에러로 처리하지 않음
+        // Next.js가 자동으로 리다이렉트 처리
+        return
+      }
+      console.error('[Login] Error:', err)
+      setError(err?.message || '예기치 않은 오류가 발생했습니다.')
       setIsLoading(false)
     }
   }
@@ -326,5 +346,20 @@ export default function LoginPage() {
         </div>
       </div>
     </div>
+  )
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-white flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-8 h-8 border-4 border-neutral-900 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-sm text-neutral-600">Loading...</p>
+        </div>
+      </div>
+    }>
+      <LoginPageContent />
+    </Suspense>
   )
 }

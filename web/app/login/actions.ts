@@ -6,37 +6,58 @@ import { createClient } from '@/lib/supabase/server'
 import { getAdminClient } from '@/lib/supabase/admin'
 
 export async function login(formData: FormData) {
-  const supabase = await createClient()
+  try {
+    const supabase = await createClient()
 
-  const data = {
-    email: formData.get('email') as string,
-    password: formData.get('password') as string,
-  }
+    const data = {
+      email: formData.get('email') as string,
+      password: formData.get('password') as string,
+    }
 
-  const { error, data: authData } = await supabase.auth.signInWithPassword(data)
+    if (!data.email || !data.password) {
+      return { error: '이메일과 비밀번호를 입력해주세요.' }
+    }
 
-  if (error) {
-    return { error: error.message }
-  }
+    const { error, data: authData } = await supabase.auth.signInWithPassword({
+      email: data.email,
+      password: data.password,
+    })
 
-  // 이메일 도메인 기반 자동 리다이렉트
-  const email = data.email.toLowerCase()
-  
-  // Super Admin: k.myungjun@nexsupply.net
-  if (email === 'k.myungjun@nexsupply.net') {
+    if (error) {
+      console.error('[Login] Auth error:', error)
+      return { error: error.message }
+    }
+
+    if (!authData.user) {
+      return { error: '로그인에 실패했습니다. 다시 시도해주세요.' }
+    }
+
+    // 이메일 도메인 기반 자동 리다이렉트
+    const email = data.email.toLowerCase()
+    
     revalidatePath('/', 'layout')
-    redirect('/admin')
-  }
-  
-  // Manager: 모든 @nexsupply.net 도메인 (super admin 제외)
-  if (email.endsWith('@nexsupply.net') && email !== 'k.myungjun@nexsupply.net') {
-    revalidatePath('/', 'layout')
-    redirect('/manager/dashboard')
-  }
+    
+    // Super Admin: k.myungjun@nexsupply.net
+    if (email === 'k.myungjun@nexsupply.net') {
+      console.log('[Login] Super admin detected, redirecting to /admin')
+      redirect('/admin')
+    }
+    
+    // Manager: 모든 @nexsupply.net 도메인 (super admin 제외)
+    if (email.endsWith('@nexsupply.net') && email !== 'k.myungjun@nexsupply.net') {
+      console.log('[Login] Manager detected, redirecting to /manager/dashboard')
+      redirect('/manager/dashboard')
+    }
 
-  // 일반 사용자
-  revalidatePath('/', 'layout')
-  redirect('/dashboard')
+    // 일반 사용자
+    console.log('[Login] Regular user, redirecting to /dashboard')
+    redirect('/dashboard')
+  } catch (error) {
+    console.error('[Login] Unexpected error:', error)
+    return { 
+      error: error instanceof Error ? error.message : '로그인 중 오류가 발생했습니다.' 
+    }
+  }
 }
 
 export async function signup(formData: FormData) {
@@ -47,7 +68,19 @@ export async function signup(formData: FormData) {
     password: formData.get('password') as string,
   }
 
-  const { data: authData, error } = await supabase.auth.signUp(data)
+  // 이메일 확인 후 리다이렉트할 URL 설정
+  const origin = process.env.NEXT_PUBLIC_SITE_URL || 
+                 process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 
+                 'http://localhost:3000'
+  const redirectTo = `${origin}/auth/callback?next=/dashboard`
+
+  const { data: authData, error } = await supabase.auth.signUp({
+    email: data.email,
+    password: data.password,
+    options: {
+      emailRedirectTo: redirectTo,
+    },
+  })
 
   if (error) {
     return { error: error.message }

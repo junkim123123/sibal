@@ -173,8 +173,16 @@ export function ManagerChat({
       {/* Messages */}
       <div className="flex-1 overflow-y-auto p-4 space-y-4">
         {messages.length === 0 ? (
-          <div className="flex items-center justify-center h-full text-gray-500 text-sm">
-            아직 메시지가 없습니다. 첫 메시지를 보내주세요.
+          <div className="flex flex-col items-center justify-center h-full text-gray-500 text-sm space-y-3">
+            <div className="text-center">
+              <p className="mb-2">아직 메시지가 없습니다.</p>
+              <p className="text-xs text-gray-400">
+                {!projectId || !sessionId 
+                  ? '채팅 세션을 준비 중입니다...'
+                  : '첫 메시지를 보내주세요. 매니저가 배당되면 답변을 드립니다.'
+                }
+              </p>
+            </div>
           </div>
         ) : (
           messages.map((message) => {

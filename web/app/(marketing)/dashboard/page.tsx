@@ -293,7 +293,7 @@ function DashboardPageContent() {
           }),
           status: 'Processing', // 새로 생성된 프로젝트는 Processing 상태
           projectName: p.name,
-          href: `/results?project_id=${p.id}`,
+          href: `/dashboard/chat?project_id=${p.id}`, // 매니저 채팅 페이지로 이동
           isNewRequest: true, // 새 소싱 요청인지 구분
         }))
 
@@ -334,7 +334,7 @@ function DashboardPageContent() {
             }),
             status: 'Awaiting Manager',
             projectName: p.name,
-            href: `/results?project_id=${p.id}`,
+            href: `/dashboard/chat?project_id=${p.id}`, // 매니저 채팅 페이지로 이동
             isNewRequest: false,
             hasSelectedQuote: true,
             awaitingManager: true,
@@ -418,7 +418,7 @@ function DashboardPageContent() {
             date: shipmentDate,
             status: status,
             projectName: project.name,
-            href: `/results?project_id=${projectId}`,
+            href: `/dashboard/chat?project_id=${projectId}`, // 매니저 채팅 페이지로 이동
             isNewRequest: false,
           }
         })

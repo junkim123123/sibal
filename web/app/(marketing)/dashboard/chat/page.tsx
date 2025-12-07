@@ -23,6 +23,7 @@ function ClientChatContent() {
   const [sessionId, setSessionId] = useState<string | null>(sessionIdParam);
   const [userId, setUserId] = useState<string | null>(null);
   const [projectName, setProjectName] = useState<string>('');
+  const [project, setProject] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -47,11 +48,11 @@ function ClientChatContent() {
         return;
       }
 
-      // 프로젝트 정보 가져오기 및 구독 확인
+      // 프로젝트 정보 가져오기
       const adminClient = getAdminClient();
       const { data: project, error: projectError } = await adminClient
         .from('projects')
-        .select('name, manager_id, is_paid_subscription, user_id')
+        .select('name, manager_id, is_paid_subscription, user_id, status')
         .eq('id', projectId)
         .single();
 
@@ -67,26 +68,11 @@ function ClientChatContent() {
         return;
       }
 
-      // 구독 확인: is_paid_subscription이 false이면 결제 안내
-      // Note: 컬럼이 없을 수 있으므로 null 체크 포함
-      if (project.is_paid_subscription === false) {
-        // 결제 안내 모달 또는 리다이렉트
-        const shouldProceed = window.confirm(
-          '이 프로젝트는 매니저 고용이 필요합니다. 결제 페이지로 이동하시겠습니까?'
-        );
-        
-        if (shouldProceed) {
-          // 결과 페이지로 이동하여 결제 모달 표시
-          router.push(`/results?project_id=${projectId}`);
-        } else {
-          router.push('/dashboard');
-        }
-        return;
-      }
-
       setProjectName(project.name);
+      setProject(project); // 프로젝트 정보 저장 (매니저 배당 상태 확인용)
 
       // 세션이 없으면 생성 또는 찾기
+      // 매니저가 없어도 채팅 세션 생성 가능 (매니저 배당 대기 중일 수 있음)
       if (!sessionId) {
         const finalSessionId = await loadOrCreateSession(projectId, user.id, project?.manager_id);
         setSessionId(finalSessionId);
@@ -118,28 +104,25 @@ function ClientChatContent() {
         return existingSession.id;
       }
 
-      // 세션이 없고 매니저가 할당되어 있으면 세션 생성
-      if (managerId) {
-        const { data: newSession, error: sessionError } = await adminClient
-          .from('chat_sessions')
-          .insert({
-            project_id: projectId,
-            user_id: userId,
-            manager_id: managerId,
-            status: 'in_progress',
-          })
-          .select()
-          .single();
+      // 세션이 없으면 생성 (매니저가 없어도 생성 가능 - 매니저 배당 대기 중일 수 있음)
+      // 매니저가 있으면 manager_id 할당, 없으면 null로 생성
+      const { data: newSession, error: sessionError } = await adminClient
+        .from('chat_sessions')
+        .insert({
+          project_id: projectId,
+          user_id: userId,
+          manager_id: managerId || null, // 매니저가 없어도 세션 생성
+          status: managerId ? 'in_progress' : 'open', // 매니저가 없으면 'open' 상태
+        })
+        .select()
+        .single();
 
-        if (sessionError || !newSession) {
-          console.error('[ClientChatPage] Failed to create session:', sessionError);
-          return null;
-        }
-
-        return newSession.id;
+      if (sessionError || !newSession) {
+        console.error('[ClientChatPage] Failed to create session:', sessionError);
+        return null;
       }
 
-      return null;
+      return newSession.id;
     } catch (error) {
       console.error('[ClientChatPage] Failed to load/create session:', error);
       return null;
@@ -165,11 +148,11 @@ function ClientChatContent() {
           <p className="text-gray-600 mb-6">
             {!projectId 
               ? 'Project not found. Please select a project from the dashboard.'
-              : 'A manager has not been assigned to this project yet. Please wait for assignment.'
+              : 'Chat session could not be created. Please try again or contact support.'
             }
           </p>
           <Link
-            href="/dashboard?tab=messages"
+            href="/dashboard?tab=orders"
             className="inline-flex items-center gap-2 px-4 py-2 bg-black text-white rounded-lg hover:bg-zinc-800 transition-colors"
           >
             <ArrowLeft className="w-4 h-4" />
@@ -186,14 +169,19 @@ function ClientChatContent() {
         {/* Header */}
         <div className="mb-6">
           <Link
-            href="/dashboard?tab=messages"
+            href="/dashboard?tab=orders"
             className="inline-flex items-center gap-2 text-sm text-gray-600 hover:text-gray-900 mb-4 transition-colors"
           >
             <ArrowLeft className="w-4 h-4" />
-            Back to Messages
+            Back to Active Orders
           </Link>
           <h1 className="text-3xl font-bold text-gray-900">{projectName}</h1>
-          <p className="text-sm text-gray-500 mt-1">Chat with your manager</p>
+          <p className="text-sm text-gray-500 mt-1">
+            {project?.manager_id 
+              ? 'Chat with your manager' 
+              : '⏰ Manager will be assigned within 24 hours. You can send messages now.'
+            }
+          </p>
         </div>
 
         {/* Chat Component */}

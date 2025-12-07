@@ -212,7 +212,7 @@ function DashboardPageContent() {
         setEstimates(activeProjects)
         setSavedProducts(savedProducts)
 
-        // Active Orders: 견적이 선택되고 QC 리포트가 승인된 프로젝트들
+        // Active Orders: status='active'인 프로젝트 + 견적 선택 + QC 승인된 프로젝트들
         await loadShipments(userId, data.projects)
       } else {
         console.error('[Dashboard] API returned error or no projects:', {
@@ -272,26 +272,77 @@ function DashboardPageContent() {
     }
   }
 
-  // Active Orders 데이터 로드 (견적 선택 + QC 승인된 프로젝트)
+  // Active Orders 데이터 로드
+  // 1. status='active'인 프로젝트 (새로 생성된 소싱 요청)
+  // 2. 견적이 선택되고 QC 리포트가 승인된 프로젝트 (진행 중인 주문)
   async function loadShipments(userId: string, projects: any[]) {
     try {
       const supabase = createClient()
       
-      // 1. 선택된 견적이 있는 프로젝트 ID 목록 가져오기
+      // 1. status='active'인 프로젝트들 (새로 생성된 소싱 요청)
+      const activeProjects = projects
+        .filter((p: any) => p.status === 'active')
+        .map((p: any) => ({
+          id: p.id,
+          batchName: p.name,
+          destination: 'TBD',
+          date: new Date(p.created_at).toLocaleDateString('en-US', { 
+            month: 'short', 
+            day: 'numeric', 
+            year: 'numeric' 
+          }),
+          status: 'Processing', // 새로 생성된 프로젝트는 Processing 상태
+          projectName: p.name,
+          href: `/results?project_id=${p.id}`,
+          isNewRequest: true, // 새 소싱 요청인지 구분
+        }))
+
+      // 2. 선택된 견적이 있는 프로젝트 ID 목록 가져오기
       const { data: selectedQuotes, error: quotesError } = await supabase
         .from('factory_quotes')
-        .select('project_id, factory_name, created_at')
+        .select('project_id, factory_name, created_at, updated_at')
         .eq('status', 'selected')
         .order('created_at', { ascending: false })
 
       if (quotesError) {
         console.error('[Dashboard] Failed to load quotes:', quotesError)
-        // 에러가 있어도 빈 배열로 처리하여 계속 진행
-        setShipments([])
-        return
       }
 
-      // 2. 승인된 QC 리포트가 있는 프로젝트 ID 목록 가져오기
+      // 선택된 견적이 있지만 매니저가 배당되지 않은 프로젝트 찾기
+      const projectsWithSelectedQuotes = projects.filter((p: any) => {
+        return selectedQuotes?.some((q: any) => q.project_id === p.id)
+      })
+
+      // 매니저가 배당되지 않은 프로젝트 (manager_id가 null)
+      const projectsAwaitingManager = projectsWithSelectedQuotes
+        .filter((p: any) => !p.manager_id)
+        .map((p: any) => {
+          const quote = selectedQuotes?.find((q: any) => q.project_id === p.id)
+          const quoteSelectedAt = quote?.updated_at || quote?.created_at
+          const hoursSinceSelection = quoteSelectedAt 
+            ? Math.floor((Date.now() - new Date(quoteSelectedAt).getTime()) / (1000 * 60 * 60))
+            : 0
+          
+          return {
+            id: p.id,
+            batchName: p.name,
+            destination: 'TBD',
+            date: new Date(p.created_at).toLocaleDateString('en-US', { 
+              month: 'short', 
+              day: 'numeric', 
+              year: 'numeric' 
+            }),
+            status: 'Awaiting Manager',
+            projectName: p.name,
+            href: `/results?project_id=${p.id}`,
+            isNewRequest: false,
+            hasSelectedQuote: true,
+            awaitingManager: true,
+            hoursSinceSelection: hoursSinceSelection,
+          }
+        })
+
+      // 3. 승인된 QC 리포트가 있는 프로젝트 ID 목록 가져오기
       const { data: approvedQCReports, error: qcError } = await supabase
         .from('qc_reports')
         .select('project_id, inspection_date, created_at')
@@ -300,10 +351,9 @@ function DashboardPageContent() {
 
       if (qcError) {
         console.error('[Dashboard] Failed to load QC reports:', qcError)
-        return
       }
 
-      // 3. 견적이 선택되고 QC 리포트가 승인된 프로젝트 찾기
+      // 4. 견적이 선택되고 QC 리포트가 승인된 프로젝트 찾기 (기존 로직)
       const projectIdsWithQuotes = new Set(selectedQuotes?.map((q: any) => q.project_id) || [])
       const projectIdsWithQC = new Set(approvedQCReports?.map((qc: any) => qc.project_id) || [])
       
@@ -312,8 +362,8 @@ function DashboardPageContent() {
         projectIdsWithQC.has(id)
       )
 
-      // 4. 프로젝트 정보와 견적 정보를 결합하여 Active Orders 데이터 생성
-      const ordersData = orderProjectIds
+      // 5. 진행 중인 주문 데이터 생성 (견적 선택 + QC 승인)
+      const ordersInProgress = orderProjectIds
         .map((projectId: string) => {
           const project = projects.find((p: any) => p.id === projectId)
           if (!project) return null
@@ -321,14 +371,11 @@ function DashboardPageContent() {
           const quote = selectedQuotes?.find((q: any) => q.project_id === projectId)
           const qcReport = approvedQCReports?.find((qc: any) => qc.project_id === projectId)
 
-          // 배송 타입 결정 (견적 정보나 프로젝트 정보 기반)
+          // 배송 타입 결정
           const shippingType = quote?.factory_name ? 'Sea Freight' : 'Air Freight'
           const batchNumber = `#${projectId.substring(0, 8).toUpperCase()}`
           
-          // 목적지 (프로젝트 정보에서 추출하거나 기본값)
-          const destination = 'TBD' // 나중에 프로젝트 정보에서 추출 가능
-          
-          // 날짜 (QC 리포트 승인일 또는 견적 선택일)
+          // 날짜
           const shipmentDate = qcReport?.inspection_date 
             ? new Date(qcReport.inspection_date).toLocaleDateString('en-US', { 
                 month: 'short', 
@@ -348,7 +395,6 @@ function DashboardPageContent() {
               })
 
           // 배송 상태 결정
-          // QC 승인 후 시간 경과에 따라 상태 결정 (간단한 로직)
           const qcDate = qcReport?.inspection_date 
             ? new Date(qcReport.inspection_date)
             : qcReport?.created_at 
@@ -368,22 +414,46 @@ function DashboardPageContent() {
           return {
             id: projectId,
             batchName: `${shippingType} - Batch ${batchNumber}`,
-            destination: destination,
+            destination: 'TBD',
             date: shipmentDate,
             status: status,
             projectName: project.name,
             href: `/results?project_id=${projectId}`,
+            isNewRequest: false,
           }
         })
         .filter((s: any) => s !== null)
+
+      // 6. 세 리스트 합치기 (새 소싱 요청 + 매니저 대기 중 + 진행 중인 주문)
+      // 중복 제거: 이미 진행 중인 주문에 포함된 프로젝트는 제외
+      const activeProjectIds = new Set(activeProjects.map((p: any) => p.id))
+      const orderProjectIdsSet = new Set(orderProjectIds)
+      const awaitingManagerIds = new Set(projectsAwaitingManager.map((p: any) => p.id))
+      
+      // 진행 중인 주문에 포함되지 않은 새 소싱 요청만 추가
+      const newRequestsOnly = activeProjects.filter((p: any) => 
+        !orderProjectIdsSet.has(p.id) && !awaitingManagerIds.has(p.id)
+      )
+      
+      const allOrders = [...newRequestsOnly, ...projectsAwaitingManager, ...ordersInProgress]
         .sort((a: any, b: any) => {
-          // 최신순 정렬
-          return new Date(b.date).getTime() - new Date(a.date).getTime()
+          // 최신순 정렬 (created_at 기준)
+          const projectA = projects.find((p: any) => p.id === a.id)
+          const projectB = projects.find((p: any) => p.id === b.id)
+          if (!projectA || !projectB) return 0
+          return new Date(projectB.created_at).getTime() - new Date(projectA.created_at).getTime()
         })
 
-      setShipments(ordersData)
+      console.log('[Dashboard] Active Orders loaded:', {
+        newRequests: newRequestsOnly.length,
+        inProgress: ordersInProgress.length,
+        total: allOrders.length,
+      })
+
+      setShipments(allOrders)
     } catch (error) {
       console.error('[Dashboard] Failed to load shipments:', error)
+      setShipments([])
     }
   }
 
@@ -455,7 +525,7 @@ function DashboardPageContent() {
               {activeTab === 'products' && (
                 <ProductsList products={savedProducts} />
               )}
-              {activeTab === 'shipments' && (
+              {activeTab === 'orders' && (
                 <ShipmentsList shipments={shipments} />
               )}
               {activeTab === 'documents' && userId && (
@@ -592,7 +662,7 @@ function ShipmentsList({ shipments }: { shipments: any[] }) {
       <EmptyState
         icon={<Truck className="h-12 w-12" />}
         title="No active orders yet"
-        description="Active orders will appear here once you select a quote and approve QC reports."
+        description="Start a sourcing request to see your active orders here."
         actionLabel="View projects"
         actionHref="/dashboard?tab=estimates"
       />
@@ -610,7 +680,18 @@ function ShipmentsList({ shipments }: { shipments: any[] }) {
           <DashboardCard
             icon={<Truck className="h-5 w-5" />}
             title={shipment.batchName}
-            subtitle={`${shipment.destination} • ${shipment.date}`}
+            subtitle={
+              shipment.awaitingManager ? (
+                <span className="flex items-center gap-2">
+                  <span>{shipment.destination} • {shipment.date}</span>
+                  <span className="text-xs text-blue-600 font-medium">
+                    ⏰ Manager will be assigned within 24 hours
+                  </span>
+                </span>
+              ) : (
+                `${shipment.destination} • ${shipment.date}`
+              )
+            }
             rightContent={
               <div className="flex items-center gap-3 ml-6">
                 <StatusBadge status={shipment.status} />
@@ -704,6 +785,7 @@ function StatusBadge({ status }: { status: string }) {
     'Customs Clearance': 'bg-orange-50 text-orange-700 border-orange-200',
     Saved: 'bg-gray-50 text-gray-700 border-gray-200',
     Processing: 'bg-blue-50 text-blue-700 border-blue-200',
+    'Awaiting Manager': 'bg-purple-50 text-purple-700 border-purple-200',
   }
 
   const colorClass = statusColors[status] || 

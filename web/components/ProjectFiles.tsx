@@ -121,7 +121,7 @@ export function ProjectFiles({ projectId, sessionId }: ProjectFilesProps) {
         <div className="flex-1 flex items-center justify-center text-center py-8 text-gray-500">
           <div>
             <FileText className="w-8 h-8 mx-auto mb-2 text-gray-400" />
-            <p className="text-sm">공유된 파일이 없습니다</p>
+            <p className="text-sm">No shared files yet</p>
           </div>
         </div>
       ) : (
@@ -151,7 +151,7 @@ export function ProjectFiles({ projectId, sessionId }: ProjectFilesProps) {
                   </span>
                   <span className="text-xs text-gray-400">•</span>
                   <span className="text-xs text-gray-500">
-                    {new Date(file.created_at).toLocaleDateString('ko-KR', {
+                    {new Date(file.created_at).toLocaleDateString('en-US', {
                       month: 'short',
                       day: 'numeric',
                     })}

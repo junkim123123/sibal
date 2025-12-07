@@ -894,7 +894,7 @@ function ResultsContent() {
   }
 
   // CRITICAL_RISK 처리 및 일반 에러 처리
-  const isCriticalRisk = criticalRisk || (error && (error.includes("CRITICAL_RISK") || error.includes("해당 공급업체는 NexSupply의 블랙리스트")));
+  const isCriticalRisk = criticalRisk || (error && (error.includes("CRITICAL_RISK") || error.includes("blacklist") || error.includes("This supplier")));
   
   if (error || criticalRisk) {
     return (
@@ -906,7 +906,7 @@ function ResultsContent() {
           </div>
           <div className="text-gray-600 mb-6">
             {isCriticalRisk 
-              ? "해당 공급업체는 품질, 납기 문제로 NexSupply의 블랙리스트에 등록되어 즉시 거래가 불가합니다. AI 분석을 진행할 수 없습니다."
+              ? "This supplier has been registered on NexSupply's blacklist due to quality and delivery issues. Transactions are immediately unavailable. AI analysis cannot proceed."
               : error
             }
           </div>
@@ -914,10 +914,10 @@ function ResultsContent() {
           {blacklistDetails && (
             <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6 text-left">
               <p className="text-sm font-semibold text-red-900 mb-2">
-                공급업체: {blacklistDetails.company_name}
+                Supplier: {blacklistDetails.company_name}
               </p>
               <p className="text-sm text-red-700 mb-2">
-                리스크 스코어: {blacklistDetails.risk_score}/100
+                Risk Score: {blacklistDetails.risk_score}/100
               </p>
               {blacklistDetails.note && (
                 <p className="text-xs text-red-600">{blacklistDetails.note}</p>
@@ -930,7 +930,7 @@ function ResultsContent() {
               onClick={() => window.location.href = '/contact?service=expert_vetted_sourcing'} 
               className="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded"
             >
-              소싱 전문가에게 연결 요청 (대안 공급처 즉시 추천)
+              Request Expert Sourcing Connection (Immediate Alternative Supplier Recommendation)
             </Button>
           )}
         </Card>

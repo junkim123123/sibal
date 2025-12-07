@@ -75,15 +75,24 @@ export async function middleware(request: NextRequest) {
       }
 
       // Check if user is super admin (using service role for RLS bypass)
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('role')
-        .eq('id', user.id)
-        .single()
+      // Check by email domain first, then by role
+      const userEmail = user.email?.toLowerCase() || ''
+      
+      // Allow if email is k.myungjun@nexsupply.net (super admin)
+      if (userEmail === 'k.myungjun@nexsupply.net') {
+        // Allow access
+      } else {
+        // Check role in database
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('role')
+          .eq('id', user.id)
+          .single()
 
-      if (profile?.role !== 'super_admin') {
-        // Not a super admin - redirect to dashboard
-        return NextResponse.redirect(new URL('/dashboard', request.url))
+        if (profile?.role !== 'super_admin') {
+          // Not a super admin - redirect to dashboard
+          return NextResponse.redirect(new URL('/dashboard', request.url))
+        }
       }
     } catch (error) {
       // On error, redirect to login for safety
@@ -155,18 +164,28 @@ export async function middleware(request: NextRequest) {
 
       // Check if user is manager or admin (using service role for RLS bypass)
       // Note: We use a lightweight check here - full verification happens in layout
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('is_manager, role')
-        .eq('id', user.id)
-        .single()
+      const userEmail = user.email?.toLowerCase() || ''
+      
+      // Allow all @nexsupply.net domain users (except super admin who should go to /admin)
+      const isNexsupplyDomain = userEmail.endsWith('@nexsupply.net') && userEmail !== 'k.myungjun@nexsupply.net'
+      
+      if (isNexsupplyDomain) {
+        // Allow access for @nexsupply.net domain users
+      } else {
+        // Check database for manager flag or admin role
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('is_manager, role')
+          .eq('id', user.id)
+          .single()
 
-      const isManager = profile?.is_manager === true
-      const isAdmin = profile?.role === 'admin'
+        const isManager = profile?.is_manager === true
+        const isAdmin = profile?.role === 'admin'
 
-      if (!isManager && !isAdmin) {
-        // Not a manager or admin - redirect to dashboard
-        return NextResponse.redirect(new URL('/dashboard', request.url))
+        if (!isManager && !isAdmin) {
+          // Not a manager or admin - redirect to dashboard
+          return NextResponse.redirect(new URL('/dashboard', request.url))
+        }
       }
     } catch (error) {
       // On error, redirect to login for safety

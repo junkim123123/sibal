@@ -13,14 +13,30 @@ export async function login(formData: FormData) {
     password: formData.get('password') as string,
   }
 
-  const { error } = await supabase.auth.signInWithPassword(data)
+  const { error, data: authData } = await supabase.auth.signInWithPassword(data)
 
   if (error) {
     return { error: error.message }
   }
 
+  // 이메일 도메인 기반 자동 리다이렉트
+  const email = data.email.toLowerCase()
+  
+  // Super Admin: k.myungjun@nexsupply.net
+  if (email === 'k.myungjun@nexsupply.net') {
+    revalidatePath('/', 'layout')
+    redirect('/admin')
+  }
+  
+  // Manager: 모든 @nexsupply.net 도메인 (super admin 제외)
+  if (email.endsWith('@nexsupply.net') && email !== 'k.myungjun@nexsupply.net') {
+    revalidatePath('/', 'layout')
+    redirect('/manager/dashboard')
+  }
+
+  // 일반 사용자
   revalidatePath('/', 'layout')
-  redirect('/')
+  redirect('/dashboard')
 }
 
 export async function signup(formData: FormData) {

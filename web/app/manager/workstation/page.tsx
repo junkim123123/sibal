@@ -187,7 +187,7 @@ export default function WorkstationPage() {
       <div>
         <h1 className="text-3xl font-bold text-gray-900">Workstation</h1>
         <p className="mt-1 text-sm text-gray-500">
-          클라이언트와 소통하고 프로젝트를 관리하세요
+          Communicate with clients and manage projects
         </p>
       </div>
 
@@ -215,7 +215,7 @@ export default function WorkstationPage() {
             <div className="h-full bg-white rounded-lg border border-gray-200 flex items-center justify-center">
               <div className="text-center">
                 <MessageSquare className="w-12 h-12 mx-auto mb-4 text-gray-400" />
-                <p className="text-gray-500">프로젝트를 선택하여 채팅을 시작하세요</p>
+                <p className="text-gray-500">Select a project to start chatting</p>
               </div>
             </div>
           )}
@@ -258,7 +258,7 @@ export default function WorkstationPage() {
             <div className="h-full bg-white rounded-lg border border-gray-200 flex items-center justify-center">
               <div className="text-center">
                 <Package className="w-12 h-12 mx-auto mb-4 text-gray-400" />
-                <p className="text-gray-500">프로젝트를 선택하여 관리하세요</p>
+                <p className="text-gray-500">Select a project to manage</p>
               </div>
             </div>
           )}

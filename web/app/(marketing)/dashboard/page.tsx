@@ -4,8 +4,9 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
-import { ChevronRight, Package, Truck, Folder } from 'lucide-react'
+import { ChevronRight, Package, Truck, Folder, MessageSquare } from 'lucide-react'
 import { AssetLibrary } from '@/components/AssetLibrary'
+import { ClientMessagesList } from '@/components/ClientMessagesList'
 
 // Dummy data for estimates
 const dummyEstimates = [
@@ -93,7 +94,7 @@ const dummyShipments = [
   },
 ]
 
-type TabType = 'estimates' | 'products' | 'shipments' | 'documents'
+type TabType = 'estimates' | 'products' | 'shipments' | 'documents' | 'messages'
 
 export default function DashboardPage() {
   const [activeTab, setActiveTab] = useState<TabType>('estimates')
@@ -172,6 +173,11 @@ export default function DashboardPage() {
             active={activeTab === 'documents'}
             onClick={() => setActiveTab('documents')}
           />
+          <TabButton
+            label="Messages"
+            active={activeTab === 'messages'}
+            onClick={() => setActiveTab('messages')}
+          />
         </div>
 
         {/* Content Area */}
@@ -187,6 +193,9 @@ export default function DashboardPage() {
           )}
           {activeTab === 'documents' && userId && (
             <AssetLibrary userId={userId} />
+          )}
+          {activeTab === 'messages' && userId && (
+            <ClientMessagesList userId={userId} />
           )}
         </div>
       </div>

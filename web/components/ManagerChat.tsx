@@ -33,11 +33,11 @@ interface ManagerChatProps {
 }
 
 const QUICK_REPLIES = [
-  "견적 확인 중입니다. 곧 답변드리겠습니다.",
-  "샘플이 발송되었습니다. 추적번호를 확인해주세요.",
-  "QC 검사가 완료되었습니다. 최종 승인을 기다리고 있습니다.",
-  "공급업체 검증이 완료되었습니다.",
-  "배송 준비가 완료되었습니다. 곧 발송 예정입니다.",
+  "Checking the quote. I'll get back to you shortly.",
+  "Sample has been shipped. Please check the tracking number.",
+  "QC inspection is complete. Waiting for final approval.",
+  "Supplier verification is complete.",
+  "Shipping preparation is complete. Will be dispatched soon.",
 ];
 
 export function ManagerChat({ 

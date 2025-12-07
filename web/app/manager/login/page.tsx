@@ -60,7 +60,7 @@ export default function ManagerLoginPage() {
               className="flex items-center gap-2 text-sm text-neutral-600 hover:text-neutral-900 transition-colors"
             >
               <ArrowLeft className="h-4 w-4" />
-              일반 로그인
+              Client Login
             </Link>
           </div>
         </div>
@@ -77,7 +77,7 @@ export default function ManagerLoginPage() {
                 </h1>
               </div>
               <p className="text-sm text-neutral-600">
-                매니저 전용 로그인입니다. 매니저 계정이 있는 경우에만 접근 가능합니다.
+                This is a manager-only login. Only accessible if you have a manager account.
               </p>
             </div>
 

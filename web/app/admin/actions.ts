@@ -136,3 +136,108 @@ export async function banUser(userId: string, isBanned: boolean) {
   }
 }
 
+/**
+ * Lemon Squeezy 매출 통계 조회
+ * 
+ * Lemon Squeezy API를 호출하여 결제 완료된 주문 목록과 통계를 가져옵니다.
+ */
+export async function getSalesStats() {
+  try {
+    // 권한 확인
+    const supabase = await createClient();
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
+
+    if (authError || !user) {
+      return { 
+        totalOrderCount: 0, 
+        recentOrders: [] 
+      };
+    }
+
+    // 슈퍼 어드민 권한 확인
+    const adminClient = getAdminClient();
+    const { data: profile } = await adminClient
+      .from('profiles')
+      .select('role')
+      .eq('id', user.id)
+      .single();
+
+    if (profile?.role !== 'super_admin') {
+      return { 
+        totalOrderCount: 0, 
+        recentOrders: [] 
+      };
+    }
+
+    // 환경 변수 확인
+    const apiKey = process.env.LEMONSQUEEZY_API_KEY;
+    const storeId = process.env.LEMONSQUEEZY_STORE_ID;
+
+    if (!apiKey || !storeId) {
+      console.error('[Sales Stats] Missing Lemon Squeezy credentials:', {
+        hasApiKey: !!apiKey,
+        hasStoreId: !!storeId,
+      });
+      return { 
+        totalOrderCount: 0, 
+        recentOrders: [] 
+      };
+    }
+
+    // API 호출
+    const url = new URL('https://api.lemonsqueezy.com/v1/orders');
+    url.searchParams.append('filter[store_id]', storeId);
+    url.searchParams.append('filter[status]', 'paid');
+
+    const response = await fetch(url.toString(), {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${apiKey}`,
+        'Accept': 'application/vnd.api+json',
+      },
+      next: {
+        revalidate: 60, // 60초 캐싱
+      },
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('[Sales Stats] API request failed:', {
+        status: response.status,
+        statusText: response.statusText,
+        error: errorText,
+      });
+      return { 
+        totalOrderCount: 0, 
+        recentOrders: [] 
+      };
+    }
+
+    const data = await response.json();
+
+    // 총 주문 수 (meta.page.total)
+    const totalOrderCount = data.meta?.page?.total || 0;
+
+    // 최근 주문 목록 매핑
+    const recentOrders = (data.data || []).map((order: any) => ({
+      id: order.id,
+      email: order.attributes?.user_email || order.attributes?.email || 'N/A',
+      amount: order.attributes?.total_formatted || 
+              `$${(order.attributes?.total || 0).toFixed(2)}`,
+      date: order.attributes?.created_at || new Date().toISOString(),
+      status: order.attributes?.status || 'paid',
+    }));
+
+    return {
+      totalOrderCount,
+      recentOrders,
+    };
+  } catch (error) {
+    console.error('[Sales Stats] Unexpected error:', error);
+    return { 
+      totalOrderCount: 0, 
+      recentOrders: [] 
+    };
+  }
+}
+

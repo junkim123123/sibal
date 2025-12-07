@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { login, signup } from './actions'
 import { Button } from '@/components/ui/button'
-import { Chrome, Shield } from 'lucide-react'
+import { Chrome } from 'lucide-react'
 
 export default function LoginPage() {
   const [isSignUp, setIsSignUp] = useState(false)
@@ -28,15 +28,15 @@ export default function LoginPage() {
     // Validation for sign up
     if (isSignUp) {
       if (!name.trim()) {
-        setError('이름을 입력해주세요.')
+        setError('Please enter your name.')
         return
       }
       if (password !== confirmPassword) {
-        setError('비밀번호가 일치하지 않습니다.')
+        setError('Passwords do not match.')
         return
       }
       if (password.length < 6) {
-        setError('비밀번호는 최소 6자 이상이어야 합니다.')
+        setError('Password must be at least 6 characters.')
         return
       }
     }
@@ -67,7 +67,7 @@ export default function LoginPage() {
         router.refresh()
       }
     } catch (err) {
-      setError('예기치 않은 오류가 발생했습니다.')
+      setError('An unexpected error occurred.')
       setIsLoading(false)
     }
   }
@@ -142,7 +142,7 @@ export default function LoginPage() {
                     htmlFor="name"
                     className="block text-sm font-medium text-neutral-900 mb-2"
                   >
-                    이름 <span className="text-red-500">*</span>
+                    Name <span className="text-red-500">*</span>
                   </label>
                   <input
                     id="name"
@@ -153,7 +153,7 @@ export default function LoginPage() {
                     value={name}
                     onChange={(e) => setName(e.target.value)}
                     className="w-full px-4 py-3 border border-neutral-300 rounded-lg text-neutral-900 placeholder:text-neutral-400 bg-white focus:outline-none focus:ring-2 focus:ring-neutral-900 focus:border-transparent transition-all text-sm"
-                    placeholder="홍길동"
+                    placeholder="John Doe"
                     disabled={isLoading}
                   />
                 </div>
@@ -188,7 +188,7 @@ export default function LoginPage() {
                     htmlFor="company"
                     className="block text-sm font-medium text-neutral-900 mb-2"
                   >
-                    회사명 <span className="text-neutral-400 text-xs">(선택)</span>
+                    Company <span className="text-neutral-400 text-xs">(Optional)</span>
                   </label>
                   <input
                     id="company"
@@ -198,7 +198,7 @@ export default function LoginPage() {
                     value={company}
                     onChange={(e) => setCompany(e.target.value)}
                     className="w-full px-4 py-3 border border-neutral-300 rounded-lg text-neutral-900 placeholder:text-neutral-400 bg-white focus:outline-none focus:ring-2 focus:ring-neutral-900 focus:border-transparent transition-all text-sm"
-                    placeholder="회사명 (선택사항)"
+                    placeholder="Company name (optional)"
                     disabled={isLoading}
                   />
                 </div>
@@ -227,7 +227,7 @@ export default function LoginPage() {
                 />
                 {isSignUp && (
                   <p className="mt-2 text-xs text-neutral-500">
-                    비밀번호는 최소 6자 이상이어야 합니다.
+                    Password must be at least 6 characters.
                   </p>
                 )}
               </div>
@@ -239,7 +239,7 @@ export default function LoginPage() {
                     htmlFor="confirmPassword"
                     className="block text-sm font-medium text-neutral-900 mb-2"
                   >
-                    비밀번호 확인 <span className="text-red-500">*</span>
+                    Confirm Password <span className="text-red-500">*</span>
                   </label>
                   <input
                     id="confirmPassword"
@@ -265,7 +265,7 @@ export default function LoginPage() {
                 className="w-full bg-neutral-900 hover:bg-neutral-800 text-white"
                 disabled={isLoading}
               >
-                {isLoading ? '처리 중...' : isSignUp ? '회원가입' : '로그인'}
+                {isLoading ? 'Processing...' : isSignUp ? 'Sign Up' : 'Sign In'}
               </Button>
             </form>
 
@@ -276,7 +276,7 @@ export default function LoginPage() {
                 onClick={() => {
                   setIsSignUp(!isSignUp)
                   setError(null)
-                  // 필드 초기화
+                  // Reset fields
                   setName('')
                   setCompany('')
                   setConfirmPassword('')
@@ -286,29 +286,18 @@ export default function LoginPage() {
               >
                 {isSignUp ? (
                   <>
-                    이미 계정이 있으신가요?{' '}
-                    <span className="font-medium text-neutral-900">로그인</span>
+                    Already have an account?{' '}
+                    <span className="font-medium text-neutral-900">Sign In</span>
                   </>
                 ) : (
                   <>
-                    계정이 없으신가요?{' '}
-                    <span className="font-medium text-neutral-900">회원가입</span>
+                    Don't have an account?{' '}
+                    <span className="font-medium text-neutral-900">Sign Up</span>
                   </>
                 )}
               </button>
             </div>
 
-            {/* Manager Login Link */}
-            <div className="mt-6 pt-6 border-t border-neutral-200 text-center">
-              <button
-                type="button"
-                onClick={() => router.push('/manager/login')}
-                className="inline-flex items-center gap-2 text-sm text-neutral-600 hover:text-neutral-900 transition-colors"
-              >
-                <Shield className="h-4 w-4" />
-                <span>매니저 로그인</span>
-              </button>
-            </div>
           </div>
         </div>
       </div>

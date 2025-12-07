@@ -188,28 +188,28 @@ export default function ManagerDashboardPage() {
           title="Active Clients"
           value={stats.activeClients}
           icon={<Users className="w-5 h-5" />}
-          description="진행 중인 프로젝트"
+          description="Active projects"
           color="blue"
         />
         <StatCard
           title="Est. Revenue"
           value={`$${stats.estimatedRevenue.toFixed(2)}`}
           icon={<DollarSign className="w-5 h-5" />}
-          description="이번 달 예상 정산"
+          description="Estimated settlement this month"
           color="green"
         />
         <StatCard
           title="Pending Messages"
           value={stats.pendingMessages}
           icon={<MessageSquare className="w-5 h-5" />}
-          description="읽지 않은 메시지"
+          description="Unread messages"
           color="orange"
         />
         <StatCard
           title="Pending Quotes"
           value={stats.pendingQuotes}
           icon={<FileText className="w-5 h-5" />}
-          description="승인 대기 중"
+          description="Pending approval"
           color="purple"
         />
       </div>

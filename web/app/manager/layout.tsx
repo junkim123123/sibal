@@ -49,7 +49,21 @@ export default function ManagerLayout({
           return;
         }
 
-        // 매니저 권한 확인
+        // 매니저 권한 확인 (이메일 도메인 기반)
+        const userEmail = user.email?.toLowerCase() || '';
+        
+        // @nexsupply.net 도메인 사용자는 자동으로 매니저로 인식 (super admin 제외)
+        const isNexsupplyDomain = userEmail.endsWith('@nexsupply.net') && userEmail !== 'k.myungjun@nexsupply.net';
+        
+        if (isNexsupplyDomain) {
+          // @nexsupply.net 도메인 사용자는 자동으로 매니저로 인식
+          setIsManager(true);
+          setIsAuthenticated(true);
+          setUserName(user.email?.split('@')[0] || 'Manager');
+          return;
+        }
+
+        // 데이터베이스에서 매니저 권한 확인
         const { data: profile, error: profileError } = await supabase
           .from('profiles')
           .select('is_manager, name, email')

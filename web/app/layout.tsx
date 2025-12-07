@@ -27,9 +27,13 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="en" className="dark scroll-smooth">
+    <html lang="en" className="dark scroll-smooth" suppressHydrationWarning>
+      <head>
+        <meta httpEquiv="X-UA-Compatible" content="IE=edge" />
+      </head>
       <body
         className={`${inter.variable} ${jetbrainsMono.variable} font-sans antialiased bg-background text-foreground`}
+        suppressHydrationWarning
       >
         <AuthProvider>{children}</AuthProvider>
         <Analytics />

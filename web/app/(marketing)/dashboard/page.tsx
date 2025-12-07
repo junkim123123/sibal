@@ -220,6 +220,8 @@ function DashboardPageContent() {
 
       if (quotesError) {
         console.error('[Dashboard] Failed to load quotes:', quotesError)
+        // 에러가 있어도 빈 배열로 처리하여 계속 진행
+        setShipments([])
         return
       }
 

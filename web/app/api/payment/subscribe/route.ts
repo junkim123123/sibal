@@ -32,9 +32,17 @@ export async function POST(req: Request) {
                       process.env.NEXT_PUBLIC_LEMONSQUEEZY_SUBSCRIPTION_VARIANT_ID;
 
     if (!lemonSqueezyApiKey || !storeId || !variantId) {
-      console.error('[Subscribe] Missing Lemon Squeezy configuration');
+      console.error('[Subscribe] Missing Lemon Squeezy configuration:', {
+        hasApiKey: !!lemonSqueezyApiKey,
+        hasStoreId: !!storeId,
+        hasVariantId: !!variantId,
+      });
       return NextResponse.json(
-        { ok: false, error: 'Payment system configuration error' },
+        { 
+          ok: false, 
+          error: 'Payment system configuration error',
+          details: 'Missing required Lemon Squeezy configuration. Please check LEMONSQUEEZY_API_KEY, LEMONSQUEEZY_STORE_ID, and LEMON_SQUEEZY_SUBSCRIPTION_VARIANT_ID environment variables.'
+        },
         { status: 500 }
       );
     }
@@ -97,9 +105,18 @@ export async function POST(req: Request) {
 
     if (!checkoutResponse.ok) {
       const errorData = await checkoutResponse.json();
-      console.error('[Subscribe] Lemon Squeezy API error:', errorData);
+      console.error('[Subscribe] Lemon Squeezy API error:', {
+        status: checkoutResponse.status,
+        statusText: checkoutResponse.statusText,
+        error: errorData,
+        variantId: variantId,
+      });
       return NextResponse.json(
-        { ok: false, error: 'Failed to create checkout' },
+        { 
+          ok: false, 
+          error: 'Failed to create checkout',
+          details: errorData?.errors?.[0]?.detail || errorData?.error || 'Unknown error',
+        },
         { status: 500 }
       );
     }
@@ -108,12 +125,19 @@ export async function POST(req: Request) {
     const checkoutUrl = checkoutData.data?.attributes?.url;
 
     if (!checkoutUrl) {
-      console.error('[Subscribe] No checkout URL in response');
+      console.error('[Subscribe] No checkout URL in response:', checkoutData);
       return NextResponse.json(
         { ok: false, error: 'Failed to get checkout URL' },
         { status: 500 }
       );
     }
+
+    console.log('[Subscribe] Checkout created successfully:', {
+      checkoutUrl,
+      variantId,
+      userId: user.id,
+      projectId: project_id,
+    });
 
     return NextResponse.json({
       ok: true,

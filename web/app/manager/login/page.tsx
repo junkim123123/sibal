@@ -1,14 +1,19 @@
+/**
+ * Manager Login Page
+ * 
+ * 매니저 전용 로그인 페이지
+ */
+
 'use client'
 
 import { useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { login, signup } from './actions'
+import { managerLogin } from '@/app/login/actions'
 import { Button } from '@/components/ui/button'
-import { Chrome, Shield } from 'lucide-react'
+import { Shield, ArrowLeft } from 'lucide-react'
 
-export default function LoginPage() {
-  const [isSignUp, setIsSignUp] = useState(false)
+export default function ManagerLoginPage() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState<string | null>(null)
@@ -25,15 +30,13 @@ export default function LoginPage() {
     formData.append('password', password)
 
     try {
-      const result = isSignUp
-        ? await signup(formData)
-        : await login(formData)
+      const result = await managerLogin(formData)
 
       if (result?.error) {
         setError(result.error)
         setIsLoading(false)
       } else {
-        router.push('/')
+        router.push('/manager/dashboard')
         router.refresh()
       }
     } catch (err) {
@@ -42,20 +45,24 @@ export default function LoginPage() {
     }
   }
 
-  const handleGoogleSignIn = () => {
-    // Placeholder for Google OAuth
-    alert('Google sign-in coming soon')
-  }
-
   return (
     <div className="min-h-screen bg-white flex">
       {/* Left Side - Login Form */}
       <div className="flex-1 flex flex-col bg-white lg:w-1/2">
-        {/* Logo */}
+        {/* Logo & Back Button */}
         <div className="p-6 lg:p-8">
-          <Link href="/" className="inline-block">
-            <span className="text-2xl font-bold text-neutral-900">NexSupply</span>
-          </Link>
+          <div className="flex items-center justify-between mb-6">
+            <Link href="/" className="inline-block">
+              <span className="text-2xl font-bold text-neutral-900">NexSupply</span>
+            </Link>
+            <Link
+              href="/login"
+              className="flex items-center gap-2 text-sm text-neutral-600 hover:text-neutral-900 transition-colors"
+            >
+              <ArrowLeft className="h-4 w-4" />
+              일반 로그인
+            </Link>
+          </div>
         </div>
 
         {/* Form Container */}
@@ -63,13 +70,14 @@ export default function LoginPage() {
           <div className="w-full max-w-md">
             {/* Header */}
             <div className="mb-8">
-              <h1 className="text-3xl font-bold text-neutral-900 mb-2">
-                Welcome back
-              </h1>
+              <div className="flex items-center gap-3 mb-4">
+                <Shield className="h-8 w-8 text-neutral-900" />
+                <h1 className="text-3xl font-bold text-neutral-900">
+                  Manager Login
+                </h1>
+              </div>
               <p className="text-sm text-neutral-600">
-                {isSignUp
-                  ? 'Create your account to get started'
-                  : 'Sign in to your account to continue'}
+                매니저 전용 로그인입니다. 매니저 계정이 있는 경우에만 접근 가능합니다.
               </p>
             </div>
 
@@ -80,29 +88,6 @@ export default function LoginPage() {
               </div>
             )}
 
-            {/* Google Sign In Button */}
-            <button
-              type="button"
-              onClick={handleGoogleSignIn}
-              disabled={isLoading}
-              className="w-full flex items-center justify-center gap-3 px-4 py-3 border border-neutral-300 rounded-lg text-sm font-medium text-neutral-700 bg-white hover:bg-neutral-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed mb-6"
-            >
-              <Chrome className="h-5 w-5" />
-              Continue with Google
-            </button>
-
-            {/* Divider */}
-            <div className="relative mb-6">
-              <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-neutral-200"></div>
-              </div>
-              <div className="relative flex justify-center text-xs uppercase">
-                <span className="bg-white px-2 text-neutral-500">
-                  Or sign in with email
-                </span>
-              </div>
-            </div>
-
             {/* Form */}
             <form onSubmit={handleSubmit} className="space-y-5">
               {/* Email Input */}
@@ -111,7 +96,7 @@ export default function LoginPage() {
                   htmlFor="email"
                   className="block text-sm font-medium text-neutral-900 mb-2"
                 >
-                  Email
+                  Manager Email
                 </label>
                 <input
                   id="email"
@@ -122,7 +107,7 @@ export default function LoginPage() {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   className="w-full px-4 py-3 border border-neutral-300 rounded-lg text-neutral-900 placeholder:text-neutral-400 bg-white focus:outline-none focus:ring-2 focus:ring-neutral-900 focus:border-transparent transition-all text-sm"
-                  placeholder="you@example.com"
+                  placeholder="manager@nexsupply.net"
                   disabled={isLoading}
                 />
               </div>
@@ -139,20 +124,14 @@ export default function LoginPage() {
                   id="password"
                   name="password"
                   type="password"
-                  autoComplete={isSignUp ? 'new-password' : 'current-password'}
+                  autoComplete="current-password"
                   required
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   className="w-full px-4 py-3 border border-neutral-300 rounded-lg text-neutral-900 placeholder:text-neutral-400 bg-white focus:outline-none focus:ring-2 focus:ring-neutral-900 focus:border-transparent transition-all text-sm"
                   placeholder="••••••••"
                   disabled={isLoading}
-                  minLength={6}
                 />
-                {isSignUp && (
-                  <p className="mt-2 text-xs text-neutral-500">
-                    Password must be at least 6 characters
-                  </p>
-                )}
               </div>
 
               {/* Submit Button */}
@@ -163,45 +142,9 @@ export default function LoginPage() {
                 className="w-full bg-neutral-900 hover:bg-neutral-800 text-white"
                 disabled={isLoading}
               >
-                {isLoading ? 'Processing...' : isSignUp ? 'Sign up' : 'Sign in'}
+                {isLoading ? 'Logging in...' : 'Manager Sign In'}
               </Button>
             </form>
-
-            {/* Toggle Sign Up/Login */}
-            <div className="mt-6 text-center">
-              <button
-                type="button"
-                onClick={() => {
-                  setIsSignUp(!isSignUp)
-                  setError(null)
-                }}
-                className="text-sm text-neutral-600 hover:text-neutral-900 transition-colors"
-                disabled={isLoading}
-              >
-                {isSignUp ? (
-                  <>
-                    Already have an account?{' '}
-                    <span className="font-medium text-neutral-900">Sign in</span>
-                  </>
-                ) : (
-                  <>
-                    Don't have an account?{' '}
-                    <span className="font-medium text-neutral-900">Sign up</span>
-                  </>
-                )}
-              </button>
-            </div>
-
-            {/* Manager Login Link */}
-            <div className="mt-6 pt-6 border-t border-neutral-200 text-center">
-              <Link
-                href="/manager/login"
-                className="inline-flex items-center gap-2 text-sm text-neutral-600 hover:text-neutral-900 transition-colors"
-              >
-                <Shield className="h-4 w-4" />
-                <span>매니저 로그인</span>
-              </Link>
-            </div>
           </div>
         </div>
       </div>
@@ -218,13 +161,14 @@ export default function LoginPage() {
         {/* Quote Content */}
         <div className="relative z-10 flex items-center justify-center h-full px-12">
           <div className="text-center max-w-md">
+            <Shield className="h-16 w-16 text-white mx-auto mb-6 opacity-80" />
             <blockquote className="text-3xl lg:text-4xl font-bold text-white leading-tight mb-4">
-              Shipping simplified.
+              Manager Portal
               <br />
-              Costs clarified.
+              Command Center
             </blockquote>
             <p className="text-lg text-neutral-400 mt-6">
-              Your all-in-one platform for intelligent sourcing decisions.
+              Access your dashboard to manage projects and communicate with clients.
             </p>
           </div>
         </div>
@@ -232,3 +176,4 @@ export default function LoginPage() {
     </div>
   )
 }
+

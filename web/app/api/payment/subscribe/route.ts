@@ -107,32 +107,40 @@ export async function POST(req: Request) {
     let requestBody: any;
     
     try {
+      // attributes 객체 구성 (null 값 제외)
+      const attributes: any = {
+        product_options: {
+          name: 'NexSupply Sourcing Expert Subscription',
+          description: 'Monthly subscription for dedicated sourcing manager',
+        },
+        checkout_options: {
+          embed: false,
+          media: false,
+          logo: true,
+        },
+        checkout_data: {
+          email: user.email || '',
+          custom: {
+            user_id: user.id,
+          },
+        },
+        preview: false,
+        test_mode: process.env.NODE_ENV !== 'production',
+        redirect_url: successUrl,
+      };
+
+      // project_id가 있으면 custom에 추가 (null이 아닐 때만)
+      if (project_id) {
+        attributes.checkout_data.custom.project_id = project_id;
+      }
+
+      // custom_price와 expires_at은 null이 아닐 때만 포함
+      // (Lemon Squeezy는 null 값을 지원하지 않으므로 필드를 제외)
+
       requestBody = {
         data: {
           type: 'checkouts',
-          attributes: {
-            custom_price: null,
-            product_options: {
-              name: 'NexSupply Sourcing Expert Subscription',
-              description: 'Monthly subscription for dedicated sourcing manager',
-            },
-            checkout_options: {
-              embed: false,
-              media: false,
-              logo: true,
-            },
-            checkout_data: {
-              email: user.email || '',
-              custom: {
-                user_id: user.id,
-                project_id: project_id || null,
-              },
-            },
-            expires_at: null,
-            preview: false,
-            test_mode: process.env.NODE_ENV !== 'production',
-            redirect_url: successUrl,
-          },
+          attributes: attributes,
           relationships: {
             store: {
               data: {

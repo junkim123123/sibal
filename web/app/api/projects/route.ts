@@ -119,24 +119,55 @@ export async function GET(req: Request) {
     // 프로젝트 목록 조회
     const adminClient = getAdminClient();
     
+    console.log('[Projects API] Fetching projects for user:', user.id);
+    
     const { data: projects, error: projectsError } = await adminClient
       .from('projects')
-      .select('id, name, status, initial_risk_score, total_landed_cost, created_at')
+      .select('id, name, status, initial_risk_score, total_landed_cost, created_at, user_id')
       .eq('user_id', user.id)
       .order('created_at', { ascending: false });
 
     if (projectsError) {
       console.error('[Projects API] Failed to fetch projects:', projectsError);
       return NextResponse.json(
-        { ok: false, error: 'Failed to fetch projects' },
+        { ok: false, error: 'Failed to fetch projects', details: projectsError },
         { status: 500 }
       );
+    }
+
+    // 디버깅: 프로젝트 상태별 통계
+    const projectsByStatus = (projects || []).reduce((acc: any, p: any) => {
+      acc[p.status] = (acc[p.status] || 0) + 1;
+      return acc;
+    }, {});
+    
+    console.log('[Projects API] Total projects found:', projects?.length || 0);
+    console.log('[Projects API] Projects by status:', projectsByStatus);
+    console.log('[Projects API] Projects with saved status:', projects?.filter((p: any) => p.status === 'saved').length || 0);
+    
+    // saved 상태 프로젝트 상세 로그
+    const savedProjects = projects?.filter((p: any) => p.status === 'saved') || [];
+    if (savedProjects.length > 0) {
+      console.log('[Projects API] Saved projects details:', savedProjects.map((p: any) => ({
+        id: p.id,
+        name: p.name,
+        status: p.status,
+        user_id: p.user_id,
+        created_at: p.created_at,
+      })));
+    } else {
+      console.warn('[Projects API] No projects with saved status found for user:', user.id);
     }
 
     return NextResponse.json(
       {
         ok: true,
         projects: projects || [],
+        debug: {
+          total: projects?.length || 0,
+          byStatus: projectsByStatus,
+          userId: user.id,
+        },
       },
       { status: 200 }
     );

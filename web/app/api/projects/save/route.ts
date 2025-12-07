@@ -152,7 +152,44 @@ export async function POST(req: Request) {
       }
 
       console.log('[Save Project] Project updated to saved status:', finalProjectId, updatedProject?.status);
+      
+      // 업데이트된 프로젝트 확인
+      if (!updatedProject) {
+        console.error('[Save Project] Project update returned no data');
+        return NextResponse.json(
+          { ok: false, error: 'Project update failed: No data returned' },
+          { status: 500 }
+        );
+      }
+      
+      // 상태 확인
+      if (updatedProject.status !== 'saved') {
+        console.warn('[Save Project] Project status mismatch. Expected: saved, Got:', updatedProject.status);
+      }
     }
+
+    // 저장된 프로젝트를 다시 조회하여 확인
+    const { data: savedProject, error: verifyError } = await adminClient
+      .from('projects')
+      .select('id, name, status, user_id')
+      .eq('id', finalProjectId)
+      .eq('user_id', user.id)
+      .single();
+
+    if (verifyError || !savedProject) {
+      console.error('[Save Project] Failed to verify saved project:', verifyError);
+      return NextResponse.json(
+        { ok: false, error: 'Failed to verify saved project' },
+        { status: 500 }
+      );
+    }
+
+    console.log('[Save Project] Verified saved project:', {
+      id: savedProject.id,
+      name: savedProject.name,
+      status: savedProject.status,
+      user_id: savedProject.user_id,
+    });
 
     // answers를 메시지로 저장 (선택적)
     if (answers && Object.keys(answers).length > 0) {
@@ -163,19 +200,29 @@ export async function POST(req: Request) {
         .join('\n');
 
       if (answersText) {
-        await adminClient
-          .from('messages')
-          .insert({
-            project_id: finalProjectId,
-            role: 'user',
-            content: `Analysis Summary:\n${answersText}`,
-          });
+        try {
+          await adminClient
+            .from('messages')
+            .insert({
+              project_id: finalProjectId,
+              role: 'user',
+              content: `Analysis Summary:\n${answersText}`,
+            });
+        } catch (messageError) {
+          // 메시지 저장 실패는 치명적이지 않으므로 로그만 남김
+          console.warn('[Save Project] Failed to save message (non-critical):', messageError);
+        }
       }
     }
 
     return NextResponse.json({
       ok: true,
       project_id: finalProjectId,
+      project: {
+        id: savedProject.id,
+        name: savedProject.name,
+        status: savedProject.status,
+      },
     });
   } catch (error) {
     console.error('[Save Project] Server error:', error);

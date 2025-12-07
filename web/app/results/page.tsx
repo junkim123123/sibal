@@ -966,6 +966,7 @@ function ResultsActionButtons({ projectId, answers, aiAnalysis }: { projectId?: 
 
       if (data.ok) {
         console.log('[Save Report] Project saved successfully:', data.project_id);
+        // 성공 메시지 표시 (선택적)
         // 대시보드의 Saved Products 탭으로 이동 (전체 페이지 리로드로 확실히 새로고침)
         window.location.href = '/dashboard?tab=products&refresh=true';
       } else {

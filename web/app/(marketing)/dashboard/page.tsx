@@ -34,12 +34,23 @@ function DashboardPageContent() {
   // URL 파라미터에서 탭 변경 감지 및 데이터 새로고침
   useEffect(() => {
     const tab = searchParams?.get('tab') as TabType
+    const refresh = searchParams?.get('refresh')
+    
     if (tab && ['estimates', 'products', 'orders', 'documents', 'agent'].includes(tab)) {
       setActiveTab(tab)
       
       // 탭 변경 시 데이터 새로고침 (특히 products 탭)
+      // refresh 파라미터가 있으면 강제로 새로고침
       if (userId && isAuthenticated) {
+        console.log('[Dashboard] Tab changed or refresh requested, reloading projects...')
         loadProjects(userId)
+        
+        // refresh 파라미터 제거 (URL 정리)
+        if (refresh) {
+          const newUrl = new URL(window.location.href)
+          newUrl.searchParams.delete('refresh')
+          window.history.replaceState({}, '', newUrl.toString())
+        }
       }
     }
   }, [searchParams, userId, isAuthenticated])
@@ -99,11 +110,47 @@ function DashboardPageContent() {
   async function loadProjects(userId: string) {
     try {
       setIsLoading(true)
-      const response = await fetch('/api/projects')
+      console.log('[Dashboard] Loading projects for user:', userId)
+      
+      const response = await fetch('/api/projects', {
+        cache: 'no-store', // 항상 최신 데이터 가져오기
+      })
+      
+      if (!response.ok) {
+        console.error('[Dashboard] Failed to fetch projects:', response.status, response.statusText)
+        throw new Error(`Failed to fetch projects: ${response.statusText}`)
+      }
+      
       const data = await response.json()
 
+      console.log('[Dashboard] API response:', {
+        ok: data.ok,
+        projectsCount: data.projects?.length || 0,
+        debug: data.debug,
+      })
+      
       console.log('[Dashboard] Loaded projects:', data.projects?.length || 0, 'projects')
-      console.log('[Dashboard] Projects with saved status:', data.projects?.filter((p: any) => p.status === 'saved').length || 0)
+      
+      // 모든 프로젝트 상태 확인
+      if (data.projects && data.projects.length > 0) {
+        const statusCounts = data.projects.reduce((acc: any, p: any) => {
+          acc[p.status] = (acc[p.status] || 0) + 1;
+          return acc;
+        }, {});
+        console.log('[Dashboard] Projects by status:', statusCounts);
+        console.log('[Dashboard] All project statuses:', data.projects.map((p: any) => ({
+          id: p.id,
+          name: p.name,
+          status: p.status,
+          user_id: p.user_id,
+          created_at: p.created_at,
+        })));
+      } else {
+        console.warn('[Dashboard] No projects returned from API');
+      }
+      
+      const savedCount = data.projects?.filter((p: any) => p.status === 'saved').length || 0;
+      console.log('[Dashboard] Projects with saved status:', savedCount);
 
       if (data.ok && data.projects) {
         // Recent Estimates: status가 'active'인 프로젝트들 (최근 분석)
@@ -129,7 +176,7 @@ function DashboardPageContent() {
           })
 
         // Saved Products: status가 'saved'인 프로젝트들
-        const savedProjects = data.projects
+        const savedProducts = data.projects
           .filter((p: any) => p.status === 'saved')
           .map((p: any) => {
             // 프로젝트 이름에서 카테고리 추출 시도 (없으면 기본값)
@@ -155,14 +202,33 @@ function DashboardPageContent() {
           })
 
         console.log('[Dashboard] Setting saved products:', savedProducts.length)
+        console.log('[Dashboard] Saved products details:', savedProducts.map((p: any) => ({
+          id: p.id,
+          productName: p.productName,
+          status: p.status,
+          href: p.href,
+        })))
+        
         setEstimates(activeProjects)
         setSavedProducts(savedProducts)
 
         // Active Orders: 견적이 선택되고 QC 리포트가 승인된 프로젝트들
         await loadShipments(userId, data.projects)
+      } else {
+        console.error('[Dashboard] API returned error or no projects:', {
+          ok: data.ok,
+          error: data.error,
+          projects: data.projects,
+        })
+        // 에러가 있어도 빈 배열로 설정하여 UI가 올바르게 표시되도록 함
+        setEstimates([])
+        setSavedProducts([])
       }
     } catch (error) {
       console.error('[Dashboard] Failed to load projects:', error)
+      // 에러 발생 시에도 빈 배열로 설정
+      setEstimates([])
+      setSavedProducts([])
     } finally {
       setIsLoading(false)
     }

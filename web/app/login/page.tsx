@@ -13,16 +13,46 @@ export default function LoginPage() {
   const [password, setPassword] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(false)
+  
+  // Sign up additional fields
+  const [name, setName] = useState('')
+  const [company, setCompany] = useState('')
+  const [confirmPassword, setConfirmPassword] = useState('')
+  
   const router = useRouter()
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     setError(null)
+    
+    // Validation for sign up
+    if (isSignUp) {
+      if (!name.trim()) {
+        setError('이름을 입력해주세요.')
+        return
+      }
+      if (password !== confirmPassword) {
+        setError('비밀번호가 일치하지 않습니다.')
+        return
+      }
+      if (password.length < 6) {
+        setError('비밀번호는 최소 6자 이상이어야 합니다.')
+        return
+      }
+    }
+    
     setIsLoading(true)
 
     const formData = new FormData()
     formData.append('email', email)
     formData.append('password', password)
+    
+    if (isSignUp) {
+      formData.append('name', name)
+      if (company.trim()) {
+        formData.append('company', company)
+      }
+    }
 
     try {
       const result = isSignUp
@@ -37,7 +67,7 @@ export default function LoginPage() {
         router.refresh()
       }
     } catch (err) {
-      setError('An unexpected error occurred.')
+      setError('예기치 않은 오류가 발생했습니다.')
       setIsLoading(false)
     }
   }
@@ -98,13 +128,37 @@ export default function LoginPage() {
               </div>
               <div className="relative flex justify-center text-xs uppercase">
                 <span className="bg-white px-2 text-neutral-500">
-                  Or sign in with email
+                  Or {isSignUp ? 'sign up' : 'sign in'} with email
                 </span>
               </div>
             </div>
 
             {/* Form */}
             <form onSubmit={handleSubmit} className="space-y-5">
+              {/* Name Input (Sign Up only) */}
+              {isSignUp && (
+                <div>
+                  <label
+                    htmlFor="name"
+                    className="block text-sm font-medium text-neutral-900 mb-2"
+                  >
+                    이름 <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    id="name"
+                    name="name"
+                    type="text"
+                    autoComplete="name"
+                    required
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    className="w-full px-4 py-3 border border-neutral-300 rounded-lg text-neutral-900 placeholder:text-neutral-400 bg-white focus:outline-none focus:ring-2 focus:ring-neutral-900 focus:border-transparent transition-all text-sm"
+                    placeholder="홍길동"
+                    disabled={isLoading}
+                  />
+                </div>
+              )}
+
               {/* Email Input */}
               <div>
                 <label
@@ -126,6 +180,29 @@ export default function LoginPage() {
                   disabled={isLoading}
                 />
               </div>
+
+              {/* Company Input (Sign Up only) */}
+              {isSignUp && (
+                <div>
+                  <label
+                    htmlFor="company"
+                    className="block text-sm font-medium text-neutral-900 mb-2"
+                  >
+                    회사명 <span className="text-neutral-400 text-xs">(선택)</span>
+                  </label>
+                  <input
+                    id="company"
+                    name="company"
+                    type="text"
+                    autoComplete="organization"
+                    value={company}
+                    onChange={(e) => setCompany(e.target.value)}
+                    className="w-full px-4 py-3 border border-neutral-300 rounded-lg text-neutral-900 placeholder:text-neutral-400 bg-white focus:outline-none focus:ring-2 focus:ring-neutral-900 focus:border-transparent transition-all text-sm"
+                    placeholder="회사명 (선택사항)"
+                    disabled={isLoading}
+                  />
+                </div>
+              )}
 
               {/* Password Input */}
               <div>
@@ -150,10 +227,35 @@ export default function LoginPage() {
                 />
                 {isSignUp && (
                   <p className="mt-2 text-xs text-neutral-500">
-                    Password must be at least 6 characters
+                    비밀번호는 최소 6자 이상이어야 합니다.
                   </p>
                 )}
               </div>
+
+              {/* Confirm Password Input (Sign Up only) */}
+              {isSignUp && (
+                <div>
+                  <label
+                    htmlFor="confirmPassword"
+                    className="block text-sm font-medium text-neutral-900 mb-2"
+                  >
+                    비밀번호 확인 <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    id="confirmPassword"
+                    name="confirmPassword"
+                    type="password"
+                    autoComplete="new-password"
+                    required
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    className="w-full px-4 py-3 border border-neutral-300 rounded-lg text-neutral-900 placeholder:text-neutral-400 bg-white focus:outline-none focus:ring-2 focus:ring-neutral-900 focus:border-transparent transition-all text-sm"
+                    placeholder="••••••••"
+                    disabled={isLoading}
+                    minLength={6}
+                  />
+                </div>
+              )}
 
               {/* Submit Button */}
               <Button
@@ -163,7 +265,7 @@ export default function LoginPage() {
                 className="w-full bg-neutral-900 hover:bg-neutral-800 text-white"
                 disabled={isLoading}
               >
-                {isLoading ? 'Processing...' : isSignUp ? 'Sign up' : 'Sign in'}
+                {isLoading ? '처리 중...' : isSignUp ? '회원가입' : '로그인'}
               </Button>
             </form>
 
@@ -174,19 +276,23 @@ export default function LoginPage() {
                 onClick={() => {
                   setIsSignUp(!isSignUp)
                   setError(null)
+                  // 필드 초기화
+                  setName('')
+                  setCompany('')
+                  setConfirmPassword('')
                 }}
                 className="text-sm text-neutral-600 hover:text-neutral-900 transition-colors"
                 disabled={isLoading}
               >
                 {isSignUp ? (
                   <>
-                    Already have an account?{' '}
-                    <span className="font-medium text-neutral-900">Sign in</span>
+                    이미 계정이 있으신가요?{' '}
+                    <span className="font-medium text-neutral-900">로그인</span>
                   </>
                 ) : (
                   <>
-                    Don't have an account?{' '}
-                    <span className="font-medium text-neutral-900">Sign up</span>
+                    계정이 없으신가요?{' '}
+                    <span className="font-medium text-neutral-900">회원가입</span>
                   </>
                 )}
               </button>
@@ -194,13 +300,14 @@ export default function LoginPage() {
 
             {/* Manager Login Link */}
             <div className="mt-6 pt-6 border-t border-neutral-200 text-center">
-              <Link
-                href="/manager/login"
+              <button
+                type="button"
+                onClick={() => router.push('/manager/login')}
                 className="inline-flex items-center gap-2 text-sm text-neutral-600 hover:text-neutral-900 transition-colors"
               >
                 <Shield className="h-4 w-4" />
                 <span>매니저 로그인</span>
-              </Link>
+              </button>
             </div>
           </div>
         </div>

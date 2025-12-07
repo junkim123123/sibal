@@ -8,7 +8,8 @@ import { sendEmail } from './client';
 import { 
   AnalysisCompletedEmail, 
   MilestoneUpdatedEmail, 
-  ImportantDocumentEmail 
+  ImportantDocumentEmail,
+  NewMessageEmail
 } from './templates';
 import { getAdminClient } from '@/lib/supabase/admin';
 
@@ -210,6 +211,89 @@ export async function sendImportantDocumentEmail(
   } catch (error) {
     console.error('[Email] Error sending important document email:', error);
     return false;
+  }
+}
+
+/**
+ * 새 메시지 알림 발송 (매니저 → 클라이언트)
+ * 
+ * Throttle: 30분 이내 여러 메시지가 와도 한 번만 알림 (Chat Digest)
+ */
+export async function sendNewMessageEmail(
+  projectId: string,
+  userEmail: string,
+  projectName: string,
+  managerName: string,
+  messagePreview: string
+): Promise<boolean> {
+  if (!userEmail) {
+    console.log('[Email] No user email provided, skipping notification');
+    return false;
+  }
+
+  // Throttle 체크 (30분)
+  const lastNotification = await checkLastNotification(projectId, 'new_message');
+  if (lastNotification) {
+    const lastSent = new Date(lastNotification);
+    const now = new Date();
+    const minutesSinceLastNotification = (now.getTime() - lastSent.getTime()) / (1000 * 60);
+
+    if (minutesSinceLastNotification < 30) {
+      console.log(`[Email] Throttled: new_message for project ${projectId} (${Math.round(minutesSinceLastNotification)} minutes ago)`);
+      return false;
+    }
+  }
+
+  try {
+    // 프로젝트 채팅 페이지 링크 생성
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://nexsupply.net';
+    const link = `${baseUrl}/results?project_id=${projectId}`;
+
+    // 이메일 HTML 생성
+    const emailHtml = NewMessageEmail({
+      projectName,
+      managerName,
+      messagePreview,
+      link,
+    });
+
+    // 이메일 발송
+    await sendEmail({
+      to: userEmail,
+      subject: `[NexSupply] New message from ${managerName} - ${projectName}`,
+      html: emailHtml,
+    });
+
+    // 알림 시간 업데이트
+    await updateNotificationTimestamp(projectId, 'new_message');
+
+    console.log(`[Email] New message email sent to ${userEmail}`);
+    return true;
+  } catch (error) {
+    console.error('[Email] Error sending new message email:', error);
+    return false;
+  }
+}
+
+/**
+ * 마지막 알림 시간 확인 (helper)
+ */
+async function checkLastNotification(projectId: string, notificationType: string): Promise<string | null> {
+  try {
+    const adminClient = getAdminClient();
+    const { data: project } = await adminClient
+      .from('projects')
+      .select('last_notification_sent_at, last_notification_type')
+      .eq('id', projectId)
+      .single();
+
+    if (project?.last_notification_sent_at && project?.last_notification_type === notificationType) {
+      return project.last_notification_sent_at;
+    }
+    return null;
+  } catch (error) {
+    console.error('[Email] Error checking last notification:', error);
+    return null;
   }
 }
 

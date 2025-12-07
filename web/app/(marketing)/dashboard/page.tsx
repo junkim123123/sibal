@@ -4,7 +4,8 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
-import { ChevronRight, Package, Truck } from 'lucide-react'
+import { ChevronRight, Package, Truck, Folder } from 'lucide-react'
+import { AssetLibrary } from '@/components/AssetLibrary'
 
 // Dummy data for estimates
 const dummyEstimates = [
@@ -92,12 +93,13 @@ const dummyShipments = [
   },
 ]
 
-type TabType = 'estimates' | 'products' | 'shipments'
+type TabType = 'estimates' | 'products' | 'shipments' | 'documents'
 
 export default function DashboardPage() {
   const [activeTab, setActiveTab] = useState<TabType>('estimates')
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null)
   const [userName, setUserName] = useState<string>('')
+  const [userId, setUserId] = useState<string | null>(null)
   const router = useRouter()
 
   useEffect(() => {
@@ -110,6 +112,7 @@ export default function DashboardPage() {
           return
         }
         setIsAuthenticated(true)
+        setUserId(user.id)
         const name = user.user_metadata?.full_name || 
                      user.user_metadata?.name ||
                      user.email?.split('@')[0] ||
@@ -164,6 +167,11 @@ export default function DashboardPage() {
             active={activeTab === 'shipments'}
             onClick={() => setActiveTab('shipments')}
           />
+          <TabButton
+            label="Documents"
+            active={activeTab === 'documents'}
+            onClick={() => setActiveTab('documents')}
+          />
         </div>
 
         {/* Content Area */}
@@ -176,6 +184,9 @@ export default function DashboardPage() {
           )}
           {activeTab === 'shipments' && (
             <ShipmentsList shipments={dummyShipments} />
+          )}
+          {activeTab === 'documents' && userId && (
+            <AssetLibrary userId={userId} />
           )}
         </div>
       </div>

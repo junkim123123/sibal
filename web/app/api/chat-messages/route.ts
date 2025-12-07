@@ -7,7 +7,7 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { getAdminClient } from '@/lib/supabase/admin';
-import { sendImportantDocumentEmail } from '@/lib/email/sender';
+import { sendImportantDocumentEmail, sendNewMessageEmail } from '@/lib/email/sender';
 
 // 중요 문서 타입 정의
 const IMPORTANT_DOCUMENT_TYPES = [
@@ -121,35 +121,56 @@ export async function POST(req: Request) {
       );
     }
 
-    // 중요 파일 업로드 시 이메일 알림 발송
-    if (file_url && file_type && IMPORTANT_DOCUMENT_TYPES.includes(file_type)) {
-      try {
-        const project = session.projects;
-        if (project?.profiles?.email) {
+    const project = session.projects;
+    const userEmail = project?.profiles?.email;
+
+    // 매니저가 클라이언트에게 메시지를 보낸 경우
+    if (role === 'manager' && userEmail) {
+      // 중요 파일 업로드 시 이메일 알림 발송
+      if (file_url && file_type && IMPORTANT_DOCUMENT_TYPES.includes(file_type)) {
+        try {
           // 파일 타입을 사용자 친화적인 이름으로 변환
           const documentTypeMap: Record<string, string> = {
-            'application/pdf': 'PDF 문서',
-            'application/vnd.openxmlformats-officedocument.wordprocessingml.document': 'Word 문서',
-            'application/msword': 'Word 문서',
-            'application/vnd.ms-excel': 'Excel 문서',
-            'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': 'Excel 문서',
+            'application/pdf': 'PDF Document',
+            'application/vnd.openxmlformats-officedocument.wordprocessingml.document': 'Word Document',
+            'application/msword': 'Word Document',
+            'application/vnd.ms-excel': 'Excel Document',
+            'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': 'Excel Document',
           };
 
-          const documentType = documentTypeMap[file_type] || file_name || '문서';
+          const documentType = documentTypeMap[file_type] || file_name || 'Document';
 
-          // 매니저가 업로드한 경우에만 클라이언트에게 알림
-          if (role === 'manager') {
-            await sendImportantDocumentEmail(
-              project.id,
-              project.profiles.email,
-              project.name,
-              documentType
-            );
-          }
+          await sendImportantDocumentEmail(
+            project.id,
+            userEmail,
+            project.name,
+            documentType
+          );
+        } catch (emailError) {
+          console.error('[Chat Messages API] Failed to send important document email:', emailError);
         }
-      } catch (emailError) {
-        // 이메일 발송 실패해도 메시지는 저장됨
-        console.error('[Chat Messages API] Failed to send important document email:', emailError);
+      } else {
+        // 일반 메시지 알림 (파일이 아닌 경우)
+        try {
+          // 매니저 정보 조회
+          const { data: managerProfile } = await adminClient
+            .from('profiles')
+            .select('name, email')
+            .eq('id', user.id)
+            .single();
+
+          const managerName = managerProfile?.name || managerProfile?.email?.split('@')[0] || 'Your Manager';
+
+          await sendNewMessageEmail(
+            project.id,
+            userEmail,
+            project.name,
+            managerName,
+            content.trim()
+          );
+        } catch (emailError) {
+          console.error('[Chat Messages API] Failed to send new message email:', emailError);
+        }
       }
     }
 

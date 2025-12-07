@@ -31,6 +31,13 @@ function ClientChatContent() {
     }
   }, [projectId, sessionIdParam]);
 
+  // 프로젝트의 manager_id가 변경되었을 때 세션 업데이트
+  useEffect(() => {
+    if (sessionId && project?.manager_id) {
+      updateSessionIfNeeded(sessionId, project.manager_id);
+    }
+  }, [project?.manager_id, sessionId]);
+
   const initializeChat = async () => {
     try {
       setIsLoading(true);
@@ -82,6 +89,9 @@ function ClientChatContent() {
           // 세션 생성 실패해도 계속 진행 (나중에 재시도 가능)
           // 대신 에러 메시지를 표시하지 않고 빈 세션으로 진행
         }
+      } else {
+        // 세션이 이미 있으면 manager_id 업데이트 확인
+        await updateSessionIfNeeded(sessionId, project?.manager_id);
       }
     } catch (error) {
       console.error('[ClientChatPage] Initialization error:', error);
@@ -100,12 +110,13 @@ function ClientChatContent() {
 
       console.log('[ClientChatPage] Loading or creating session:', { projectId, userId, managerId });
 
-      // 기존 세션 찾기
+      // 기존 세션 찾기 (project_id로만 찾기 - manager_id가 업데이트되었을 수 있음)
       const { data: existingSession, error: findError } = await supabase
         .from('chat_sessions')
-        .select('id')
+        .select('id, manager_id, status')
         .eq('project_id', projectId)
         .eq('user_id', userId)
+        .in('status', ['open', 'in_progress'])
         .maybeSingle();
 
       if (findError) {
@@ -114,7 +125,29 @@ function ClientChatContent() {
       }
 
       if (existingSession) {
-        console.log('[ClientChatPage] Found existing session:', existingSession.id);
+        console.log('[ClientChatPage] Found existing session:', {
+          id: existingSession.id,
+          manager_id: existingSession.manager_id,
+          status: existingSession.status,
+        });
+        
+        // manager_id가 업데이트되었으면 세션 상태도 업데이트
+        if (managerId && existingSession.manager_id !== managerId) {
+          const { error: updateError } = await supabase
+            .from('chat_sessions')
+            .update({
+              manager_id: managerId,
+              status: 'in_progress',
+            })
+            .eq('id', existingSession.id);
+
+          if (updateError) {
+            console.warn('[ClientChatPage] Failed to update session manager_id:', updateError);
+          } else {
+            console.log('[ClientChatPage] Updated session manager_id');
+          }
+        }
+        
         return existingSession.id;
       }
 
@@ -155,6 +188,43 @@ function ClientChatContent() {
         console.error('[ClientChatPage] Error stack:', error.stack);
       }
       return null;
+    }
+  };
+
+  const updateSessionIfNeeded = async (currentSessionId: string, managerId: string | null | undefined) => {
+    try {
+      const supabase = createClient();
+      
+      // 현재 세션 정보 확인
+      const { data: session, error: sessionError } = await supabase
+        .from('chat_sessions')
+        .select('manager_id, status')
+        .eq('id', currentSessionId)
+        .single();
+
+      if (sessionError || !session) {
+        console.warn('[ClientChatPage] Failed to load session for update:', sessionError);
+        return;
+      }
+
+      // manager_id가 업데이트되었으면 세션도 업데이트
+      if (managerId && session.manager_id !== managerId) {
+        const { error: updateError } = await supabase
+          .from('chat_sessions')
+          .update({
+            manager_id: managerId,
+            status: 'in_progress',
+          })
+          .eq('id', currentSessionId);
+
+        if (updateError) {
+          console.warn('[ClientChatPage] Failed to update session manager_id:', updateError);
+        } else {
+          console.log('[ClientChatPage] Updated session manager_id to:', managerId);
+        }
+      }
+    } catch (error) {
+      console.error('[ClientChatPage] Error updating session:', error);
     }
   };
 

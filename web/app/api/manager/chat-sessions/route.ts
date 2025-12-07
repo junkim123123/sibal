@@ -46,12 +46,11 @@ export async function GET(req: Request) {
       );
     }
 
-    // 기존 세션 확인 (매니저가 할당된 세션)
+    // 기존 세션 확인 (프로젝트 ID로 먼저 찾기 - 클라이언트가 이미 생성한 세션이 있을 수 있음)
     const { data: existingSession, error: sessionError } = await adminClient
       .from('chat_sessions')
-      .select('id, status')
+      .select('id, status, manager_id')
       .eq('project_id', projectId)
-      .eq('manager_id', managerId)
       .in('status', ['open', 'in_progress'])
       .maybeSingle();
 
@@ -63,12 +62,32 @@ export async function GET(req: Request) {
       );
     }
 
+    // 기존 세션이 있으면 manager_id 업데이트 (아직 할당되지 않은 경우)
     if (existingSession) {
+      if (existingSession.manager_id !== managerId) {
+        // manager_id가 다르거나 null이면 업데이트
+        const { error: updateError } = await adminClient
+          .from('chat_sessions')
+          .update({
+            manager_id: managerId,
+            status: 'in_progress',
+            updated_at: new Date().toISOString(),
+          })
+          .eq('id', existingSession.id);
+
+        if (updateError) {
+          console.error('[Manager Chat Sessions API] Failed to update session manager_id:', updateError);
+          // 업데이트 실패해도 기존 세션 반환
+        } else {
+          console.log('[Manager Chat Sessions API] Updated session manager_id:', existingSession.id);
+        }
+      }
+
       return NextResponse.json({
         ok: true,
         session: {
           id: existingSession.id,
-          status: existingSession.status,
+          status: 'in_progress',
         },
       });
     }

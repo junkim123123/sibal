@@ -115,6 +115,36 @@ export async function assignManagerToProject(projectId: string, managerId: strin
       status: updatedProject?.status,
     });
 
+    // 기존 채팅 세션이 있으면 manager_id 업데이트 (클라이언트가 이미 세션을 생성한 경우)
+    try {
+      const { data: existingSession } = await adminClient
+        .from('chat_sessions')
+        .select('id, manager_id')
+        .eq('project_id', projectId)
+        .in('status', ['open', 'in_progress'])
+        .maybeSingle();
+
+      if (existingSession && existingSession.manager_id !== managerId) {
+        const { error: sessionUpdateError } = await adminClient
+          .from('chat_sessions')
+          .update({
+            manager_id: managerId,
+            status: 'in_progress',
+            updated_at: new Date().toISOString(),
+          })
+          .eq('id', existingSession.id);
+
+        if (sessionUpdateError) {
+          console.warn('[Assign Manager] Failed to update chat session manager_id:', sessionUpdateError);
+        } else {
+          console.log('[Assign Manager] Updated chat session manager_id:', existingSession.id);
+        }
+      }
+    } catch (sessionError) {
+      console.warn('[Assign Manager] Error updating chat session (non-critical):', sessionError);
+      // 세션 업데이트 실패는 치명적이지 않으므로 계속 진행
+    }
+
     // 매니저 워크로드 업데이트 (트리거가 자동으로 처리하지만, 명시적으로 업데이트)
     try {
       await updateManagerWorkload(managerId);

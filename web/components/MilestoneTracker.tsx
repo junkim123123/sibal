@@ -7,8 +7,6 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { createClient } from '@/lib/supabase/client';
-import { getAdminClient } from '@/lib/supabase/admin';
 import { CheckCircle2, Circle, Clock, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
@@ -37,8 +35,6 @@ export function MilestoneTracker({ projectId, managerId }: MilestoneTrackerProps
   const [milestones, setMilestones] = useState<Milestone[]>(DEFAULT_MILESTONES);
   const [isLoading, setIsLoading] = useState(true);
   const [isUpdating, setIsUpdating] = useState(false);
-  const supabase = createClient();
-  const adminClient = getAdminClient();
 
   useEffect(() => {
     loadMilestones();
@@ -47,22 +43,30 @@ export function MilestoneTracker({ projectId, managerId }: MilestoneTrackerProps
   const loadMilestones = async () => {
     try {
       setIsLoading(true);
-      const { data: project, error } = await adminClient
-        .from('projects')
-        .select('milestones, current_milestone_index')
-        .eq('id', projectId)
-        .single();
+      
+      // API Route를 통해 서버 사이드에서 마일스톤 정보 가져오기
+      const response = await fetch(`/api/manager/milestones?project_id=${projectId}`, {
+        method: 'GET',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+      });
 
-      if (error) throw error;
+      const data = await response.json();
 
-      if (project?.milestones && Array.isArray(project.milestones)) {
-        setMilestones(project.milestones as Milestone[]);
+      if (!data.ok) {
+        console.error('[MilestoneTracker] Failed to load milestones:', data.error);
+        setMilestones(DEFAULT_MILESTONES);
+        return;
+      }
+
+      if (data.milestones && Array.isArray(data.milestones)) {
+        setMilestones(data.milestones as Milestone[]);
       } else {
-        // 기본 마일스톤 사용
         setMilestones(DEFAULT_MILESTONES);
       }
     } catch (error) {
       console.error('[MilestoneTracker] Failed to load milestones:', error);
+      setMilestones(DEFAULT_MILESTONES);
     } finally {
       setIsLoading(false);
     }
@@ -112,7 +116,13 @@ export function MilestoneTracker({ projectId, managerId }: MilestoneTrackerProps
         throw new Error(data.error || 'Failed to update milestone');
       }
 
-      setMilestones(data.milestones || updatedMilestones);
+      // 업데이트된 마일스톤으로 상태 업데이트
+      if (data.milestones && Array.isArray(data.milestones)) {
+        setMilestones(data.milestones);
+      } else {
+        // 업데이트 실패 시 다시 로드
+        await loadMilestones();
+      }
 
       // 자동 시스템 메시지는 API에서 처리됨
 
@@ -124,28 +134,6 @@ export function MilestoneTracker({ projectId, managerId }: MilestoneTrackerProps
     }
   };
 
-  const sendSystemMessage = async (milestoneTitle: string) => {
-    try {
-      // 채팅 세션 찾기
-      const { data: session } = await adminClient
-        .from('chat_sessions')
-        .select('id')
-        .eq('project_id', projectId)
-        .maybeSingle();
-
-      if (!session) return;
-
-      // 시스템 메시지 전송
-      await supabase.from('chat_messages').insert({
-        session_id: session.id,
-        sender_id: managerId,
-        role: 'manager',
-        content: `System: Project status updated to '${milestoneTitle}'.`,
-      });
-    } catch (error) {
-      console.error('[MilestoneTracker] Failed to send system message:', error);
-    }
-  };
 
   if (isLoading) {
     return (

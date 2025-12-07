@@ -69,8 +69,20 @@ interface AIAnalysisResult {
   [key: string]: any;
 }
 
-// Result Header Component
-function ResultHeader({ productName, landedCost, margin }: { productName: string; landedCost: number; margin: { min: number; max: number } }) {
+// Result Header Component with Request Action Button
+function ResultHeader({ 
+  productName, 
+  landedCost, 
+  margin,
+  projectId,
+  onRequestClick
+}: { 
+  productName: string; 
+  landedCost: number; 
+  margin: { min: number; max: number };
+  projectId?: string | null;
+  onRequestClick?: () => void;
+}) {
   return (
     <div className="col-span-2 bg-white border border-gray-200 rounded-lg p-8 shadow-sm">
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
@@ -89,6 +101,17 @@ function ResultHeader({ productName, landedCost, margin }: { productName: string
           </div>
         </div>
       </div>
+      {onRequestClick && (
+        <div className="mt-6 pt-6 border-t border-gray-200">
+          <Button
+            onClick={onRequestClick}
+            className="w-full md:w-auto bg-neutral-900 hover:bg-neutral-800 text-white font-semibold px-8 py-3"
+          >
+            <Rocket className="w-4 h-4 mr-2 inline" />
+            실제 요청 (Get Verified Quote)
+          </Button>
+        </div>
+      )}
     </div>
   );
 }
@@ -759,15 +782,37 @@ function ResultsContent() {
     loadProjectMessages();
   }, [projectId, searchParams]);
 
-  // localStorage 제거 - URL 파라미터에서만 로드
+  // sessionStorage 또는 URL 파라미터에서 answers 로드
   useEffect(() => {
     if (isInitialized) return;
     
+    // 1. sessionStorage에서 데이터 로드 시도 (우선순위)
+    if (typeof window !== 'undefined') {
+      try {
+        const storedData = sessionStorage.getItem('nexsupply_onboarding_data');
+        if (storedData) {
+          const parsedAnswers = JSON.parse(storedData) as Answers;
+          if (Object.keys(parsedAnswers).length > 0) {
+            console.log('[Results] Loaded answers from sessionStorage:', parsedAnswers);
+            setAnswers(parsedAnswers);
+            setIsInitialized(true);
+            // sessionStorage 데이터는 한 번 사용 후 삭제
+            sessionStorage.removeItem('nexsupply_onboarding_data');
+            return;
+          }
+        }
+      } catch (error) {
+        console.error('[Results] Failed to parse sessionStorage data:', error);
+      }
+    }
+    
+    // 2. URL 파라미터에서 로드 시도
     const paramsAnswers: Answers = {};
     searchParams?.forEach((value, key) => {
       if (key !== 'project_id') {
         try {
-          paramsAnswers[key] = JSON.parse(value);
+          const decodedValue = decodeURIComponent(value);
+          paramsAnswers[key] = decodedValue;
         } catch {
           paramsAnswers[key] = value;
         }
@@ -775,17 +820,28 @@ function ResultsContent() {
     });
 
     if (Object.keys(paramsAnswers).length > 0) {
+      console.log('[Results] Loaded answers from URL params:', paramsAnswers);
       setAnswers(paramsAnswers);
+      setIsInitialized(true);
+      return;
     }
     
+    // 3. project_id가 있지만 answers가 없으면 메시지에서 재구성 시도 (나중에 구현)
+    console.warn('[Results] No answers data found in sessionStorage or URL params.');
     setIsInitialized(true);
-  }, [isInitialized, searchParams]);
+  }, [isInitialized, searchParams, projectId]);
 
   useEffect(() => {
     if (!isInitialized) return;
     const hasAnswers = Object.keys(answers).length > 0;
-    if (!hasAnswers) return;
-    if (!answers.project_name && !answers.product_info) return;
+    if (!hasAnswers) {
+      console.warn('[Results] No answers data available. Please complete the chat flow first.');
+      return;
+    }
+    if (!answers.project_name && !answers.product_info) {
+      console.warn('[Results] Missing required fields: project_name or product_info');
+      return;
+    }
     if (aiAnalysis) return;
 
     const fetchAnalysis = async () => {
@@ -882,12 +938,34 @@ function ResultsContent() {
     );
   }
 
-  if (!aiAnalysis) {
+  // answers가 없거나 필수 필드가 없으면 안내 메시지 표시
+  if (isInitialized && !isLoading && !error && Object.keys(answers).length === 0) {
     return (
-      <div className="min-h-screen bg-[#09090b] flex items-center justify-center">
-        <div className="text-center">
+      <div className="min-h-screen bg-[#09090b] flex items-center justify-center p-4">
+        <div className="text-center max-w-md">
           <div className="text-white text-xl mb-2">No Analysis Available</div>
-          <div className="text-zinc-400 text-sm">Please complete the chat flow first</div>
+          <div className="text-zinc-400 text-sm mb-4">
+            Please complete the chat flow first to generate analysis.
+          </div>
+          <Link 
+            href="/chat"
+            className="inline-block px-6 py-3 bg-neutral-800 text-white rounded-lg hover:bg-neutral-700 transition-colors"
+          >
+            Go to Chat
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
+  if (!aiAnalysis && !isLoading && !error) {
+    return (
+      <div className="min-h-screen bg-[#09090b] flex items-center justify-center p-4">
+        <div className="text-center max-w-md">
+          <div className="text-white text-xl mb-2">No Analysis Available</div>
+          <div className="text-zinc-400 text-sm mb-4">
+            Analysis is being generated. Please wait...
+          </div>
         </div>
       </div>
     );

@@ -505,6 +505,37 @@ export async function POST(req: Request) {
           .eq('id', project_id);
         
         console.log('[Analyze API] Project updated:', project_id);
+
+        // ============================================================================
+        // 분석 완료 이메일 알림 발송
+        // ============================================================================
+        try {
+          // 프로젝트 정보 및 사용자 이메일 가져오기
+          const { data: projectData } = await adminClient
+            .from('projects')
+            .select(`
+              name,
+              user_id,
+              profiles!projects_user_id_fkey(email)
+            `)
+            .eq('id', project_id)
+            .single();
+
+          if (projectData?.profiles?.email) {
+            const { sendAnalysisCompletedEmail } = await import('@/lib/email/sender');
+            const osintRiskScore = analysis.osint_risk_score || riskScore;
+            
+            await sendAnalysisCompletedEmail(
+              project_id,
+              projectData.profiles.email,
+              projectData.name || '프로젝트',
+              osintRiskScore
+            );
+          }
+        } catch (emailError) {
+          // 이메일 발송 실패해도 분석 결과는 반환
+          console.error('[Analyze API] Failed to send analysis completed email:', emailError);
+        }
       } catch (dbError) {
         // DB 업데이트 실패해도 분석 결과는 반환
         console.error('[Analyze API] Failed to update project:', dbError);

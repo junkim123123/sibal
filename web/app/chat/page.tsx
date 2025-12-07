@@ -679,12 +679,19 @@ export default function ChatPage() {
               >
                 <motion.button
                   onClick={() => {
-                    if (projectId) {
-                      router.push(`/results?project_id=${projectId}`);
-                    } else {
-                      console.error('Project ID is missing');
-                      router.push('/results');
+                    // selectedOptions를 sessionStorage에 저장 (URL 길이 제한 회피)
+                    if (typeof window !== 'undefined') {
+                      sessionStorage.setItem('nexsupply_onboarding_data', JSON.stringify(selectedOptions));
                     }
+                    
+                    // URL에는 project_id만 전달
+                    const params = new URLSearchParams();
+                    if (projectId) {
+                      params.set('project_id', projectId);
+                    }
+                    
+                    const queryString = params.toString();
+                    router.push(`/results${queryString ? `?${queryString}` : ''}`);
                   }}
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}

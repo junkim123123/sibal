@@ -75,8 +75,9 @@ export async function POST(req: Request) {
 
       if (updateError) {
         console.error('[Save Project] Failed to update project:', updateError);
+        console.error('[Save Project] Update error details:', JSON.stringify(updateError, null, 2));
         return NextResponse.json(
-          { ok: false, error: 'Failed to update project status' },
+          { ok: false, error: 'Failed to update project status', details: updateError },
           { status: 500 }
         );
       }

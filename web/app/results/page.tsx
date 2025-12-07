@@ -1199,7 +1199,7 @@ function ResultsActionButtons({ projectId, answers }: { projectId?: string | nul
 
       {/* Confirmation Modal */}
       <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-        <DialogContent className="sm:max-w-[500px]">
+        <DialogContent className="sm:max-w-[500px] bg-white border-gray-200 pb-8">
           <DialogHeader>
             <DialogTitle className="text-2xl font-bold text-gray-900">
               Confirm Expert Hiring
@@ -1276,12 +1276,12 @@ function ResultsActionButtons({ projectId, answers }: { projectId?: string | nul
             </div>
           </div>
 
-          <DialogFooter className="gap-2 sm:gap-0">
+          <DialogFooter className="gap-2 sm:gap-0 mt-6 pt-4 border-t border-gray-200">
             <Button
               variant="outline"
               onClick={() => setIsModalOpen(false)}
               disabled={isProcessingPayment}
-              className="w-full sm:w-auto"
+              className="w-full sm:w-auto border-gray-300 text-gray-700 hover:bg-gray-50"
             >
               Cancel
             </Button>

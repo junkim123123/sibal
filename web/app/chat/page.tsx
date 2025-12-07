@@ -73,6 +73,8 @@ const SOURCING_STEPS = [
       "Vietnam",
       "India",
       "Mexico",
+      "United States",
+      "Canada",
       "South Korea",
       "Taiwan",
       "Thailand",
@@ -96,23 +98,12 @@ const SOURCING_STEPS = [
     placeholder: "e.g. Plastic/Silicone, S (Shoe Box size) or type 'Skip'"
   },
   
-  // --- Step 10: Pricing (Split for better UX) ---
-  {
-    id: 'pricing_metric',
-    type: 'select' as const,
-    question: "What do you know about your pricing or margin targets?",
-    options: [
-      "I know my Target Retail Price",
-      "I know my Current Landed Cost",
-      "I know my Target Margin %",
-      "I'm not sure (Show ranges)"
-    ]
-  },
+  // --- Step 10: Pricing (통합 - 하나의 질문으로 최적화) ---
   {
     id: 'pricing_value',
     type: 'text' as const,
-    question: "What price are you planning to sell this at?", // Will be dynamically replaced based on pricing_metric selection
-    placeholder: "Type your value..."
+    question: "What do you know about your pricing or margin targets?",
+    placeholder: "e.g., '$79-99', '$5/unit', '40%', or 'Not sure'"
   },
   
   // --- Step 7: Volume & Timeline ---
@@ -248,27 +239,14 @@ export default function ChatPage() {
   // Initialize with first question
   useEffect(() => {
     if (messages.length === 0 && currentStep) {
-      // Handle dynamic question for pricing_value
-      let questionContent = currentStep.question;
-      if (currentStep.id === 'pricing_value' && selectedOptions['pricing_metric']) {
-        const pricingMetric = selectedOptions['pricing_metric'];
-        if (pricingMetric === "I know my Target Retail Price") {
-          questionContent = "What's your target retail price? (e.g., '$79-99', '$14.99/unit', or '$50 per piece')";
-        } else if (pricingMetric === "I know my Current Landed Cost") {
-          questionContent = "What's your current landed cost per unit? (e.g., '$5/unit', '$500 for 100 units', or '$3.50 per piece')";
-        } else if (pricingMetric === "I know my Target Margin %") {
-          questionContent = "What's your target margin percentage? (e.g., '40%', '30-50%', or '35%')";
-        }
-      }
-      
       setMessages([{
         id: `msg-${currentStep.id}`,
         type: 'system',
-        content: questionContent,
+        content: currentStep.question,
         timestamp: Date.now(),
       }]);
     }
-  }, [currentStep, selectedOptions]);
+  }, [currentStep]);
 
   // Focus text input when it appears
   useEffect(() => {
@@ -386,35 +364,13 @@ export default function ChatPage() {
         let nextIndex = currentStepIndex + 1;
         let nextStep = SOURCING_STEPS[nextIndex];
         
-        // Skip pricing_value step if user selected "I'm not sure" in pricing_metric
-        if (currentStep?.id === 'pricing_metric' && selectedOptions['pricing_metric'] === "I'm not sure (Show ranges)") {
-          // Skip pricing_value and go to next step
-          if (nextStep.id === 'pricing_value' && nextIndex < SOURCING_STEPS.length - 1) {
-            nextIndex = nextIndex + 1;
-            nextStep = SOURCING_STEPS[nextIndex];
-          }
-        }
-        
         setCurrentStepIndex(nextIndex);
-        
-        // Dynamic question for pricing_value based on selected pricing_metric
-        let questionContent = nextStep.question;
-        if (nextStep.id === 'pricing_value' && selectedOptions['pricing_metric']) {
-          const pricingMetric = selectedOptions['pricing_metric'];
-          if (pricingMetric === "I know my Target Retail Price") {
-            questionContent = "What's your target retail price? (e.g., '$79-99', '$14.99/unit', or '$50 per piece')";
-          } else if (pricingMetric === "I know my Current Landed Cost") {
-            questionContent = "What's your current landed cost per unit? (e.g., '$5/unit', '$500 for 100 units', or '$3.50 per piece')";
-          } else if (pricingMetric === "I know my Target Margin %") {
-            questionContent = "What's your target margin percentage? (e.g., '40%', '30-50%', or '35%')";
-          }
-        }
         
         // Add next system message
         setMessages(prev => [...prev, {
           id: `msg-${nextStep.id}`,
           type: 'system',
-          content: questionContent,
+          content: nextStep.question,
           timestamp: Date.now(),
         }]);
         
@@ -675,17 +631,7 @@ export default function ChatPage() {
                           handleTextSubmit();
                         }
                       }}
-                      placeholder={
-                        currentStep.id === 'pricing_value' && selectedOptions['pricing_metric']
-                          ? selectedOptions['pricing_metric'] === "I know my Target Retail Price"
-                            ? "e.g., $79-99 or $14.99/unit"
-                            : selectedOptions['pricing_metric'] === "I know my Current Landed Cost"
-                            ? "e.g., $5/unit or $500 for 100 units"
-                            : selectedOptions['pricing_metric'] === "I know my Target Margin %"
-                            ? "e.g., 40% or 30-50%"
-                            : currentStep.placeholder || "Type your answer..."
-                          : currentStep.placeholder || "Type your answer..."
-                      }
+                      placeholder={currentStep.placeholder || "Type your answer..."}
                       className="flex-1 px-4 py-3 rounded-full border-2 border-neutral-300 bg-white text-neutral-900 text-sm placeholder-neutral-400 focus:outline-none focus:border-neutral-900 focus:ring-2 focus:ring-neutral-900 focus:ring-offset-2 transition-all"
                     />
                     <motion.button

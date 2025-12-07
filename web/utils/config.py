@@ -89,6 +89,48 @@ class Config:
         return None
     
     @staticmethod
+    def get_supabase_url() -> Optional[str]:
+        """Get Supabase URL from environment or Streamlit secrets."""
+        url = os.getenv("SUPABASE_URL") or os.getenv("NEXT_PUBLIC_SUPABASE_URL")
+        
+        if url:
+            return url
+        
+        try:
+            import streamlit as st
+            if hasattr(st, 'secrets'):
+                if 'SUPABASE_URL' in st.secrets:
+                    return st.secrets['SUPABASE_URL']
+                if 'NEXT_PUBLIC_SUPABASE_URL' in st.secrets:
+                    return st.secrets['NEXT_PUBLIC_SUPABASE_URL']
+        except Exception:
+            pass
+        
+        return None
+    
+    @staticmethod
+    def get_supabase_key() -> Optional[str]:
+        """Get Supabase anon key from environment or Streamlit secrets."""
+        key = os.getenv("SUPABASE_KEY") or os.getenv("SUPABASE_ANON_KEY") or os.getenv("NEXT_PUBLIC_SUPABASE_ANON_KEY")
+        
+        if key:
+            return key
+        
+        try:
+            import streamlit as st
+            if hasattr(st, 'secrets'):
+                if 'SUPABASE_KEY' in st.secrets:
+                    return st.secrets['SUPABASE_KEY']
+                if 'SUPABASE_ANON_KEY' in st.secrets:
+                    return st.secrets['SUPABASE_ANON_KEY']
+                if 'NEXT_PUBLIC_SUPABASE_ANON_KEY' in st.secrets:
+                    return st.secrets['NEXT_PUBLIC_SUPABASE_ANON_KEY']
+        except Exception:
+            pass
+        
+        return None
+    
+    @staticmethod
     def get_consultation_email() -> str:
         """
         Get consultation team email from environment or Streamlit secrets.
@@ -113,6 +155,29 @@ class Config:
         
         # Default public email (safe to expose)
         return "outreach@nexsupply.net"
+    
+    @staticmethod
+    def get_lemon_squeezy_store_url() -> Optional[str]:
+        """
+        Get Lemon Squeezy store URL from environment or Streamlit secrets.
+        
+        Returns:
+            Lemon Squeezy store URL or None
+        """
+        # Try environment variable first
+        url = os.getenv("LEMON_SQUEEZY_STORE_URL")
+        if url:
+            return url
+        
+        # Try Streamlit secrets
+        try:
+            import streamlit as st
+            if hasattr(st, 'secrets') and 'LEMON_SQUEEZY_STORE_URL' in st.secrets:
+                return st.secrets['LEMON_SQUEEZY_STORE_URL']
+        except Exception:
+            pass
+        
+        return None
     
     @classmethod
     def validate_config(cls) -> dict:

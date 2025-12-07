@@ -362,6 +362,7 @@ def apply_global_css():
 
 from pages.home import render_home_page
 from pages.results_dashboard import render_results_page
+from utils.project_manager import initialize_supabase
 
 
 # =============================================================================
@@ -374,6 +375,13 @@ def main():
     setup_pwa()
     apply_global_css()
     init_session_state()
+    
+    # Initialize Supabase (non-blocking - works without authentication)
+    try:
+        initialize_supabase()
+    except Exception as e:
+        # Supabase 초기화 실패해도 앱은 계속 작동 (로그인 없는 경우)
+        pass
     
     # Initialize page/view state
     if "view" not in st.session_state:

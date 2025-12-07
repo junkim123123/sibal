@@ -249,6 +249,16 @@ def init_session_state() -> None:
     # Notification state
     if "notifications" not in st.session_state:
         st.session_state.notifications = []
+    
+    # Supabase/Project state
+    if "current_project_id" not in st.session_state:
+        st.session_state.current_project_id = None
+    
+    if "user_profile" not in st.session_state:
+        st.session_state.user_profile = None
+    
+    if "user_projects" not in st.session_state:
+        st.session_state.user_projects = []
 
 
 def get_state(key: str, default: Any = None) -> Any:

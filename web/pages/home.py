@@ -457,6 +457,21 @@ def render_home_page():
                     st.session_state.search_query = full_query
                     state.clear_error()
                     
+                    # 프로젝트 생성 (Supabase 연동)
+                    project_id = None
+                    user_id = None
+                    if st.session_state.get("user") and isinstance(st.session_state.user, dict):
+                        user_id = st.session_state.user.get("id")
+                        if user_id:
+                            try:
+                                from utils.project_manager import create_new_project
+                                # 제품 이름 추출 (프로젝트 이름으로 사용)
+                                project_name = product_query.strip()[:50] if product_query.strip() else None
+                                project_id = create_new_project(user_id, project_name)
+                            except Exception as e:
+                                # 프로젝트 생성 실패해도 분석은 계속 진행
+                                print(f"[Project Creation Error] {e}")
+                    
                     # === STEP-BY-STEP PROGRESS (Security-Aware Messages) ===
                     with st.status("🔎 AI is building your Sourcing Blueprint...", expanded=True) as status:
                         st.write("⏱️ *This analysis takes 10-20 seconds*")
@@ -498,6 +513,36 @@ def render_home_page():
                                 status.update(label="✅ Analysis complete!", state="complete")
                                 converted = convert_api_response(result["data"])
                                 converted["analysis_mode"] = result.get("mode", "general")
+                                
+                                # 분석 결과를 데이터베이스에 저장 (프로젝트가 있는 경우)
+                                if project_id:
+                                    try:
+                                        from utils.project_manager import (
+                                            save_message_to_db,
+                                            update_project_with_analysis,
+                                            extract_analysis_results
+                                        )
+                                        
+                                        # 사용자 입력 메시지 저장
+                                        if full_query:
+                                            save_message_to_db(project_id, "user", full_query)
+                                        
+                                        # AI 응답 저장 (요약)
+                                        ai_summary = f"Analysis completed: {converted.get('product_info', {}).get('product_name', 'Product analysis')}"
+                                        save_message_to_db(project_id, "ai", ai_summary)
+                                        
+                                        # 분석 결과 데이터 추출 및 프로젝트 업데이트
+                                        risk_score, landed_cost = extract_analysis_results(converted)
+                                        update_project_with_analysis(
+                                            project_id=project_id,
+                                            risk_score=risk_score,
+                                            landed_cost=landed_cost,
+                                            status="completed"
+                                        )
+                                    except Exception as e:
+                                        # DB 저장 실패해도 결과는 표시
+                                        print(f"[DB Save Error] Failed to save analysis: {e}")
+                                
                                 state.set_result(converted)
                                 st.session_state.analysis_mode = result.get("mode", "general")
                                 st.session_state.page = "results"

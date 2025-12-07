@@ -20,6 +20,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Send } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { createClient } from '@/lib/supabase/client';
 
 // Sourcing Flow 5.0: Streamlined & Non-Redundant
 const SOURCING_STEPS = [
@@ -113,25 +114,6 @@ const SOURCING_STEPS = [
     question: "Great. Please enter that value (e.g., '$79-99', '$14/unit', or '40%').",
     placeholder: "Type your target value..."
   },
-
-  // --- Step 6: Pricing ---
-  {
-    id: 'pricing_metric',
-    type: 'select' as const,
-    question: "What do you know about your pricing or margin targets?",
-    options: [
-      "I know my Target Retail Price",
-      "I know my Current Landed Cost",
-      "I know my Target Margin %",
-      "I'm not sure (Show ranges)"
-    ]
-  },
-  {
-    id: 'pricing_value',
-    type: 'text' as const,
-    question: "Great. Please enter that value (e.g., '$79-99', '$14/unit', or '40%').",
-    placeholder: "Type your target value..."
-  },
   
   // --- Step 7: Volume & Timeline ---
   {
@@ -196,11 +178,72 @@ export default function ChatPage() {
   const [showInput, setShowInput] = useState(true);
   const [textInput, setTextInput] = useState('');
   const [isCompleted, setIsCompleted] = useState(false);
+  const [projectId, setProjectId] = useState<string | null>(null);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
   const currentStep = SOURCING_STEPS[currentStepIndex];
   const progress = isCompleted ? 100 : ((currentStepIndex + 1) / SOURCING_STEPS.length) * 100;
+
+  // 인증 확인
+  useEffect(() => {
+    const checkAuth = async () => {
+      const supabase = createClient();
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        setIsAuthenticated(true);
+      }
+    };
+    checkAuth();
+  }, []);
+
+  // 프로젝트 생성 (첫 번째 질문 답변 후)
+  useEffect(() => {
+    const createProject = async () => {
+      if (!isAuthenticated || !selectedOptions.product_info || projectId) return;
+      
+      try {
+        const response = await fetch('/api/projects', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ 
+            name: selectedOptions.product_info.split('-')[0]?.trim() || 
+                  selectedOptions.product_info.split(',')[0]?.trim() || 
+                  'New Analysis Project'
+          }),
+        });
+        
+        const data = await response.json();
+        if (data.ok && data.project) {
+          setProjectId(data.project.id);
+        }
+      } catch (error) {
+        console.error('Failed to create project:', error);
+      }
+    };
+    
+    createProject();
+  }, [selectedOptions.product_info, isAuthenticated, projectId]);
+
+  // 메시지 저장 함수
+  const saveMessage = async (role: 'user' | 'ai', content: string) => {
+    if (!projectId) return;
+    
+    try {
+      await fetch('/api/messages', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          project_id: projectId,
+          role,
+          content,
+        }),
+      });
+    } catch (error) {
+      console.error('Failed to save message:', error);
+    }
+  };
 
   // Initialize with first question
   useEffect(() => {
@@ -232,17 +275,21 @@ export default function ChatPage() {
     if (!currentStep || currentStep.type !== 'text') return;
     if (!textInput.trim()) return;
 
-    // Validate link for ref_link step
+    // ref_link 유효성 검사 강화
+    let displayValue = textInput.trim();
+    let finalInputValue = textInput.trim();
+    
     if (currentStep.id === 'ref_link') {
-      const link = textInput.trim();
-      if (!link.includes('http') && !link.includes('www') && !link.includes('amazon') && !link.includes('alibaba')) {
-        // Show validation message (optional - for now just proceed)
-        // In production, you might want to show an error message
+      const lower = textInput.trim().toLowerCase();
+      
+      // Skip 패턴 확인 및 빈 입력 처리
+      if (['skip', '없음', '몰라', 'none', ''].includes(lower) || lower.length < 5) {
+        finalInputValue = 'skip'; // AI 분석용으로 'skip'으로 정규화
+        displayValue = 'Skip / Not provided';
       }
     }
 
     // Format price input for pricing_value (optional formatting)
-    let displayValue = textInput.trim();
     if (currentStep.id === 'pricing_value') {
       // Try to extract and format price if it looks like a number
       const numValue = parseFloat(textInput.trim().replace(/[$,\s]/g, ''));
@@ -256,10 +303,12 @@ export default function ChatPage() {
       }
     }
 
-    // Save input
+    // Save input (ref_link는 'skip'으로 정규화)
+    const finalValue = currentStep.id === 'ref_link' ? finalInputValue : displayValue;
+    
     setSelectedOptions(prev => ({
       ...prev,
-      [currentStep.id]: textInput.trim(),
+      [currentStep.id]: finalValue,
     }));
 
     // Hide input immediately
@@ -273,6 +322,9 @@ export default function ChatPage() {
       timestamp: Date.now(),
     };
     setMessages(prev => [...prev, userMessage]);
+
+    // Save message to DB (실제 저장되는 값은 finalInputValue)
+    saveMessage('user', currentStep.id === 'ref_link' ? finalInputValue : displayValue);
 
     // Clear input
     setTextInput('');
@@ -295,6 +347,9 @@ export default function ChatPage() {
       timestamp: Date.now(),
     };
     setMessages(prev => [...prev, userMessage]);
+
+    // Save message to DB
+    saveMessage('user', option);
 
     // Save selection
     setSelectedOptions(prev => ({
@@ -368,16 +423,8 @@ export default function ChatPage() {
             timestamp: Date.now(),
           }]);
           
-          // Save to localStorage
-          try {
-            const onboardingData = {
-              ...selectedOptions,
-              timestamp: Date.now(),
-            };
-            localStorage.setItem('nexsupply_onboarding_data', JSON.stringify(onboardingData));
-          } catch (error) {
-            console.error('Failed to save onboarding data:', error);
-          }
+          // localStorage 제거 - project_id를 URL로 전달
+          // 데이터는 이미 Supabase DB에 저장됨
           
           // Mark as completed (will show button instead of auto-redirect)
           setIsCompleted(true);
@@ -631,7 +678,14 @@ export default function ChatPage() {
                 className="flex justify-center pt-4"
               >
                 <motion.button
-                  onClick={() => router.push('/results')}
+                  onClick={() => {
+                    if (projectId) {
+                      router.push(`/results?project_id=${projectId}`);
+                    } else {
+                      console.error('Project ID is missing');
+                      router.push('/results');
+                    }
+                  }}
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
                   className="px-8 py-4 rounded-full bg-neutral-900 text-white text-base font-semibold shadow-lg hover:shadow-xl transition-all focus:outline-none focus:ring-2 focus:ring-neutral-900 focus:ring-offset-2"

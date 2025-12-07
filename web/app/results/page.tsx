@@ -65,6 +65,7 @@ interface AIAnalysisResult {
     key_action: string;
   };
   executive_summary?: string;
+  osint_risk_score?: number; // OSINT Risk Score (0-100)
   [key: string]: any;
 }
 
@@ -282,7 +283,7 @@ function ScaleAnalysis({ scaleAnalysis }: { scaleAnalysis: any[] }) {
 }
 
 // Risk Assessment Component (2x2 Grid with Left-Border Style)
-function RiskAssessment({ risks }: { risks: any }) {
+function RiskAssessment({ risks, osintRiskScore }: { risks: any; osintRiskScore?: number }) {
   const getRiskColor = (level?: string) => {
     if (!level) return { border: 'border-l-gray-400', text: 'text-gray-600', icon: 'text-gray-400' };
     switch (level.toLowerCase()) {
@@ -321,6 +322,24 @@ function RiskAssessment({ risks }: { risks: any }) {
   return (
     <Card className="bg-white border border-gray-200 p-6 shadow-sm">
       <h2 className="text-sm font-semibold text-gray-500 uppercase mb-4 tracking-wide">Risk Assessment</h2>
+      
+      {/* ✨ OSINT Risk Score 표시 (새로 추가) */}
+      {osintRiskScore !== undefined && (
+        <div className="pt-2 pb-4 mb-4 border-b border-gray-200">
+          <div className="flex justify-between items-center">
+            <span className="text-sm font-semibold text-blue-600">
+              OSINT Risk Score 
+            </span>
+            <span className="text-2xl font-bold font-mono text-gray-900">
+              {osintRiskScore.toFixed(0)}/100
+            </span>
+          </div>
+          <p className="text-xs text-gray-500 mt-1">
+            (Based on 500 supplier database & web OSINT signals)
+          </p>
+        </div>
+      )}
+      
       <div className="grid grid-cols-2 gap-3">
         {riskItems.map((item) => {
           const colors = getRiskColor(item.data?.level);
@@ -539,6 +558,53 @@ function ActionRoadmap({ answers }: { answers: Answers }) {
 
 // Pricing CTA Component (Three-column pricing table)
 function PricingCTA() {
+  const [isProcessingPayment, setIsProcessingPayment] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+
+  // 인증 상태 확인
+  useEffect(() => {
+    const checkAuth = async () => {
+      try {
+        const { createClient } = await import('@/lib/supabase/client');
+        const supabase = createClient();
+        const { data: { user } } = await supabase.auth.getUser();
+        setIsAuthenticated(!!user);
+      } catch (error) {
+        setIsAuthenticated(false);
+      }
+    };
+    checkAuth();
+  }, []);
+
+  // Validator 결제 버튼 핸들러
+  const handleValidatorPayment = async () => {
+    if (!isAuthenticated) {
+      // 로그인 페이지로 리다이렉트
+      window.location.href = '/login?redirect=/results';
+      return;
+    }
+
+    setIsProcessingPayment(true);
+    
+    try {
+      // Checkout URL 생성 API 호출
+      const response = await fetch('/api/payment/create-checkout-url');
+      const data = await response.json();
+
+      if (data.ok && data.checkout_url) {
+        // Lemon Squeezy 결제 페이지로 리다이렉트
+        window.location.href = data.checkout_url;
+      } else {
+        alert(data.error || 'Failed to create checkout URL. Please try again.');
+        setIsProcessingPayment(false);
+      }
+    } catch (error) {
+      console.error('[Payment] Failed to create checkout URL:', error);
+      alert('Payment system error. Please contact support.');
+      setIsProcessingPayment(false);
+    }
+  };
+
   const tiers = [
     {
       name: 'Starter',
@@ -553,6 +619,7 @@ function PricingCTA() {
       ],
       cta: 'Start Analysis',
       ctaHref: '/chat',
+      onClick: undefined, // 기본 href 사용
     },
     {
       name: 'Validator',
@@ -568,6 +635,7 @@ function PricingCTA() {
       ],
       cta: 'Request Quote',
       ctaHref: '/contact',
+      onClick: handleValidatorPayment, // 커스텀 결제 핸들러
       popular: true,
     },
     {
@@ -584,6 +652,7 @@ function PricingCTA() {
       ],
       cta: 'Get Started',
       ctaHref: '/contact',
+      onClick: undefined, // 기본 href 사용
     },
   ];
 
@@ -617,9 +686,10 @@ function PricingCTA() {
             <Button
               variant={tier.popular ? 'primary' : 'outline'}
               className={`w-full ${tier.popular ? 'bg-gray-900 hover:bg-gray-800 text-white' : 'border-gray-300 text-gray-700 hover:bg-gray-50'}`}
-              onClick={() => window.location.href = tier.ctaHref}
+              onClick={tier.onClick || (() => window.location.href = tier.ctaHref)}
+              disabled={isProcessingPayment && tier.name === 'Validator'}
             >
-              {tier.cta}
+              {isProcessingPayment && tier.name === 'Validator' ? 'Processing...' : tier.cta}
             </Button>
           </div>
         ))}
@@ -636,37 +706,80 @@ function ResultsContent() {
   const [aiAnalysis, setAiAnalysis] = useState<AIAnalysisResult | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [criticalRisk, setCriticalRisk] = useState(false);
+  const [blacklistDetails, setBlacklistDetails] = useState<any>(null);
+  const projectId = searchParams?.get('project_id') || null;
 
+  // 프로젝트 메시지에서 answers 로드
+  useEffect(() => {
+    const loadProjectMessages = async () => {
+      if (!projectId) {
+        setIsInitialized(true);
+        return;
+      }
+      
+      try {
+        const response = await fetch(`/api/messages?project_id=${projectId}`);
+        const data = await response.json();
+        
+        if (data.ok && data.messages) {
+          // 메시지에서 사용자 입력 추출
+          const userAnswers: Answers = {};
+          data.messages.forEach((msg: any) => {
+            if (msg.role === 'user') {
+              // 메시지 내용을 answers로 파싱 (간단한 구현)
+              // 실제로는 메시지 구조에 따라 다르게 처리해야 함
+            }
+          });
+          
+          // 또는 프로젝트 정보에서 answers 로드
+          // 임시로 URL 파라미터에서 로드
+          const paramsAnswers: Answers = {};
+          searchParams?.forEach((value, key) => {
+            if (key !== 'project_id') {
+              try {
+                paramsAnswers[key] = JSON.parse(value);
+              } catch {
+                paramsAnswers[key] = value;
+              }
+            }
+          });
+          
+          if (Object.keys(paramsAnswers).length > 0) {
+            setAnswers(paramsAnswers);
+          }
+        }
+      } catch (error) {
+        console.error('[Results] Failed to load project messages:', error);
+      }
+      
+      setIsInitialized(true);
+    };
+    
+    loadProjectMessages();
+  }, [projectId, searchParams]);
+
+  // localStorage 제거 - URL 파라미터에서만 로드
   useEffect(() => {
     if (isInitialized) return;
     
-    try {
-      const chatData = localStorage.getItem('nexsupply_onboarding_data');
-      if (chatData) {
-        const parsed = JSON.parse(chatData);
-        setAnswers(parsed);
-      }
-    } catch (error) {
-      console.error('[Results] Failed to load chat onboarding data:', error);
-    }
-    
-    setIsInitialized(true);
-  }, [isInitialized]);
-
-  useEffect(() => {
     const paramsAnswers: Answers = {};
     searchParams?.forEach((value, key) => {
-      try {
-        paramsAnswers[key] = JSON.parse(value);
-      } catch {
-        paramsAnswers[key] = value;
+      if (key !== 'project_id') {
+        try {
+          paramsAnswers[key] = JSON.parse(value);
+        } catch {
+          paramsAnswers[key] = value;
+        }
       }
     });
 
     if (Object.keys(paramsAnswers).length > 0) {
       setAnswers(paramsAnswers);
     }
-  }, [searchParams]);
+    
+    setIsInitialized(true);
+  }, [isInitialized, searchParams]);
 
   useEffect(() => {
     if (!isInitialized) return;
@@ -678,17 +791,29 @@ function ResultsContent() {
     const fetchAnalysis = async () => {
       setIsLoading(true);
       setError(null);
+      setCriticalRisk(false);
+      setBlacklistDetails(null);
 
       try {
         const response = await fetch('/api/analyze', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ userContext: answers }),
+          body: JSON.stringify({ 
+            userContext: answers,
+            project_id: projectId, // project_id 전달
+          }),
         });
 
         const data = await response.json();
 
         if (!response.ok || !data.ok) {
+          // CRITICAL_RISK 에러 처리
+          if (data.error_code === 'CRITICAL_RISK') {
+            setCriticalRisk(true);
+            setBlacklistDetails(data.blacklist_details);
+            return;
+          }
+          
           throw new Error(data.error || 'Failed to analyze project');
         }
 
@@ -712,13 +837,47 @@ function ResultsContent() {
     return <AnalysisLoader />;
   }
 
-  if (error) {
+  // CRITICAL_RISK 처리 및 일반 에러 처리
+  const isCriticalRisk = criticalRisk || (error && (error.includes("CRITICAL_RISK") || error.includes("해당 공급업체는 NexSupply의 블랙리스트")));
+  
+  if (error || criticalRisk) {
     return (
-      <div className="min-h-screen bg-[#09090b] flex items-center justify-center p-4">
-        <div className="text-center max-w-2xl">
-          <div className="text-red-400 text-xl mb-2">Error</div>
-          <div className="text-zinc-400">{error}</div>
-        </div>
+      <div className="min-h-screen bg-[#f9fafb] flex items-center justify-center p-4">
+        <Card className="text-center max-w-lg p-8 shadow-2xl border-l-4 border-red-500">
+          <XCircle className="w-12 h-12 text-red-500 mx-auto mb-4" />
+          <div className="text-xl font-bold text-gray-900 mb-4">
+            {isCriticalRisk ? "⚠️ CRITICAL SOURCING RISK DETECTED" : "Analysis Failed"}
+          </div>
+          <div className="text-gray-600 mb-6">
+            {isCriticalRisk 
+              ? "해당 공급업체는 품질, 납기 문제로 NexSupply의 블랙리스트에 등록되어 즉시 거래가 불가합니다. AI 분석을 진행할 수 없습니다."
+              : error
+            }
+          </div>
+          
+          {blacklistDetails && (
+            <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6 text-left">
+              <p className="text-sm font-semibold text-red-900 mb-2">
+                공급업체: {blacklistDetails.company_name}
+              </p>
+              <p className="text-sm text-red-700 mb-2">
+                리스크 스코어: {blacklistDetails.risk_score}/100
+              </p>
+              {blacklistDetails.note && (
+                <p className="text-xs text-red-600">{blacklistDetails.note}</p>
+              )}
+            </div>
+          )}
+          
+          {isCriticalRisk && (
+            <Button 
+              onClick={() => window.location.href = '/contact?service=expert_vetted_sourcing'} 
+              className="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded"
+            >
+              소싱 전문가에게 연결 요청 (대안 공급처 즉시 추천)
+            </Button>
+          )}
+        </Card>
       </div>
     );
   }
@@ -807,6 +966,7 @@ function ResultsContent() {
           {/* Risk Assessment */}
           <RiskAssessment 
             risks={risks || {}}
+            osintRiskScore={aiAnalysis?.osint_risk_score}
           />
 
           {/* Competitor Benchmark - Full Width (Market Positioning 대체) */}

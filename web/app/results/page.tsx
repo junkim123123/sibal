@@ -1016,18 +1016,56 @@ function ResultsActionButtons({ projectId, answers, aiAnalysis }: { projectId?: 
         }),
       });
 
+      // 응답 상태 확인
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
+        console.error('[Subscribe] API error response:', {
+          status: response.status,
+          statusText: response.statusText,
+          error: errorData,
+        });
+        
+        // 상세한 에러 메시지 구성
+        let errorMessage = errorData.error || 'Failed to create checkout URL';
+        if (errorData.details) {
+          errorMessage += `\n\nDetails: ${errorData.details}`;
+        }
+        if (errorData.lemonSqueezyError) {
+          const lsError = errorData.lemonSqueezyError;
+          if (lsError.errors && lsError.errors[0]) {
+            errorMessage += `\n\nLemon Squeezy Error: ${lsError.errors[0].detail || lsError.errors[0].title || 'Unknown error'}`;
+          }
+        }
+        
+        alert(errorMessage);
+        setIsProcessingPayment(false);
+        return;
+      }
+
       const data = await response.json();
 
       if (data.ok && data.checkout_url) {
         // Lemon Squeezy 결제 페이지로 리다이렉트
         window.location.href = data.checkout_url;
       } else {
-        alert(data.error || 'Failed to create checkout URL. Please try again.');
+        // 상세한 에러 메시지 표시
+        let errorMessage = data.error || 'Failed to create checkout URL. Please try again.';
+        if (data.details) {
+          errorMessage += `\n\nDetails: ${data.details}`;
+        }
+        if (data.lemonSqueezyError) {
+          const lsError = data.lemonSqueezyError;
+          if (lsError.errors && lsError.errors[0]) {
+            errorMessage += `\n\nLemon Squeezy Error: ${lsError.errors[0].detail || lsError.errors[0].title || 'Unknown error'}`;
+          }
+        }
+        alert(errorMessage);
         setIsProcessingPayment(false);
       }
     } catch (error) {
       console.error('[Subscribe] Failed to create checkout URL:', error);
-      alert('Payment system error. Please contact support.');
+      const errorMessage = error instanceof Error ? error.message : 'Payment system error. Please contact support.';
+      alert(`Payment Error: ${errorMessage}\n\nPlease check the browser console for more details.`);
       setIsProcessingPayment(false);
     }
   };

@@ -21,8 +21,22 @@ export async function POST(req: Request) {
       );
     }
 
-    const body = await req.json();
-    const { project_id } = body;
+    let body: any;
+    try {
+      body = await req.json();
+    } catch (parseError) {
+      console.error('[Subscribe] ❌ Failed to parse request body:', parseError);
+      return NextResponse.json(
+        {
+          ok: false,
+          error: 'Invalid request body',
+          details: 'Request body must be valid JSON',
+        },
+        { status: 400 }
+      );
+    }
+
+    const { project_id } = body || {};
 
     // Lemon Squeezy API 키 확인 (두 가지 변수명 모두 지원)
     const lemonSqueezyApiKey = process.env.LEMONSQUEEZY_API_KEY || 
@@ -203,6 +217,9 @@ export async function POST(req: Request) {
         errorData?.error?.code ||
         null;
 
+      // HTTP 상태 코드에 따라 적절한 응답 반환
+      const httpStatus = checkoutResponse.status || 500;
+      
       return NextResponse.json(
         { 
           ok: false, 
@@ -210,8 +227,14 @@ export async function POST(req: Request) {
           details: errorMessage,
           errorCode: errorCode,
           lemonSqueezyError: errorData, // 전체 에러 객체 반환 (디버깅용)
+          debug: {
+            status: httpStatus,
+            storeId: storeIdString,
+            variantId: variantIdString,
+            testMode: process.env.NODE_ENV !== 'production',
+          },
         },
-        { status: checkoutResponse.status || 500 }
+        { status: httpStatus }
       );
     }
 

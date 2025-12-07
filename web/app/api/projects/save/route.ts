@@ -76,6 +76,24 @@ export async function POST(req: Request) {
       if (updateError) {
         console.error('[Save Project] Failed to update project:', updateError);
         console.error('[Save Project] Update error details:', JSON.stringify(updateError, null, 2));
+        
+        // CHECK 제약조건 위반 에러인지 확인
+        const errorMessage = updateError.message || JSON.stringify(updateError);
+        if (errorMessage.includes('check constraint') || errorMessage.includes('projects_status_check')) {
+          return NextResponse.json(
+            { 
+              ok: false, 
+              error: 'Database constraint error: "saved" status is not allowed. Please run the migration to add "saved" status.',
+              details: {
+                error: updateError,
+                migration_file: 'add_saved_status_to_projects.sql',
+                hint: 'Run the SQL migration in Supabase SQL Editor to allow "saved" status',
+              }
+            },
+            { status: 500 }
+          );
+        }
+        
         return NextResponse.json(
           { ok: false, error: 'Failed to update project status', details: updateError },
           { status: 500 }

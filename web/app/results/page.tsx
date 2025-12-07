@@ -959,12 +959,16 @@ function ResultsActionButtons({ projectId, answers }: { projectId?: string | nul
         // 대시보드의 Saved Products 탭으로 이동 (전체 페이지 리로드로 확실히 새로고침)
         window.location.href = '/dashboard?tab=products';
       } else {
-        alert(data.error || 'Failed to save report. Please try again.');
+        console.error('[Save Report] Save failed:', data);
+        const errorMessage = data.details 
+          ? `${data.error}\n\nDetails: ${JSON.stringify(data.details, null, 2)}`
+          : data.error || 'Failed to save report. Please try again.';
+        alert(errorMessage);
         setIsSaving(false);
       }
     } catch (error) {
       console.error('[Save Report] Failed to save:', error);
-      alert('Failed to save report. Please try again.');
+      alert(`Failed to save report: ${error instanceof Error ? error.message : 'Unknown error'}`);
       setIsSaving(false);
     }
   };

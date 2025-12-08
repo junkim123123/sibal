@@ -25,16 +25,19 @@ export default function SupportPage() {
 
           {/* Right Column - Support Sections */}
           <div className="lg:col-span-7 space-y-16 lg:space-y-20">
-            {/* Section 1: Urgent Customs & Freight */}
+            {/* Section 1: Critical Logistics Escalation */}
             <section>
               <div className="flex items-start gap-3 mb-4">
                 <AlertCircle className="h-6 w-6 text-red-600 flex-shrink-0 mt-1" />
                 <div>
                   <h2 className="text-3xl font-bold mb-4 text-black">
-                    Urgent Shipment Issues
+                    Critical Logistics Escalation
                   </h2>
-                  <p className="text-lg text-zinc-600 mb-6 leading-relaxed">
-                    If your shipment is held at customs or you have a time-sensitive logistics issue, please email our emergency line immediately.
+                  <p className="text-lg text-zinc-600 mb-2 leading-relaxed">
+                    For customs holds or shipping emergencies. This inbox is monitored by our senior logistics team.
+                  </p>
+                  <p className="text-base text-zinc-500 mb-6">
+                    Avg. Response: &lt; 2 Hours
                   </p>
                   <a
                     href="mailto:urgent@nexsupply.net"
@@ -56,24 +59,27 @@ export default function SupportPage() {
                 Need updates on an active quote or sample? The fastest way is to message your agent directly through the dashboard.
               </p>
               <Link
-                href="/dashboard"
+                href="/dashboard/chat"
                 className="inline-flex items-center gap-2 text-lg font-medium text-black hover:underline transition-colors group"
               >
-                Go to Dashboard
+                Open Agent Chat
                 <ArrowRight className="h-5 w-5 group-hover:translate-x-1 transition-transform" />
               </Link>
             </section>
 
-            {/* Section 3: General Inquiries */}
+            {/* Section 3: Trade Operations Desk */}
             <section>
               <h2 className="text-3xl font-bold mb-4 text-black">
-                Customer Support
+                Trade Operations Desk
               </h2>
               <p className="text-lg text-zinc-600 mb-2 leading-relaxed">
-                For general questions about pricing, platform usage, or billing.
+                For billing, platform usage, and account management.
               </p>
-              <p className="text-base text-zinc-500 mb-6">
+              <p className="text-base text-zinc-500 mb-1">
                 Hours of operation: 9am to 6pm EST, Mon-Fri.
+              </p>
+              <p className="text-sm text-zinc-400 mb-6 italic">
+                Async support available during Asia business hours.
               </p>
               <a
                 href="mailto:support@nexsupply.net"

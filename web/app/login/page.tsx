@@ -107,15 +107,29 @@ function LoginPageContent() {
       // Determine redirect path based on user type (will be handled in callback)
       const redirectPath = '/dashboard'
       
+      // Configure OAuth options based on provider
+      const oauthOptions: any = {
+        redirectTo: `${redirectUrl}?next=${encodeURIComponent(redirectPath)}`,
+      }
+      
+      if (provider === 'google') {
+        oauthOptions.queryParams = {
+          access_type: 'offline',
+          prompt: 'consent',
+        }
+      } else if (provider === 'kakao') {
+        // Kakao: Request only basic scopes that are typically enabled by default
+        // If account_email and profile_image are not configured in Kakao Developer Console,
+        // we'll only request the nickname scope
+        // Note: Supabase may still request email by default, but we can try to limit it
+        oauthOptions.scopes = 'profile_nickname'
+        // Alternative: If you want to request email, make sure it's enabled in Kakao Developer Console
+        // oauthOptions.scopes = 'profile_nickname,account_email'
+      }
+      
       const { data, error: oauthError } = await supabase.auth.signInWithOAuth({
         provider,
-        options: {
-          redirectTo: `${redirectUrl}?next=${encodeURIComponent(redirectPath)}`,
-          queryParams: provider === 'google' ? {
-            access_type: 'offline',
-            prompt: 'consent',
-          } : undefined,
-        },
+        options: oauthOptions,
       })
 
       if (oauthError) {

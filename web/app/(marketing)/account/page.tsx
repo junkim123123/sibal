@@ -66,7 +66,7 @@ export default function AccountPage() {
             onClick={() => setActiveTab('company')}
           />
           <TabButton
-            label="Shipping Defaults"
+            label="Warehouse / Destination"
             active={activeTab === 'shipping'}
             onClick={() => setActiveTab('shipping')}
           />
@@ -122,6 +122,17 @@ function ProfileTab({ userEmail }: { userEmail: string }) {
           type="text"
           className="w-full px-4 py-3 bg-white border border-gray-200 rounded-lg text-black placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent transition-all"
           placeholder="John Doe"
+        />
+      </div>
+
+      <div>
+        <label className="block text-xs uppercase tracking-wide text-zinc-500 mb-2 font-semibold">
+          Job Title
+        </label>
+        <input
+          type="text"
+          className="w-full px-4 py-3 bg-white border border-gray-200 rounded-lg text-black placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent transition-all"
+          placeholder="e.g. CEO, Purchasing Manager, Operations Lead"
         />
       </div>
 
@@ -189,13 +200,30 @@ function CompanyTab() {
 
       <div>
         <label className="block text-xs uppercase tracking-wide text-zinc-500 mb-2 font-semibold">
-          Website URL
+          Storefront / Sales Channel URL
         </label>
         <input
           type="url"
           className="w-full px-4 py-3 bg-white border border-gray-200 rounded-lg text-black placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent transition-all"
-          placeholder="https://www.company.com"
+          placeholder="https://www.amazon.com/shops/yourstore or https://yourstore.com"
         />
+        <p className="mt-2 text-xs text-zinc-500">
+          Your Amazon store, Shopify store, or other sales channel
+        </p>
+      </div>
+
+      <div>
+        <label className="block text-xs uppercase tracking-wide text-zinc-500 mb-2 font-semibold">
+          Tax ID / EIN <span className="text-zinc-400 font-normal">(Optional)</span>
+        </label>
+        <input
+          type="text"
+          className="w-full px-4 py-3 bg-white border border-gray-200 rounded-lg text-black placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent transition-all"
+          placeholder="12-3456789"
+        />
+        <p className="mt-2 text-xs text-zinc-500">
+          Required for invoicing and tax documentation
+        </p>
       </div>
 
       <div>
@@ -227,6 +255,20 @@ function CompanyTab() {
 function ShippingTab() {
   return (
     <form className="space-y-6">
+      <div className="flex items-start gap-3 p-4 bg-neutral-50 border border-neutral-200 rounded-lg">
+        <input
+          type="checkbox"
+          id="fba-warehouse"
+          className="mt-1 w-4 h-4 text-black border-gray-300 rounded focus:ring-black focus:ring-2"
+        />
+        <label htmlFor="fba-warehouse" className="text-sm text-zinc-700 cursor-pointer">
+          <span className="font-medium">This is an Amazon FBA Warehouse</span>
+          <p className="text-xs text-zinc-500 mt-1">
+            Check this if you're shipping directly to an Amazon fulfillment center
+          </p>
+        </label>
+      </div>
+
       <div>
         <label className="block text-xs uppercase tracking-wide text-zinc-500 mb-2 font-semibold">
           Address

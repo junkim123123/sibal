@@ -38,6 +38,12 @@ function DashboardPageContent() {
     limit: number;
     userRole?: string;
   } | null>(null)
+  const [assignedManager, setAssignedManager] = useState<{
+    id: string;
+    name: string;
+    email: string;
+    projectId: string;
+  } | null>(null)
   const router = useRouter()
 
   // URL 파라미터에서 탭 변경 감지 및 데이터 새로고침
@@ -80,10 +86,20 @@ function DashboardPageContent() {
         }
         setIsAuthenticated(true)
         setUserId(user.id)
-        const name = user.user_metadata?.full_name || 
+        
+        // 사용자 이름 가져오기 (profiles 테이블 우선, 없으면 metadata)
+        const supabase = createClient()
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('name')
+          .eq('id', user.id)
+          .single()
+        
+        const name = profile?.name ||
+                     user.user_metadata?.full_name || 
                      user.user_metadata?.name ||
                      user.email?.split('@')[0] ||
-                     'Founder'
+                     'User'
         setUserName(name)
         
         // 프로젝트 데이터 로드
@@ -95,6 +111,8 @@ function DashboardPageContent() {
           console.error('[Dashboard] Failed to load usage data:', usageError)
           // 사용량 데이터 로드 실패는 치명적이지 않으므로 계속 진행
         }
+        // 할당된 매니저 정보 로드
+        await loadAssignedManager(user.id)
       } catch (error) {
         console.error('[Dashboard] Auth check error:', error)
         window.location.href = '/login'
@@ -308,6 +326,55 @@ function DashboardPageContent() {
         limit: 30,
         userRole: 'free',
       })
+    }
+  }
+
+  // 할당된 매니저 정보 로드
+  async function loadAssignedManager(userId: string) {
+    try {
+      const supabase = createClient()
+      
+      // 사용자의 프로젝트 중 매니저가 할당된 프로젝트 찾기
+      const { data: projectsWithManager, error } = await supabase
+        .from('projects')
+        .select(`
+          id,
+          manager_id
+        `)
+        .eq('user_id', userId)
+        .not('manager_id', 'is', null)
+        .in('status', ['active', 'in_progress'])
+        .order('created_at', { ascending: false })
+        .limit(1)
+
+      if (error || !projectsWithManager || projectsWithManager.length === 0) {
+        setAssignedManager(null)
+        return
+      }
+
+      const projectWithManager = projectsWithManager[0]
+      
+      // 매니저 프로필 정보 가져오기
+      const { data: managerProfile, error: managerError } = await supabase
+        .from('profiles')
+        .select('id, name, email')
+        .eq('id', projectWithManager.manager_id)
+        .single()
+
+      if (managerError || !managerProfile) {
+        setAssignedManager(null)
+        return
+      }
+
+      setAssignedManager({
+        id: managerProfile.id,
+        name: managerProfile.name || managerProfile.email?.split('@')[0] || 'Manager',
+        email: managerProfile.email || '',
+        projectId: projectWithManager.id,
+      })
+    } catch (error) {
+      console.error('[Dashboard] Failed to load assigned manager:', error)
+      setAssignedManager(null)
     }
   }
 
@@ -540,20 +607,33 @@ function DashboardPageContent() {
   return (
     <div className="min-h-screen bg-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        {/* Header - Welcome Message + Usage Card */}
+        {/* Header - Welcome Message + New Analysis Button + Usage Card */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
           {/* Left: Welcome Message (2 columns) */}
           <div className="md:col-span-2">
-            <h1 className="text-4xl md:text-5xl font-bold text-black tracking-tight mb-2">
-              Welcome back, {userName}.
-            </h1>
-            <p className="text-zinc-600 text-lg">
-              Manage your sourcing estimates and track shipments.
-            </p>
+            <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4 mb-4">
+              <div>
+                <h1 className="text-4xl md:text-5xl font-bold text-black tracking-tight mb-2">
+                  Welcome back, {userName}.
+                </h1>
+                <p className="text-zinc-600 text-lg">
+                  Manage your sourcing estimates and track shipments.
+                </p>
+              </div>
+              {/* New Analysis Request Button */}
+              <Link href="/copilot" className="flex-shrink-0">
+                <Button
+                  size="lg"
+                  className="bg-neutral-900 hover:bg-neutral-800 text-white rounded-full px-6 md:px-8 py-3 md:py-3.5 font-semibold flex items-center gap-2 w-full md:w-auto"
+                >
+                  <span>+ New Analysis Request</span>
+                </Button>
+              </Link>
+            </div>
           </div>
 
-          {/* Right: Usage Card (1 column) */}
-          <div className="md:col-span-1">
+          {/* Right: Usage Card + Agent Card (1 column) */}
+          <div className="md:col-span-1 space-y-4">
             {usageData && (
               <UsageCard
                 usedCount={usageData.analysisCount}
@@ -561,6 +641,58 @@ function DashboardPageContent() {
                 hasActiveSubscription={usageData.hasActiveSubscription}
                 userRole={usageData.userRole || 'free'}
               />
+            )}
+            
+            {/* Your Dedicated Agent Card */}
+            {assignedManager ? (
+              <div className="bg-white border border-neutral-200 rounded-xl p-5 shadow-sm">
+                <h3 className="text-sm font-semibold text-neutral-900 mb-3">
+                  Your Dedicated Agent
+                </h3>
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="w-10 h-10 rounded-full bg-neutral-100 flex items-center justify-center flex-shrink-0">
+                    <span className="text-sm font-semibold text-neutral-700">
+                      {assignedManager.name.charAt(0).toUpperCase()}
+                    </span>
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium text-neutral-900 truncate">
+                      {assignedManager.name}
+                    </p>
+                    <p className="text-xs text-neutral-500 truncate">
+                      Sourcing Specialist
+                    </p>
+                  </div>
+                </div>
+                <Link href={`/dashboard/chat?project_id=${assignedManager.projectId}`}>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="w-full flex items-center justify-center gap-2"
+                  >
+                    <MessageSquare className="w-4 h-4" />
+                    Chat with Agent
+                  </Button>
+                </Link>
+              </div>
+            ) : (
+              <div className="bg-white border border-neutral-200 rounded-xl p-5 shadow-sm">
+                <h3 className="text-sm font-semibold text-neutral-900 mb-3">
+                  Your Dedicated Agent
+                </h3>
+                <p className="text-xs text-neutral-600 mb-4">
+                  A dedicated agent will be assigned when you start your first project.
+                </p>
+                <Link href="/copilot">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="w-full"
+                  >
+                    Start Your First Project
+                  </Button>
+                </Link>
+              </div>
             )}
           </div>
         </div>
@@ -587,11 +719,6 @@ function DashboardPageContent() {
             active={activeTab === 'documents'}
             onClick={() => setActiveTab('documents')}
           />
-          <TabButton
-            label="Your Agent"
-            active={activeTab === 'agent'}
-            onClick={() => setActiveTab('agent')}
-          />
         </div>
 
         {/* Content Area */}
@@ -613,9 +740,6 @@ function DashboardPageContent() {
               )}
               {activeTab === 'documents' && userId && (
                 <AssetLibrary userId={userId} />
-              )}
-              {activeTab === 'agent' && userId && (
-                <ClientMessagesList userId={userId} />
               )}
             </>
           )}

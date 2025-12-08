@@ -12,7 +12,7 @@ import Link from 'next/link';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { AlertCircle, CheckCircle2, XCircle, TrendingUp, Factory, Shield, Truck, Package, DollarSign, BarChart3, Calendar, Rocket, Download, Info, Check } from 'lucide-react';
+import { AlertCircle, CheckCircle2, XCircle, TrendingUp, Factory, Shield, Truck, Package, DollarSign, BarChart3, Calendar, Rocket, Download, Info, Check, Loader2, Sparkles } from 'lucide-react';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend, BarChart, Bar, XAxis, YAxis, CartesianGrid } from 'recharts';
 import AnalysisLoader from '@/components/AnalysisLoader';
 
@@ -1026,6 +1026,8 @@ function ActionRoadmap({ answers, aiAnalysis }: { answers: Answers; aiAnalysis?:
 function ResultsActionButtons({ projectId, answers, aiAnalysis }: { projectId?: string | null; answers: Answers; aiAnalysis?: AIAnalysisResult | null }) {
   const [isProcessingPayment, setIsProcessingPayment] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [gumroadUrl, setGumroadUrl] = useState<string | null>(null);
   // Agreement is now implicit (caption text only, no checkbox)
   const isAgreed = true;
 
@@ -1044,114 +1046,71 @@ function ResultsActionButtons({ projectId, answers, aiAnalysis }: { projectId?: 
     checkAuth();
   }, []);
 
-  // Start Sourcing Request 핸들러 (결제 없이 즉시 프로젝트 생성)
-  const handleStartSourcing = async () => {
+  // Start Sourcing Request 핸들러 - 결제 모달 표시
+  const handleStartSourcing = () => {
     if (!isAuthenticated) {
       window.location.href = '/login?redirect=/results';
       return;
     }
 
-    // Agreement is now implicit (no checkbox required)
+    // 결제 유도 모달 표시
+    setShowPaymentModal(true);
+  };
+
+  // 결제 진행 핸들러 - Gumroad 결제 페이지로 이동
+  const handleProceedToPayment = async () => {
+    if (!isAuthenticated) {
+      window.location.href = '/login?redirect=/results';
+      return;
+    }
 
     setIsProcessingPayment(true);
+    setShowPaymentModal(false);
     
     try {
-      console.log('[Start Sourcing] Starting project submission...', {
-        projectId,
-        hasAnswers: !!answers && Object.keys(answers).length > 0,
-        hasAiAnalysis: !!aiAnalysis,
-      });
-
-      // 프로젝트의 기존 메시지 불러오기 (있는 경우)
-      let existingMessages: any[] = [];
-      if (projectId) {
-        try {
-          const messagesResponse = await fetch(`/api/messages?project_id=${projectId}`);
-          const messagesData = await messagesResponse.json();
-          if (messagesData.ok && messagesData.messages) {
-            existingMessages = messagesData.messages.map((msg: any) => ({
-              role: msg.role,
-              content: msg.content,
-              timestamp: msg.timestamp,
-            }));
-            console.log('[Start Sourcing] Loaded existing messages:', existingMessages.length);
-          }
-        } catch (error) {
-          console.warn('[Start Sourcing] Failed to load existing messages:', error);
-        }
-      }
-
-      // answers와 ai_analysis에서 메시지 생성 (기존 메시지가 없는 경우)
-      const messagesToSave: any[] = [...existingMessages];
+      // 프로젝트가 없으면 먼저 생성
+      let finalProjectId = projectId;
       
-      // answers가 있으면 사용자 메시지로 추가
-      if (answers && Object.keys(answers).length > 0 && existingMessages.length === 0) {
-        const answersText = Object.entries(answers)
-          .filter(([key, value]) => value && value !== 'skip' && value !== 'Skip')
-          .map(([key, value]) => `${key}: ${value}`)
-          .join('\n');
-        
-        if (answersText) {
-          messagesToSave.push({
-            role: 'user',
-            content: `Product Analysis Request:\n${answersText}`,
-          });
+      if (!finalProjectId) {
+        // 프로젝트 이름 추출
+        const productName = answers?.product_info?.split('-')[0]?.trim() || 
+                           answers?.product_info?.split(',')[0]?.trim() ||
+                           answers?.product_desc?.split(',')[0] || 
+                           answers?.project_name || 
+                           'New Sourcing Project';
+
+        // 프로젝트 생성
+        const projectResponse = await fetch('/api/projects/submit', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            name: productName,
+            answers: answers,
+            ai_analysis: aiAnalysis,
+          }),
+        });
+
+        const projectData = await projectResponse.json();
+        if (projectData.ok && projectData.projectId) {
+          finalProjectId = projectData.projectId;
+        } else {
+          throw new Error('Failed to create project');
         }
       }
 
-      // ai_analysis가 있으면 AI 메시지로 추가
-      if (aiAnalysis && existingMessages.length === 0) {
-        const analysisSummary = aiAnalysis.executive_summary || 
-                               `Analysis completed for ${answers?.product_info || answers?.project_name || 'product'}`;
-        messagesToSave.push({
-          role: 'ai',
-          content: analysisSummary,
-        });
+      // Gumroad 결제 페이지로 리다이렉트 (프로젝트 ID를 URL 파라미터로 전달)
+      const gumroadUrl = new URL('https://junkim82.gumroad.com/l/wmtnuv');
+      if (finalProjectId) {
+        gumroadUrl.searchParams.set('custom_field1', finalProjectId);
       }
-
-      console.log('[Start Sourcing] Messages to save:', messagesToSave.length);
-
-      // 프로젝트 이름 추출
-      const productName = answers?.product_info?.split('-')[0]?.trim() || 
-                         answers?.product_info?.split(',')[0]?.trim() ||
-                         answers?.product_desc?.split(',')[0] || 
-                         answers?.project_name || 
-                         'New Sourcing Project';
-
-      // 프로젝트 제출 API 호출
-      const response = await fetch('/api/projects/submit', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          name: productName,
-          answers: answers,
-          ai_analysis: aiAnalysis,
-          messages: messagesToSave.length > 0 ? messagesToSave : undefined,
-        }),
-      });
-
-      console.log('[Start Sourcing] API response status:', response.status);
-
-      const data = await response.json();
-      console.log('[Start Sourcing] API response data:', data);
-
-      if (data.ok && data.projectId) {
-        console.log('[Start Sourcing] Project created successfully:', data.projectId);
-        // 대시보드로 리다이렉트 (Active Orders 탭에 표시됨)
-        window.location.href = '/dashboard?new=true&tab=orders';
-      } else {
-        console.error('[Start Sourcing] Submission failed:', data);
-        const errorMessage = data.details 
-          ? `${data.error}\n\nDetails: ${JSON.stringify(data.details, null, 2)}`
-          : data.error || 'Failed to start sourcing request. Please try again.';
-        alert(errorMessage);
-        setIsProcessingPayment(false);
-      }
+      
+      // Gumroad 결제 페이지로 이동
+      window.location.href = gumroadUrl.toString();
     } catch (error) {
-      console.error('[Start Sourcing] Failed to submit:', error);
-      alert(`Failed to start sourcing request: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      console.error('[Payment] Failed to proceed:', error);
+      alert(`Failed to proceed with payment: ${error instanceof Error ? error.message : 'Unknown error'}`);
       setIsProcessingPayment(false);
     }
   };
@@ -1215,17 +1174,17 @@ function ResultsActionButtons({ projectId, answers, aiAnalysis }: { projectId?: 
                   {isProcessingPayment ? (
                     <span className="flex items-center gap-2">
                       <span className="animate-spin">⏳</span>
-                      <span>Unlocking Manager...</span>
+                      <span>Processing...</span>
                     </span>
                   ) : (
-                    <span className="text-base">Unlock Manager $49/month</span>
+                    <span className="text-base">Request Official Quote</span>
                   )}
                 </Button>
                 {/* Info Badge */}
                 <div className="mt-2 text-center">
                   <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-gray-600">
                     <CheckCircle2 className="w-3.5 h-3.5" />
-                    Start chatting with your dedicated agent immediately. Monthly subscription.
+                    Start chatting with your dedicated agent immediately. Pay later when you approve the quote.
                   </span>
                 </div>
                 {/* Agreement Caption (Small text below button) */}
@@ -1237,6 +1196,95 @@ function ResultsActionButtons({ projectId, answers, aiAnalysis }: { projectId?: 
               </div>
             </div>
           </div>
+
+          {/* Payment Modal */}
+          <Dialog open={showPaymentModal} onOpenChange={setShowPaymentModal}>
+            <DialogContent className="sm:max-w-lg">
+              <DialogHeader>
+                <DialogTitle className="text-2xl font-bold text-gray-900">
+                  Start Your Official Sourcing Project
+                </DialogTitle>
+                <DialogDescription className="text-gray-600">
+                  Get real factory quotes and dedicated support for your sourcing project
+                </DialogDescription>
+              </DialogHeader>
+
+              <div className="space-y-6 py-4">
+                {/* Value Proposition */}
+                <div className="space-y-3">
+                  <div className="flex items-start gap-3">
+                    <CheckCircle2 className="w-5 h-5 text-emerald-600 mt-0.5 flex-shrink-0" />
+                    <div>
+                      <p className="font-semibold text-gray-900">Real Factory Quotes</p>
+                      <p className="text-sm text-gray-600">
+                        AI 추정치가 아닌, 실제 공장 3곳의 확정 견적을 48시간 내 제공
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex items-start gap-3">
+                    <CheckCircle2 className="w-5 h-5 text-emerald-600 mt-0.5 flex-shrink-0" />
+                    <div>
+                      <p className="font-semibold text-gray-900">Dedicated Sourcing Agent</p>
+                      <p className="text-sm text-gray-600">
+                        전담 매니저 배정 (영어/한국어/중국어 지원)
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex items-start gap-3">
+                    <CheckCircle2 className="w-5 h-5 text-emerald-600 mt-0.5 flex-shrink-0" />
+                    <div>
+                      <p className="font-semibold text-gray-900">100% Credit Back</p>
+                      <p className="text-sm text-gray-600">
+                        본 발주(Order) 진행 시, 이 $49는 수수료에서 전액 차감됩니다. (사실상 무료)
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex items-start gap-3">
+                    <Sparkles className="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" />
+                    <div>
+                      <p className="font-semibold text-gray-900">Bonus: 30-Day Unlimited AI Analysis</p>
+                      <p className="text-sm text-gray-600">
+                        결제 즉시 30일간 AI 분석 무제한 혜택 잠금 해제
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Price */}
+                <div className="bg-gray-50 rounded-lg p-4 text-center border border-gray-200">
+                  <p className="text-sm text-gray-500 mb-1">One-time fee</p>
+                  <div className="flex items-center justify-center gap-2">
+                    <span className="text-lg text-gray-400 line-through">$299</span>
+                    <span className="text-3xl font-bold text-gray-900">$49</span>
+                  </div>
+                </div>
+              </div>
+
+              <DialogFooter className="flex-col sm:flex-col gap-3">
+                <Button
+                  onClick={handleProceedToPayment}
+                  disabled={isProcessingPayment}
+                  className="w-full bg-neutral-900 hover:bg-neutral-800 text-white font-semibold py-3"
+                >
+                  {isProcessingPayment ? (
+                    <span className="flex items-center gap-2">
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      <span>Processing...</span>
+                    </span>
+                  ) : (
+                    'Pay $49 & Start Sourcing'
+                  )}
+                </Button>
+                <button
+                  onClick={() => setShowPaymentModal(false)}
+                  className="text-sm text-gray-500 hover:text-gray-700"
+                  disabled={isProcessingPayment}
+                >
+                  Cancel
+                </button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
 
           {/* Mobile Layout */}
           <div className="md:hidden space-y-4">
@@ -1290,14 +1338,14 @@ function ResultsActionButtons({ projectId, answers, aiAnalysis }: { projectId?: 
                       <span>Unlocking...</span>
                     </span>
                   ) : (
-                    <span>Unlock Manager $49/mo</span>
+                    <span>Request Official Quote</span>
                   )}
                 </Button>
                 {/* Info Badge (Mobile) */}
                 <div className="mt-1.5 text-center">
                   <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-gray-600">
                     <CheckCircle2 className="w-3 h-3" />
-                    Monthly subscription
+                    Chat now, pay later
                   </span>
                 </div>
                 {/* Agreement Caption (Small text below button) */}

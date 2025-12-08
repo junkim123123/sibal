@@ -13,15 +13,21 @@ import { Button } from '@/components/ui/button'
 
 // 더미 데이터 제거 - 실제 Supabase 데이터 사용
 
-type TabType = 'estimates' | 'products' | 'orders' | 'documents' | 'agent'
+type TabType = 'requests' | 'production' | 'agent'
 
 function DashboardPageContent() {
   const searchParams = useSearchParams()
-  let initialTab = (searchParams?.get('tab') as TabType) || 'estimates'
+  let initialTab = (searchParams?.get('tab') as TabType) || 'requests'
   
-  // 'active'를 'orders'로 매핑 (하위 호환성)
-  if (initialTab === 'active') {
-    initialTab = 'orders'
+  // 하위 호환성: 기존 탭 이름 매핑
+  if (initialTab === 'estimates' || initialTab === 'products') {
+    initialTab = 'requests'
+  }
+  if (initialTab === 'orders' || initialTab === 'active') {
+    initialTab = 'production'
+  }
+  if (initialTab === 'documents') {
+    initialTab = 'requests' // Documents는 프로젝트별로 이동
   }
   
   const [activeTab, setActiveTab] = useState<TabType>(initialTab)
@@ -50,7 +56,7 @@ function DashboardPageContent() {
       tab = 'orders'
     }
     
-    if (tab && ['estimates', 'products', 'orders', 'documents', 'agent'].includes(tab)) {
+    if (tab && ['requests', 'production', 'agent'].includes(tab)) {
       setActiveTab(tab)
       
       // 탭 변경 시 데이터 새로고침 (특히 products 탭)
@@ -177,9 +183,10 @@ function DashboardPageContent() {
       console.log('[Dashboard] Projects with saved status:', savedCount);
 
       if (data.ok && data.projects) {
-        // Recent Estimates: status가 'active' 또는 'in_progress'인 프로젝트들 (최근 분석)
-        const activeProjects = data.projects
-          .filter((p: any) => p.status === 'active' || p.status === 'in_progress')
+        // My Requests: 모든 프로젝트 (active, in_progress, saved 모두 포함)
+        // 별표 기능은 추후 추가 예정
+        const allRequests = data.projects
+          .filter((p: any) => p.status === 'active' || p.status === 'in_progress' || p.status === 'saved')
           .map((p: any) => ({
             id: p.id,
             productName: p.name,
@@ -189,8 +196,9 @@ function DashboardPageContent() {
               day: 'numeric', 
               year: 'numeric' 
             }),
-            status: 'Completed',
+            status: p.status === 'saved' ? 'Saved' : 'Completed',
             href: `/results?project_id=${p.id}`,
+            isSaved: p.status === 'saved',
           }))
           .sort((a: any, b: any) => {
             // 최신순 정렬
@@ -198,43 +206,9 @@ function DashboardPageContent() {
             const projectB = data.projects.find((p: any) => p.id === b.id)
             return new Date(projectB.created_at).getTime() - new Date(projectA.created_at).getTime()
           })
-
-        // Saved Products: status가 'saved'인 프로젝트들
-        const savedProducts = data.projects
-          .filter((p: any) => p.status === 'saved')
-          .map((p: any) => {
-            // 프로젝트 이름에서 카테고리 추출 시도 (없으면 기본값)
-            const category = 'Product' // 기본 카테고리
-            return {
-              id: p.id,
-              productName: p.name,
-              category: category,
-              date: new Date(p.created_at).toLocaleDateString('en-US', { 
-                month: 'short', 
-                day: 'numeric', 
-                year: 'numeric' 
-              }),
-              status: 'Saved',
-              href: `/results?project_id=${p.id}`,
-            }
-          })
-          .sort((a: any, b: any) => {
-            // 최신순 정렬
-            const projectA = data.projects.find((p: any) => p.id === a.id)
-            const projectB = data.projects.find((p: any) => p.id === b.id)
-            return new Date(projectB.created_at).getTime() - new Date(projectA.created_at).getTime()
-          })
-
-        console.log('[Dashboard] Setting saved products:', savedProducts.length)
-        console.log('[Dashboard] Saved products details:', savedProducts.map((p: any) => ({
-          id: p.id,
-          productName: p.productName,
-          status: p.status,
-          href: p.href,
-        })))
         
-        setEstimates(activeProjects)
-        setSavedProducts(savedProducts)
+        setEstimates(allRequests)
+        setSavedProducts([]) // 더 이상 사용하지 않지만 호환성을 위해 유지
 
         // Active Orders: status='active'인 프로젝트 + 견적 선택 + QC 승인된 프로젝트들
         await loadShipments(userId, data.projects)
@@ -599,27 +573,17 @@ function DashboardPageContent() {
           </div>
         </div>
 
-        {/* Tabs Navigation - Dr. B Style */}
+        {/* Tabs Navigation - 3-Tab Structure (Past/Current/Future) */}
         <div className="flex gap-8 mb-8 border-b border-gray-200">
           <TabButton
-            label="Recent Estimates"
-            active={activeTab === 'estimates'}
-            onClick={() => setActiveTab('estimates')}
+            label="My Requests"
+            active={activeTab === 'requests'}
+            onClick={() => setActiveTab('requests')}
           />
           <TabButton
-            label="Saved Products"
-            active={activeTab === 'products'}
-            onClick={() => setActiveTab('products')}
-          />
-          <TabButton
-            label="Active Orders"
-            active={activeTab === 'orders'}
-            onClick={() => setActiveTab('orders')}
-          />
-          <TabButton
-            label="Documents"
-            active={activeTab === 'documents'}
-            onClick={() => setActiveTab('documents')}
+            label="Production & Shipping"
+            active={activeTab === 'production'}
+            onClick={() => setActiveTab('production')}
           />
         </div>
 
@@ -631,17 +595,11 @@ function DashboardPageContent() {
             </div>
           ) : (
             <>
-              {activeTab === 'estimates' && (
+              {activeTab === 'requests' && (
                 <EstimatesList estimates={estimates} />
               )}
-              {activeTab === 'products' && (
-                <ProductsList products={savedProducts} />
-              )}
-              {activeTab === 'orders' && (
+              {activeTab === 'production' && (
                 <ShipmentsList shipments={shipments} />
-              )}
-              {activeTab === 'documents' && userId && (
-                <AssetLibrary userId={userId} />
               )}
             </>
           )}
@@ -684,10 +642,10 @@ function EstimatesList({ estimates }: { estimates: any[] }) {
     return (
       <EmptyState
         icon={<Package className="h-12 w-12" />}
-        title="No estimates yet"
-        description="Start by analyzing your first product to see estimates here."
-        actionLabel="Create first estimate"
-        actionHref="/analyze"
+        title="No requests yet"
+        description="Start by analyzing your first product to see your requests here."
+        actionLabel="Create first request"
+        actionHref="/chat"
       />
     )
   }
@@ -697,7 +655,7 @@ function EstimatesList({ estimates }: { estimates: any[] }) {
       {estimates.map((estimate) => (
         <Link
           key={estimate.id}
-          href={estimate.href}
+          href={`/dashboard/projects/${estimate.id}`}
           className="group block"
         >
           <DashboardCard
@@ -773,7 +731,7 @@ function ShipmentsList({ shipments }: { shipments: any[] }) {
         title="No active orders yet"
         description="Start a sourcing request to see your active orders here."
         actionLabel="View projects"
-        actionHref="/dashboard?tab=estimates"
+        actionHref="/dashboard?tab=requests"
       />
     )
   }
@@ -782,52 +740,30 @@ function ShipmentsList({ shipments }: { shipments: any[] }) {
     <>
       {shipments.map((shipment) => (
         <div key={shipment.id} className="group">
-          <DashboardCard
-            icon={<Truck className="h-5 w-5" />}
-            title={shipment.batchName}
-            subtitle={
-              shipment.awaitingManager ? (
-                <span className="flex items-center gap-2">
-                  <span>{shipment.destination} • {shipment.date}</span>
-                  <span className="text-xs text-blue-600 font-medium">
-                    ⏰ Manager will be assigned within 24 hours
+          <Link href={`/dashboard/projects/${shipment.id}`} className="block">
+            <DashboardCard
+              icon={<Truck className="h-5 w-5" />}
+              title={shipment.batchName}
+              subtitle={
+                shipment.awaitingManager ? (
+                  <span className="flex items-center gap-2">
+                    <span>{shipment.destination} • {shipment.date}</span>
+                    <span className="text-xs text-blue-600 font-medium">
+                      ⏰ Manager will be assigned within 24 hours
+                    </span>
                   </span>
-                </span>
-              ) : (
-                `${shipment.destination} • ${shipment.date}`
-              )
-            }
-            rightContent={
-              <div className="flex items-center gap-3 ml-6">
-                <StatusBadge status={shipment.status} />
-                <div className="flex items-center gap-2">
-                  {/* Chat Button */}
-                  <Link href={`/dashboard/chat?project_id=${shipment.id}`}>
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      className="flex items-center gap-2"
-                    >
-                      <MessageSquare className="w-4 h-4" />
-                      Chat
-                    </Button>
-                  </Link>
-                  
-                  {/* Nexi Report Button */}
-                  <Link href={`/results?project_id=${shipment.id}`}>
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      className="flex items-center gap-2"
-                    >
-                      <FileText className="w-4 h-4" />
-                      Nexi Report
-                    </Button>
-                  </Link>
+                ) : (
+                  `${shipment.destination} • ${shipment.date}`
+                )
+              }
+              rightContent={
+                <div className="flex items-center gap-3 ml-6">
+                  <StatusBadge status={shipment.status} />
+                  <ChevronRight className="h-5 w-5 text-zinc-400 group-hover:text-black transition-colors" />
                 </div>
-              </div>
-            }
-          />
+              }
+            />
+          </Link>
         </div>
       ))}
     </>

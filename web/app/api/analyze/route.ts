@@ -241,7 +241,10 @@ ${priority && priority.includes('Maximize Gross Margin') ?
      * 10,000 units (growing scale, typically Sea freight)
      * 100,000 units (high scale, Sea freight with volume discounts)
    - Calculate unit_cost and margin for each scenario
-   - Higher volumes should show lower unit_cost due to economies of scale
+   - **CRITICAL: Factory cost (factory_exw) should only decrease 5-15% even at 100k units**
+   - Most cost reduction comes from shipping per-unit reduction (Air → Sea freight)
+   - Example: If factory_exw is $4.30, at 100k units it should be ~$3.87-$4.09 (10-15% max reduction)
+   - Never calculate unit_cost below 85% of factory_exw, even at highest volumes
 
 **Output Requirements:**
 - Be professional, conservative, and realistic
@@ -456,6 +459,71 @@ async function analyzeSourcingProject(
     // AI가 값을 놓친 경우 기본 위험도를 설정 (AI가 뱉은 리스크 레벨을 활용)
     parsed.osint_risk_score = baseRiskScore;
     console.log('[Analyze API] OSINT Risk Score normalized from supplier risk level:', baseRiskScore);
+  }
+  
+  // ============================================================================
+  // [Scale Analysis 검증 및 수정] - CRITICAL: Factory cost should not drop >15%
+  // ============================================================================
+  if (parsed.scale_analysis && Array.isArray(parsed.scale_analysis) && parsed.cost_breakdown?.factory_exw) {
+    const factoryExw = parsed.cost_breakdown.factory_exw;
+    const minFactoryCost = factoryExw * 0.85; // Factory cost should never drop below 85% of base
+    
+    parsed.scale_analysis = parsed.scale_analysis.map((scenario: any) => {
+      // If unit_cost is unrealistically low (below 85% of factory cost), recalculate
+      if (scenario.unit_cost < minFactoryCost) {
+        console.warn(`[Analyze API] Unrealistic unit_cost ${scenario.unit_cost} for ${scenario.qty} units. Factory cost is ${factoryExw}. Recalculating...`);
+        
+        // Recalculate: Factory cost reduction (5-15% max), shipping reduction, fixed costs per unit
+        let factoryCostPerUnit = factoryExw;
+        if (scenario.qty === 500) {
+          factoryCostPerUnit = factoryExw * 1.05; // Small batch: 5% premium
+        } else if (scenario.qty === 5000) {
+          factoryCostPerUnit = factoryExw * 0.98; // Launch: 2% discount
+        } else if (scenario.qty === 10000) {
+          factoryCostPerUnit = factoryExw * 0.93; // Growing: 7% discount
+        } else if (scenario.qty === 100000) {
+          factoryCostPerUnit = factoryExw * 0.90; // High scale: 10% discount (MAX)
+        }
+        
+        // Estimate shipping per unit (decreases significantly with volume)
+        const baseShipping = parsed.cost_breakdown.shipping || 0;
+        let shippingPerUnit = baseShipping;
+        if (scenario.qty === 500) {
+          shippingPerUnit = baseShipping * 1.5; // Air freight premium
+        } else if (scenario.qty === 5000) {
+          shippingPerUnit = baseShipping * 0.8; // Mix Air/Sea
+        } else if (scenario.qty === 10000) {
+          shippingPerUnit = baseShipping * 0.5; // Sea freight
+        } else if (scenario.qty === 100000) {
+          shippingPerUnit = baseShipping * 0.2; // Container load, very low per-unit
+        }
+        
+        // Fixed costs per unit (duty, packaging, customs, insurance scale down)
+        const fixedCosts = (parsed.cost_breakdown.duty || 0) + 
+                          (parsed.cost_breakdown.packaging || 0) + 
+                          (parsed.cost_breakdown.customs || 0) + 
+                          (parsed.cost_breakdown.insurance || 0);
+        const fixedCostsPerUnit = fixedCosts / Math.max(scenario.qty / 500, 1);
+        
+        // Recalculated unit cost
+        const recalculatedUnitCost = factoryCostPerUnit + shippingPerUnit + fixedCostsPerUnit;
+        
+        // Recalculate margin
+        const estimatedRetailPrice = recalculatedUnitCost * 3;
+        const recalculatedMargin = estimatedRetailPrice > 0 
+          ? ((estimatedRetailPrice - recalculatedUnitCost) / estimatedRetailPrice) * 100 
+          : scenario.margin || 0;
+        
+        return {
+          ...scenario,
+          unit_cost: Math.max(recalculatedUnitCost, minFactoryCost), // Never below 85% of factory cost
+          margin: recalculatedMargin,
+        };
+      }
+      return scenario;
+    });
+    
+    console.log('[Analyze API] Scale Analysis validated and corrected if needed');
   }
   
   return parsed as AnalysisResult;

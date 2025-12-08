@@ -418,29 +418,65 @@ function ScaleAnalysis({ scaleAnalysis, totalLandedCost, costBreakdown }: {
   );
   
   // Fill in missing scenarios with estimated values
+  // CRITICAL: Factory cost only decreases 5-15% with volume. Most savings come from shipping/duty per-unit reduction.
   const completeScenarios = requiredQuantities.map(qty => {
     if (existingScenarios.has(qty)) {
-      return existingScenarios.get(qty);
+      const existing = existingScenarios.get(qty);
+      // Validate: Factory cost should not drop more than 15% even at high volumes
+      const factoryCost = costBreakdown?.factory_exw || 0;
+      if (factoryCost > 0 && existing.unit_cost < factoryCost * 0.85) {
+        // If AI returned unrealistic cost, recalculate properly
+        return calculateRealisticUnitCost(qty, costBreakdown, totalLandedCost, existing);
+      }
+      return existing;
     }
     
-    // Estimate unit cost based on volume (economies of scale)
-    // Higher volume = lower per-unit cost
-    const baseCost = totalLandedCost || (costBreakdown?.factory_exw || 0);
-    let estimatedUnitCost = baseCost;
+    return calculateRealisticUnitCost(qty, costBreakdown, totalLandedCost);
+  });
+  
+  // Helper function to calculate realistic unit cost
+  function calculateRealisticUnitCost(
+    qty: number, 
+    costBreakdown?: any, 
+    totalLandedCost?: number,
+    existing?: any
+  ) {
+    const factoryExw = costBreakdown?.factory_exw || 0;
+    const shipping = costBreakdown?.shipping || 0;
+    const duty = costBreakdown?.duty || 0;
+    const packaging = costBreakdown?.packaging || 0;
+    const customs = costBreakdown?.customs || 0;
+    const insurance = costBreakdown?.insurance || 0;
     
+    // Factory cost reduction: Only 5-15% max even at 100k units
+    let factoryCostPerUnit = factoryExw;
     if (qty === 500) {
-      // Small batch: higher per-unit cost (Air freight, no volume discount)
-      estimatedUnitCost = baseCost * 1.2;
+      factoryCostPerUnit = factoryExw * 1.05; // Small batch: 5% premium
     } else if (qty === 5000) {
-      // Launch volume: moderate cost (mix of Air/Sea)
-      estimatedUnitCost = baseCost * 0.95;
+      factoryCostPerUnit = factoryExw * 0.98; // Launch: 2% discount
     } else if (qty === 10000) {
-      // Growing scale: lower cost (Sea freight, some volume discount)
-      estimatedUnitCost = baseCost * 0.85;
+      factoryCostPerUnit = factoryExw * 0.93; // Growing: 7% discount
     } else if (qty === 100000) {
-      // High scale: lowest cost (Sea freight, significant volume discount)
-      estimatedUnitCost = baseCost * 0.70;
+      factoryCostPerUnit = factoryExw * 0.90; // High scale: 10% discount (MAX)
     }
+    
+    // Shipping cost per unit (decreases significantly with volume)
+    let shippingPerUnit = shipping;
+    if (qty === 500) {
+      shippingPerUnit = shipping * 1.5; // Air freight premium
+    } else if (qty === 5000) {
+      shippingPerUnit = shipping * 0.8; // Mix Air/Sea
+    } else if (qty === 10000) {
+      shippingPerUnit = shipping * 0.5; // Sea freight
+    } else if (qty === 100000) {
+      shippingPerUnit = shipping * 0.2; // Container load, very low per-unit
+    }
+    
+    // Duty, packaging, customs, insurance scale with quantity (per-unit decreases)
+    const fixedCostsPerUnit = (duty + packaging + customs + insurance) / Math.max(qty / 500, 1);
+    
+    // Total unit cost
+    const estimatedUnitCost = factoryCostPerUnit + shippingPerUnit + fixedCostsPerUnit;
     
     // Determine shipping mode
     const mode = qty >= 10000 ? 'Sea' : qty >= 5000 ? 'Sea/Air' : 'Air';
@@ -454,11 +490,11 @@ function ScaleAnalysis({ scaleAnalysis, totalLandedCost, costBreakdown }: {
     return {
       qty,
       mode,
-      unit_cost: estimatedUnitCost,
+      unit_cost: Math.max(estimatedUnitCost, factoryExw * 0.85), // Never below 85% of factory cost
       margin: estimatedMargin,
-      isEstimated: true
+      isEstimated: !existing
     };
-  });
+  }
   
   return (
     <Card className="bg-white border border-gray-200 p-6 shadow-sm">
@@ -539,12 +575,31 @@ function RiskAssessment({ risks, osintRiskScore }: { risks: any; osintRiskScore?
             <span className="text-sm font-semibold text-blue-600">
               OSINT Risk Score 
             </span>
-            <span className="text-2xl font-bold font-mono text-gray-900">
-              {osintRiskScore.toFixed(0)}/100
-            </span>
+            <div className="text-right">
+              <span className="text-2xl font-bold font-mono text-gray-900">
+                {osintRiskScore.toFixed(0)}/100
+              </span>
+              <div className="mt-1">
+                <span className={`text-xs font-semibold px-2 py-0.5 rounded ${
+                  osintRiskScore >= 67 
+                    ? 'bg-green-100 text-green-700' 
+                    : osintRiskScore >= 34 
+                    ? 'bg-yellow-100 text-yellow-700' 
+                    : 'bg-red-100 text-red-700'
+                }`}>
+                  Risk Level: {
+                    osintRiskScore >= 67 
+                      ? 'Low' 
+                      : osintRiskScore >= 34 
+                      ? 'Medium' 
+                      : 'High'
+                  }
+                </span>
+              </div>
+            </div>
           </div>
           <p className="text-xs text-gray-500 mt-1">
-            (Based on 500 supplier database & web OSINT signals)
+            (Based on 500 supplier database & web OSINT signals. Lower score = Higher risk)
           </p>
         </div>
       )}
@@ -969,7 +1024,6 @@ function ActionRoadmap({ answers, aiAnalysis }: { answers: Answers; aiAnalysis?:
 
 // Results Action Buttons Component (Enhanced with Service Value Props & Agreement)
 function ResultsActionButtons({ projectId, answers, aiAnalysis }: { projectId?: string | null; answers: Answers; aiAnalysis?: AIAnalysisResult | null }) {
-  const [isSaving, setIsSaving] = useState(false);
   const [isProcessingPayment, setIsProcessingPayment] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   // Agreement is now implicit (caption text only, no checkbox)
@@ -989,110 +1043,6 @@ function ResultsActionButtons({ projectId, answers, aiAnalysis }: { projectId?: 
     };
     checkAuth();
   }, []);
-
-  // Save Report 핸들러
-  const handleSaveReport = async () => {
-    if (!isAuthenticated) {
-      window.location.href = '/login?redirect=/results';
-      return;
-    }
-
-    setIsSaving(true);
-    
-    try {
-      console.log('[Save Report] Starting save process...', {
-        projectId,
-        hasAnswers: !!answers && Object.keys(answers).length > 0,
-        hasAiAnalysis: !!aiAnalysis,
-      });
-
-      // 프로젝트의 기존 메시지 불러오기 (있는 경우)
-      let existingMessages: any[] = [];
-      if (projectId) {
-        try {
-          const messagesResponse = await fetch(`/api/messages?project_id=${projectId}`);
-          const messagesData = await messagesResponse.json();
-          if (messagesData.ok && messagesData.messages) {
-            existingMessages = messagesData.messages.map((msg: any) => ({
-              role: msg.role,
-              content: msg.content,
-              timestamp: msg.timestamp,
-            }));
-            console.log('[Save Report] Loaded existing messages:', existingMessages.length);
-          }
-        } catch (error) {
-          console.warn('[Save Report] Failed to load existing messages:', error);
-        }
-      }
-
-      // answers와 ai_analysis에서 메시지 생성 (기존 메시지가 없는 경우)
-      const messagesToSave: any[] = [...existingMessages];
-      
-      // answers가 있으면 사용자 메시지로 추가
-      if (answers && Object.keys(answers).length > 0 && existingMessages.length === 0) {
-        const answersText = Object.entries(answers)
-          .filter(([key, value]) => value && value !== 'skip' && value !== 'Skip')
-          .map(([key, value]) => `${key}: ${value}`)
-          .join('\n');
-        
-        if (answersText) {
-          messagesToSave.push({
-            role: 'user',
-            content: `Product Analysis Request:\n${answersText}`,
-          });
-        }
-      }
-
-      // ai_analysis가 있으면 AI 메시지로 추가
-      if (aiAnalysis && existingMessages.length === 0) {
-        const analysisSummary = aiAnalysis.executive_summary || 
-                               `Analysis completed for ${answers?.product_info || answers?.project_name || 'product'}`;
-        messagesToSave.push({
-          role: 'ai',
-          content: analysisSummary,
-        });
-      }
-
-      console.log('[Save Report] Messages to save:', messagesToSave.length);
-
-      // 프로젝트 저장 API 호출
-      const response = await fetch('/api/projects/save', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          project_id: projectId,
-          answers: answers,
-          ai_analysis: aiAnalysis, // AI 분석 결과 전달
-          messages: messagesToSave.length > 0 ? messagesToSave : undefined, // 메시지 배열 전달
-        }),
-      });
-
-      console.log('[Save Report] API response status:', response.status);
-
-      const data = await response.json();
-      console.log('[Save Report] API response data:', data);
-
-      if (data.ok) {
-        console.log('[Save Report] Project saved successfully:', data.project_id);
-        // 성공 메시지 표시 (선택적)
-        // 대시보드의 Saved Products 탭으로 이동 (전체 페이지 리로드로 확실히 새로고침)
-        window.location.href = '/dashboard?tab=products&refresh=true';
-      } else {
-        console.error('[Save Report] Save failed:', data);
-        const errorMessage = data.details 
-          ? `${data.error}\n\nDetails: ${JSON.stringify(data.details, null, 2)}`
-          : data.error || 'Failed to save report. Please try again.';
-        alert(errorMessage);
-        setIsSaving(false);
-      }
-    } catch (error) {
-      console.error('[Save Report] Failed to save:', error);
-      alert(`Failed to save report: ${error instanceof Error ? error.message : 'Unknown error'}`);
-      setIsSaving(false);
-    }
-  };
 
   // Start Sourcing Request 핸들러 (결제 없이 즉시 프로젝트 생성)
   const handleStartSourcing = async () => {
@@ -1244,22 +1194,15 @@ function ResultsActionButtons({ projectId, answers, aiAnalysis }: { projectId?: 
             {/* Right: Action Zone */}
             <div className="flex flex-col items-end gap-3 min-w-[360px]">
               {/* Secondary Actions Row */}
-              <div className="flex items-center gap-3 w-full">
-                <Link
-                  href="/chat"
-                  className="text-gray-600 hover:text-gray-900 text-sm font-medium transition-colors flex items-center gap-1.5"
-                >
-                  <span>🔄</span>
-                  <span>Analyze Another</span>
+              <div className="w-full">
+                <Link href="/chat" className="w-full">
+                  <Button
+                    variant="outline"
+                    className="w-full border-gray-900 text-gray-900 hover:bg-gray-50"
+                  >
+                    Analyze Another
+                  </Button>
                 </Link>
-                <Button
-                  variant="outline"
-                  onClick={handleSaveReport}
-                  disabled={isSaving}
-                  className="flex-1 border-gray-900 text-gray-900 hover:bg-gray-50"
-                >
-                  {isSaving ? 'Saving...' : '💾 Save Report'}
-                </Button>
               </div>
 
               {/* Main CTA Button */}
@@ -1272,17 +1215,17 @@ function ResultsActionButtons({ projectId, answers, aiAnalysis }: { projectId?: 
                   {isProcessingPayment ? (
                     <span className="flex items-center gap-2">
                       <span className="animate-spin">⏳</span>
-                      <span>Creating Project...</span>
+                      <span>Unlocking Manager...</span>
                     </span>
                   ) : (
-                    <span className="text-base">Request Official Quote</span>
+                    <span className="text-base">Unlock Manager $49/month</span>
                   )}
                 </Button>
                 {/* Info Badge */}
                 <div className="mt-2 text-center">
                   <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-gray-600">
                     <CheckCircle2 className="w-3.5 h-3.5" />
-                    Start chatting with an agent immediately. Pay later when you approve the quote.
+                    Start chatting with your dedicated agent immediately. Monthly subscription.
                   </span>
                 </div>
                 {/* Agreement Caption (Small text below button) */}
@@ -1326,16 +1269,16 @@ function ResultsActionButtons({ projectId, answers, aiAnalysis }: { projectId?: 
             </div>
 
             {/* Action Buttons Row */}
-            <div className="flex gap-2">
-              <Button
-                variant="outline"
-                onClick={handleSaveReport}
-                disabled={isSaving}
-                className="flex-[3] border-gray-900 text-gray-900 hover:bg-gray-50 text-xs py-2"
-              >
-                {isSaving ? 'Saving...' : '💾 Save'}
-              </Button>
-              <div className="flex-[7]">
+            <div className="space-y-2">
+              <Link href="/chat" className="block">
+                <Button
+                  variant="outline"
+                  className="w-full border-gray-900 text-gray-900 hover:bg-gray-50 text-xs py-2"
+                >
+                  Analyze Another
+                </Button>
+              </Link>
+              <div>
                 <Button
                   onClick={handleStartSourcing}
                   disabled={isProcessingPayment}
@@ -1344,17 +1287,17 @@ function ResultsActionButtons({ projectId, answers, aiAnalysis }: { projectId?: 
                   {isProcessingPayment ? (
                     <span className="flex items-center gap-1">
                       <span className="animate-spin text-[10px]">⏳</span>
-                      <span>Creating...</span>
+                      <span>Unlocking...</span>
                     </span>
                   ) : (
-                    <span>Request Official Quote</span>
+                    <span>Unlock Manager $49/mo</span>
                   )}
                 </Button>
                 {/* Info Badge (Mobile) */}
                 <div className="mt-1.5 text-center">
                   <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-gray-600">
                     <CheckCircle2 className="w-3 h-3" />
-                    Chat now, pay later
+                    Monthly subscription
                   </span>
                 </div>
                 {/* Agreement Caption (Small text below button) */}
@@ -1364,17 +1307,6 @@ function ResultsActionButtons({ projectId, answers, aiAnalysis }: { projectId?: 
                   </p>
                 </div>
               </div>
-            </div>
-
-            {/* Analyze Another Link */}
-            <div className="text-center pt-1">
-              <Link
-                href="/chat"
-                className="text-gray-600 hover:text-gray-900 text-xs font-medium transition-colors flex items-center justify-center gap-1"
-              >
-                <span>🔄</span>
-                <span>Analyze Another Product</span>
-              </Link>
             </div>
           </div>
         </div>

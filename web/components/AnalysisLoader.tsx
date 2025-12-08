@@ -2,29 +2,14 @@
 
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Search, Globe, Scale, Package, DollarSign } from 'lucide-react';
 
-const ANALYSIS_STEPS = [
-  {
-    icon: Search,
-    text: 'Analyzing Product Specifications...',
-  },
-  {
-    icon: Globe,
-    text: 'Scanning Global Supplier Network...',
-  },
-  {
-    icon: Scale,
-    text: 'Calculating HS Codes & Duty Rates...',
-  },
-  {
-    icon: Package,
-    text: 'Estimating Logistics & Shipping Volume...',
-  },
-  {
-    icon: DollarSign,
-    text: 'Finalizing Landed Cost Simulation...',
-  },
+// Progress-based steps (0.5초마다 변경)
+const PROGRESS_STEPS = [
+  { min: 0, max: 20, text: 'Scanning Product Image...' },
+  { min: 20, max: 40, text: 'Matching 500+ Suppliers in Database...' },
+  { min: 40, max: 60, text: 'Calculating Real-time Freight Rates...' },
+  { min: 60, max: 80, text: 'Checking US Customs Duty (HTS Codes)...' },
+  { min: 80, max: 100, text: 'Finalizing Profit Simulation...' },
 ];
 
 // Background Pattern Component (Subtle Grid)
@@ -50,32 +35,41 @@ function SubtleGridPattern() {
 }
 
 export default function AnalysisLoader() {
-  const [currentStep, setCurrentStep] = useState(0);
   const [progress, setProgress] = useState(0);
 
-  // Cycle through steps every 1.5 seconds
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setCurrentStep((prev) => (prev + 1) % ANALYSIS_STEPS.length);
-    }, 1500);
-
-    return () => clearInterval(interval);
-  }, []);
-
-  // Fake progress bar (up to 90%)
+  // Progress bar animation (smooth and pulsing)
   useEffect(() => {
     const interval = setInterval(() => {
       setProgress((prev) => {
-        if (prev >= 90) return 90;
-        return prev + Math.random() * 3;
+        if (prev >= 95) return 95; // Stop at 95% until actual completion
+        return prev + Math.random() * 2.5 + 0.5; // Slower, smoother increment
       });
-    }, 200);
+    }, 300);
 
     return () => clearInterval(interval);
   }, []);
 
-  const currentStepData = ANALYSIS_STEPS[currentStep];
-  const Icon = currentStepData.icon;
+  // Get current step text based on progress (updates every 0.5 seconds)
+  const [displayText, setDisplayText] = useState(PROGRESS_STEPS[0].text);
+  
+  useEffect(() => {
+    const getCurrentStep = () => {
+      const step = PROGRESS_STEPS.find(
+        (s) => progress >= s.min && progress < s.max
+      ) || PROGRESS_STEPS[PROGRESS_STEPS.length - 1];
+      return step.text;
+    };
+
+    // Update immediately when progress changes
+    setDisplayText(getCurrentStep());
+
+    // Also update every 0.5 seconds to ensure smooth transitions
+    const interval = setInterval(() => {
+      setDisplayText(getCurrentStep());
+    }, 500);
+
+    return () => clearInterval(interval);
+  }, [progress]);
 
   return (
     <div className="min-h-screen bg-white flex items-center justify-center p-6 relative">
@@ -86,23 +80,148 @@ export default function AnalysisLoader() {
       <div className="relative z-10 w-full max-w-md">
         <div className="bg-white border border-neutral-200 rounded-lg p-8 shadow-sm">
           <div className="space-y-8">
-            {/* Minimal Icon with Subtle Animation */}
+            {/* Dynamic Animation: Map Route + Radar Scan */}
             <div className="flex justify-center">
-              <motion.div
-                animate={{
-                  rotate: [0, 360],
-                }}
-                transition={{
-                  duration: 20,
-                  repeat: Infinity,
-                  ease: 'linear',
-                }}
-                className="relative w-16 h-16 flex items-center justify-center"
-              >
-                <div className="relative z-10 w-12 h-12 rounded-lg bg-neutral-50 border border-neutral-200 flex items-center justify-center">
-                  <Icon className="w-6 h-6 text-neutral-900" strokeWidth={1.5} />
+              <div className="relative w-64 h-48">
+                {/* Map Background */}
+                <div className="absolute inset-0 bg-gradient-to-br from-neutral-50 to-neutral-100 rounded-lg border border-neutral-200 overflow-hidden">
+                  {/* Origin Point (China) */}
+                  <div className="absolute left-8 top-1/2 -translate-y-1/2">
+                    <motion.div
+                      animate={{
+                        scale: [1, 1.2, 1],
+                        opacity: [0.6, 1, 0.6],
+                      }}
+                      transition={{
+                        duration: 2,
+                        repeat: Infinity,
+                        ease: 'easeInOut',
+                      }}
+                      className="w-3 h-3 bg-blue-600 rounded-full"
+                    />
+                    <div className="absolute -bottom-5 left-1/2 -translate-x-1/2 text-xs text-neutral-500 whitespace-nowrap">
+                      CN
+                    </div>
+                  </div>
+
+                  {/* Destination Point (US) */}
+                  <div className="absolute right-8 top-1/2 -translate-y-1/2">
+                    <motion.div
+                      animate={{
+                        scale: [1, 1.2, 1],
+                        opacity: [0.6, 1, 0.6],
+                      }}
+                      transition={{
+                        duration: 2,
+                        repeat: Infinity,
+                        ease: 'easeInOut',
+                        delay: 1,
+                      }}
+                      className="w-3 h-3 bg-green-600 rounded-full"
+                    />
+                    <div className="absolute -bottom-5 left-1/2 -translate-x-1/2 text-xs text-neutral-500 whitespace-nowrap">
+                      US
+                    </div>
+                  </div>
+
+                  {/* Animated Dashed Line (Route) */}
+                  <svg className="absolute inset-0 w-full h-full" style={{ pointerEvents: 'none' }}>
+                    {/* Base dashed line */}
+                    <line
+                      x1="32"
+                      y1="96"
+                      x2="224"
+                      y2="96"
+                      stroke="#e5e7eb"
+                      strokeWidth="2"
+                      strokeDasharray="8 4"
+                    />
+                    {/* Animated path */}
+                    <motion.line
+                      x1="32"
+                      y1="96"
+                      x2="224"
+                      y2="96"
+                      stroke="url(#dashed-gradient)"
+                      strokeWidth="2"
+                      strokeDasharray="8 4"
+                      initial={{ pathLength: 0 }}
+                      animate={{ pathLength: 1 }}
+                      transition={{
+                        duration: 3,
+                        repeat: Infinity,
+                        ease: 'linear',
+                      }}
+                    />
+                    {/* Moving dot along the route */}
+                    <motion.circle
+                      cx="32"
+                      cy="96"
+                      r="4"
+                      fill="#3b82f6"
+                      animate={{
+                        cx: [32, 224, 32],
+                      }}
+                      transition={{
+                        duration: 3,
+                        repeat: Infinity,
+                        ease: 'linear',
+                      }}
+                    />
+                    <defs>
+                      <linearGradient id="dashed-gradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                        <stop offset="0%" stopColor="#3b82f6" stopOpacity="0.3" />
+                        <stop offset="50%" stopColor="#3b82f6" stopOpacity="0.8" />
+                        <stop offset="100%" stopColor="#10b981" stopOpacity="0.3" />
+                      </linearGradient>
+                    </defs>
+                  </svg>
+
+                  {/* Radar Scan Effect (overlay) - Multiple layers for depth */}
+                  <div className="absolute inset-0 overflow-hidden rounded-lg">
+                    {/* Primary scan line */}
+                    <motion.div
+                      className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-transparent via-blue-500/80 to-transparent"
+                      animate={{
+                        y: [0, 192, 0],
+                      }}
+                      transition={{
+                        duration: 2.5,
+                        repeat: Infinity,
+                        ease: 'easeInOut',
+                      }}
+                      style={{
+                        boxShadow: '0 0 30px rgba(59, 130, 246, 0.6)',
+                      }}
+                    />
+                    {/* Secondary scan line (trailing) */}
+                    <motion.div
+                      className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-blue-400/40 to-transparent"
+                      animate={{
+                        y: [0, 192, 0],
+                      }}
+                      transition={{
+                        duration: 2.5,
+                        repeat: Infinity,
+                        ease: 'easeInOut',
+                        delay: 0.3,
+                      }}
+                    />
+                    {/* Fade effect behind scan */}
+                    <motion.div
+                      className="absolute top-0 left-0 w-full h-24 bg-gradient-to-b from-blue-500/10 to-transparent"
+                      animate={{
+                        y: [0, 192, 0],
+                      }}
+                      transition={{
+                        duration: 2.5,
+                        repeat: Infinity,
+                        ease: 'easeInOut',
+                      }}
+                    />
+                  </div>
                 </div>
-              </motion.div>
+              </div>
             </div>
 
             {/* Typography: Minimal Percentage Number */}
@@ -118,11 +237,11 @@ export default function AnalysisLoader() {
               </motion.div>
             </div>
 
-            {/* Status Text */}
+            {/* Status Text - Updates based on progress */}
             <div className="h-12 flex items-center justify-center">
               <AnimatePresence mode="wait">
                 <motion.div
-                  key={currentStep}
+                  key={displayText}
                   initial={{ opacity: 0, y: 5 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -5 }}
@@ -130,21 +249,34 @@ export default function AnalysisLoader() {
                   className="text-center"
                 >
                   <p className="text-sm text-neutral-600 font-normal">
-                    {currentStepData.text}
+                    {displayText}
                   </p>
                 </motion.div>
               </AnimatePresence>
             </div>
 
-            {/* Minimal Progress Bar */}
+            {/* Smooth Progress Bar with Pulsing Effect */}
             <div className="space-y-2">
-              <div className="h-0.5 bg-neutral-100 rounded-full overflow-hidden">
+              <div className="h-1 bg-neutral-100 rounded-full overflow-hidden relative">
                 <motion.div
                   initial={{ width: 0 }}
                   animate={{ width: `${progress}%` }}
-                  transition={{ duration: 0.3, ease: 'easeOut' }}
-                  className="h-full bg-neutral-900 rounded-full"
-                />
+                  transition={{ duration: 0.5, ease: 'easeOut' }}
+                  className="h-full bg-gradient-to-r from-neutral-700 to-neutral-900 rounded-full relative"
+                >
+                  {/* Pulsing glow effect */}
+                  <motion.div
+                    className="absolute inset-0 bg-neutral-900 rounded-full"
+                    animate={{
+                      opacity: [0.5, 1, 0.5],
+                    }}
+                    transition={{
+                      duration: 1.5,
+                      repeat: Infinity,
+                      ease: 'easeInOut',
+                    }}
+                  />
+                </motion.div>
               </div>
             </div>
           </div>

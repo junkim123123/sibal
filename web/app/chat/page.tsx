@@ -236,15 +236,48 @@ export default function ChatPage() {
     }
   };
 
-  // Initialize with first question
+  // Initialize with first question (typing effect)
   useEffect(() => {
     if (messages.length === 0 && currentStep) {
+      // Split the first message into three parts for natural typing effect
+      const firstPart = "Hi, I'm Nexi.";
+      
+      // Show first part immediately
       setMessages([{
-        id: `msg-${currentStep.id}`,
+        id: `msg-${currentStep.id}-part1`,
         type: 'system',
-        content: currentStep.question,
+        content: firstPart,
         timestamp: Date.now(),
       }]);
+      
+      // Show typing indicator
+      setShowTyping(true);
+      
+      // After delay, add second part
+      setTimeout(() => {
+        setShowTyping(false);
+        setMessages(prev => [...prev, {
+          id: `msg-${currentStep.id}-part2`,
+          type: 'system',
+          content: " What product are you looking to source?",
+          timestamp: Date.now(),
+        }]);
+        
+        // Show typing indicator again
+        setShowTyping(true);
+        
+        // After another delay, add third part
+        setTimeout(() => {
+          setShowTyping(false);
+          setMessages(prev => [...prev, {
+            id: `msg-${currentStep.id}-part3`,
+            type: 'system',
+            content: " (Describe the product and your project name if you have one)",
+            timestamp: Date.now(),
+          }]);
+          setShowInput(true);
+        }, 1200);
+      }, 1500);
     }
   }, [currentStep]);
 
@@ -262,6 +295,9 @@ export default function ChatPage() {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages, showTyping, showInput]);
 
+  const [skipConfirmation, setSkipConfirmation] = useState<{ stepId: string; value: string } | null>(null);
+  const [notSureResponse, setNotSureResponse] = useState<string | null>(null);
+
   const handleTextSubmit = () => {
     if (!currentStep || currentStep.type !== 'text') return;
     if (!textInput.trim()) return;
@@ -275,8 +311,49 @@ export default function ChatPage() {
       
       // Skip 패턴 확인 및 빈 입력 처리
       if (['skip', '없음', '몰라', 'none', ''].includes(lower) || lower.length < 5) {
-        finalInputValue = 'skip'; // AI 분석용으로 'skip'으로 정규화
-        displayValue = 'Skip / Not provided';
+        // Skip 확인 메시지 표시 (넛지 메시지)
+        setSkipConfirmation({ stepId: currentStep.id, value: textInput.trim() });
+        return;
+      }
+    }
+    
+    // pricing_value에서 "Not sure" 처리
+    if (currentStep.id === 'pricing_value') {
+      const lower = textInput.trim().toLowerCase();
+      if (['not sure', 'not sure yet', '몰라', '모르겠어', 'unsure'].includes(lower)) {
+        // Not Sure 응답 처리
+        setNotSureResponse(currentStep.id);
+        setTextInput('');
+        setShowInput(false);
+        
+        // AI 안심 메시지 추가
+        setMessages(prev => [...prev, {
+          id: `ai-response-${Date.now()}`,
+          type: 'system',
+          content: "No worries. I will estimate the market average based on North American sales data.",
+          timestamp: Date.now(),
+        }]);
+        
+        // 사용자 메시지 추가
+        setMessages(prev => [...prev, {
+          id: `user-${Date.now()}`,
+          type: 'user',
+          content: 'Not sure',
+          timestamp: Date.now(),
+        }]);
+        
+        setSelectedOptions(prev => ({
+          ...prev,
+          [currentStep.id]: 'not_sure',
+        }));
+        
+        saveMessage('user', 'not_sure');
+        
+        setTimeout(() => {
+          setNotSureResponse(null);
+          proceedToNextStep();
+        }, 1500);
+        return;
       }
     }
 
@@ -324,8 +401,113 @@ export default function ChatPage() {
     proceedToNextStep();
   };
 
+  // Skip 확인 처리
+  const handleSkipConfirm = (confirmed: boolean) => {
+    if (!skipConfirmation) return;
+    
+    if (confirmed) {
+      // Skip 확인됨 - 실제로 skip 처리
+      const currentStep = SOURCING_STEPS.find(s => s.id === skipConfirmation.stepId);
+      if (currentStep) {
+        setSelectedOptions(prev => ({
+          ...prev,
+          [skipConfirmation.stepId]: 'skip',
+        }));
+        
+        setMessages(prev => [...prev, {
+          id: `user-${Date.now()}`,
+          type: 'user',
+          content: 'Skip / Not provided',
+          timestamp: Date.now(),
+        }]);
+        
+        saveMessage('user', 'skip');
+        setTextInput('');
+        setSkipConfirmation(null);
+        proceedToNextStep();
+      }
+    } else {
+      // Skip 취소 - 다시 입력 받기
+      setSkipConfirmation(null);
+      setShowInput(true);
+      inputRef.current?.focus();
+    }
+  };
+
+  // Not Sure 응답 처리
+  const handleNotSureResponse = () => {
+    if (!notSureResponse) return;
+    
+    const currentStep = SOURCING_STEPS.find(s => s.id === notSureResponse);
+    if (currentStep) {
+      // AI 안심 메시지 추가
+      setMessages(prev => [...prev, {
+        id: `ai-response-${Date.now()}`,
+        type: 'system',
+        content: "No worries. I will estimate the market average based on North American sales data.",
+        timestamp: Date.now(),
+      }]);
+      
+      // 사용자 메시지 추가
+      setMessages(prev => [...prev, {
+        id: `user-${Date.now()}`,
+        type: 'user',
+        content: 'Not sure',
+        timestamp: Date.now(),
+      }]);
+      
+      setSelectedOptions(prev => ({
+        ...prev,
+        [notSureResponse]: 'not_sure',
+      }));
+      
+      saveMessage('user', 'not_sure');
+      setTextInput('');
+      setNotSureResponse(null);
+      
+      setTimeout(() => {
+        proceedToNextStep();
+      }, 1000);
+    }
+  };
+
   const handleOptionSelect = (option: string) => {
     if (!currentStep || currentStep.type !== 'select') return;
+
+    // "Not sure yet" 옵션 처리
+    if (option === 'Not sure yet' && currentStep.id === 'sales_channel') {
+      setNotSureResponse(currentStep.id);
+      setShowInput(false);
+      
+      // AI 안심 메시지 추가
+      setMessages(prev => [...prev, {
+        id: `ai-response-${Date.now()}`,
+        type: 'system',
+        content: "No worries. I will estimate the market average based on North American sales data.",
+        timestamp: Date.now(),
+      }]);
+      
+      // 사용자 메시지 추가
+      const userMessage: Message = {
+        id: `user-${Date.now()}`,
+        type: 'user',
+        content: option,
+        timestamp: Date.now(),
+      };
+      setMessages(prev => [...prev, userMessage]);
+      
+      saveMessage('user', option);
+      setSelectedOptions(prev => ({
+        ...prev,
+        [currentStep.id]: option,
+      }));
+      
+      setTimeout(() => {
+        setNotSureResponse(null);
+        proceedToNextStep();
+      }, 1500);
+      return;
+    }
 
     // Hide options immediately
     setShowInput(false);
@@ -380,11 +562,12 @@ export default function ChatPage() {
         // All steps complete - show calculation messages
         setShowInput(false);
         
-        // Show calculation progress messages
+        // Show calculation progress messages with loading indicators
+        setShowTyping(true);
         setMessages(prev => [...prev, {
           id: 'calculating-1',
           type: 'system',
-          content: "Calculating Logistics...",
+          content: "Scanning HTS Codes...",
           timestamp: Date.now(),
         }]);
         
@@ -395,9 +578,19 @@ export default function ChatPage() {
             content: "Checking Duty Rates...",
             timestamp: Date.now(),
           }]);
-        }, 1000);
+        }, 1200);
         
         setTimeout(() => {
+          setMessages(prev => [...prev, {
+            id: 'calculating-3',
+            type: 'system',
+            content: "Optimizing Route...",
+            timestamp: Date.now(),
+          }]);
+        }, 2400);
+        
+        setTimeout(() => {
+          setShowTyping(false);
           setMessages(prev => [...prev, {
             id: 'complete',
             type: 'system',
@@ -410,7 +603,7 @@ export default function ChatPage() {
           
           // Mark as completed (will show button instead of auto-redirect)
           setIsCompleted(true);
-        }, 2000);
+        }, 3600);
       }
     }, 1500); // Typing indicator duration
   };
@@ -530,9 +723,19 @@ export default function ChatPage() {
                       : 'bg-neutral-100 text-neutral-900'
                   }`}
                 >
-                  <p className="text-sm leading-relaxed whitespace-pre-wrap">
-                    {message.content}
-                  </p>
+                  <div className="flex items-center gap-2">
+                    <p className="text-sm leading-relaxed whitespace-pre-wrap">
+                      {message.content}
+                    </p>
+                    {/* Loading spinner for calculating messages */}
+                    {(message.id.startsWith('calculating-') || message.content.includes('Scanning') || message.content.includes('Checking') || message.content.includes('Optimizing')) && (
+                      <motion.div
+                        className="w-4 h-4 border-2 border-neutral-600 border-t-transparent rounded-full"
+                        animate={{ rotate: 360 }}
+                        transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                      />
+                    )}
+                  </div>
                 </div>
               </motion.div>
             ))}
@@ -605,51 +808,114 @@ export default function ChatPage() {
                 {currentStep.type === 'select' ? (
                   // Pill-shaped option buttons
                   <div className="flex flex-wrap gap-3 justify-start">
-                    {currentStep.options.map((option, index) => (
-                      <motion.button
-                        key={option}
-                        custom={index}
-                        variants={optionVariants}
-                        onClick={() => handleOptionSelect(option)}
-                        className="px-6 py-3 h-auto rounded-full border-2 border-neutral-300 bg-white text-neutral-900 text-sm font-medium transition-all hover:bg-neutral-900 hover:text-white hover:border-neutral-900 focus:outline-none focus:ring-2 focus:ring-neutral-900 focus:ring-offset-2 whitespace-normal text-left max-w-full sm:max-w-[80%]"
-                      >
-                        {option}
-                      </motion.button>
-                    ))}
+                    {currentStep.options.map((option, index) => {
+                      const isSkipOption = option.toLowerCase().includes('skip') || option.toLowerCase().includes('not sure') || option === 'Not sure yet' || option === 'No idea' || option === 'Open to recommendations';
+                      return (
+                        <motion.button
+                          key={option}
+                          custom={index}
+                          variants={optionVariants}
+                          onClick={() => handleOptionSelect(option)}
+                          className={`px-6 py-3 h-auto rounded-full text-sm font-medium transition-all whitespace-normal text-left max-w-full sm:max-w-[80%] focus:outline-none focus:ring-2 focus:ring-offset-2 ${
+                            isSkipOption
+                              ? 'border border-neutral-200 bg-white text-neutral-500 hover:bg-neutral-50 hover:text-neutral-600 focus:ring-neutral-300'
+                              : 'border-2 border-neutral-300 bg-white text-neutral-900 hover:bg-neutral-900 hover:text-white hover:border-neutral-900 focus:ring-neutral-900'
+                          }`}
+                        >
+                          {option}
+                        </motion.button>
+                      );
+                    })}
                   </div>
                 ) : (
                   // Text input field
-                  <div className="flex gap-3">
-                    <input
-                      ref={inputRef}
-                      type="text"
-                      value={textInput}
-                      onChange={(e) => setTextInput(e.target.value)}
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter' && !e.shiftKey && textInput.trim()) {
-                          e.preventDefault();
+                  <div className="space-y-3">
+                    <div className="flex gap-3">
+                      <input
+                        ref={inputRef}
+                        type="text"
+                        value={textInput}
+                        onChange={(e) => setTextInput(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter' && !e.shiftKey && textInput.trim()) {
+                            e.preventDefault();
+                            handleTextSubmit();
+                          }
+                        }}
+                        placeholder={currentStep.placeholder || "Type your answer..."}
+                        className="flex-1 px-4 py-3 rounded-full border-2 border-neutral-300 bg-white text-neutral-900 text-sm placeholder-neutral-400 focus:outline-none focus:border-neutral-900 focus:ring-2 focus:ring-neutral-900 focus:ring-offset-2 transition-all"
+                      />
+                      <motion.button
+                        onClick={handleTextSubmit}
+                        disabled={!textInput.trim()}
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
+                        className="px-6 py-3 rounded-full bg-neutral-900 text-white disabled:opacity-50 disabled:cursor-not-allowed transition-all focus:outline-none focus:ring-2 focus:ring-neutral-900 focus:ring-offset-2"
+                      >
+                        <Send className="w-4 h-4" />
+                      </motion.button>
+                    </div>
+                    {/* Skip link for ref_link - 숨겨진 스타일 */}
+                    {currentStep.id === 'ref_link' && (
+                      <button
+                        onClick={() => {
+                          setTextInput('skip');
                           handleTextSubmit();
-                        }
-                      }}
-                      placeholder={currentStep.placeholder || "Type your answer..."}
-                      className="flex-1 px-4 py-3 rounded-full border-2 border-neutral-300 bg-white text-neutral-900 text-sm placeholder-neutral-400 focus:outline-none focus:border-neutral-900 focus:ring-2 focus:ring-neutral-900 focus:ring-offset-2 transition-all"
-                    />
-                    <motion.button
-                      onClick={handleTextSubmit}
-                      disabled={!textInput.trim()}
-                      whileHover={{ scale: 1.05 }}
-                      whileTap={{ scale: 0.95 }}
-                      className="px-6 py-3 rounded-full bg-neutral-900 text-white disabled:opacity-50 disabled:cursor-not-allowed transition-all focus:outline-none focus:ring-2 focus:ring-neutral-900 focus:ring-offset-2"
-                    >
-                      <Send className="w-4 h-4" />
-                    </motion.button>
+                        }}
+                        className="text-xs text-neutral-400 hover:text-neutral-500 underline ml-2"
+                      >
+                        Skip
+                      </button>
+                    )}
                   </div>
                 )}
               </motion.div>
             )}
           </AnimatePresence>
 
-          {/* Completion State - View Analysis Report Button */}
+          {/* Skip Confirmation Dialog */}
+          <AnimatePresence>
+            {skipConfirmation && skipConfirmation.stepId === 'ref_link' && (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
+                onClick={() => handleSkipConfirm(false)}
+              >
+                <motion.div
+                  initial={{ scale: 0.95, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  exit={{ scale: 0.95, opacity: 0 }}
+                  onClick={(e) => e.stopPropagation()}
+                  className="bg-white rounded-xl p-6 max-w-md w-full shadow-xl"
+                >
+                  <h3 className="text-lg font-semibold text-gray-900 mb-3">
+                    Skip Reference Link?
+                  </h3>
+                  <p className="text-sm text-gray-600 mb-6 leading-relaxed">
+                    Without a link, cost accuracy drops by 30%. Are you sure? (Better to use an Amazon/Alibaba link)
+                  </p>
+                  <div className="flex gap-3">
+                    <button
+                      onClick={() => handleSkipConfirm(false)}
+                      className="flex-1 px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
+                    >
+                      Go Back
+                    </button>
+                    <button
+                      onClick={() => handleSkipConfirm(true)}
+                      className="flex-1 px-4 py-2 bg-neutral-900 text-white rounded-lg text-sm font-medium hover:bg-neutral-800 transition-colors"
+                    >
+                      Skip Anyway
+                    </button>
+                  </div>
+                </motion.div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          {/* Completion State - Reveal My Sourcing Strategy Button */}
           <AnimatePresence>
             {isCompleted && (
               <motion.div
@@ -679,7 +945,7 @@ export default function ChatPage() {
                   whileTap={{ scale: 0.98 }}
                   className="px-8 py-4 rounded-full bg-neutral-900 text-white text-base font-semibold shadow-lg hover:shadow-xl transition-all focus:outline-none focus:ring-2 focus:ring-neutral-900 focus:ring-offset-2"
                 >
-                  View Analysis Report
+                  Reveal My Sourcing Strategy
                 </motion.button>
               </motion.div>
             )}

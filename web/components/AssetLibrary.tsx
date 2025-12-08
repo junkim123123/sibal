@@ -7,9 +7,9 @@
 
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { getAdminClient } from '@/lib/supabase/admin';
-import { FileText, Download, Image as ImageIcon, File, Loader2, Filter, Search, Folder } from 'lucide-react';
+import { FileText, Download, Image as ImageIcon, File, Loader2, Filter, Search, Folder, Upload } from 'lucide-react';
 import Link from 'next/link';
 
 interface ProjectFile {
@@ -36,6 +36,8 @@ export function AssetLibrary({ userId, projectId }: AssetLibraryProps) {
   const [isLoading, setIsLoading] = useState(true);
   const [selectedCategory, setSelectedCategory] = useState<FileCategory>('all');
   const [searchQuery, setSearchQuery] = useState('');
+  const [isUploading, setIsUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     loadFiles();
@@ -226,6 +228,43 @@ export function AssetLibrary({ userId, projectId }: AssetLibraryProps) {
     return files.filter(file => categorizeFile(file.file_name, file.file_type) === category).length;
   };
 
+  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file || !projectId) return;
+
+    try {
+      setIsUploading(true);
+
+      const formData = new FormData();
+      formData.append('file', file);
+
+      const response = await fetch(`/api/projects/${projectId}/files/upload`, {
+        method: 'POST',
+        credentials: 'include',
+        body: formData,
+      });
+
+      const data = await response.json();
+
+      if (!data.ok) {
+        throw new Error(data.error || 'Failed to upload file');
+      }
+
+      // 파일 목록 다시 로드
+      await loadFiles();
+
+      // 파일 입력 초기화
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+    } catch (error) {
+      console.error('[AssetLibrary] Failed to upload file:', error);
+      alert(`Failed to upload file: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
   const categories: FileCategory[] = ['all', 'quotes', 'invoices', 'qc_reports', 'images', 'documents', 'other'];
 
   if (isLoading) {
@@ -242,12 +281,43 @@ export function AssetLibrary({ userId, projectId }: AssetLibraryProps) {
       <div className="p-6 border-b border-gray-200">
         <div className="flex items-center justify-between mb-4">
           <div>
-            <h2 className="text-xl font-bold text-gray-900">Asset Library</h2>
+            <h2 className="text-xl font-bold text-gray-900">
+              {projectId ? 'Project Documents' : 'Asset Library'}
+            </h2>
             <p className="text-sm text-gray-500 mt-1">
               {filteredFiles.length} {filteredFiles.length === 1 ? 'file' : 'files'}
               {selectedCategory !== 'all' && ` in ${getCategoryLabel(selectedCategory)}`}
             </p>
           </div>
+          {/* Upload Button (only for project-specific view) */}
+          {projectId && (
+            <div>
+              <input
+                ref={fileInputRef}
+                type="file"
+                className="hidden"
+                onChange={handleFileUpload}
+                accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png,.gif"
+              />
+              <button
+                onClick={() => fileInputRef.current?.click()}
+                disabled={isUploading}
+                className="inline-flex items-center gap-2 px-4 py-2 bg-black text-white rounded-lg hover:bg-gray-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {isUploading ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    <span>Uploading...</span>
+                  </>
+                ) : (
+                  <>
+                    <Upload className="w-4 h-4" />
+                    <span>Upload File</span>
+                  </>
+                )}
+              </button>
+            </div>
+          )}
         </div>
 
         {/* Search Bar */}
@@ -297,8 +367,19 @@ export function AssetLibrary({ userId, projectId }: AssetLibraryProps) {
                 ? `No files in ${getCategoryLabel(selectedCategory)} category`
                 : searchQuery
                 ? 'Try adjusting your search or filters'
+                : projectId
+                ? 'Upload files (Quotes, Invoices, POs) to get started'
                 : 'Files shared in chat will appear here'}
             </p>
+            {projectId && filteredFiles.length === 0 && !searchQuery && selectedCategory === 'all' && (
+              <button
+                onClick={() => fileInputRef.current?.click()}
+                className="mt-4 inline-flex items-center gap-2 px-4 py-2 bg-black text-white rounded-lg hover:bg-gray-800 transition-colors"
+              >
+                <Upload className="w-4 h-4" />
+                <span>Upload Your First File</span>
+              </button>
+            )}
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">

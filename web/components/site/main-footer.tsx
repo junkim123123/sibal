@@ -11,7 +11,7 @@ export function MainFooter() {
           <div className="space-y-4">
             <h3 className="text-sm font-semibold text-neutral-900">About NexSupply</h3>
             <p className="text-sm text-neutral-600 leading-relaxed">
-              AI-powered sourcing consultant that helps importers get instant landed-cost and risk analysis for any product.
+              End-to-end sourcing platform combining AI intelligence with owned logistics infrastructure.
             </p>
           </div>
 
@@ -105,10 +105,10 @@ export function MainFooter() {
           <div className="mb-6">
             <h3 className="text-sm font-semibold text-neutral-900 mb-2">Reach Out to NexSupply</h3>
             <a
-              href="mailto:outreach@nexsupply.net"
+              href="mailto:sourcing@nexsupply.net"
               className="text-sm text-neutral-600 hover:text-neutral-900 transition-colors"
             >
-              outreach@nexsupply.net
+              sourcing@nexsupply.net
             </a>
           </div>
         </div>

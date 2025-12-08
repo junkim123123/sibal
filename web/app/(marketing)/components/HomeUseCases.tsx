@@ -18,7 +18,7 @@ export default function HomeUseCases() {
               <h3 className="text-base md:text-lg lg:text-xl font-semibold text-neutral-900">
                 {useCase.title}
               </h3>
-              <p className="mt-3 text-sm md:text-base text-neutral-600 leading-relaxed">
+              <p className="mt-3 text-sm md:text-base text-[#444] leading-relaxed">
                 {useCase.body}
               </p>
               {useCase.target && (

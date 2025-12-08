@@ -31,6 +31,9 @@ export default function HomeSocialProofStrip() {
               <p className="text-sm md:text-base lg:text-lg font-medium text-neutral-800 leading-relaxed">&ldquo;{item.quote}&rdquo;</p>
               <footer className="mt-4 text-xs md:text-sm text-neutral-600">
                 — {item.author}
+                <span className="ml-2 inline-flex items-center px-2 py-0.5 rounded text-[10px] font-medium bg-green-50 text-green-700 border border-green-200/50">
+                  Verified Shipment
+                </span>
               </footer>
             </blockquote>
           ))}

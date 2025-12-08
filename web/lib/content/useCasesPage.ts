@@ -79,9 +79,9 @@ export interface UseCasesPageContent {
 
 export const useCasesPageContent: UseCasesPageContent = {
   hero: {
-    title: 'Use cases for real import decisions',
+    title: 'Sourcing Intelligence Built for Your Business Model',
     subtitle:
-      'From Amazon sellers to retail buyers and trading teams, NexSupply gives each channel a clear view of margin, risk, and execution—all in one place.',
+      'From Amazon FBA to Enterprise Retail, NexSupply equips your team with precision data on margin, compliance, and logistics—unified in one command center.',
     ctaLabel: 'Start a project',
     ctaHref: '/chat',
   },
@@ -91,7 +91,7 @@ export const useCasesPageContent: UseCasesPageContent = {
       label: 'Amazon FBA private label',
       description: 'For sellers who want to validate margins and duty risk before launching a new PL product.',
       decisions: [
-        'Decide whether a new product still makes sense once FBA fees, shipping, and duties are included.',
+        'Validate Net Margins Instantly: See true profit after FBA fees, duties, and shipping before spending $1.',
         'Compare staying with your current factory vs. moving to a new one for better unit economics.',
       ],
       icon: ShoppingCart,
@@ -101,7 +101,7 @@ export const useCasesPageContent: UseCasesPageContent = {
       label: 'DTC and Shopify brands',
       description: 'For brands where ad spend and 3PL fees are a big part of unit economics.',
       decisions: [
-        'See true per-unit margins after ads, fulfillment, and platform fees.',
+        'Secure Margins for ROAS: Calculate landed costs precisely to know exactly how much ad spend you can afford.',
         'Decide how aggressively to test new SKUs without breaking cash flow.',
       ],
       icon: Store,
@@ -111,7 +111,7 @@ export const useCasesPageContent: UseCasesPageContent = {
       label: 'Offline retail and wholesale',
       description: 'For buyers who need container-level decisions they can defend in internal meetings.',
       decisions: [
-        'Optimize case-pack and master carton setups for retail shelf space and shipping efficiency.',
+        'Shelf-Ready Optimization: Customize master cartons and pallet configurations at our hubs to minimize freight and handling costs.',
         'Compare pallet and container-level shipping scenarios for the best cost structure.',
       ],
       icon: Building2,
@@ -121,7 +121,7 @@ export const useCasesPageContent: UseCasesPageContent = {
       label: 'Importers and trading companies',
       description: 'For teams managing many SKUs who need fast, structured checks instead of ad-hoc spreadsheets.',
       decisions: [
-        'Get a portfolio-level view of cost and risk across your entire import line.',
+        'Centralized Sourcing OS: Replace ad-hoc spreadsheets with a single dashboard for quotes, compliance, and logistics tracking.',
         'Standardize how you evaluate suppliers and pilot new factories.',
       ],
       icon: Globe,
@@ -135,9 +135,9 @@ export const useCasesPageContent: UseCasesPageContent = {
         badge: 'Best for first-time clients',
         title: 'Launch a new product',
         summary:
-          'You have a new category idea and want to sanity-check margin and duty risk before ordering samples.',
+          'You have a new category idea and want to validate margin feasibility and duty risk before ordering samples.',
         scope: '1 SKU, 1 primary market.',
-        timeline: 'Typically within 1 week for the first report.',
+        timeline: 'Initial AI Audit: 24 Hours / Full Factory Matching: 1 Week',
       },
       {
         id: 're-source-existing-sku',
@@ -145,7 +145,7 @@ export const useCasesPageContent: UseCasesPageContent = {
         title: 'Re-source an existing SKU',
         summary: 'You want to benchmark new factories or trade terms against your current supplier.',
         scope: '1 SKU with multiple factory options.',
-        timeline: 'Usually 1–2 weeks for a comparison view.',
+        timeline: 'Initial AI Audit: 24 Hours / Factory Comparison: 1–2 Weeks',
       },
       {
         id: 'test-higher-risk-category',
@@ -154,28 +154,28 @@ export const useCasesPageContent: UseCasesPageContent = {
         summary:
           "You're interested in a more regulated category but want to understand the compliance and AD/CVD risk first.",
         scope: '1 SKU in a higher-risk or regulated category.',
-        timeline: 'Roughly 1 week to map mandatory tests and documents.',
+        timeline: 'Initial AI Audit: 24 Hours / Compliance Mapping: 1 Week',
       },
       {
         id: 'clean-up-messy-supply-chain',
         badge: 'When you need clarity across projects',
-        title: 'Clean up a messy supply chain',
+        title: 'Consolidate Fragmented Operations',
         summary:
           'You have similar products across multiple factories with different terms and logistics routes.',
         scope: 'Multiple SKUs and factories, using your existing quotes and contract data.',
-        timeline: 'Usually about 2 weeks for a full portfolio view and improvement plan.',
+        timeline: 'Initial AI Audit: 24 Hours / Portfolio Analysis: 2 Weeks',
       },
     ],
   },
   workflow: {
-    title: 'How NexSupply fits into your workflow',
+    title: 'Your Roadmap from Concept to Container',
     subtitle: 'Each use case follows the same simple path from idea to first shipment.',
     steps: [
       {
         id: 1,
-        title: 'Share your idea',
+        title: 'Submit Project Brief',
         body:
-          'Pick a seller type and project from this page, then share your product idea. We capture the key details in a structured brief so the analysis fits your real-world constraints.',
+          'Pick a seller type and project from this page, then share your product specs. We capture the key details in a structured brief so the analysis fits your real-world constraints.',
       },
       {
         id: 2,
@@ -185,43 +185,43 @@ export const useCasesPageContent: UseCasesPageContent = {
       },
       {
         id: 3,
-        title: 'Decide how far to go',
+        title: 'Execute with Confidence',
         body:
-          'You can stop at the AI report, book a call to go deeper, or move forward with factory search and a pilot order. You stay in control of pace, budget, and next steps.',
+          'You can stop at the AI report, book a call to go deeper, or seamlessly transition to factory search and a pilot order. You stay in control of pace, budget, and next steps.',
       },
     ],
   },
   pricing: {
-    title: 'What does it cost',
-    subtitle: 'Simple project-based pricing while we are in alpha.',
+    title: 'Flexible Pricing Models',
+    subtitle: 'Transparent, Pay-as-you-Scale Pricing.',
     analysis: {
       chip: 'Analysis only',
-      title: 'Analysis and planning',
+      title: 'Sourcing Intelligence Audit',
       bullets: [
-        'Flat project fee for each analysis during alpha.',
+        'Flat project fee for each analysis during pilot period.',
         'Includes AI report and one review call (typically 30+ minutes).',
-        'No subscription or long-term contract during alpha.',
+        'Pay-Per-Project (No Commitments)',
       ],
     },
     orders: {
       chip: 'When you place orders',
-      title: 'When orders go through NexSupply',
+      title: 'End-to-End Execution',
       bullets: [
-        'Transparent project-based success fee only when you place orders through us.',
-        'Fee cap on per-unit margin so your upside stays protected.',
+        'Performance-Based Management Fee only when you place orders through us.',
+        'Margin Protection Guarantee: Fee cap on per-unit margin so your upside stays protected.',
         'Currently focused on imports into the US and selected EU markets.',
       ],
     },
   },
   testimonials: {
     title: 'What importers are saying',
-    subtitle: 'Early projects use NexSupply to get clarity on landed cost, lead times, and risk before committing.',
+    subtitle: 'Leading importers use NexSupply to de-risk their supply chain and validate margins before committing.',
     items: [
       {
         id: 'amazon-seller',
         role: 'Amazon FBA seller',
         quote:
-          'When launching a new snack category, we were worried about duties and AD/CVD risk. NexSupply gave us a way to sanity-check margins and duties before we committed to inventory.',
+          'When launching a new snack category, we were worried about duties and AD/CVD risk. NexSupply gave us a way to validate unit profitability and duties before we committed to inventory.',
         meta: 'FBA seller, CPG category',
       },
       {
@@ -241,11 +241,11 @@ export const useCasesPageContent: UseCasesPageContent = {
     ],
   },
   cta: {
-    title: 'Ready to analyze your product?',
+    title: 'Get Your Landed Cost Reality Check.',
     subtitle:
-      'Pick your seller type and project goal above, then request your first analysis.',
-    subtitle2: 'We typically respond within 24 hours via email, and schedule a call if needed.',
-    ctaLabel: 'Start a project',
+      'Stop guessing on duties and freight. Submit your product details now and receive a comprehensive strategic audit within 24 hours.',
+    subtitle2: undefined,
+    ctaLabel: 'Request My Sourcing Audit',
     ctaHref: '/chat',
   },
 } as const;

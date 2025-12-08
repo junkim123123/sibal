@@ -25,6 +25,38 @@ export interface StartHereSection {
   cards: SimpleCard[];
 }
 
+export interface FeaturedProject {
+  id: string;
+  title: string;
+  description: string;
+  tag: string;
+  image: {
+    src: string;
+    alt: string;
+  };
+}
+
+export interface FeaturedProjectsSection {
+  title: string;
+  subtitle?: string;
+  projects: FeaturedProject[];
+}
+
+export interface VideoGuide {
+  id: string;
+  title: string;
+  description: string;
+  youtubeId?: string; // 특정 비디오 ID (예: "dQw4w9WgXcQ")
+  youtubeChannel?: string; // 채널 핸들 (예: "@nexsupply.global") - 비디오 ID가 없을 때 사용
+  thumbnail?: string;
+}
+
+export interface KnowledgeHubSection {
+  title: string;
+  subtitle?: string;
+  videos: VideoGuide[];
+}
+
 export interface DeepDiveSection {
   title: string;
   subtitle?: string;
@@ -46,6 +78,7 @@ export interface FAQSection {
 export interface ResourcePageConfig {
   hero: ResourceHeroSection;
   startHere: StartHereSection;
-  deepDive: DeepDiveSection;
+  featuredProjects: FeaturedProjectsSection;
+  knowledgeHub: KnowledgeHubSection;
   faq: FAQSection;
 }

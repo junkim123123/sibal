@@ -144,8 +144,8 @@ export const homePageConfig: HomePageConfig = {
     title: 'See what importers are saying about NexSupply',
     rating: {
       value: '4.8 / 5',
-      label: 'from early beta projects',
-      badge: 'Early beta projects',
+      label: 'from verified sourcing projects',
+      badge: 'Verified Sourcing Projects',
     },
     summary: 'Faster landed-cost clarity, fewer surprises at customs.',
     quotes: [
@@ -170,8 +170,8 @@ export const homePageConfig: HomePageConfig = {
         title: 'Better information before you commit',
         items: [
           {
-            title: 'Verified factory partners',
-            body: 'We pre-screen suppliers and QC partners so you can focus on your product.',
+            title: 'Owned Quality Control Hubs',
+            body: 'We don\'t just \'screen\' partners. We operate our own packing hubs to ensure 0% defect rates before shipping.',
           },
           {
             title: 'Smaller first tests',
@@ -183,8 +183,8 @@ export const homePageConfig: HomePageConfig = {
         title: 'Less friction for your team',
         items: [
           {
-            title: 'Anywhere support in your time zone',
-            body: 'Get async advice from trade experts in your time zone, without the costly retainers.',
+            title: '24/7 Async Trade Desk',
+            body: 'Expert guidance that moves at the speed of software. No hourly billings, just answers.',
           },
           {
             title: 'One inbox for your project',
@@ -200,8 +200,8 @@ export const homePageConfig: HomePageConfig = {
             body: 'See duties, freight, and other extras in one estimate before you commit.',
           },
           {
-            title: 'No long term lock in',
-            body: 'Our project-based engagement comes with clear pricing and no surprises.',
+            title: 'Flexible, Pay-as-you-Scale',
+            body: 'Start with a single SKU pilot and scale to containers. Our pricing adapts to your volume.',
           },
         ],
       },
@@ -210,7 +210,7 @@ export const homePageConfig: HomePageConfig = {
   cta: {
     title: 'Ready to test your next import?',
     description: 'Start with one product. We will run a full landed cost and risk review, usually within one day.',
-    buttonLabel: 'Get an analysis',
+    buttonLabel: 'Calculate My Profit',
     buttonHref: '/chat',
   },
   reviewsSection: {
@@ -251,15 +251,15 @@ export const homePageConfig: HomePageConfig = {
   },
   teamSection: {
     eyebrow: 'NexSupply behind the scenes',
-    title: 'Trade crafted by world-class operators',
+    title: 'Built by 2nd-Gen Traders & FBA Veterans',
     body:
-      "NexSupply is built by sourcing agents, logistics managers, and compliance nerds who have actually run containers between Asia and the US. We don't just quote landed costs — we've dealt with the factories, trucks, and customs paperwork ourselves.",
+      "NexSupply is built by sourcing agents, logistics managers, and compliance specialists who have actually run containers between Asia and the US. We don't just quote landed costs — we've dealt with the factories, trucks, and customs paperwork ourselves.",
     members: [
       {
         id: 'mj',
         name: 'Myungjun Kim',
         title: 'Founder & Supply Chain Lead',
-        bio: 'Grew up inside a family-run sourcing agency in Korea and Japan. Specializes in snacks, toys, and seasonal goods for US and Japanese retailers.',
+        bio: 'Leveraging a 20-year family manufacturing network in East Asia. Connecting heritage sourcing with modern tech.',
         badges: ['Snacks & confectionery', 'Japan & Korea', 'Amazon FBA'],
       },
       {

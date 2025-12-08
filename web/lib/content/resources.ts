@@ -4,7 +4,8 @@ import {
   ResourcePageConfig,
   ResourceHeroSection,
   StartHereSection,
-  DeepDiveSection,
+  FeaturedProjectsSection,
+  KnowledgeHubSection,
   FAQSection,
 } from '@/lib/types/resources';
 
@@ -49,30 +50,82 @@ const startHereSection: StartHereSection = {
   ],
 };
 
-const deepDiveSection: DeepDiveSection = {
-  title: 'Deep dive examples (coming soon)',
-    subtitle: 'In-depth case studies that walk through real landed cost and compliance decisions.',
-  cards: [
+const featuredProjectsSection: FeaturedProjectsSection = {
+  title: 'Featured Projects',
+  subtitle: 'Real sourcing projects that showcase our capabilities across retail, export, and e-commerce channels.',
+  projects: [
     {
-      id: 'article-1',
-      title: 'Case study: Launching a new snack on Amazon FBA (US)',
-      description: 'How an importer tested a new snack SKU, compared AD/CVD scenarios, and chose a supplier they could scale with.',
-      badge: 'Case study · Coming soon',
-      tag: 'Amazon FBA',
+      id: 'pokemon-7eleven',
+      title: 'Verified IP Sourcing for 7-Eleven',
+      description: 'Navigated complex IP licensing and food safety compliance to deliver Pokemon-branded confectioneries to 7-Eleven shelves.',
+      tag: 'Retail Sourcing / IP Licensing',
+      image: {
+        src: '/images/projects/pokemon-7eleven.jpg', // public/images/projects/ 폴더에 이미지 업로드 필요
+        alt: 'Pokemon jelly beans at 7-Eleven store',
+      },
     },
     {
-      id: 'article-2',
-      title: 'Case study: Hardlines category with complex compliance',
-      description: 'A step-by-step look at mapping HS codes, duties, and safety requirements for a new retail hardlines program.',
-      badge: 'Case study · Coming soon',
-      tag: 'Retail',
+      id: 'donquijote-marshmallow',
+      title: 'Strict QA for Don Quijote Japan',
+      description: 'Passed rigorous Japanese food safety standards to supply seasonal confectionery to Don Quijote retail chain.',
+      tag: 'Japan Export / Food Safety',
+      image: {
+        src: '/images/projects/donquijote-marshmallow.jpg', // public/images/projects/ 폴더에 이미지 업로드 필요
+        alt: 'Marshmallow skewers for Don Quijote Japan',
+      },
     },
     {
-      id: 'article-3',
-      title: 'Case study: Cleaning up a messy multi-SKU supply chain',
-      description: 'How a trading company consolidated quotes, freight, QC, and duties into one view to make faster decisions.',
-      badge: 'Playbook · Coming soon',
-      tag: 'Trading',
+      id: 'amazon-fingerboard',
+      title: 'High-Volume Toy Sourcing for FBA',
+      description: 'Managed end-to-end production and CPC certification for a top-ranking toy category on Amazon US.',
+      tag: 'Amazon FBA / Toy Compliance',
+      image: {
+        src: '/images/projects/amazon-fingerboard.jpg', // public/images/projects/ 폴더에 이미지 업로드 필요
+        alt: 'Fingerboard toy set for Amazon FBA',
+      },
+    },
+  ],
+};
+
+const knowledgeHubSection: KnowledgeHubSection = {
+  title: 'Sourcing Insights',
+  subtitle: 'Video guides and market intelligence to help you make smarter sourcing decisions.',
+  videos: [
+    {
+      id: 'inside-nexsupply',
+      title: 'Inside NexSupply',
+      description: 'See how our on-ground team manages QC and logistics in real-time.',
+      youtubeId: '1pMa-6muGQ0',
+    },
+    {
+      id: 'service-nexsupply',
+      title: 'Service NexSupply',
+      description: 'Learn about our comprehensive sourcing services and how we help importers succeed.',
+      youtubeId: 'aJOCT_E0RlE',
+    },
+    {
+      id: 'on-site-nexsupply',
+      title: 'On Site NexSupply',
+      description: 'Get a behind-the-scenes look at our operations and infrastructure.',
+      youtubeId: 'iJRGh4Tyhbw',
+    },
+    {
+      id: 'earth-conquest-01',
+      title: 'Earth Conquest Report #01: The Peelable Virus 🦠',
+      description: 'Market intelligence and trend analysis for innovative products.',
+      youtubeId: 'VJNJC-8Fwtk',
+    },
+    {
+      id: 'earth-conquest-02',
+      title: 'Earth Conquest Report #02: The Labor Paradox 🍣',
+      description: 'Deep dive into manufacturing and labor market insights.',
+      youtubeId: 'EdP6Wrd6Tug',
+    },
+    {
+      id: 'long-long-man-scam',
+      title: 'The "Long Long Man" Candy Scam? 👽📏',
+      description: 'Product analysis and market trend scouting.',
+      youtubeId: 'VkRKPXEwRQs',
     },
   ],
 };
@@ -117,6 +170,7 @@ const faqSection: FAQSection = {
 export const resourcePageConfig: ResourcePageConfig = {
   hero: resourceHeroSection,
   startHere: startHereSection,
-  deepDive: deepDiveSection,
+  featuredProjects: featuredProjectsSection,
+  knowledgeHub: knowledgeHubSection,
   faq: faqSection,
 };

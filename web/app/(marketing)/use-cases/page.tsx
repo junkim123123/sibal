@@ -1,6 +1,7 @@
 // Use Cases Page - Config-driven
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
+import { CheckCircle } from 'lucide-react';
 import { useCasesPageContent } from '@/lib/content/useCasesPage';
 
 export const revalidate = 60;
@@ -33,7 +34,7 @@ export default async function UseCasesPage() {
               href="#projects"
               className="text-sm text-neutral-600 hover:text-neutral-900 transition-colors"
             >
-              See common projects ↓
+              Find Your Strategy ↓
             </Link>
           </div>
           <div className="mt-12 border-t border-neutral-200"></div>
@@ -44,7 +45,7 @@ export default async function UseCasesPage() {
       <section aria-label="Who NexSupply helps" className="py-16 sm:py-20 bg-white">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <h2 className="text-2xl sm:text-3xl font-semibold text-center text-neutral-900">
-            Who NexSupply helps
+            Tailored Sourcing Engines for Every Scale
           </h2>
           <p className="mt-3 text-sm sm:text-base text-neutral-600 text-center max-w-2xl mx-auto">
             NexSupply works for Amazon FBA sellers, DTC brands, offline buyers, and trading companies.
@@ -74,7 +75,7 @@ export default async function UseCasesPage() {
                     {/* Right column */}
                     <div>
                       <p className="text-xs font-semibold tracking-wide text-neutral-500 uppercase mb-3">
-                        Decisions you can make
+                        Your Edge
                       </p>
                       {segment.decisions && segment.decisions.length > 0 && (
                         <ul className="space-y-2">
@@ -249,7 +250,13 @@ export default async function UseCasesPage() {
                   </p>
                 </blockquote>
                 <footer className="mt-4 pl-6 text-xs text-neutral-500">
-                  — {testimonial.meta}
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span>— {testimonial.meta}</span>
+                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-medium bg-green-50 text-green-700 border border-green-200/50">
+                      <CheckCircle className="w-3 h-3" />
+                      Verified Project
+                    </span>
+                  </div>
                 </footer>
               </div>
             ))}

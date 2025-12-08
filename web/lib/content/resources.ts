@@ -77,7 +77,7 @@ const featuredProjectsSection: FeaturedProjectsSection = {
     {
       id: 'amazon-fingerboard',
       title: 'High-Volume Toy Sourcing for FBA',
-      description: 'Managed end-to-end production and CPC certification for a top-ranking toy category on Amazon US.',
+      description: 'Managed end-to-end production and CPC certification for a top-ranking toy category in Southeast Asia.',
       tag: 'Amazon FBA / Toy Compliance',
       image: {
         src: '/images/projects/amazon-fingerboard.png',

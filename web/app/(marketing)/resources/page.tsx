@@ -72,7 +72,7 @@ export default function ResourcesPage() {
           <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
             {featuredProjects.projects.map((project) => (
               <Card key={project.id} className="overflow-hidden bg-white border-neutral-200 shadow-sm rounded-2xl hover:shadow-md transition-shadow">
-                <div className="relative w-full h-48 bg-neutral-100">
+                <div className="relative w-full aspect-[2/3] bg-neutral-100">
                   <Image
                     src={project.image.src}
                     alt={project.image.alt}

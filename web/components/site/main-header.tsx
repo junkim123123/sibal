@@ -122,18 +122,20 @@ export function MainHeader() {
               <div className="relative" ref={userMenuRef}>
                 <button
                   onClick={() => {
-                    // 로그인되지 않은 경우 항상 로그인 페이지로 리다이렉트
-                    if (!isAuthenticated) {
-                      router.push('/login');
-                      return;
-                    }
-                    // 로그인된 경우에만 메뉴 토글
+                    // 로딩 중이면 아무것도 하지 않음
+                    if (isLoading) return;
+                    
                     if (isAuthenticated) {
                       setUserMenuOpen(!userMenuOpen);
+                    } else {
+                      // 로그인 안 된 경우 로그인 페이지로 리다이렉트
+                      router.push('/login');
                     }
                   }}
-                  className="flex items-center justify-center w-10 h-10 rounded-full border border-gray-400 text-gray-800 hover:border-gray-500 hover:text-black transition-colors"
+                  disabled={isLoading}
+                  className="flex items-center justify-center w-10 h-10 rounded-full border border-gray-400 text-gray-800 hover:border-gray-500 hover:text-black transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                   aria-label={isAuthenticated ? "User menu" : "Sign in"}
+                  title={isAuthenticated ? "User menu" : "Sign in"}
                 >
                   <User className="h-6 w-6" />
                 </button>

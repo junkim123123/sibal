@@ -7,11 +7,18 @@ import { createClient } from '@/lib/supabase/client'
 import { ChevronRight, Package, Truck, Folder, MessageSquare, FileText } from 'lucide-react'
 import { AssetLibrary } from '@/components/AssetLibrary'
 import { ClientMessagesList } from '@/components/ClientMessagesList'
-import { UsageCard } from '@/components/dashboard/usage-card'
 import { Loader2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 
 // 더미 데이터 제거 - 실제 Supabase 데이터 사용
+
+// 상태 포맷팅 함수: 언더스코어를 공백으로 바꾸고 각 단어의 첫 글자를 대문자로
+function formatStatus(status: string): string {
+  return status
+    .split('_')
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+    .join(' ')
+}
 
 type TabType = 'requests' | 'production' | 'agent'
 
@@ -75,6 +82,14 @@ function DashboardPageContent() {
     }
   }, [searchParams, userId, isAuthenticated])
 
+  // activeTab 변경 시 데이터 새로고침 (탭 클릭 시)
+  useEffect(() => {
+    if (userId && isAuthenticated && activeTab) {
+      console.log('[Dashboard] Active tab changed, reloading projects...', activeTab)
+      loadProjects(userId)
+    }
+  }, [activeTab, userId, isAuthenticated])
+
   useEffect(() => {
     async function checkAuth() {
       try {
@@ -94,12 +109,12 @@ function DashboardPageContent() {
           .eq('id', user.id)
           .single()
         
+        // Real name 우선, 없으면 null (인사말에서 처리)
         const name = profile?.name ||
                      user.user_metadata?.full_name || 
                      user.user_metadata?.name ||
-                     user.email?.split('@')[0] ||
-                     'User'
-        setUserName(name)
+                     null
+        setUserName(name || '')
         
         // 프로젝트 데이터 로드
         await loadProjects(user.id)
@@ -196,7 +211,7 @@ function DashboardPageContent() {
               day: 'numeric', 
               year: 'numeric' 
             }),
-            status: p.status === 'saved' ? 'Saved' : 'Completed',
+            status: p.status, // StatusBadge에서 포맷팅됨
             href: `/results?project_id=${p.id}`,
             isSaved: p.status === 'saved',
           }))
@@ -523,54 +538,34 @@ function DashboardPageContent() {
   return (
     <div className="min-h-screen bg-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        {/* Header - Welcome Message + New Analysis Button + Usage Card */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
-          {/* Left: Welcome Message (2 columns) */}
-          <div className="md:col-span-2">
-            <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4 mb-4">
-              <div>
-                <h1 className="text-4xl md:text-5xl font-bold text-black tracking-tight mb-2">
-                  Welcome back, {userName}.
-                </h1>
-                <p className="text-zinc-600 text-lg">
-                  Manage your sourcing estimates and track shipments.
-                </p>
-              </div>
-              {/* Action Buttons */}
-              <div className="flex flex-col gap-2 flex-shrink-0">
-                <Link href="/chat" className="w-full md:w-auto">
-                  <Button
-                    size="lg"
-                    className="bg-neutral-900 hover:bg-neutral-800 text-white rounded-full px-6 md:px-8 py-3 md:py-3.5 font-semibold flex items-center gap-2 w-full md:w-auto"
-                  >
-                    <span>+ New Analysis Request</span>
-                  </Button>
-                </Link>
-                <Link href="/dashboard/chat" className="w-full md:w-auto">
-                  <Button
-                    size="lg"
-                    variant="outline"
-                    className="border-neutral-900 text-neutral-900 hover:bg-neutral-50 rounded-full px-6 md:px-8 py-3 md:py-3.5 font-semibold flex items-center gap-2 w-full md:w-auto"
-                  >
-                    <MessageSquare className="w-4 h-4" />
-                    <span>Agent Chat</span>
-                  </Button>
-                </Link>
-              </div>
+        {/* Header - Clean Command Center Style */}
+        <div className="mb-12">
+          {/* Top Row: Greeting (Left) + Action Button (Right) */}
+          <div className="flex items-center justify-between gap-6 mb-3">
+            {/* Left: Greeting */}
+            <div className="flex-1 min-w-0">
+              <h1 className="text-4xl md:text-5xl font-bold text-black tracking-tight">
+                {userName ? `Welcome back, ${userName}.` : 'Welcome back.'}
+              </h1>
+            </div>
+            
+            {/* Right: Primary Action Button */}
+            <div className="flex-shrink-0">
+              <Link href="/chat">
+                <Button
+                  size="lg"
+                  className="bg-neutral-900 hover:bg-neutral-800 text-white rounded-lg px-6 py-3 font-semibold"
+                >
+                  + New Analysis Request
+                </Button>
+              </Link>
             </div>
           </div>
-
-          {/* Right: Usage Card (1 column) */}
-          <div className="md:col-span-1">
-            {usageData && (
-              <UsageCard
-                usedCount={usageData.analysisCount}
-                limit={usageData.limit}
-                hasActiveSubscription={usageData.hasActiveSubscription}
-                userRole={usageData.userRole || 'free'}
-              />
-            )}
-          </div>
+          
+          {/* Sub-text below greeting */}
+          <p className="text-zinc-600 text-lg">
+            Manage your sourcing estimates and track shipments.
+          </p>
         </div>
 
         {/* Tabs Navigation - 3-Tab Structure (Past/Current/Future) */}
@@ -578,12 +573,24 @@ function DashboardPageContent() {
           <TabButton
             label="My Requests"
             active={activeTab === 'requests'}
-            onClick={() => setActiveTab('requests')}
+            onClick={() => {
+              setActiveTab('requests')
+              // 탭 클릭 시 데이터 새로고침
+              if (userId && isAuthenticated) {
+                loadProjects(userId)
+              }
+            }}
           />
           <TabButton
             label="Production & Shipping"
             active={activeTab === 'production'}
-            onClick={() => setActiveTab('production')}
+            onClick={() => {
+              setActiveTab('production')
+              // 탭 클릭 시 데이터 새로고침
+              if (userId && isAuthenticated) {
+                loadProjects(userId)
+              }
+            }}
           />
         </div>
 
@@ -843,6 +850,9 @@ function EmptyState({
 
 // Status Badge Component
 function StatusBadge({ status }: { status: string }) {
+  // 상태 포맷팅 (언더스코어 제거)
+  const formattedStatus = formatStatus(status)
+  
   const statusColors: Record<string, string> = {
     Completed: 'bg-green-50 text-green-700 border-green-200',
     Draft: 'bg-yellow-50 text-yellow-700 border-yellow-200',
@@ -851,16 +861,17 @@ function StatusBadge({ status }: { status: string }) {
     Saved: 'bg-gray-50 text-gray-700 border-gray-200',
     Processing: 'bg-blue-50 text-blue-700 border-blue-200',
     'Awaiting Manager': 'bg-purple-50 text-purple-700 border-purple-200',
+    'In Progress': 'bg-blue-50 text-blue-700 border-blue-200',
   }
 
-  const colorClass = statusColors[status] || 
+  const colorClass = statusColors[formattedStatus] || 
                      'bg-gray-50 text-gray-700 border-gray-200'
 
   return (
     <span
       className={`px-3 py-1 rounded-full text-xs font-medium border ${colorClass}`}
     >
-      {status}
+      {formattedStatus}
     </span>
   )
 }

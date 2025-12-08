@@ -4,20 +4,126 @@ import { useState, useEffect, Suspense, useRef } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
-import { ChevronLeft, FileText, Package, MessageSquare, ArrowLeft, Upload, Loader2 as Loader2Icon } from 'lucide-react'
-import { AssetLibrary } from '@/components/AssetLibrary'
+import { ChevronLeft, FileText, Package, MessageSquare, ArrowLeft, Upload, Loader2 as Loader2Icon, CheckCircle2 } from 'lucide-react'
+import { ManagerChat } from '@/components/ManagerChat'
 import { Loader2 } from 'lucide-react'
 
-type ProjectTabType = 'overview' | 'documents' | 'chat'
+// Progress Tracker Component (Client-facing, read-only)
+function ProgressTracker({ projectId, managerId }: { projectId: string; managerId: string }) {
+  const [milestones, setMilestones] = useState<any[]>([])
+  const [isLoading, setIsLoading] = useState(true)
+
+  useEffect(() => {
+    loadMilestones()
+  }, [projectId])
+
+  const loadMilestones = async () => {
+    try {
+      setIsLoading(true)
+      const response = await fetch(`/api/projects/${projectId}/progress`)
+      const data = await response.json()
+      
+      if (data.ok && data.milestones) {
+        setMilestones(data.milestones)
+      }
+    } catch (error) {
+      console.error('[ProgressTracker] Failed to load milestones:', error)
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center py-12">
+        <Loader2 className="w-6 h-6 animate-spin text-gray-400" />
+      </div>
+    )
+  }
+
+  return (
+    <div className="space-y-6">
+      <div>
+        <h2 className="text-lg font-semibold text-gray-900 mb-1">Project Progress</h2>
+        <p className="text-sm text-gray-500">
+          Real-time updates from your dedicated manager
+        </p>
+      </div>
+
+      <div className="relative">
+        {milestones.map((milestone, idx) => {
+          const isCompleted = milestone.status === 'completed'
+          const isInProgress = milestone.status === 'in_progress'
+          
+          return (
+            <div key={idx} className="relative flex items-start gap-4 pb-8 last:pb-0">
+              {/* Timeline Line */}
+              {idx < milestones.length - 1 && (
+                <div
+                  className={`absolute left-[18px] top-8 w-0.5 h-full ${
+                    isCompleted ? 'bg-green-500' : 'bg-gray-200'
+                  }`}
+                />
+              )}
+
+              {/* Icon */}
+              <div className="relative flex-shrink-0 z-10 bg-white">
+                {isCompleted ? (
+                  <CheckCircle2 className="w-5 h-5 text-green-600" />
+                ) : isInProgress ? (
+                  <Loader2 className="w-5 h-5 text-blue-600 animate-spin" />
+                ) : (
+                  <div className="w-5 h-5 rounded-full border-2 border-gray-300" />
+                )}
+              </div>
+
+              {/* Content */}
+              <div className="flex-1 min-w-0 pt-0.5">
+                <p
+                  className={`text-base font-medium ${
+                    isCompleted
+                      ? 'text-gray-900'
+                      : isInProgress
+                      ? 'text-blue-600'
+                      : 'text-gray-400'
+                  }`}
+                >
+                  {milestone.title}
+                </p>
+                {milestone.date && (
+                  <p className="text-sm text-gray-500 mt-1">
+                    Completed on {new Date(milestone.date).toLocaleDateString('en-US', {
+                      month: 'long',
+                      day: 'numeric',
+                      year: 'numeric'
+                    })}
+                  </p>
+                )}
+                {isInProgress && (
+                  <p className="text-sm text-blue-600 mt-1 font-medium">
+                    In progress...
+                  </p>
+                )}
+              </div>
+            </div>
+          )
+        })}
+      </div>
+    </div>
+  )
+}
+
+type ProjectTabType = 'chat' | 'progress' | 'overview'
 
 function ProjectDetailPageContent() {
   const params = useParams()
   const router = useRouter()
   const projectId = params.id as string
-  const [activeTab, setActiveTab] = useState<ProjectTabType>('overview')
+  const [activeTab, setActiveTab] = useState<ProjectTabType>('chat')
   const [project, setProject] = useState<any>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [userId, setUserId] = useState<string | null>(null)
+  const [sessionId, setSessionId] = useState<string | null>(null)
   const [isUploading, setIsUploading] = useState(false)
   const [uploadSuccess, setUploadSuccess] = useState(false)
   const [isDragging, setIsDragging] = useState(false)
@@ -62,11 +168,54 @@ function ProjectDetailPageContent() {
       }
 
       setProject(projectData)
+      
+      // 채팅 세션 찾기 또는 생성
+      await loadOrCreateChatSession(projectData.id, user.id)
     } catch (error) {
       console.error('[Project Detail] Error:', error)
       router.push('/dashboard')
     } finally {
       setIsLoading(false)
+    }
+  }
+
+  // 채팅 세션 로드 또는 생성
+  async function loadOrCreateChatSession(projectId: string, userId: string) {
+    try {
+      const supabase = createClient()
+      
+      // 기존 활성 세션 찾기
+      const { data: existingSession } = await supabase
+        .from('chat_sessions')
+        .select('id')
+        .eq('project_id', projectId)
+        .eq('user_id', userId)
+        .in('status', ['open', 'in_progress'])
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .maybeSingle()
+      
+      if (existingSession) {
+        setSessionId(existingSession.id)
+        return
+      }
+      
+      // 세션이 없으면 생성 (API를 통해)
+      const response = await fetch('/api/messages', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          project_id: projectId,
+          action: 'create_session',
+        }),
+      })
+      
+      const data = await response.json()
+      if (data.ok && data.sessionId) {
+        setSessionId(data.sessionId)
+      }
+    } catch (error) {
+      console.error('[Project Detail] Failed to load/create chat session:', error)
     }
   }
 
@@ -99,16 +248,8 @@ function ProjectDetailPageContent() {
         fileInputRef.current.value = ''
       }
 
-      // Documents 탭이 활성화되어 있으면 파일 목록 새로고침
-      if (activeTab === 'documents') {
-        // AssetLibrary 컴포넌트가 자동으로 새로고침되도록 리로드
-        window.location.reload()
-      } else {
-        // Documents 탭으로 전환하여 업로드된 파일 확인
-        setTimeout(() => {
-          setActiveTab('documents')
-        }, 500)
-      }
+      // 파일 업로드 성공 후 Overview 탭으로 전환 (Documents 탭 제거됨)
+      // 필요시 Overview 탭에서 파일 목록을 표시할 수 있음
 
       // 성공 메시지 3초 후 제거
       setTimeout(() => {
@@ -164,6 +305,14 @@ function ProjectDetailPageContent() {
         <Loader2 className="w-6 h-6 animate-spin text-gray-400" />
       </div>
     )
+  }
+
+  // 상태 포맷팅 함수: 언더스코어를 공백으로 바꾸고 각 단어의 첫 글자를 대문자로
+  const formatStatus = (status: string): string => {
+    return status
+      .split('_')
+      .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+      .join(' ')
   }
 
   if (!project) {
@@ -238,24 +387,58 @@ function ProjectDetailPageContent() {
         {/* Tabs Navigation */}
         <div className="flex gap-8 mb-8 border-b border-gray-200">
           <TabButton
-            label="Overview"
-            active={activeTab === 'overview'}
-            onClick={() => setActiveTab('overview')}
-          />
-          <TabButton
-            label="Documents"
-            active={activeTab === 'documents'}
-            onClick={() => setActiveTab('documents')}
-          />
-          <TabButton
             label="Chat"
             active={activeTab === 'chat'}
             onClick={() => setActiveTab('chat')}
+          />
+          <TabButton
+            label="Progress"
+            active={activeTab === 'progress'}
+            onClick={() => setActiveTab('progress')}
+          />
+          <TabButton
+            label="Overview"
+            active={activeTab === 'overview'}
+            onClick={() => setActiveTab('overview')}
           />
         </div>
 
         {/* Content Area */}
         <div className="space-y-6">
+          {activeTab === 'chat' && (
+            <div className="bg-white rounded-lg border border-gray-200">
+              {sessionId && userId ? (
+                <ManagerChat
+                  sessionId={sessionId}
+                  projectId={projectId}
+                  userId={userId}
+                  showQuickReplies={true}
+                />
+              ) : (
+                <div className="p-12 text-center">
+                  <Loader2 className="w-8 h-8 text-gray-400 mx-auto mb-4 animate-spin" />
+                  <p className="text-gray-600">Loading chat...</p>
+                </div>
+              )}
+            </div>
+          )}
+
+          {activeTab === 'progress' && project && (
+            <div className="bg-white rounded-lg border border-gray-200 p-6">
+              {project.manager_id ? (
+                <ProgressTracker projectId={projectId} managerId={project.manager_id} />
+              ) : (
+                <div className="text-center py-12">
+                  <CheckCircle2 className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                  <h3 className="text-lg font-medium text-gray-900 mb-2">Manager Not Assigned</h3>
+                  <p className="text-gray-600">
+                    A manager will be assigned to your project soon. Progress updates will appear here.
+                  </p>
+                </div>
+              )}
+            </div>
+          )}
+
           {activeTab === 'overview' && (
             <div className="space-y-6">
               {/* Project Info Card */}
@@ -263,7 +446,7 @@ function ProjectDetailPageContent() {
                 <div className="space-y-4">
                   <div>
                     <h2 className="text-sm font-semibold text-gray-500 uppercase mb-2">Project Status</h2>
-                    <p className="text-lg font-medium text-gray-900 capitalize">{project.status}</p>
+                    <p className="text-lg font-medium text-gray-900">{formatStatus(project.status)}</p>
                   </div>
                   {project.total_landed_cost && (
                     <div>
@@ -348,28 +531,6 @@ function ProjectDetailPageContent() {
             </div>
           )}
 
-          {activeTab === 'documents' && projectId && (
-            <AssetLibrary projectId={projectId} />
-          )}
-
-          {activeTab === 'chat' && (
-            <div className="bg-white rounded-lg border border-gray-200 p-6">
-              <div className="text-center py-12">
-                <MessageSquare className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                <h3 className="text-lg font-medium text-gray-900 mb-2">Project Chat</h3>
-                <p className="text-gray-600 mb-6">
-                  Chat with your dedicated agent about this project
-                </p>
-                <Link
-                  href={`/dashboard/chat?project_id=${project.id}`}
-                  className="inline-flex items-center gap-2 px-4 py-2 bg-black text-white rounded-lg hover:bg-gray-800 transition-colors"
-                >
-                  <MessageSquare className="w-4 h-4" />
-                  Open Chat
-                </Link>
-              </div>
-            </div>
-          )}
         </div>
       </div>
     </div>

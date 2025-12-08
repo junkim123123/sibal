@@ -94,29 +94,64 @@ function ResultHeader({
   landedCost, 
   margin,
   projectId,
-  onRequestClick
+  onRequestClick,
+  hasCriticalRisk,
+  onCriticalRiskClick
 }: { 
   productName: string; 
   landedCost: number; 
   margin: { min: number; max: number };
   projectId?: string | null;
   onRequestClick?: () => void;
+  hasCriticalRisk?: boolean;
+  onCriticalRiskClick?: () => void;
 }) {
+  // Format product name: English first, Korean in parentheses if present
+  const formatProductName = (name: string) => {
+    // Check if name contains Korean characters
+    const hasKorean = /[ㄱ-ㅎ|ㅏ-ㅣ|가-힣]/.test(name);
+    if (!hasKorean) return name;
+    
+    // Try to extract English and Korean parts
+    const koreanMatch = name.match(/[가-힣\s]+/g);
+    const englishMatch = name.match(/[a-zA-Z\s]+/g);
+    
+    if (englishMatch && koreanMatch) {
+      // If both exist, prioritize English
+      const english = englishMatch[0].trim();
+      const korean = koreanMatch.join(' ').trim();
+      return `${english} (${korean})`;
+    }
+    
+    // If only Korean, try to transliterate or keep as is
+    return name;
+  };
+
   return (
     <div className="col-span-2 bg-white border border-gray-200 rounded-lg p-8 shadow-sm">
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 mb-2">{productName}</h1>
+          <h1 className="text-2xl font-bold text-gray-900 mb-2">{formatProductName(productName)}</h1>
           <p className="text-gray-500 text-sm">Sourcing Intelligence Report</p>
         </div>
         <div className="flex items-baseline gap-6">
           <div>
             <p className="text-xs text-gray-500 uppercase mb-1 tracking-wide">Estimated Landed Cost</p>
-            <p className="text-5xl font-bold font-mono text-blue-600">${landedCost.toFixed(2)}</p>
+            <div className="flex items-baseline gap-2">
+              <p className="text-5xl font-bold font-mono text-blue-600">${landedCost.toFixed(2)}</p>
+              {hasCriticalRisk && (
+                <button
+                  onClick={onCriticalRiskClick}
+                  className="px-2 py-1 bg-red-100 text-red-700 text-xs font-semibold rounded hover:bg-red-200 transition-colors flex items-center gap-1"
+                >
+                  ⚠️ CRITICAL RISK
+                </button>
+              )}
+            </div>
           </div>
           <div>
             <p className="text-xs text-gray-500 uppercase mb-1 tracking-wide">Margin</p>
-            <p className="text-3xl font-bold font-mono text-gray-900">{margin.min}-{margin.max}%</p>
+            <p className="text-3xl font-bold font-mono text-gray-900">{margin.min}% ~ {margin.max}%</p>
           </div>
         </div>
       </div>
@@ -187,11 +222,25 @@ function CostBreakdown({ costBreakdown, totalLandedCost }: { costBreakdown: any;
         <div className="flex flex-col justify-center space-y-1">
           {chartData.map((item, index) => {
             const percentage = total > 0 ? ((item.value / total) * 100).toFixed(1) : '0';
+            const isShipping = item.name === 'Shipping';
+            const isFactory = item.name === 'Factory';
+            const showVolumetricAlert = isShipping && item.value > (costBreakdown?.factory_exw || 0);
+            
             return (
               <div key={index} className="flex items-center justify-between py-2">
                 <div className="flex items-center gap-2 flex-1 min-w-0">
                   <div className="w-3 h-3 rounded-full flex-shrink-0" style={{ backgroundColor: item.color }} />
-                  <span className="text-sm text-gray-700 truncate">{item.name}</span>
+                  <div className="flex items-center gap-1.5 flex-1 min-w-0">
+                    <span className="text-sm text-gray-700 truncate">{item.name}</span>
+                    {showVolumetricAlert && (
+                      <div className="group relative flex-shrink-0">
+                        <Info className="w-3.5 h-3.5 text-gray-400 hover:text-gray-600 cursor-help" />
+                        <div className="absolute left-0 bottom-full mb-2 w-48 p-2 bg-gray-900 text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10 shadow-lg">
+                          High Volumetric Weight Alert: This product requires more space, increasing shipping costs relative to factory cost.
+                        </div>
+                      </div>
+                    )}
+                  </div>
                   <span className="flex-1 border-b border-dotted border-gray-300 mx-2"></span>
                 </div>
                 <div className="text-right flex-shrink-0">
@@ -647,14 +696,25 @@ function ComplianceChecklist({ checklist, hsCode, market }: {
       <div className="space-y-3">
         {checklist.map((item, index) => (
           <div key={index} className="flex items-start gap-3 p-3 bg-gray-50 rounded-lg border border-gray-200">
-            <input 
-              type="checkbox" 
-              className="mt-1 w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
-              disabled
-            />
+            <div className="relative flex-shrink-0 mt-0.5">
+              <input 
+                type="checkbox" 
+                className="peer w-5 h-5 appearance-none border-2 border-gray-300 rounded-md cursor-pointer transition-all checked:bg-neutral-900 checked:border-neutral-900 focus:ring-2 focus:ring-neutral-900 focus:ring-offset-1 disabled:opacity-50 disabled:cursor-not-allowed"
+                disabled
+                checked={item.required}
+              />
+              <svg 
+                className="absolute top-0.5 left-0.5 w-4 h-4 text-white pointer-events-none opacity-0 peer-checked:opacity-100 transition-opacity"
+                fill="none" 
+                stroke="currentColor" 
+                viewBox="0 0 24 24"
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+              </svg>
+            </div>
             <div className="flex-1">
               <div className="flex items-center gap-2 mb-1">
-                <span className="text-gray-900 font-medium text-sm">{item.item}</span>
+                <span className="text-gray-900 font-semibold text-sm">{item.item}</span>
                 {item.required && (
                   <span className="px-2 py-0.5 bg-red-100 text-red-700 text-xs font-semibold rounded">Required</span>
                 )}
@@ -725,8 +785,8 @@ function ShadowSourcing({ shadowSourcing }: {
 
   return (
     <Card className="bg-white border border-gray-200 p-6 shadow-sm">
-      <h2 className="text-sm font-semibold text-gray-500 uppercase mb-4 tracking-wide">🕵️ Shadow Sourcing Intelligence</h2>
-      <p className="text-xs text-gray-500 mb-4">
+      <h2 className="text-xs font-semibold text-gray-500 uppercase mb-2 tracking-wide">🔍 Deep-Tier Supply Chain Intelligence</h2>
+      <p className="text-xs text-gray-400 mb-4 leading-relaxed">
         Recommended suppliers based on actual export history and OEM relationships
       </p>
       
@@ -735,7 +795,7 @@ function ShadowSourcing({ shadowSourcing }: {
           <div key={index} className="bg-gray-50 rounded-lg p-4 border border-gray-200">
             <div className="flex items-start justify-between mb-2">
               <div>
-                <span className="text-gray-900 font-semibold text-sm">{supplier.name}</span>
+                <span className="text-gray-900 font-bold text-base">{supplier.name}</span>
                 {supplier.oem_history && (
                   <span className="ml-2 px-2 py-0.5 bg-blue-100 text-blue-700 text-xs font-medium rounded">
                     {supplier.oem_history}
@@ -743,7 +803,7 @@ function ShadowSourcing({ shadowSourcing }: {
                 )}
               </div>
             </div>
-            <p className="text-gray-600 text-xs leading-relaxed">{supplier.reason}</p>
+            <p className="text-gray-700 text-sm leading-relaxed font-medium">{supplier.reason}</p>
           </div>
         ))}
       </div>
@@ -859,7 +919,7 @@ function ActionRoadmap({ answers, aiAnalysis }: { answers: Answers; aiAnalysis?:
   const roadmapSteps = hasImmediateHalt ? criticalRoadmapSteps : normalRoadmapSteps;
 
   return (
-    <Card className={`col-span-2 bg-white border ${hasImmediateHalt ? 'border-red-200' : 'border-gray-200'} p-6 shadow-sm`}>
+    <div id="action-roadmap" className={`col-span-2 bg-white border ${hasImmediateHalt ? 'border-red-200' : 'border-gray-200'} rounded-lg p-6 shadow-sm`}>
       <div className="flex items-center gap-2 mb-4">
         <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wide">Action Roadmap</h2>
         {hasImmediateHalt && (
@@ -903,7 +963,7 @@ function ActionRoadmap({ answers, aiAnalysis }: { answers: Answers; aiAnalysis?:
           </div>
         ))}
       </div>
-    </Card>
+    </div>
   );
 }
 
@@ -912,7 +972,8 @@ function ResultsActionButtons({ projectId, answers, aiAnalysis }: { projectId?: 
   const [isSaving, setIsSaving] = useState(false);
   const [isProcessingPayment, setIsProcessingPayment] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [isAgreed, setIsAgreed] = useState(false);
+  // Agreement is now implicit (caption text only, no checkbox)
+  const isAgreed = true;
 
   // 인증 상태 확인
   useEffect(() => {
@@ -1040,10 +1101,7 @@ function ResultsActionButtons({ projectId, answers, aiAnalysis }: { projectId?: 
       return;
     }
 
-    if (!isAgreed) {
-      alert('Please agree to the service scope before proceeding.');
-      return;
-    }
+    // Agreement is now implicit (no checkbox required)
 
     setIsProcessingPayment(true);
     
@@ -1154,34 +1212,37 @@ function ResultsActionButtons({ projectId, answers, aiAnalysis }: { projectId?: 
       <div className="sticky bottom-0 left-0 right-0 bg-white shadow-lg border-t border-gray-200 z-50">
         <div className="max-w-7xl mx-auto px-4 py-4 md:py-5">
           {/* Desktop Layout */}
-          <div className="hidden md:flex items-start justify-between gap-6">
-            {/* Left: Service Value Props List */}
-            <div className="flex-1 space-y-2.5">
-              <div className="flex items-start gap-2.5">
-                <CheckCircle2 className="w-5 h-5 text-emerald-600 mt-0.5 flex-shrink-0" />
-                <div>
-                  <p className="text-sm font-semibold text-gray-900">Sourcing & Negotiation</p>
-                  <p className="text-xs text-gray-600">Factory finding, Price bargaining</p>
+          <div className="hidden md:flex items-start justify-between gap-8">
+            {/* Left: Service Scope (Included) */}
+            <div className="flex-1 bg-gray-50 border border-gray-200 rounded-lg p-5">
+              <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">Included</p>
+              <div className="space-y-3">
+                <div className="flex items-start gap-2.5">
+                  <CheckCircle2 className="w-5 h-5 text-emerald-600 mt-0.5 flex-shrink-0" />
+                  <div>
+                    <p className="text-sm font-semibold text-gray-900">Sourcing & Negotiation</p>
+                    <p className="text-xs text-gray-600">Factory finding, Price bargaining</p>
+                  </div>
                 </div>
-              </div>
-              <div className="flex items-start gap-2.5">
-                <CheckCircle2 className="w-5 h-5 text-emerald-600 mt-0.5 flex-shrink-0" />
-                <div>
-                  <p className="text-sm font-semibold text-gray-900">Manage QC, Labeling & Kitting</p>
-                  <p className="text-xs text-gray-600">Using our owned Packing Hub</p>
+                <div className="flex items-start gap-2.5">
+                  <CheckCircle2 className="w-5 h-5 text-emerald-600 mt-0.5 flex-shrink-0" />
+                  <div>
+                    <p className="text-sm font-semibold text-gray-900">Manage QC, Labeling & Kitting</p>
+                    <p className="text-xs text-gray-600">Using our owned Packing Hub</p>
+                  </div>
                 </div>
-              </div>
-              <div className="flex items-start gap-2.5">
-                <CheckCircle2 className="w-5 h-5 text-emerald-600 mt-0.5 flex-shrink-0" />
-                <div>
-                  <p className="text-sm font-semibold text-gray-900">End-to-End Logistics</p>
-                  <p className="text-xs text-gray-600">DDP Shipping setup</p>
+                <div className="flex items-start gap-2.5">
+                  <CheckCircle2 className="w-5 h-5 text-emerald-600 mt-0.5 flex-shrink-0" />
+                  <div>
+                    <p className="text-sm font-semibold text-gray-900">End-to-End Logistics</p>
+                    <p className="text-xs text-gray-600">DDP Shipping setup</p>
+                  </div>
                 </div>
               </div>
             </div>
 
-            {/* Right: Action Buttons & Agreement */}
-            <div className="flex flex-col items-end gap-3 min-w-[320px]">
+            {/* Right: Action Zone */}
+            <div className="flex flex-col items-end gap-3 min-w-[360px]">
               {/* Secondary Actions Row */}
               <div className="flex items-center gap-3 w-full">
                 <Link
@@ -1201,28 +1262,12 @@ function ResultsActionButtons({ projectId, answers, aiAnalysis }: { projectId?: 
                 </Button>
               </div>
 
-              {/* Agreement Checkbox */}
-              <div className="flex items-start gap-2 w-full">
-                <input
-                  type="checkbox"
-                  id="service-agreement"
-                  checked={isAgreed}
-                  onChange={(e) => setIsAgreed(e.target.checked)}
-                  className="mt-1 w-4 h-4 text-emerald-600 border-gray-300 rounded focus:ring-emerald-500 focus:ring-2"
-                />
-                <label htmlFor="service-agreement" className="text-xs text-gray-700 leading-relaxed cursor-pointer">
-                  I understand this service covers <strong>Ops & Logistics only</strong>. (Design/Marketing excluded)
-                </label>
-              </div>
-
               {/* Main CTA Button */}
               <div className="w-full">
                 <Button
                   onClick={handleStartSourcing}
-                  disabled={isProcessingPayment || !isAgreed}
-                  className={`w-full bg-gray-900 hover:bg-gray-800 text-white font-semibold py-3 px-6 ${
-                    !isAgreed ? 'opacity-50 cursor-not-allowed' : ''
-                  }`}
+                  disabled={isProcessingPayment}
+                  className="w-full bg-neutral-900 hover:bg-neutral-800 text-white font-semibold py-3.5 px-6"
                 >
                   {isProcessingPayment ? (
                     <span className="flex items-center gap-2">
@@ -1230,7 +1275,7 @@ function ResultsActionButtons({ projectId, answers, aiAnalysis }: { projectId?: 
                       <span>Creating Project...</span>
                     </span>
                   ) : (
-                    <span className="text-base">🚀 Start Sourcing Request (Free)</span>
+                    <span className="text-base">Request Official Quote</span>
                   )}
                 </Button>
                 {/* Info Badge */}
@@ -1240,49 +1285,44 @@ function ResultsActionButtons({ projectId, answers, aiAnalysis }: { projectId?: 
                     Start chatting with an agent immediately. Pay later when you approve the quote.
                   </span>
                 </div>
+                {/* Agreement Caption (Small text below button) */}
+                <div className="mt-2 text-center">
+                  <p className="text-[10px] text-gray-500 leading-relaxed">
+                    By proceeding, I agree that design/marketing services are excluded.
+                  </p>
+                </div>
               </div>
             </div>
           </div>
 
           {/* Mobile Layout */}
           <div className="md:hidden space-y-4">
-            {/* Service Value Props List (Top) */}
-            <div className="space-y-2.5">
-              <div className="flex items-start gap-2.5">
-                <CheckCircle2 className="w-4 h-4 text-emerald-600 mt-0.5 flex-shrink-0" />
-                <div>
-                  <p className="text-xs font-semibold text-gray-900">Sourcing & Negotiation</p>
-                  <p className="text-[10px] text-gray-600">Factory finding, Price bargaining</p>
+            {/* Service Scope (Included) */}
+            <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
+              <p className="text-[10px] font-semibold text-gray-500 uppercase tracking-wide mb-2">Included</p>
+              <div className="space-y-2.5">
+                <div className="flex items-start gap-2.5">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-600 mt-0.5 flex-shrink-0" />
+                  <div>
+                    <p className="text-xs font-semibold text-gray-900">Sourcing & Negotiation</p>
+                    <p className="text-[10px] text-gray-600">Factory finding, Price bargaining</p>
+                  </div>
+                </div>
+                <div className="flex items-start gap-2.5">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-600 mt-0.5 flex-shrink-0" />
+                  <div>
+                    <p className="text-xs font-semibold text-gray-900">Manage QC, Labeling & Kitting</p>
+                    <p className="text-[10px] text-gray-600">Using our owned Packing Hub</p>
+                  </div>
+                </div>
+                <div className="flex items-start gap-2.5">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-600 mt-0.5 flex-shrink-0" />
+                  <div>
+                    <p className="text-xs font-semibold text-gray-900">End-to-End Logistics</p>
+                    <p className="text-[10px] text-gray-600">DDP Shipping setup</p>
+                  </div>
                 </div>
               </div>
-              <div className="flex items-start gap-2.5">
-                <CheckCircle2 className="w-4 h-4 text-emerald-600 mt-0.5 flex-shrink-0" />
-                <div>
-                  <p className="text-xs font-semibold text-gray-900">Manage QC, Labeling & Kitting</p>
-                  <p className="text-[10px] text-gray-600">Using our owned Packing Hub</p>
-                </div>
-              </div>
-              <div className="flex items-start gap-2.5">
-                <CheckCircle2 className="w-4 h-4 text-emerald-600 mt-0.5 flex-shrink-0" />
-                <div>
-                  <p className="text-xs font-semibold text-gray-900">End-to-End Logistics</p>
-                  <p className="text-[10px] text-gray-600">DDP Shipping setup</p>
-                </div>
-              </div>
-            </div>
-
-            {/* Agreement Checkbox */}
-            <div className="flex items-start gap-2">
-              <input
-                type="checkbox"
-                id="service-agreement-mobile"
-                checked={isAgreed}
-                onChange={(e) => setIsAgreed(e.target.checked)}
-                className="mt-0.5 w-3.5 h-3.5 text-emerald-600 border-gray-300 rounded focus:ring-emerald-500 focus:ring-1"
-              />
-              <label htmlFor="service-agreement-mobile" className="text-[10px] text-gray-700 leading-relaxed cursor-pointer">
-                I understand this service covers <strong>Ops & Logistics only</strong>. (Design/Marketing excluded)
-              </label>
             </div>
 
             {/* Action Buttons Row */}
@@ -1298,10 +1338,8 @@ function ResultsActionButtons({ projectId, answers, aiAnalysis }: { projectId?: 
               <div className="flex-[7]">
                 <Button
                   onClick={handleStartSourcing}
-                  disabled={isProcessingPayment || !isAgreed}
-                  className={`w-full bg-gray-900 hover:bg-gray-800 text-white font-semibold text-xs py-2 ${
-                    !isAgreed ? 'opacity-50 cursor-not-allowed' : ''
-                  }`}
+                  disabled={isProcessingPayment}
+                  className="w-full bg-neutral-900 hover:bg-neutral-800 text-white font-semibold text-xs py-2.5"
                 >
                   {isProcessingPayment ? (
                     <span className="flex items-center gap-1">
@@ -1309,7 +1347,7 @@ function ResultsActionButtons({ projectId, answers, aiAnalysis }: { projectId?: 
                       <span>Creating...</span>
                     </span>
                   ) : (
-                    <span>🚀 Start Sourcing (Free)</span>
+                    <span>Request Official Quote</span>
                   )}
                 </Button>
                 {/* Info Badge (Mobile) */}
@@ -1318,6 +1356,12 @@ function ResultsActionButtons({ projectId, answers, aiAnalysis }: { projectId?: 
                     <CheckCircle2 className="w-3 h-3" />
                     Chat now, pay later
                   </span>
+                </div>
+                {/* Agreement Caption (Small text below button) */}
+                <div className="mt-1.5 text-center">
+                  <p className="text-[9px] text-gray-500 leading-relaxed">
+                    By proceeding, I agree that design/marketing services are excluded.
+                  </p>
                 </div>
               </div>
             </div>
@@ -1774,6 +1818,8 @@ function ResultsContent() {
     return null;
   }
 
+  if (!aiAnalysis) return null;
+  
   const { 
     financials, 
     cost_breakdown, 
@@ -1796,6 +1842,27 @@ function ResultsContent() {
     max: Math.ceil((financials?.estimated_margin_pct || 0) + 5),
   };
 
+  // Check for critical risk
+  const executiveSummary = aiAnalysis?.executive_summary || '';
+  const strategicAdvice = aiAnalysis?.strategic_advice?.key_action || '';
+  const osintRiskScore = aiAnalysis?.osint_risk_score || 0;
+  const complianceRisk = aiAnalysis?.risks?.compliance?.level || '';
+  
+  const hasCriticalRisk = 
+    executiveSummary.toLowerCase().includes('immediate halt') ||
+    executiveSummary.toLowerCase().includes('do not proceed') ||
+    strategicAdvice.toLowerCase().includes('halt') ||
+    strategicAdvice.toLowerCase().includes('stop') ||
+    osintRiskScore >= 90 ||
+    (complianceRisk.toLowerCase() === 'high' && osintRiskScore >= 70);
+
+  const scrollToRoadmap = () => {
+    const roadmapElement = document.getElementById('action-roadmap');
+    if (roadmapElement) {
+      roadmapElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  };
+
   return (
     <div className="min-h-screen bg-[#f9fafb] p-6 md:p-8">
       {/* Header with Logo */}
@@ -1812,6 +1879,8 @@ function ResultsContent() {
             productName={productName}
             landedCost={totalLandedCost}
             margin={margin}
+            hasCriticalRisk={hasCriticalRisk}
+            onCriticalRiskClick={scrollToRoadmap}
           />
 
           {/* NexSupply Insight - Full Width */}

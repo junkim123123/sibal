@@ -24,12 +24,141 @@ function ClientChatContent() {
   const [projectName, setProjectName] = useState<string>('');
   const [project, setProject] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [chatSessions, setChatSessions] = useState<any[]>([]);
+  const [selectedSession, setSelectedSession] = useState<string | null>(sessionIdParam);
+  const [todoList, setTodoList] = useState<Array<{ id: string; task: string; status: 'pending' | 'completed'; requestedBy: string; requestedAt: string }>>([]);
 
   useEffect(() => {
-    if (projectId) {
-      initializeChat();
-    }
+    const init = async () => {
+      const supabase = createClient();
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      if (!user) {
+        router.push('/login');
+        return;
+      }
+      
+      setUserId(user.id);
+      await loadChatSessions();
+      
+      if (projectId) {
+        await initializeChat();
+      } else {
+        setIsLoading(false);
+      }
+    };
+    
+    init();
   }, [projectId, sessionIdParam]);
+
+  // 채팅 세션 목록 로드
+  const loadChatSessions = async () => {
+    try {
+      const supabase = createClient();
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      if (!user) return;
+
+      // 사용자의 모든 채팅 세션 가져오기
+      const { data: sessions, error } = await supabase
+        .from('chat_sessions')
+        .select(`
+          id,
+          project_id,
+          manager_id,
+          status,
+          created_at,
+          updated_at,
+          projects!chat_sessions_project_id_fkey(
+            id,
+            name,
+            manager_id
+          ),
+          profiles!chat_sessions_manager_id_fkey(
+            id,
+            name,
+            email
+          )
+        `)
+        .eq('user_id', user.id)
+        .in('status', ['open', 'in_progress'])
+        .order('updated_at', { ascending: false });
+
+      if (error) {
+        console.error('[ClientChatPage] Failed to load chat sessions:', error);
+        return;
+      }
+
+      // 각 세션의 최근 메시지 가져오기
+      const sessionsWithMessages = await Promise.all(
+        (sessions || []).map(async (session) => {
+          const { data: lastMessage } = await supabase
+            .from('chat_messages')
+            .select('content, created_at, sender_id')
+            .eq('session_id', session.id)
+            .order('created_at', { ascending: false })
+            .limit(1)
+            .maybeSingle();
+
+          return {
+            ...session,
+            lastMessage: lastMessage?.content || null,
+            lastMessageAt: lastMessage?.created_at || session.updated_at,
+            managerName: (session.profiles as any)?.name || (session.profiles as any)?.email || 'Manager',
+            projectName: (session.projects as any)?.name || 'Project',
+          };
+        })
+      );
+
+      setChatSessions(sessionsWithMessages);
+      
+      // 현재 선택된 세션 업데이트
+      if (sessionIdParam) {
+        setSelectedSession(sessionIdParam);
+      } else if (projectId) {
+        // project_id가 있으면 해당 프로젝트의 세션 찾기
+        const currentSession = sessionsWithMessages.find(s => s.project_id === projectId);
+        if (currentSession) {
+          setSelectedSession(currentSession.id);
+        }
+      }
+    } catch (error) {
+      console.error('[ClientChatPage] Error loading chat sessions:', error);
+    }
+  };
+
+  // To-Do 리스트 로드 (매니저가 요청한 작업들)
+  const loadTodoList = async () => {
+    if (!projectId) return;
+    
+    try {
+      const supabase = createClient();
+      
+      // 프로젝트의 마일스톤에서 pending 상태인 작업들 가져오기
+      const { data: projectData } = await supabase
+        .from('projects')
+        .select('milestones')
+        .eq('id', projectId)
+        .single();
+
+      if (projectData?.milestones) {
+        const milestones = Array.isArray(projectData.milestones) ? projectData.milestones : [];
+        const todos = milestones
+          .filter((m: any) => m.status === 'pending' || m.status === 'in_progress')
+          .map((m: any, index: number) => ({
+            id: `milestone-${index}`,
+            task: m.title || m.task || 'Complete milestone',
+            status: m.status === 'completed' ? 'completed' as const : 'pending' as const,
+            requestedBy: 'Process Agent',
+            requestedAt: m.date || new Date().toISOString(),
+          }));
+        
+        setTodoList(todos);
+      }
+    } catch (error) {
+      console.error('[ClientChatPage] Error loading todo list:', error);
+    }
+  };
 
   // 프로젝트의 manager_id가 변경되었을 때 세션 업데이트
   useEffect(() => {
@@ -49,10 +178,8 @@ function ClientChatContent() {
         return;
       }
 
-      setUserId(user.id);
-
       if (!projectId) {
-        router.push('/dashboard');
+        setIsLoading(false);
         return;
       }
 
@@ -77,6 +204,14 @@ function ClientChatContent() {
 
       setProjectName(project.name);
       setProject(project); // 프로젝트 정보 저장 (매니저 배당 상태 확인용)
+      
+      // To-Do 리스트 로드
+      await loadTodoList();
+      
+      // sessionId가 설정되면 selectedSession도 업데이트
+      if (sessionId) {
+        setSelectedSession(sessionId);
+      }
 
       // 세션이 없으면 생성 또는 찾기
       // 매니저가 없어도 채팅 세션 생성 가능 (매니저 배당 대기 중일 수 있음)
@@ -236,28 +371,95 @@ function ClientChatContent() {
     );
   }
 
-  // 세션이 없어도 프로젝트와 사용자가 있으면 채팅 화면 표시 (세션은 나중에 생성 가능)
-  if (!userId || !projectId) {
+  // project_id가 없으면 채팅 세션 목록 표시
+  if (!userId) {
     return (
-      <div className="min-h-screen bg-white flex items-center justify-center p-4">
-        <div className="text-center max-w-md">
-          <MessageSquare className="w-12 h-12 mx-auto mb-4 text-gray-400" />
-          <h2 className="text-xl font-semibold text-gray-900 mb-2">
-            Chat not available
-          </h2>
-          <p className="text-gray-600 mb-6">
-            {!projectId 
-              ? 'Project not found. Please select a project from the dashboard.'
-              : 'Unable to initialize chat. Please try again or contact support.'
-            }
-          </p>
-          <Link
-            href="/dashboard?tab=orders"
-            className="inline-flex items-center gap-2 px-4 py-2 bg-black text-white rounded-lg hover:bg-zinc-800 transition-colors"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            Back to Dashboard
-          </Link>
+      <div className="min-h-screen bg-white flex items-center justify-center">
+        <Loader2 className="w-6 h-6 animate-spin text-blue-600" />
+      </div>
+    );
+  }
+
+  if (!projectId) {
+    // 채팅 세션 목록 표시
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <div className="mb-6">
+            <Link
+              href="/dashboard"
+              className="inline-flex items-center gap-2 text-sm text-gray-600 hover:text-gray-900 mb-4 transition-colors"
+            >
+              <ArrowLeft className="w-4 h-4" />
+              Back to Dashboard
+            </Link>
+            <h1 className="text-3xl font-bold text-gray-900">Agent Chat</h1>
+            <p className="text-sm text-gray-500 mt-1">
+              Chat with your sourcing agents and managers
+            </p>
+          </div>
+
+          {chatSessions.length === 0 ? (
+            <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-12 text-center">
+              <MessageSquare className="w-12 h-12 mx-auto mb-4 text-gray-400" />
+              <h2 className="text-xl font-semibold text-gray-900 mb-2">
+                No active chats
+              </h2>
+              <p className="text-gray-600 mb-6">
+                Start a new project to begin chatting with your agent.
+              </p>
+              <Link
+                href="/chat"
+                className="inline-flex items-center gap-2 px-4 py-2 bg-black text-white rounded-lg hover:bg-zinc-800 transition-colors"
+              >
+                Start New Analysis
+              </Link>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {chatSessions.map((session) => (
+                <Link
+                  key={session.id}
+                  href={`/dashboard/chat?project_id=${session.project_id}&session_id=${session.id}`}
+                  className="bg-white rounded-lg border border-gray-200 shadow-sm p-5 hover:border-gray-300 hover:shadow-md transition-all"
+                >
+                  <div className="flex items-start justify-between mb-3">
+                    <div className="flex-1">
+                      <h3 className="font-semibold text-gray-900 mb-1">
+                        {session.projectName}
+                      </h3>
+                      <p className="text-sm text-gray-500">
+                        {session.managerName}
+                      </p>
+                    </div>
+                    <span className={`px-2 py-1 text-xs font-medium rounded ${
+                      session.status === 'in_progress' 
+                        ? 'bg-blue-100 text-blue-700' 
+                        : 'bg-gray-100 text-gray-700'
+                    }`}>
+                      {session.status === 'in_progress' ? 'Active' : 'Open'}
+                    </span>
+                  </div>
+                  {session.lastMessage && (
+                    <p className="text-sm text-gray-600 truncate mb-2">
+                      {session.lastMessage}
+                    </p>
+                  )}
+                  <p className="text-xs text-gray-400">
+                    {session.lastMessageAt 
+                      ? new Date(session.lastMessageAt).toLocaleDateString('en-US', {
+                          month: 'short',
+                          day: 'numeric',
+                          hour: '2-digit',
+                          minute: '2-digit'
+                        })
+                      : 'No messages yet'
+                    }
+                  </p>
+                </Link>
+              ))}
+            </div>
+          )}
         </div>
       </div>
     );
@@ -275,44 +477,125 @@ function ClientChatContent() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Header */}
-        <div className="mb-6">
-          <Link
-            href="/dashboard?tab=orders"
-            className="inline-flex items-center gap-2 text-sm text-gray-600 hover:text-gray-900 mb-4 transition-colors"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            Back to Active Orders
-          </Link>
-          <h1 className="text-3xl font-bold text-gray-900">{projectName}</h1>
-          <p className="text-sm text-gray-500 mt-1">
-            {project?.manager_id 
-              ? 'Chat with your manager' 
-              : '⏰ Manager will be assigned within 24 hours. You can send messages now.'
-            }
-          </p>
-        </div>
-
-        {/* Chat Component */}
-        <div className="bg-white rounded-lg border border-gray-200 shadow-sm h-[calc(100vh-12rem)]">
-          {sessionId ? (
-            <ManagerChat
-              sessionId={sessionId}
-              projectId={projectId}
-              userId={userId}
-              isManager={false}
-              showQuickReplies={false}
-            />
-          ) : (
-            <div className="flex items-center justify-center h-full p-8">
-              <div className="text-center">
-                <Loader2 className="w-8 h-8 animate-spin text-blue-600 mx-auto mb-4" />
-                <p className="text-gray-600">Setting up chat session...</p>
-                <p className="text-sm text-gray-400 mt-2">This may take a moment</p>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+          {/* Left Sidebar: Chat Sessions List */}
+          <div className="lg:col-span-1">
+            <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-4 sticky top-8">
+              <div className="mb-4">
+                <Link
+                  href="/dashboard"
+                  className="inline-flex items-center gap-2 text-sm text-gray-600 hover:text-gray-900 mb-4 transition-colors"
+                >
+                  <ArrowLeft className="w-4 h-4" />
+                  Back to Dashboard
+                </Link>
+                <h2 className="text-lg font-semibold text-gray-900">Active Chats</h2>
+              </div>
+              <div className="space-y-2 max-h-[calc(100vh-12rem)] overflow-y-auto">
+                {chatSessions.length === 0 ? (
+                  <p className="text-sm text-gray-500 text-center py-4">
+                    No active chats
+                  </p>
+                ) : (
+                  chatSessions.map((session) => (
+                  <Link
+                    key={session.id}
+                    href={`/dashboard/chat?project_id=${session.project_id}&session_id=${session.id}`}
+                    className={`block p-3 rounded-lg border transition-all ${
+                      selectedSession === session.id
+                        ? 'border-blue-500 bg-blue-50'
+                        : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
+                    }`}
+                  >
+                    <div className="flex items-start justify-between mb-1">
+                      <h3 className="font-medium text-sm text-gray-900 truncate">
+                        {session.projectName}
+                      </h3>
+                    </div>
+                    <p className="text-xs text-gray-500 truncate mb-1">
+                      {session.managerName}
+                    </p>
+                    {session.lastMessage && (
+                      <p className="text-xs text-gray-600 truncate">
+                        {session.lastMessage}
+                      </p>
+                    )}
+                  </Link>
+                  ))
+                )}
               </div>
             </div>
-          )}
+          </div>
+
+          {/* Main Content: Chat + To-Do List */}
+          <div className="lg:col-span-3 space-y-6">
+            {/* Header */}
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900">{projectName}</h1>
+              <p className="text-sm text-gray-500 mt-1">
+                {project?.manager_id 
+                  ? `Chat with ${chatSessions.find(s => s.project_id === projectId)?.managerName || 'your manager'}` 
+                  : '⏰ Manager will be assigned within 24 hours. You can send messages now.'
+                }
+              </p>
+            </div>
+
+            {/* To-Do List (if any) */}
+            {todoList.length > 0 && (
+              <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-5">
+                <h2 className="text-lg font-semibold text-gray-900 mb-4">Action Items</h2>
+                <div className="space-y-3">
+                  {todoList.map((todo) => (
+                    <div
+                      key={todo.id}
+                      className="flex items-start gap-3 p-3 bg-gray-50 rounded-lg border border-gray-200"
+                    >
+                      <input
+                        type="checkbox"
+                        checked={todo.status === 'completed'}
+                        disabled
+                        className="mt-1 w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                      />
+                      <div className="flex-1">
+                        <p className={`text-sm font-medium ${
+                          todo.status === 'completed' 
+                            ? 'text-gray-500 line-through' 
+                            : 'text-gray-900'
+                        }`}>
+                          {todo.task}
+                        </p>
+                        <p className="text-xs text-gray-500 mt-1">
+                          Requested by {todo.requestedBy}
+                        </p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Chat Component */}
+            <div className="bg-white rounded-lg border border-gray-200 shadow-sm h-[calc(100vh-16rem)]">
+              {sessionId ? (
+                <ManagerChat
+                  sessionId={sessionId}
+                  projectId={projectId}
+                  userId={userId}
+                  isManager={false}
+                  showQuickReplies={false}
+                />
+              ) : (
+                <div className="flex items-center justify-center h-full p-8">
+                  <div className="text-center">
+                    <Loader2 className="w-8 h-8 animate-spin text-blue-600 mx-auto mb-4" />
+                    <p className="text-gray-600">Setting up chat session...</p>
+                    <p className="text-sm text-gray-400 mt-2">This may take a moment</p>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
         </div>
       </div>
     </div>

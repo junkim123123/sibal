@@ -7,6 +7,7 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import { login, signup } from './actions'
 import { Button } from '@/components/ui/button'
 import { Chrome, Eye, EyeOff } from 'lucide-react'
+import { createClient } from '@/lib/supabase/client'
 
 function LoginPageContent() {
   const [isSignUp, setIsSignUp] = useState(false)
@@ -95,9 +96,42 @@ function LoginPageContent() {
     }
   }
 
-  const handleGoogleSignIn = () => {
-    // Placeholder for Google OAuth
-    alert('Google sign-in coming soon')
+  const handleOAuthSignIn = async (provider: 'google' | 'kakao') => {
+    try {
+      setError(null)
+      setIsLoading(true)
+      
+      const supabase = createClient()
+      const redirectUrl = `${window.location.origin}/auth/callback`
+      
+      // Determine redirect path based on user type (will be handled in callback)
+      const redirectPath = '/dashboard'
+      
+      const { data, error: oauthError } = await supabase.auth.signInWithOAuth({
+        provider,
+        options: {
+          redirectTo: `${redirectUrl}?next=${encodeURIComponent(redirectPath)}`,
+          queryParams: provider === 'google' ? {
+            access_type: 'offline',
+            prompt: 'consent',
+          } : undefined,
+        },
+      })
+
+      if (oauthError) {
+        setError(`Failed to sign in with ${provider}. ${oauthError.message || 'Please try again.'}`)
+        setIsLoading(false)
+        console.error(`[OAuth ${provider}] Error:`, oauthError)
+      } else if (data?.url) {
+        // OAuth provider will redirect the user
+        // The redirect happens automatically, so we don't need to do anything here
+        // The loading state will remain until the redirect completes
+      }
+    } catch (err: any) {
+      console.error(`[OAuth ${provider}] Unexpected error:`, err)
+      setError(`An unexpected error occurred. Please try again.`)
+      setIsLoading(false)
+    }
   }
 
   return (
@@ -143,16 +177,37 @@ function LoginPageContent() {
               </div>
             )}
 
-            {/* Google Sign In Button */}
-            <button
-              type="button"
-              onClick={handleGoogleSignIn}
-              disabled={isLoading}
-              className="w-full flex items-center justify-center gap-3 px-4 py-3 border border-neutral-300 rounded-lg text-sm font-medium text-neutral-700 bg-white hover:bg-neutral-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed mb-6"
-            >
-              <Chrome className="h-5 w-5" />
-              Continue with Google
-            </button>
+            {/* OAuth Buttons */}
+            <div className="space-y-3 mb-6">
+              {/* Google Sign In Button */}
+              <button
+                type="button"
+                onClick={() => handleOAuthSignIn('google')}
+                disabled={isLoading}
+                className="w-full flex items-center justify-center gap-3 px-4 py-3 border border-neutral-300 rounded-lg text-sm font-medium text-neutral-700 bg-white hover:bg-neutral-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <Chrome className="h-5 w-5" />
+                Continue with Google
+              </button>
+
+              {/* Kakao Sign In Button */}
+              <button
+                type="button"
+                onClick={() => handleOAuthSignIn('kakao')}
+                disabled={isLoading}
+                className="w-full flex items-center justify-center gap-3 px-4 py-3 rounded-lg text-sm font-medium text-black bg-[#FEE500] hover:bg-[#FEE500]/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <svg
+                  className="h-5 w-5"
+                  viewBox="0 0 24 24"
+                  fill="currentColor"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path d="M12 3C6.48 3 2 6.13 2 10c0 2.38 1.91 4.5 4.84 5.82l-.84 3.18 3.5-2.1c.46.06.93.1 1.4.1 5.52 0 10-3.13 10-7s-4.48-7-10-7z" />
+                </svg>
+                Continue with Kakao
+              </button>
+            </div>
 
             {/* Divider */}
             <div className="relative mb-6">

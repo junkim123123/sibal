@@ -1132,7 +1132,7 @@ function ResultsActionButtons({ projectId, answers, aiAnalysis }: { projectId?: 
       if (data.ok && data.projectId) {
         console.log('[Start Sourcing] Project created successfully:', data.projectId);
         // 대시보드로 리다이렉트 (Active Orders 탭에 표시됨)
-        window.location.href = '/dashboard?new=true&tab=active';
+        window.location.href = '/dashboard?new=true&tab=orders';
       } else {
         console.error('[Start Sourcing] Submission failed:', data);
         const errorMessage = data.details 

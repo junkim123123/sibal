@@ -4,11 +4,12 @@ import { useState, useEffect, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
-import { ChevronRight, Package, Truck, Folder, MessageSquare } from 'lucide-react'
+import { ChevronRight, Package, Truck, Folder, MessageSquare, FileText } from 'lucide-react'
 import { AssetLibrary } from '@/components/AssetLibrary'
 import { ClientMessagesList } from '@/components/ClientMessagesList'
 import { UsageCard } from '@/components/dashboard/usage-card'
 import { Loader2 } from 'lucide-react'
+import { Button } from '@/components/ui/button'
 
 // 더미 데이터 제거 - 실제 Supabase 데이터 사용
 
@@ -16,7 +17,13 @@ type TabType = 'estimates' | 'products' | 'orders' | 'documents' | 'agent'
 
 function DashboardPageContent() {
   const searchParams = useSearchParams()
-  const initialTab = (searchParams?.get('tab') as TabType) || 'estimates'
+  let initialTab = (searchParams?.get('tab') as TabType) || 'estimates'
+  
+  // 'active'를 'orders'로 매핑 (하위 호환성)
+  if (initialTab === 'active') {
+    initialTab = 'orders'
+  }
+  
   const [activeTab, setActiveTab] = useState<TabType>(initialTab)
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null)
   const [userName, setUserName] = useState<string>('')
@@ -35,8 +42,13 @@ function DashboardPageContent() {
 
   // URL 파라미터에서 탭 변경 감지 및 데이터 새로고침
   useEffect(() => {
-    const tab = searchParams?.get('tab') as TabType
+    let tab = searchParams?.get('tab') as TabType
     const refresh = searchParams?.get('refresh')
+    
+    // 'active'를 'orders'로 매핑 (하위 호환성)
+    if (tab === 'active') {
+      tab = 'orders'
+    }
     
     if (tab && ['estimates', 'products', 'orders', 'documents', 'agent'].includes(tab)) {
       setActiveTab(tab)
@@ -743,11 +755,7 @@ function ShipmentsList({ shipments }: { shipments: any[] }) {
   return (
     <>
       {shipments.map((shipment) => (
-        <Link
-          key={shipment.id}
-          href={shipment.href || `/results?project_id=${shipment.id}`}
-          className="group block"
-        >
+        <div key={shipment.id} className="group">
           <DashboardCard
             icon={<Truck className="h-5 w-5" />}
             title={shipment.batchName}
@@ -766,11 +774,35 @@ function ShipmentsList({ shipments }: { shipments: any[] }) {
             rightContent={
               <div className="flex items-center gap-3 ml-6">
                 <StatusBadge status={shipment.status} />
-                <ChevronRight className="h-5 w-5 text-zinc-400 group-hover:text-black transition-colors" />
+                <div className="flex items-center gap-2">
+                  {/* Chat Button */}
+                  <Link href={`/dashboard/chat?project_id=${shipment.id}`}>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="flex items-center gap-2"
+                    >
+                      <MessageSquare className="w-4 h-4" />
+                      Chat
+                    </Button>
+                  </Link>
+                  
+                  {/* Nexi Report Button */}
+                  <Link href={`/results?project_id=${shipment.id}`}>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="flex items-center gap-2"
+                    >
+                      <FileText className="w-4 h-4" />
+                      Nexi Report
+                    </Button>
+                  </Link>
+                </div>
               </div>
             }
           />
-        </Link>
+        </div>
       ))}
     </>
   )
@@ -785,11 +817,11 @@ function DashboardCard({
 }: {
   icon: React.ReactNode
   title: string
-  subtitle: string
+  subtitle: string | React.ReactNode
   rightContent: React.ReactNode
 }) {
   return (
-    <div className="bg-white border border-gray-200 rounded-xl p-5 hover:border-gray-300 hover:shadow-sm transition-all cursor-pointer">
+    <div className="bg-white border border-gray-200 rounded-xl p-5 hover:border-gray-300 hover:shadow-sm transition-all">
       <div className="flex items-center justify-between">
         {/* Left: Info */}
         <div className="flex-1 min-w-0">
@@ -799,9 +831,9 @@ function DashboardCard({
               {title}
             </h3>
           </div>
-          <p className="text-sm text-zinc-600 ml-8">
+          <div className="text-sm text-zinc-600 ml-8">
             {subtitle}
-          </p>
+          </div>
         </div>
 
         {/* Right: Content */}

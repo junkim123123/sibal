@@ -88,7 +88,6 @@ function DashboardPageContent() {
         setUserId(user.id)
         
         // 사용자 이름 가져오기 (profiles 테이블 우선, 없으면 metadata)
-        const supabase = createClient()
         const { data: profile } = await supabase
           .from('profiles')
           .select('name')

@@ -60,7 +60,7 @@ const featuredProjectsSection: FeaturedProjectsSection = {
       description: 'Navigated complex IP licensing and food safety compliance to deliver Pokemon-branded confectioneries to 7-Eleven shelves.',
       tag: 'Retail Sourcing / IP Licensing',
       image: {
-        src: '/images/projects/pokemon-7eleven.jpg', // public/images/projects/ 폴더에 이미지 업로드 필요
+        src: '/images/projects/pokemon-7eleven.png',
         alt: 'Pokemon jelly beans at 7-Eleven store',
       },
     },
@@ -70,7 +70,7 @@ const featuredProjectsSection: FeaturedProjectsSection = {
       description: 'Passed rigorous Japanese food safety standards to supply seasonal confectionery to Don Quijote retail chain.',
       tag: 'Japan Export / Food Safety',
       image: {
-        src: '/images/projects/donquijote-marshmallow.jpg', // public/images/projects/ 폴더에 이미지 업로드 필요
+        src: '/images/projects/donquijote-marshmallow.png',
         alt: 'Marshmallow skewers for Don Quijote Japan',
       },
     },
@@ -80,7 +80,7 @@ const featuredProjectsSection: FeaturedProjectsSection = {
       description: 'Managed end-to-end production and CPC certification for a top-ranking toy category on Amazon US.',
       tag: 'Amazon FBA / Toy Compliance',
       image: {
-        src: '/images/projects/amazon-fingerboard.jpg', // public/images/projects/ 폴더에 이미지 업로드 필요
+        src: '/images/projects/amazon-fingerboard.png',
         alt: 'Fingerboard toy set for Amazon FBA',
       },
     },

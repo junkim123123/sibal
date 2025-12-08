@@ -6,7 +6,7 @@ import Image from 'next/image'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { login, signup } from './actions'
 import { Button } from '@/components/ui/button'
-import { Chrome } from 'lucide-react'
+import { Chrome, Eye, EyeOff } from 'lucide-react'
 
 function LoginPageContent() {
   const [isSignUp, setIsSignUp] = useState(false)
@@ -32,7 +32,7 @@ function LoginPageContent() {
   // Sign up additional fields
   const [name, setName] = useState('')
   const [company, setCompany] = useState('')
-  const [confirmPassword, setConfirmPassword] = useState('')
+  const [showPassword, setShowPassword] = useState(false)
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
@@ -42,10 +42,6 @@ function LoginPageContent() {
     if (isSignUp) {
       if (!name.trim()) {
         setError('Please enter your name.')
-        return
-      }
-      if (password !== confirmPassword) {
-        setError('Passwords do not match.')
         return
       }
       if (password.length < 6) {
@@ -121,11 +117,11 @@ function LoginPageContent() {
             {/* Header */}
             <div className="mb-8">
               <h1 className="text-3xl font-bold text-neutral-900 mb-2">
-                Welcome back
+                {isSignUp ? 'Create Account' : 'Welcome back'}
               </h1>
               <p className="text-sm text-neutral-600">
                 {isSignUp
-                  ? 'Create your account to get started'
+                  ? 'Create your free account to get started'
                   : 'Sign in to your account to continue'}
               </p>
             </div>
@@ -225,7 +221,7 @@ function LoginPageContent() {
                     htmlFor="company"
                     className="block text-sm font-medium text-neutral-900 mb-2"
                   >
-                    Company <span className="text-neutral-400 text-xs">(Optional)</span>
+                    Company / Store Name
                   </label>
                   <input
                     id="company"
@@ -235,7 +231,7 @@ function LoginPageContent() {
                     value={company}
                     onChange={(e) => setCompany(e.target.value)}
                     className="w-full px-4 py-3 border border-neutral-300 rounded-lg text-neutral-900 placeholder:text-neutral-400 bg-white focus:outline-none focus:ring-2 focus:ring-neutral-900 focus:border-transparent transition-all text-sm"
-                    placeholder="Company name (optional)"
+                    placeholder="ex. Amazon Store, Brand Name"
                     disabled={isLoading}
                   />
                 </div>
@@ -249,50 +245,39 @@ function LoginPageContent() {
                 >
                   Password
                 </label>
-                <input
-                  id="password"
-                  name="password"
-                  type="password"
-                  autoComplete={isSignUp ? 'new-password' : 'current-password'}
-                  required
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="w-full px-4 py-3 border border-neutral-300 rounded-lg text-neutral-900 placeholder:text-neutral-400 bg-white focus:outline-none focus:ring-2 focus:ring-neutral-900 focus:border-transparent transition-all text-sm"
-                  placeholder="••••••••"
-                  disabled={isLoading}
-                  minLength={6}
-                />
+                <div className="relative">
+                  <input
+                    id="password"
+                    name="password"
+                    type={showPassword ? 'text' : 'password'}
+                    autoComplete={isSignUp ? 'new-password' : 'current-password'}
+                    required
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    className="w-full px-4 py-3 pr-12 border border-neutral-300 rounded-lg text-neutral-900 placeholder:text-neutral-400 bg-white focus:outline-none focus:ring-2 focus:ring-neutral-900 focus:border-transparent transition-all text-sm"
+                    placeholder="••••••••"
+                    disabled={isLoading}
+                    minLength={6}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-neutral-600 transition-colors"
+                    tabIndex={-1}
+                  >
+                    {showPassword ? (
+                      <EyeOff className="h-5 w-5" />
+                    ) : (
+                      <Eye className="h-5 w-5" />
+                    )}
+                  </button>
+                </div>
                 {isSignUp && (
                   <p className="mt-2 text-xs text-neutral-500">
                     Password must be at least 6 characters.
                   </p>
                 )}
               </div>
-
-              {/* Confirm Password Input (Sign Up only) */}
-              {isSignUp && (
-                <div>
-                  <label
-                    htmlFor="confirmPassword"
-                    className="block text-sm font-medium text-neutral-900 mb-2"
-                  >
-                    Confirm Password <span className="text-red-500">*</span>
-                  </label>
-                  <input
-                    id="confirmPassword"
-                    name="confirmPassword"
-                    type="password"
-                    autoComplete="new-password"
-                    required
-                    value={confirmPassword}
-                    onChange={(e) => setConfirmPassword(e.target.value)}
-                    className="w-full px-4 py-3 border border-neutral-300 rounded-lg text-neutral-900 placeholder:text-neutral-400 bg-white focus:outline-none focus:ring-2 focus:ring-neutral-900 focus:border-transparent transition-all text-sm"
-                    placeholder="••••••••"
-                    disabled={isLoading}
-                    minLength={6}
-                  />
-                </div>
-              )}
 
               {/* Submit Button */}
               <Button
@@ -316,7 +301,7 @@ function LoginPageContent() {
                   // Reset fields
                   setName('')
                   setCompany('')
-                  setConfirmPassword('')
+                  setShowPassword(false)
                 }}
                 className="text-sm text-neutral-600 hover:text-neutral-900 transition-colors"
                 disabled={isLoading}

@@ -8,7 +8,6 @@
 
 import { useState, useEffect } from 'react';
 import { CheckCircle2, Circle, Clock, Loader2 } from 'lucide-react';
-import { Button } from '@/components/ui/button';
 
 interface Milestone {
   title: string;
@@ -69,6 +68,16 @@ export function MilestoneTracker({ projectId, managerId }: MilestoneTrackerProps
       setMilestones(DEFAULT_MILESTONES);
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const toggleMilestone = async (index: number, isCompleted: boolean) => {
+    if (isUpdating) return;
+
+    // 토글 OFF (완료 취소)는 허용하지 않음 - 순차적 진행만 허용
+    if (!isCompleted) {
+      // 토글 ON (완료 처리)
+      await updateMilestone(index);
     }
   };
 
@@ -153,6 +162,15 @@ export function MilestoneTracker({ projectId, managerId }: MilestoneTrackerProps
 
   // 다음 업데이트 가능한 마일스톤 인덱스
   const nextUpdatableIndex = currentIndex >= 0 ? currentIndex : (lastCompletedIndex + 1);
+  
+  // 각 마일스톤이 토글 가능한지 확인
+  const canToggle = (idx: number) => {
+    const milestone = milestones[idx];
+    // 완료된 마일스톤은 토글 불가 (순차적 진행만 허용)
+    if (milestone.status === 'completed') return false;
+    // 진행 중이거나 다음 업데이트 가능한 마일스톤만 토글 가능
+    return milestone.status === 'in_progress' || idx === nextUpdatableIndex;
+  };
 
   return (
     <div className="bg-white rounded-lg border border-gray-200 p-4 h-full flex flex-col">
@@ -165,8 +183,7 @@ export function MilestoneTracker({ projectId, managerId }: MilestoneTrackerProps
         {milestones.map((milestone, idx) => {
           const isCompleted = milestone.status === 'completed';
           const isInProgress = milestone.status === 'in_progress';
-          // 현재 진행 중이거나, 다음 업데이트 가능한 마일스톤이면 버튼 표시
-          const canUpdate = isInProgress || (idx === nextUpdatableIndex && !isCompleted);
+          const toggleable = canToggle(idx);
 
           return (
             <div key={idx} className="relative flex items-start gap-3 pb-6 last:pb-0">
@@ -192,8 +209,8 @@ export function MilestoneTracker({ projectId, managerId }: MilestoneTrackerProps
 
               {/* Content */}
               <div className="flex-1 min-w-0">
-                <div className="flex items-center justify-between gap-2">
-                  <div>
+                <div className="flex items-center justify-between gap-3">
+                  <div className="flex-1">
                     <p
                       className={`text-sm font-medium ${
                         isCompleted
@@ -210,21 +227,43 @@ export function MilestoneTracker({ projectId, managerId }: MilestoneTrackerProps
                         {new Date(milestone.date).toLocaleDateString('ko-KR')}
                       </p>
                     )}
+                    {isInProgress && !milestone.date && (
+                      <p className="text-xs text-blue-600 mt-0.5 font-medium">
+                        진행 중...
+                      </p>
+                    )}
                   </div>
-                  {canUpdate && (
-                    <Button
-                      size="sm"
-                      onClick={() => updateMilestone(idx)}
-                      disabled={isUpdating}
-                      className="h-7 text-xs"
-                    >
-                      {isUpdating ? (
-                        <Loader2 className="w-3 h-3 animate-spin" />
-                      ) : (
-                        '완료'
-                      )}
-                    </Button>
-                  )}
+                  
+                  {/* Toggle Switch */}
+                  <div className="flex items-center gap-2">
+                    {isCompleted ? (
+                      <div className="relative inline-flex h-6 w-11 items-center rounded-full bg-green-500">
+                        <span className="inline-block h-4 w-4 transform rounded-full bg-white translate-x-6 transition-transform" />
+                      </div>
+                    ) : toggleable ? (
+                      <button
+                        onClick={() => toggleMilestone(idx, isCompleted)}
+                        disabled={isUpdating}
+                        className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed ${
+                          isInProgress ? 'bg-blue-500' : 'bg-gray-200 hover:bg-gray-300'
+                        }`}
+                        title={isInProgress ? '완료 처리하기' : '시작하기'}
+                      >
+                        <span
+                          className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                            isInProgress ? 'translate-x-6' : 'translate-x-1'
+                          }`}
+                        />
+                        {isUpdating && (
+                          <Loader2 className="absolute w-3 h-3 animate-spin text-white left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2" />
+                        )}
+                      </button>
+                    ) : (
+                      <div className="relative inline-flex h-6 w-11 items-center rounded-full bg-gray-200 opacity-50">
+                        <span className="inline-block h-4 w-4 transform rounded-full bg-white translate-x-1" />
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
             </div>

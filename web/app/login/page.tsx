@@ -2,6 +2,7 @@
 
 import { useState, useEffect, Suspense } from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { login, signup } from './actions'
 import { Button } from '@/components/ui/button'
@@ -110,7 +111,7 @@ function LoginPageContent() {
         {/* Logo */}
         <div className="p-6 lg:p-8">
           <Link href="/" className="inline-block">
-            <span className="text-2xl font-bold text-neutral-900">NexSupply</span>
+            <span className="text-3xl font-extrabold text-neutral-900">NexSupply</span>
           </Link>
         </div>
 
@@ -338,25 +339,31 @@ function LoginPageContent() {
         </div>
       </div>
 
-      {/* Right Side - Dark Section */}
-      <div className="hidden lg:flex lg:w-1/2 bg-neutral-900 relative overflow-hidden">
-        {/* Background Pattern */}
-        <div className="absolute inset-0 opacity-5">
-          <div className="absolute inset-0" style={{
-            backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='1'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
-          }}></div>
+      {/* Right Side - Strategic Image Background */}
+      <div className="hidden lg:flex lg:w-1/2 relative overflow-hidden">
+        {/* Background Image */}
+        <div className="absolute inset-0">
+          <Image
+            src="/images/projects/pokemon-7eleven.png"
+            alt="Featured project background"
+            fill
+            className="object-cover"
+            priority
+            sizes="50vw"
+          />
         </div>
+        
+        {/* Dark Overlay (60% opacity) */}
+        <div className="absolute inset-0 bg-neutral-900/60"></div>
 
         {/* Quote Content */}
         <div className="relative z-10 flex items-center justify-center h-full px-12">
           <div className="text-center max-w-md">
             <blockquote className="text-3xl lg:text-4xl font-bold text-white leading-tight mb-4">
-              Shipping simplified.
-              <br />
-              Costs clarified.
+              Predictable Sourcing for Modern Brands.
             </blockquote>
-            <p className="text-lg text-neutral-400 mt-6">
-              Your all-in-one platform for intelligent sourcing decisions.
+            <p className="text-lg text-neutral-300 mt-6">
+              Manage your margin, compliance, and logistics in one command center.
             </p>
           </div>
         </div>

@@ -58,25 +58,20 @@ export interface HomePageConfig {
   };
   useCases: {
     title: string;
-    subtitle?: string;
     cards: Array<{
       title: string;
       body: string;
       target?: string;
-      icon?: string;
-      badgeColor?: string;
     }>;
   };
   socialProof: {
-    badge?: string;
     title: string;
-    subtitle?: string;
     rating: {
       value: string;
       label: string;
-      badge?: string;
+      badge: string;
     };
-    summary?: string;
+    summary: string;
     quotes: Array<{
       quote: string;
       author: string;
@@ -104,16 +99,16 @@ export interface HomePageConfig {
 
 export const homePageConfig: HomePageConfig = {
   hero: {
-    headline: 'Stop Guessing. Start Sourcing with Confidence.',
-    subheadline: 'We combine AI-powered landed cost analysis with ground-level logistics to help Amazon FBA sellers and retailers import without the risk.',
-    target: 'The Operating System for Global Sourcing',
+    headline: 'Know your landed cost before you buy inventory',
+    subheadline: 'NexSupply runs the numbers on freight, duties, and compliance so you can test products with confidence, not guesswork.',
+    target: 'For Amazon FBA sellers, DTC brands, and importers bringing goods into the United States.',
     cta: {
       primary: {
-        label: 'Start Free Analysis',
+        label: 'Start with one product',
         href: '/chat',
       },
       secondary: {
-        label: 'See How It Works',
+        label: 'See how NexSupply fits into your workflow',
         href: '/how-it-works',
       },
     },
@@ -126,51 +121,44 @@ export const homePageConfig: HomePageConfig = {
     },
   },
   useCases: {
-    title: 'Built for every stage of your import journey',
-    subtitle: 'Whether you are launching day one or scaling to containers, we de-risk the process.',
+    title: 'Common ways people start with NexSupply',
     cards: [
       {
-        title: 'Launch Your First Private Label',
-        body: 'Validate profit margins and calculate duty risks instantly before you buy inventory. Don\'t launch blind.',
-        target: 'For Amazon FBA',
-        icon: 'Rocket',
-        badgeColor: 'amber',
+        title: 'Launch a new FBA brand',
+        body: 'Validate margin and duty risk before you launch your first private label product.',
+        target: 'Typical users: CPG brands and FBA aggregators',
       },
       {
-        title: 'Re-Source & Optimize Margins',
-        body: 'Factories get expensive over time. Benchmark your current supplier against vetted alternatives to reclaim lost profit.',
-        target: 'For Established Brands',
-        icon: 'TrendingUp',
-        badgeColor: 'blue',
+        title: 'Re-source an existing SKU',
+        body: 'Compare your current factory to vetted alternatives on landed cost and risk.',
+        target: 'Typical users: Established sellers optimizing margins',
       },
       {
-        title: 'Enter Regulated Categories',
-        body: 'Avoid customs seizures. Get a roadmap for FDA, CPC, and compliance requirements before you ship a single unit.',
-        target: 'For Retail & Wholesale',
-        icon: 'ShieldCheck',
-        badgeColor: 'emerald',
+        title: 'Test a higher-risk category',
+        body: 'Get an AD or CVD and compliance check before you import into a new category.',
+        target: 'Typical users: Brands entering regulated categories',
       },
     ],
   },
   socialProof: {
-    badge: 'Trusted by Importers',
-    title: 'Don\'t just take our word for it.',
-    subtitle: 'From 7-figure Amazon sellers to retail procurement teams, see why smart importers are switching to NexSupply.',
+    title: 'See what importers are saying about NexSupply',
     rating: {
-      value: '4.9',
-      label: 'Based on successful pilot shipments.',
+      value: '4.8 / 5',
+      label: 'from early beta projects',
+      badge: 'Early beta projects',
     },
+    summary: 'Faster landed-cost clarity, fewer surprises at customs.',
     quotes: [
       {
-        quote: 'Finally, I can see landed cost before I wire any money. It\'s like having a sourcing expert in my pocket.',
+        quote: 'Finally, I can see landed cost before I wire any money.',
         author: 'FBA Seller, CPG Category',
       },
       {
-        quote: 'The compliance check prevented a very expensive mistake on a toy import. NexSupply saved us months of headache.',
+        quote: 'The compliance check prevented a very expensive mistake.',
         author: 'Retail Buyer, Hardlines',
       },
       {
-        quote: 'We used NexSupply to test a new snack product. The process was simple, fast, and transparent.',
+        quote: 'We used NexSupply to test a new snack product. The process was simple and fast.',
         author: 'Brand Manager, Food & Beverage',
       },
     ],

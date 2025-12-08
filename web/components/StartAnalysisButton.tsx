@@ -1,7 +1,7 @@
 'use client'
 
 import { useRouter } from 'next/navigation'
-import { useEffect, useState, ReactNode } from 'react'
+import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
 
@@ -9,10 +9,9 @@ interface StartAnalysisButtonProps {
   href: string
   label: string
   className?: string
-  children?: ReactNode
 }
 
-export function StartAnalysisButton({ href, label, className, children }: StartAnalysisButtonProps) {
+export function StartAnalysisButton({ href, label, className }: StartAnalysisButtonProps) {
   const router = useRouter()
   const [isLoading, setIsLoading] = useState(true)
   const [isAuthenticated, setIsAuthenticated] = useState(false)
@@ -44,7 +43,7 @@ export function StartAnalysisButton({ href, label, className, children }: StartA
         className={className}
         disabled
       >
-        {children || label}
+        {label}
       </Button>
     )
   }
@@ -56,7 +55,7 @@ export function StartAnalysisButton({ href, label, className, children }: StartA
       className={className}
       onClick={handleClick}
     >
-      {children || label}
+      {label}
     </Button>
   )
 }

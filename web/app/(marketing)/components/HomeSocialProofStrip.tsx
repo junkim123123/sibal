@@ -1,96 +1,38 @@
 import { homePageConfig } from '@/lib/content/homePage';
-import { Star, User } from 'lucide-react';
 
 export default function HomeSocialProofStrip() {
   const { socialProof } = homePageConfig;
 
   return (
-    <section className="py-12 md:py-20 lg:py-24 bg-neutral-50">
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        {/* Section Header */}
-        <div className="text-center mb-12 md:mb-16">
-          {/* Badge */}
-          {socialProof.badge && (
-            <div className="mb-4">
-              <span className="inline-flex items-center px-4 py-1.5 rounded-full text-xs font-medium text-neutral-600 bg-neutral-100 border border-neutral-200/60">
-                {socialProof.badge}
-              </span>
-            </div>
-          )}
-
-          {/* Title */}
-          <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-neutral-900 mb-4 tracking-tight">
+    <section className="py-10 md:py-16 bg-neutral-50 border-y border-neutral-200">
+      <div className="mx-auto max-w-6xl px-4 md:px-6">
+        <div className="flex flex-col items-center gap-6 md:gap-10">
+          <h2 className="text-xl md:text-2xl lg:text-3xl font-semibold text-neutral-900 text-center">
             {socialProof.title}
           </h2>
-
-          {/* Subtitle */}
-          {socialProof.subtitle && (
-            <p className="text-lg md:text-xl text-neutral-600 max-w-3xl mx-auto leading-relaxed">
-              {socialProof.subtitle}
-            </p>
-          )}
-
-          {/* Rating Display */}
-          <div className="mt-8 flex flex-col items-center gap-3">
-            <div className="flex items-center gap-2">
-              {[...Array(5)].map((_, i) => (
-                <Star
-                  key={i}
-                  className="w-6 h-6 fill-amber-400 text-amber-400"
-                  strokeWidth={2}
-                />
-              ))}
-            </div>
-            <div className="text-center">
-              <p className="text-2xl md:text-3xl font-bold text-neutral-900">
-                {socialProof.rating.value}/5 Average Rating
+          <div className="text-center">
+            <div className="inline-block rounded-xl bg-white p-4 md:p-6 shadow-md text-center">
+              <p className="text-[10px] md:text-xs font-semibold text-neutral-500 uppercase tracking-wide mb-2">
+                {socialProof.rating.badge}
               </p>
-              {socialProof.rating.label && (
-                <p className="mt-1 text-sm text-neutral-600">
-                  {socialProof.rating.label}
-                </p>
-              )}
+              <p className="text-2xl md:text-3xl font-bold text-neutral-900">{socialProof.rating.value}</p>
+              <p className="mt-1 text-xs md:text-sm text-neutral-600">
+                {socialProof.rating.label}
+              </p>
             </div>
+            <p className="mt-4 text-sm md:text-base text-neutral-700 max-w-2xl mx-auto">
+              {socialProof.summary}
+            </p>
           </div>
         </div>
-
-        {/* Review Cards Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8">
+        <div className="mt-8 md:mt-12 space-y-6 md:space-y-0 md:flex md:gap-8">
           {socialProof.quotes.map((item, index) => (
-            <div
-              key={index}
-              className="bg-white border border-neutral-100 rounded-2xl p-6 md:p-8 shadow-sm hover:shadow-md transition-shadow duration-300"
-            >
-              {/* Stars */}
-              <div className="flex items-center gap-1 mb-4">
-                {[...Array(5)].map((_, i) => (
-                  <Star
-                    key={i}
-                    className="w-4 h-4 fill-amber-400 text-amber-400"
-                    strokeWidth={2}
-                  />
-                ))}
-              </div>
-
-              {/* Quote */}
-              <blockquote className="mb-6">
-                <p className="text-base md:text-lg text-neutral-700 leading-relaxed italic font-serif">
-                  &ldquo;{item.quote}&rdquo;
-                </p>
-              </blockquote>
-
-              {/* Author Block */}
-              <div className="flex items-center gap-3 pt-4 border-t border-neutral-100">
-                <div className="w-10 h-10 rounded-full bg-neutral-100 flex items-center justify-center flex-shrink-0">
-                  <User className="w-5 h-5 text-neutral-600" />
-                </div>
-                <div>
-                  <p className="text-sm font-medium text-neutral-900">
-                    {item.author}
-                  </p>
-                </div>
-              </div>
-            </div>
+            <blockquote key={index} className="text-center flex-1">
+              <p className="text-sm md:text-base lg:text-lg font-medium text-neutral-800 leading-relaxed">&ldquo;{item.quote}&rdquo;</p>
+              <footer className="mt-4 text-xs md:text-sm text-neutral-600">
+                — {item.author}
+              </footer>
+            </blockquote>
           ))}
         </div>
       </div>

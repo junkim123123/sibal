@@ -13,7 +13,7 @@ export default function HomeHero({ page }: Props) {
   const router = useRouter();
 
   const handleStartAnalysis = () => {
-    router.push('/copilot');
+    router.push('/chat');
   };
 
   return (

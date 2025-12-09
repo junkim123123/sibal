@@ -2,7 +2,7 @@
 
 import { useState, useId, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Loader2, ArrowRight, AlertTriangle, CheckCircle, Camera, MessageSquare } from 'lucide-react';
+import { Loader2, AlertTriangle, CheckCircle, MessageSquare } from 'lucide-react';
 import Link from 'next/link';
 import type { ProductAnalysis } from '@/lib/product-analysis/schema';
 import { createLeadFromAnalysis } from '@/lib/sample-request/fromAnalysis';
@@ -61,7 +61,7 @@ export default function ProductAnalyzer({ source }: { source?: string }) {
   }, [isPresetSubmitting]);
 
   const handleAnalyze = async (e?: React.FormEvent) => {
-    if (e) e.preventDefault();
+    e?.preventDefault();
     if (!input.trim()) return;
 
     setIsLoading(true);
@@ -91,22 +91,22 @@ export default function ProductAnalyzer({ source }: { source?: string }) {
           if (data.reason !== 'anonymous_daily_limit') {
             setShowSignInModal(true);
           }
-          if (!limitHitLoggedRef.current) {
-            limitHitLoggedRef.current = true;
-            const userType = isAuthenticated ? 'user' : 'anonymous';
-            fetch('/api/limit-events', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                action: 'limit_hit',
-                reason: data.reason,
-                userType,
-                input: input.trim(),
-              }),
-            }).catch((err) => {
-              console.error('[ProductAnalyzer] Failed to log limit_hit event:', err);
-            });
-          }
+        if (!limitHitLoggedRef.current) {
+          limitHitLoggedRef.current = true;
+          const userType = isAuthenticated ? 'user' : 'anonymous';
+          fetch('/api/limit-events', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              action: 'limit_hit',
+              reason: data.reason,
+              userType,
+              input: input.trim(),
+            }),
+          }).catch(() => {
+            // Silently fail - analytics logging should not block user experience
+          });
+        }
         }
         throw new Error(data.message || data.error || 'Analysis failed');
       }
@@ -182,35 +182,19 @@ export default function ProductAnalyzer({ source }: { source?: string }) {
 
     if (error) {
       if (errorReason === 'anonymous_daily_limit' || errorReason === 'user_daily_limit') {
-        const handlePrimaryClick = () => {
+        const logLimitEvent = (action: 'cta_primary_click' | 'cta_secondary_click') => {
           const userType = isAuthenticated ? 'user' : 'anonymous';
           fetch('/api/limit-events', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-              action: 'cta_primary_click',
+              action,
               reason: errorReason,
               userType,
               input: input.trim(),
             }),
-          }).catch((err) => {
-            console.error('[ProductAnalyzer] Failed to log cta_primary_click event:', err);
-          });
-        };
-
-        const handleSecondaryClick = () => {
-          const userType = isAuthenticated ? 'user' : 'anonymous';
-          fetch('/api/limit-events', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              action: 'cta_secondary_click',
-              reason: errorReason,
-              userType,
-              input: input.trim(),
-            }),
-          }).catch((err) => {
-            console.error('[ProductAnalyzer] Failed to log cta_secondary_click event:', err);
+          }).catch(() => {
+            // Silently fail - analytics logging should not block user experience
           });
         };
 
@@ -219,8 +203,8 @@ export default function ProductAnalyzer({ source }: { source?: string }) {
             variant={errorReason === 'anonymous_daily_limit' ? 'anonymous' : 'user'}
             alphaSignupUrl={process.env.NEXT_PUBLIC_ALPHA_SIGNUP_URL}
             bookingUrl={process.env.NEXT_PUBLIC_BOOKING_URL}
-            onPrimaryClick={handlePrimaryClick}
-            onSecondaryClick={handleSecondaryClick}
+            onPrimaryClick={() => logLimitEvent('cta_primary_click')}
+            onSecondaryClick={() => logLimitEvent('cta_secondary_click')}
           />
         );
       }
@@ -412,7 +396,7 @@ export default function ProductAnalyzer({ source }: { source?: string }) {
             <p className="text-sm text-muted-foreground">
               Our Copilot makes it easy to understand your sourcing risks and opportunities.
             </p>
-            <Link href="/copilot">
+            <Link href="/chat">
               <Button size="lg" className="text-base px-8 py-6">
                 <MessageSquare className="h-5 w-5 mr-2" />
                 Start with a Conversation

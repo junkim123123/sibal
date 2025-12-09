@@ -98,6 +98,10 @@ export function MainHeader() {
                       ? 'text-black after:absolute after:bottom-0 after:left-0 after:right-0 after:h-0.5 after:bg-black'
                       : 'text-zinc-700 hover:text-black'
                   }`}
+                  onClick={(e) => {
+                    // 클릭 이벤트가 정상적으로 작동하도록 보장
+                    e.stopPropagation();
+                  }}
                 >
                   {item.label}
                 </Link>
@@ -121,7 +125,9 @@ export function MainHeader() {
               {/* User Icon (Always visible - Right position) */}
               <div className="relative" ref={userMenuRef}>
                 <button
-                  onClick={() => {
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
                     // 로딩 중이면 아무것도 하지 않음
                     if (isLoading) return;
                     
@@ -199,7 +205,10 @@ export function MainHeader() {
                   <Link
                     key={item.href}
                     href={item.href}
-                    onClick={() => setMobileMenuOpen(false)}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setMobileMenuOpen(false);
+                    }}
                     className="block rounded-md px-3 py-2 text-base font-medium text-black hover:bg-gray-50 transition-colors"
                   >
                     {item.label}

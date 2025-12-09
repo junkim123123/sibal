@@ -66,26 +66,18 @@ function DashboardPageContent() {
     if (tab && ['requests', 'production', 'agent'].includes(tab)) {
       setActiveTab(tab)
       
-      // 탭 변경 시 데이터 새로고침 (특히 products 탭)
-      // refresh 파라미터가 있으면 강제로 새로고침
-      if (userId && isAuthenticated) {
-        console.log('[Dashboard] Tab changed or refresh requested, reloading projects...')
-        loadProjects(userId)
-        
-        // refresh 파라미터 제거 (URL 정리)
-        if (refresh) {
-          const newUrl = new URL(window.location.href)
-          newUrl.searchParams.delete('refresh')
-          window.history.replaceState({}, '', newUrl.toString())
-        }
+      // refresh 파라미터 제거 (URL 정리)
+      if (refresh) {
+        const newUrl = new URL(window.location.href)
+        newUrl.searchParams.delete('refresh')
+        window.history.replaceState({}, '', newUrl.toString())
       }
     }
-  }, [searchParams, userId, isAuthenticated])
+  }, [searchParams])
 
   // activeTab 변경 시 데이터 새로고침 (탭 클릭 시)
   useEffect(() => {
     if (userId && isAuthenticated && activeTab) {
-      console.log('[Dashboard] Active tab changed, reloading projects...', activeTab)
       loadProjects(userId)
     }
   }, [activeTab, userId, isAuthenticated])
@@ -121,12 +113,10 @@ function DashboardPageContent() {
         // 사용량 데이터 로드 (선택적 - 에러가 나도 계속 진행)
         try {
           await loadUsageData(user.id)
-        } catch (usageError) {
-          console.error('[Dashboard] Failed to load usage data:', usageError)
+        } catch {
           // 사용량 데이터 로드 실패는 치명적이지 않으므로 계속 진행
         }
       } catch (error) {
-        console.error('[Dashboard] Auth check error:', error)
         window.location.href = '/login'
       }
     }
@@ -138,64 +128,30 @@ function DashboardPageContent() {
     if (!userId || !isAuthenticated) return
 
     const handleFocus = () => {
-      console.log('[Dashboard] Page focused, reloading data...')
       loadProjects(userId)
-      loadUsageData(userId) // 사용량 데이터도 새로고침
+      loadUsageData(userId).catch(() => {
+        // Silently fail - usage data is not critical
+      })
     }
 
-    // 페이지 포커스 시 데이터 새로고침
     window.addEventListener('focus', handleFocus)
-
-    return () => {
-      window.removeEventListener('focus', handleFocus)
-    }
+    return () => window.removeEventListener('focus', handleFocus)
   }, [userId, isAuthenticated])
 
   // 프로젝트 데이터 로드
   async function loadProjects(userId: string) {
     try {
       setIsLoading(true)
-      console.log('[Dashboard] Loading projects for user:', userId)
       
       const response = await fetch('/api/projects', {
         cache: 'no-store', // 항상 최신 데이터 가져오기
       })
       
       if (!response.ok) {
-        console.error('[Dashboard] Failed to fetch projects:', response.status, response.statusText)
         throw new Error(`Failed to fetch projects: ${response.statusText}`)
       }
       
       const data = await response.json()
-
-      console.log('[Dashboard] API response:', {
-        ok: data.ok,
-        projectsCount: data.projects?.length || 0,
-        debug: data.debug,
-      })
-      
-      console.log('[Dashboard] Loaded projects:', data.projects?.length || 0, 'projects')
-      
-      // 모든 프로젝트 상태 확인
-      if (data.projects && data.projects.length > 0) {
-        const statusCounts = data.projects.reduce((acc: any, p: any) => {
-          acc[p.status] = (acc[p.status] || 0) + 1;
-          return acc;
-        }, {});
-        console.log('[Dashboard] Projects by status:', statusCounts);
-        console.log('[Dashboard] All project statuses:', data.projects.map((p: any) => ({
-          id: p.id,
-          name: p.name,
-          status: p.status,
-          user_id: p.user_id,
-          created_at: p.created_at,
-        })));
-      } else {
-        console.warn('[Dashboard] No projects returned from API');
-      }
-      
-      const savedCount = data.projects?.filter((p: any) => p.status === 'saved').length || 0;
-      console.log('[Dashboard] Projects with saved status:', savedCount);
 
       if (data.ok && data.projects) {
         // My Requests: 모든 프로젝트 (active, in_progress, saved 모두 포함)
@@ -228,17 +184,11 @@ function DashboardPageContent() {
         // Active Orders: status='active'인 프로젝트 + 견적 선택 + QC 승인된 프로젝트들
         await loadShipments(userId, data.projects)
       } else {
-        console.error('[Dashboard] API returned error or no projects:', {
-          ok: data.ok,
-          error: data.error,
-          projects: data.projects,
-        })
         // 에러가 있어도 빈 배열로 설정하여 UI가 올바르게 표시되도록 함
         setEstimates([])
         setSavedProducts([])
       }
     } catch (error) {
-      console.error('[Dashboard] Failed to load projects:', error)
       // 에러 발생 시에도 빈 배열로 설정
       setEstimates([])
       setSavedProducts([])
@@ -259,7 +209,6 @@ function DashboardPageContent() {
         .single()
 
       if (profileError || !profile) {
-        console.error('[Dashboard] Failed to load usage data:', profileError)
         // 기본값 설정
         setUsageData({
           hasActiveSubscription: false,
@@ -297,8 +246,7 @@ function DashboardPageContent() {
         limit: 30,
         userRole: profile.role || 'free',
       })
-    } catch (error) {
-      console.error('[Dashboard] Failed to load usage data:', error)
+    } catch {
       // 기본값 설정
       setUsageData({
         hasActiveSubscription: false,

@@ -1632,35 +1632,42 @@ function ResultsContent() {
   // Unauthorized 에러 처리 - 회원가입 안내
   if (isUnauthorized || (error && (error.includes("Unauthorized") || error.includes("401")))) {
     return (
-      <div className="min-h-screen bg-[#f9fafb] flex items-center justify-center p-4">
-        <Card className="text-center max-w-lg p-8 shadow-2xl border-l-4 border-blue-500">
-          <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
-            <svg className="w-8 h-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-            </svg>
+      <div className="min-h-screen bg-white flex items-center justify-center p-4">
+        <Card className="text-center max-w-md bg-white border border-gray-200 p-8 shadow-sm">
+          <div className="mb-6">
+            <div className="w-12 h-12 bg-neutral-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <svg className="w-6 h-6 text-neutral-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+              </svg>
+            </div>
+            <h2 className="text-2xl font-bold text-neutral-900 mb-2">
+              Sign Up Required to View Results
+            </h2>
+            <p className="text-sm text-neutral-600">
+              Please sign up to view your results. It only takes 3 seconds.
+            </p>
           </div>
-          <div className="text-2xl font-bold text-gray-900 mb-3">
-            결과를 보려면 회원가입이 필요합니다
-          </div>
-          <div className="text-gray-600 mb-6 text-base">
-            결과를 보려면 회원가입해주세요. 3초면 됩니다.
-          </div>
-          <Link 
-            href="/login?signup=true"
-            className="inline-block w-full"
-          >
-            <Button 
-              className="w-full bg-black hover:bg-neutral-800 text-white font-semibold py-3 px-6 rounded-full text-base"
+          
+          <div className="space-y-3">
+            <Link 
+              href="/login?signup=true"
+              className="inline-block w-full"
             >
-              회원가입하기
-            </Button>
-          </Link>
-          <p className="text-sm text-gray-500 mt-4">
-            이미 계정이 있으신가요?{' '}
-            <Link href="/login" className="text-blue-600 hover:text-blue-700 font-medium">
-              로그인하기
+              <Button 
+                variant="primary"
+                size="lg"
+                className="w-full"
+              >
+                Sign Up
+              </Button>
             </Link>
-          </p>
+            <p className="text-xs text-neutral-500">
+              Already have an account?{' '}
+              <Link href="/login" className="text-neutral-900 hover:text-neutral-700 font-medium underline">
+                Sign In
+              </Link>
+            </p>
+          </div>
         </Card>
       </div>
     );

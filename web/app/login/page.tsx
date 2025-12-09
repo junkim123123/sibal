@@ -187,7 +187,7 @@ function LoginPageContent() {
                 {error.toLowerCase().includes('email not confirmed') || error.toLowerCase().includes('email_not_confirmed') ? (
                   <div className="mt-3 pt-3 border-t border-red-200">
                     <p className="text-xs text-red-700">
-                      📧 Please check your email inbox and click the confirmation link to verify your account.
+                      Please check your email inbox and click the confirmation link to verify your account.
                     </p>
                     <p className="text-xs text-red-600 mt-1">
                       If you didn't receive the email, check your spam folder or try signing up again.

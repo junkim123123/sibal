@@ -549,6 +549,7 @@ function TabButton({
 }) {
   return (
     <button
+      type="button"
       onClick={onClick}
       className={`pb-4 px-1 text-sm font-medium transition-colors relative ${
         active

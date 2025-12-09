@@ -575,10 +575,7 @@ function DashboardPageContent() {
             active={activeTab === 'requests'}
             onClick={() => {
               setActiveTab('requests')
-              // 탭 클릭 시 데이터 새로고침
-              if (userId && isAuthenticated) {
-                loadProjects(userId)
-              }
+              // useEffect에서 activeTab 변경 시 자동으로 loadProjects 호출됨
             }}
           />
           <TabButton
@@ -586,10 +583,7 @@ function DashboardPageContent() {
             active={activeTab === 'production'}
             onClick={() => {
               setActiveTab('production')
-              // 탭 클릭 시 데이터 새로고침
-              if (userId && isAuthenticated) {
-                loadProjects(userId)
-              }
+              // useEffect에서 activeTab 변경 시 자동으로 loadProjects 호출됨
             }}
           />
         </div>
@@ -628,6 +622,7 @@ function TabButton({
 }) {
   return (
     <button
+      type="button"
       onClick={onClick}
       className={`pb-4 px-1 text-sm font-medium transition-colors relative ${
         active

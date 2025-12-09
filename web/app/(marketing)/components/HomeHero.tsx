@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { ArrowRight, CheckCircle, Factory, Ship, Scale } from 'lucide-react';
+import { safeNavigate } from '@/lib/utils/safe-navigation';
 
 type Props = {
   page: any | null;
@@ -19,7 +20,13 @@ export default function HomeHero({ page }: Props) {
     
     try {
       setIsNavigating(true);
-      await router.push('/chat');
+      await safeNavigate(router, '/chat', {
+        waitTime: 100,
+        onError: (error) => {
+          console.error('[HomeHero] Navigation error:', error);
+          setIsNavigating(false);
+        }
+      });
     } catch (error) {
       console.error('[HomeHero] Navigation error:', error);
       setIsNavigating(false);

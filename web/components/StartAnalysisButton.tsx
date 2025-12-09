@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
+import { safeNavigate } from '@/lib/utils/safe-navigation'
 
 interface StartAnalysisButtonProps {
   href: string
@@ -35,7 +36,13 @@ export function StartAnalysisButton({ href, label, className }: StartAnalysisBut
     try {
       setIsNavigating(true)
       // Always redirect to /chat for unified chat experience
-      await router.push('/chat')
+      await safeNavigate(router, '/chat', {
+        waitTime: 100,
+        onError: (error) => {
+          console.error('[StartAnalysisButton] Navigation error:', error)
+          setIsNavigating(false)
+        }
+      })
     } catch (error) {
       console.error('[StartAnalysisButton] Navigation error:', error)
       setIsNavigating(false)

@@ -21,6 +21,7 @@ import { Send } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
+import { safeNavigate } from '@/lib/utils/safe-navigation';
 
 // Sourcing Flow 5.0: Streamlined & Non-Redundant
 const SOURCING_STEPS = [
@@ -171,8 +172,10 @@ export default function ChatPage() {
   const [isCompleted, setIsCompleted] = useState(false);
   const [projectId, setProjectId] = useState<string | null>(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isNavigating, setIsNavigating] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const buttonRef = useRef<HTMLButtonElement>(null);
 
   const currentStep = SOURCING_STEPS[currentStepIndex];
   const progress = isCompleted ? 100 : ((currentStepIndex + 1) / SOURCING_STEPS.length) * 100;
@@ -916,8 +919,13 @@ export default function ChatPage() {
           </AnimatePresence>
 
           {/* Completion State - Reveal My Sourcing Strategy Button */}
-          <AnimatePresence mode="wait">
-            {isCompleted && (
+          <AnimatePresence 
+            mode="wait"
+            onExitComplete={() => {
+              // exit 애니메이션 완료 후 추가 정리 작업이 필요하면 여기서 수행
+            }}
+          >
+            {isCompleted && !isNavigating && (
               <motion.div
                 initial="hidden"
                 animate="visible"
@@ -926,10 +934,13 @@ export default function ChatPage() {
                 className="flex justify-center pt-4"
               >
                 <motion.button
+                  ref={buttonRef}
                   onClick={async (e) => {
                     // 중복 클릭 방지
                     const button = e.currentTarget;
-                    if (button.disabled) return;
+                    if (button.disabled || isNavigating) return;
+                    
+                    setIsNavigating(true);
                     button.disabled = true;
 
                     try {
@@ -947,11 +958,21 @@ export default function ChatPage() {
                       const queryString = params.toString();
                       const targetUrl = `/results${queryString ? `?${queryString}` : ''}`;
                       
-                      // 라우팅 실행 (에러 핸들링 포함)
-                      await router.push(targetUrl);
+                      // 안전한 라우팅 실행 (애니메이션 완료 대기 포함)
+                      await safeNavigate(router, targetUrl, {
+                        waitTime: 150, // exit 애니메이션 완료를 위한 대기 시간
+                        onBeforeNavigate: async () => {
+                          // 라우팅 전 추가 작업이 필요하면 여기서 수행
+                        },
+                        onError: (error) => {
+                          console.error('[Chat] Navigation error:', error);
+                          setIsNavigating(false);
+                          button.disabled = false;
+                        }
+                      });
                     } catch (error) {
                       console.error('[Chat] Navigation error:', error);
-                      // 에러 발생 시 버튼 다시 활성화
+                      setIsNavigating(false);
                       button.disabled = false;
                     }
                   }}
@@ -959,7 +980,7 @@ export default function ChatPage() {
                   whileTap={{ scale: 0.98 }}
                   className="px-8 py-4 rounded-full bg-neutral-900 text-white text-base font-semibold shadow-lg hover:shadow-xl transition-all focus:outline-none focus:ring-2 focus:ring-neutral-900 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  Reveal My Sourcing Strategy
+                  {isNavigating ? 'Loading...' : 'Reveal My Sourcing Strategy'}
                 </motion.button>
               </motion.div>
             )}

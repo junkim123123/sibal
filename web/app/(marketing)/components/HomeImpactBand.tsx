@@ -15,14 +15,11 @@ export default function HomeImpactBand() {
           <p className="text-sm md:text-base lg:text-lg text-neutral-300 mb-6 md:mb-8 max-w-2xl mx-auto leading-relaxed">
             {cta.description}
           </p>
-          <Link href={cta.buttonHref} className="inline-block w-full sm:w-auto">
-            <Button
-              variant="primary"
-              size="lg"
-              className="rounded-full px-6 md:px-8 py-3 md:py-3.5 bg-white text-neutral-900 hover:bg-neutral-100 w-full sm:w-auto"
-            >
-              {cta.buttonLabel}
-            </Button>
+          <Link 
+            href={cta.buttonHref} 
+            className="inline-block w-full sm:w-auto inline-flex items-center justify-center font-semibold transition-all bg-white text-neutral-900 hover:bg-neutral-100 px-6 md:px-8 py-3 md:py-3.5 text-base rounded-full"
+          >
+            {cta.buttonLabel}
           </Link>
         </div>
       </div>

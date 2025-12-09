@@ -1154,13 +1154,11 @@ function ResultsActionButtons({ projectId, answers, aiAnalysis }: { projectId?: 
             <div className="flex flex-col items-end gap-3 min-w-[360px]">
               {/* Secondary Actions Row */}
               <div className="w-full">
-                <Link href="/chat" className="w-full">
-                  <Button
-                    variant="outline"
-                    className="w-full border-gray-900 text-gray-900 hover:bg-gray-50"
-                  >
-                    Analyze Another
-                  </Button>
+                <Link 
+                  href="/chat" 
+                  className="w-full inline-flex items-center justify-center font-semibold transition-all border border-gray-900 bg-white text-gray-900 hover:bg-gray-50 px-6 py-3 text-sm rounded-full"
+                >
+                  Analyze Another
                 </Link>
               </div>
 
@@ -1318,13 +1316,11 @@ function ResultsActionButtons({ projectId, answers, aiAnalysis }: { projectId?: 
 
             {/* Action Buttons Row */}
             <div className="space-y-2">
-              <Link href="/chat" className="block">
-                <Button
-                  variant="outline"
-                  className="w-full border-gray-900 text-gray-900 hover:bg-gray-50 text-xs py-2"
-                >
-                  Analyze Another
-                </Button>
+              <Link 
+                href="/chat" 
+                className="block w-full inline-flex items-center justify-center font-semibold transition-all border border-gray-900 bg-white text-gray-900 hover:bg-gray-50 text-xs py-2 rounded-full"
+              >
+                Analyze Another
               </Link>
               <div>
                 <Button
@@ -1375,6 +1371,7 @@ function ResultsContent() {
   const [error, setError] = useState<string | null>(null);
   const [criticalRisk, setCriticalRisk] = useState(false);
   const [blacklistDetails, setBlacklistDetails] = useState<any>(null);
+  const [isUnauthorized, setIsUnauthorized] = useState(false);
   const projectId = searchParams?.get('project_id') || null;
 
   // 프로젝트 분석 데이터 로드 (project_id가 있을 때)
@@ -1498,8 +1495,10 @@ function ResultsContent() {
           if (!response.ok) {
             if (response.status === 401) {
               console.error('[Results] Unauthorized - user not authenticated');
-              // 인증되지 않은 경우 로그인 페이지로 리다이렉트
-              window.location.href = '/login?redirect=' + encodeURIComponent(window.location.pathname + window.location.search);
+              // 인증되지 않은 경우 Unauthorized 상태로 설정하여 회원가입 안내 UI 표시
+              setIsUnauthorized(true);
+              setError('Unauthorized');
+              setIsInitialized(true);
               return;
             }
             throw new Error(data.error || `HTTP ${response.status}: ${response.statusText}`);
@@ -1585,6 +1584,13 @@ function ResultsContent() {
         const data = await response.json();
 
         if (!response.ok || !data.ok) {
+          // Unauthorized 에러 처리
+          if (response.status === 401 || data.error === 'Unauthorized') {
+            setIsUnauthorized(true);
+            setError('Unauthorized');
+            return;
+          }
+          
           // CRITICAL_RISK 에러 처리
           if (data.error_code === 'CRITICAL_RISK') {
             setCriticalRisk(true);
@@ -1602,7 +1608,12 @@ function ResultsContent() {
         }
       } catch (err) {
         console.error('[Results] Failed to fetch AI analysis:', err);
-        setError(err instanceof Error ? err.message : 'Failed to load analysis');
+        const errorMessage = err instanceof Error ? err.message : 'Failed to load analysis';
+        // Unauthorized 에러 체크
+        if (errorMessage.includes('Unauthorized') || errorMessage.includes('401')) {
+          setIsUnauthorized(true);
+        }
+        setError(errorMessage);
       } finally {
         setIsLoading(false);
       }
@@ -1617,6 +1628,43 @@ function ResultsContent() {
 
   // CRITICAL_RISK 처리 및 일반 에러 처리
   const isCriticalRisk = criticalRisk || (error && (error.includes("CRITICAL_RISK") || error.includes("blacklist") || error.includes("This supplier")));
+  
+  // Unauthorized 에러 처리 - 회원가입 안내
+  if (isUnauthorized || (error && (error.includes("Unauthorized") || error.includes("401")))) {
+    return (
+      <div className="min-h-screen bg-[#f9fafb] flex items-center justify-center p-4">
+        <Card className="text-center max-w-lg p-8 shadow-2xl border-l-4 border-blue-500">
+          <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <svg className="w-8 h-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+            </svg>
+          </div>
+          <div className="text-2xl font-bold text-gray-900 mb-3">
+            결과를 보려면 회원가입이 필요합니다
+          </div>
+          <div className="text-gray-600 mb-6 text-base">
+            결과를 보려면 회원가입해주세요. 3초면 됩니다.
+          </div>
+          <Link 
+            href="/login?signup=true"
+            className="inline-block w-full"
+          >
+            <Button 
+              className="w-full bg-black hover:bg-neutral-800 text-white font-semibold py-3 px-6 rounded-full text-base"
+            >
+              회원가입하기
+            </Button>
+          </Link>
+          <p className="text-sm text-gray-500 mt-4">
+            이미 계정이 있으신가요?{' '}
+            <Link href="/login" className="text-blue-600 hover:text-blue-700 font-medium">
+              로그인하기
+            </Link>
+          </p>
+        </Card>
+      </div>
+    );
+  }
   
   if (error || criticalRisk) {
     return (

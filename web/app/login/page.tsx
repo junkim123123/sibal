@@ -10,15 +10,15 @@ import { Chrome, Eye, EyeOff } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 
 function LoginPageContent() {
+  const searchParams = useSearchParams()
+  const router = useRouter()
   const [isSignUp, setIsSignUp] = useState(false)
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(false)
-  const searchParams = useSearchParams()
-  const router = useRouter()
-
-  // URL에서 에러 메시지 확인 (이메일 확인 실패 등)
+  
+  // URL에서 에러 메시지 및 signup 파라미터 확인
   useEffect(() => {
     const errorParam = searchParams.get('error')
     if (errorParam) {
@@ -27,6 +27,12 @@ function LoginPageContent() {
       const newUrl = new URL(window.location.href)
       newUrl.searchParams.delete('error')
       router.replace(newUrl.pathname + newUrl.search, { scroll: false })
+    }
+    
+    // signup 파라미터 확인
+    const signupParam = searchParams.get('signup')
+    if (signupParam === 'true') {
+      setIsSignUp(true)
     }
   }, [searchParams, router])
   

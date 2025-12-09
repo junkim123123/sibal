@@ -163,7 +163,7 @@ export function MainHeader() {
                     )}
                   </>
                 ) : (
-                  // 로그인 안 된 경우: "로그인" 버튼 (아이콘 + 텍스트)
+                  // 로그인 안 된 경우: "Sign In" 버튼 (아이콘 + 텍스트)
                   <button
                     type="button"
                     onClick={(e) => {
@@ -177,7 +177,7 @@ export function MainHeader() {
                     title="Sign in"
                   >
                     <User className="h-5 w-5" />
-                    <span className="text-sm font-medium">로그인</span>
+                    <span className="text-sm font-medium">Sign In</span>
                   </button>
                 )}
               </div>
@@ -239,7 +239,7 @@ export function MainHeader() {
                       onClick={() => setMobileMenuOpen(false)}
                       className="block w-full text-left rounded-md px-3 py-2 text-base font-medium text-black hover:bg-gray-50 transition-colors"
                     >
-                      로그인
+                      Sign In
                     </Link>
                   )}
                   {/* Get Started Button (Show on marketing pages, regardless of auth status) */}

@@ -34,7 +34,7 @@ export async function safeNavigate(
     onError?: (error: Error) => void;
   }
 ): Promise<void> {
-  const { waitTime = 100, onBeforeNavigate, onError } = options || {};
+  const { waitTime = 300, onBeforeNavigate, onError } = options || {};
 
   try {
     // 사전 작업 실행
@@ -42,11 +42,23 @@ export async function safeNavigate(
       await onBeforeNavigate();
     }
 
-    // DOM 업데이트 대기
+    // DOM 업데이트 대기 (더 긴 대기 시간)
     await waitForDOMUpdate();
 
-    // 추가 대기 시간 (애니메이션 완료를 위한)
-    await new Promise((resolve) => setTimeout(resolve, waitTime));
+    // 모든 애니메이션이 완료될 때까지 대기
+    // AnimatePresence의 exit 애니메이션은 보통 200-300ms 소요
+    await new Promise((resolve) => setTimeout(resolve, Math.max(waitTime, 300)));
+
+    // 추가로 React의 렌더링 사이클이 완료될 때까지 대기
+    await new Promise((resolve) => {
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          requestAnimationFrame(() => {
+            setTimeout(resolve, 50);
+          });
+        });
+      });
+    });
 
     // 라우팅 실행
     await router.push(path);

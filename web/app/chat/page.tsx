@@ -628,7 +628,7 @@ export default function ChatPage() {
     exit: {
       opacity: 0,
       scale: 0.95,
-      transition: { duration: 0.2 }
+      transition: { duration: 0.3, ease: "easeInOut" } // exit 애니메이션 시간 증가
     }
   };
 
@@ -666,8 +666,8 @@ export default function ChatPage() {
   const inputVariants = {
     hidden: { opacity: 0, y: 10 },
     visible: { 
-      opacity: 1,
-      y: 0,
+      opacity: 1, 
+      y: 0, 
       transition: {
         type: "spring",
         stiffness: 300,
@@ -678,7 +678,10 @@ export default function ChatPage() {
     exit: {
       opacity: 0,
       y: -10,
-      transition: { duration: 0.2 }
+      transition: { 
+        duration: 0.3, // exit 애니메이션 시간을 늘려서 완료 보장
+        ease: "easeInOut"
+      }
     }
   };
 
@@ -960,9 +963,11 @@ export default function ChatPage() {
                       
                       // 안전한 라우팅 실행 (애니메이션 완료 대기 포함)
                       await safeNavigate(router, targetUrl, {
-                        waitTime: 150, // exit 애니메이션 완료를 위한 대기 시간
+                        waitTime: 400, // exit 애니메이션(300ms) + 여유 시간을 위한 대기 시간
                         onBeforeNavigate: async () => {
                           // 라우팅 전 추가 작업이 필요하면 여기서 수행
+                          // 컴포넌트가 완전히 언마운트될 때까지 대기
+                          await new Promise((resolve) => setTimeout(resolve, 100));
                         },
                         onError: (error) => {
                           console.error('[Chat] Navigation error:', error);

@@ -5,6 +5,7 @@ import AuthProvider from "@/components/auth-provider"
 import { Analytics } from "@vercel/analytics/next"
 import { ErrorBoundary } from "@/components/error-boundary"
 import "@/lib/utils/global-error-handler"
+import "@/lib/utils/react-error-suppression"
 
 const inter = Inter({
   subsets: ["latin"],

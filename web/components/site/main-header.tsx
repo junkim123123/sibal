@@ -123,47 +123,62 @@ export function MainHeader() {
                 </Link>
               )}
 
-              {/* User Icon (Always visible - Right position) */}
+              {/* Login Button / User Menu (Always visible - Right position) */}
               <div className="relative" ref={userMenuRef}>
-                <button
-                  type="button"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    // 로딩 중이면 아무것도 하지 않음
-                    if (isLoading) return;
-                    
-                    if (isAuthenticated) {
-                      setUserMenuOpen(!userMenuOpen);
-                    } else {
-                      // 로그인 안 된 경우 로그인 페이지로 리다이렉트
-                      router.push('/login');
-                    }
-                  }}
-                  disabled={isLoading}
-                  className="flex items-center justify-center w-10 h-10 rounded-full border border-gray-400 text-gray-800 hover:border-gray-500 hover:text-black transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                  aria-label={isAuthenticated ? "User menu" : "Sign in"}
-                  title={isAuthenticated ? "User menu" : "Sign in"}
-                >
-                  <User className="h-6 w-6" />
-                </button>
-
-                {/* User Dropdown Menu (Logged in only) */}
-                {isAuthenticated && userMenuOpen && (
-                  <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-50">
-                    <Link
-                      href="/dashboard"
-                      onClick={() => setUserMenuOpen(false)}
-                      className="block px-4 py-2 text-sm font-semibold text-black hover:bg-gray-50 transition-colors"
-                    >
-                      My dashboard
-                    </Link>
+                {isAuthenticated ? (
+                  // 로그인된 경우: 사용자 아이콘 버튼 (기존 동작)
+                  <>
                     <button
-                      onClick={handleSignOut}
-                      className="block w-full text-left px-4 py-2 text-sm text-zinc-600 hover:bg-gray-50 hover:text-black transition-colors"
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        if (isLoading) return;
+                        setUserMenuOpen(!userMenuOpen);
+                      }}
+                      disabled={isLoading}
+                      className="flex items-center justify-center w-10 h-10 rounded-full border border-gray-400 text-gray-800 hover:border-gray-500 hover:text-black transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                      aria-label="User menu"
+                      title="User menu"
                     >
-                      Sign out
+                      <User className="h-6 w-6" />
                     </button>
-                  </div>
+
+                    {/* User Dropdown Menu */}
+                    {userMenuOpen && (
+                      <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-50">
+                        <Link
+                          href="/dashboard"
+                          onClick={() => setUserMenuOpen(false)}
+                          className="block px-4 py-2 text-sm font-semibold text-black hover:bg-gray-50 transition-colors"
+                        >
+                          My dashboard
+                        </Link>
+                        <button
+                          onClick={handleSignOut}
+                          className="block w-full text-left px-4 py-2 text-sm text-zinc-600 hover:bg-gray-50 hover:text-black transition-colors"
+                        >
+                          Sign out
+                        </button>
+                      </div>
+                    )}
+                  </>
+                ) : (
+                  // 로그인 안 된 경우: "로그인" 버튼 (아이콘 + 텍스트)
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      if (isLoading) return;
+                      router.push('/login');
+                    }}
+                    disabled={isLoading}
+                    className="flex items-center gap-2 px-4 py-2 rounded-full border border-gray-400 text-gray-800 hover:border-gray-500 hover:text-black transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    aria-label="Sign in"
+                    title="Sign in"
+                  >
+                    <User className="h-5 w-5" />
+                    <span className="text-sm font-medium">로그인</span>
+                  </button>
                 )}
               </div>
             </div>
@@ -224,7 +239,7 @@ export function MainHeader() {
                       onClick={() => setMobileMenuOpen(false)}
                       className="block w-full text-left rounded-md px-3 py-2 text-base font-medium text-black hover:bg-gray-50 transition-colors"
                     >
-                      Sign In
+                      로그인
                     </Link>
                   )}
                   {/* Get Started Button (Show on marketing pages, regardless of auth status) */}

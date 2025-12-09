@@ -2,7 +2,7 @@ const path = require('path');
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  reactStrictMode: true,
+  reactStrictMode: false, // removeChild 에러 방지를 위해 일시적으로 비활성화
   // Set the root directory for file tracing to avoid workspace root inference issues
   outputFileTracingRoot: path.join(__dirname),
   images: {

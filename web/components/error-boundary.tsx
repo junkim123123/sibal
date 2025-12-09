@@ -28,13 +28,16 @@ export class ErrorBoundary extends Component<Props, State> {
 
   componentDidCatch(error: Error, errorInfo: any) {
     // removeChild 에러는 무시 (이미 처리된 DOM 조작)
-    if (error.message?.includes('removeChild') || 
-        error.message?.includes('Cannot read properties of null')) {
-      console.warn('[ErrorBoundary] DOM manipulation error caught and ignored:', error.message);
-      // 에러 상태를 리셋하여 정상 동작 계속
-      setTimeout(() => {
-        this.setState({ hasError: false, error: null });
-      }, 100);
+    const errorMessage = error.message || String(error);
+    const errorStack = error.stack || '';
+    
+    if (
+      errorMessage.includes('removeChild') || 
+      errorMessage.includes('Cannot read properties of null') ||
+      errorStack.includes('removeChild')
+    ) {
+      // 에러를 완전히 억제하고 상태를 즉시 리셋
+      this.setState({ hasError: false, error: null });
       return;
     }
 

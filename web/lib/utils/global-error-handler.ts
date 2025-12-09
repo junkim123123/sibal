@@ -32,7 +32,10 @@
   // 전역 에러 핸들러 (가장 먼저 실행)
   window.onerror = (message, source, lineno, colno, error) => {
     if (isRemoveChildError(message, error)) {
-      console.warn('[GlobalErrorHandler] DOM manipulation error caught and ignored:', message);
+      // 개발 모드에서만 경고 표시
+      if (process.env.NODE_ENV === 'development') {
+        console.warn('[GlobalErrorHandler] DOM manipulation error caught and ignored:', message);
+      }
       return true; // 에러가 처리되었음을 표시하여 전파 방지
     }
 

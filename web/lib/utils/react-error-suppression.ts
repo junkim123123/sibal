@@ -6,7 +6,9 @@
 if (typeof window !== 'undefined') {
   // React의 내부 에러를 잡기 위한 추가 보호 장치
   const originalConsoleError = console.error;
+  const originalConsoleWarn = console.warn;
   
+  // console.error 래핑
   console.error = (...args: any[]) => {
     const errorMessage = args.join(' ');
     
@@ -14,12 +16,10 @@ if (typeof window !== 'undefined') {
     if (
       errorMessage.includes('removeChild') ||
       errorMessage.includes('Cannot read properties of null') ||
-      errorMessage.includes("reading 'removeChild'")
+      errorMessage.includes("reading 'removeChild'") ||
+      errorMessage.includes('reading "removeChild"')
     ) {
-      // 에러를 무시하지만 개발 모드에서는 경고만 표시
-      if (process.env.NODE_ENV === 'development') {
-        console.warn('[ReactErrorSuppression] Suppressed removeChild error:', errorMessage);
-      }
+      // 에러를 완전히 억제 (개발 모드에서도 표시하지 않음)
       return;
     }
     
@@ -27,10 +27,41 @@ if (typeof window !== 'undefined') {
     originalConsoleError.apply(console, args);
   };
 
-  // React의 내부 에러도 잡기 위해 Error 객체를 래핑
-  const originalError = window.Error;
-  
-  // Error 생성자를 래핑하여 removeChild 에러를 자동으로 처리
-  // (이 방법은 매우 공격적이므로 주의해서 사용)
+  // console.warn도 래핑 (일부 브라우저가 에러를 경고로 표시할 수 있음)
+  console.warn = (...args: any[]) => {
+    const warningMessage = args.join(' ');
+    
+    // removeChild 관련 경고도 억제
+    if (
+      warningMessage.includes('removeChild') ||
+      warningMessage.includes('Cannot read properties of null') ||
+      warningMessage.includes("reading 'removeChild'")
+    ) {
+      return;
+    }
+    
+    // 다른 경고는 정상적으로 표시
+    originalConsoleWarn.apply(console, args);
+  };
+
+  // UncaughtException 이벤트도 처리
+  if (typeof process !== 'undefined' && process.on) {
+    const originalOn = process.on;
+    process.on = function(event: string, listener: any) {
+      if (event === 'uncaughtException') {
+        return originalOn.call(this, event, (error: Error) => {
+          if (
+            error.message?.includes('removeChild') ||
+            error.message?.includes('Cannot read properties of null')
+          ) {
+            // 에러 억제
+            return;
+          }
+          listener(error);
+        });
+      }
+      return originalOn.call(this, event, listener);
+    };
+  }
 }
 

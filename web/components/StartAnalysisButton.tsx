@@ -15,6 +15,7 @@ export function StartAnalysisButton({ href, label, className }: StartAnalysisBut
   const router = useRouter()
   const [isLoading, setIsLoading] = useState(true)
   const [isAuthenticated, setIsAuthenticated] = useState(false)
+  const [isNavigating, setIsNavigating] = useState(false)
 
   useEffect(() => {
     async function checkAuth() {
@@ -26,13 +27,19 @@ export function StartAnalysisButton({ href, label, className }: StartAnalysisBut
     checkAuth()
   }, [])
 
-  const handleClick = (e: React.MouseEvent<HTMLButtonElement>) => {
+  const handleClick = async (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault()
     
-    if (isLoading) return
+    if (isLoading || isNavigating) return
     
-    // Always redirect to /chat for unified chat experience
-    router.push('/chat')
+    try {
+      setIsNavigating(true)
+      // Always redirect to /chat for unified chat experience
+      await router.push('/chat')
+    } catch (error) {
+      console.error('[StartAnalysisButton] Navigation error:', error)
+      setIsNavigating(false)
+    }
   }
 
   if (isLoading) {
@@ -54,8 +61,9 @@ export function StartAnalysisButton({ href, label, className }: StartAnalysisBut
       size="lg"
       className={className}
       onClick={handleClick}
+      disabled={isNavigating}
     >
-      {label}
+      {isNavigating ? 'Loading...' : label}
     </Button>
   )
 }

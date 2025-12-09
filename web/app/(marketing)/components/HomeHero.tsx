@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
@@ -11,9 +12,18 @@ type Props = {
 
 export default function HomeHero({ page }: Props) {
   const router = useRouter();
+  const [isNavigating, setIsNavigating] = useState(false);
 
-  const handleStartAnalysis = () => {
-    router.push('/chat');
+  const handleStartAnalysis = async () => {
+    if (isNavigating) return;
+    
+    try {
+      setIsNavigating(true);
+      await router.push('/chat');
+    } catch (error) {
+      console.error('[HomeHero] Navigation error:', error);
+      setIsNavigating(false);
+    }
   };
 
   return (
@@ -46,10 +56,11 @@ export default function HomeHero({ page }: Props) {
                 variant="primary"
                 size="lg"
                 onClick={handleStartAnalysis}
+                disabled={isNavigating}
                 className="inline-flex items-center gap-2 group"
               >
-                Start Free Analysis
-                <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                {isNavigating ? 'Loading...' : 'Start Free Analysis'}
+                {!isNavigating && <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />}
               </Button>
               <Link
                 href="/how-it-works"

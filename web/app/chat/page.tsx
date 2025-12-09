@@ -916,7 +916,7 @@ export default function ChatPage() {
           </AnimatePresence>
 
           {/* Completion State - Reveal My Sourcing Strategy Button */}
-          <AnimatePresence>
+          <AnimatePresence mode="wait">
             {isCompleted && (
               <motion.div
                 initial="hidden"
@@ -926,24 +926,38 @@ export default function ChatPage() {
                 className="flex justify-center pt-4"
               >
                 <motion.button
-                  onClick={() => {
-                    // selectedOptions를 sessionStorage에 저장 (URL 길이 제한 회피)
-                    if (typeof window !== 'undefined') {
-                      sessionStorage.setItem('nexsupply_onboarding_data', JSON.stringify(selectedOptions));
+                  onClick={async (e) => {
+                    // 중복 클릭 방지
+                    const button = e.currentTarget;
+                    if (button.disabled) return;
+                    button.disabled = true;
+
+                    try {
+                      // selectedOptions를 sessionStorage에 저장 (URL 길이 제한 회피)
+                      if (typeof window !== 'undefined') {
+                        sessionStorage.setItem('nexsupply_onboarding_data', JSON.stringify(selectedOptions));
+                      }
+                      
+                      // URL에는 project_id만 전달
+                      const params = new URLSearchParams();
+                      if (projectId) {
+                        params.set('project_id', projectId);
+                      }
+                      
+                      const queryString = params.toString();
+                      const targetUrl = `/results${queryString ? `?${queryString}` : ''}`;
+                      
+                      // 라우팅 실행 (에러 핸들링 포함)
+                      await router.push(targetUrl);
+                    } catch (error) {
+                      console.error('[Chat] Navigation error:', error);
+                      // 에러 발생 시 버튼 다시 활성화
+                      button.disabled = false;
                     }
-                    
-                    // URL에는 project_id만 전달
-                    const params = new URLSearchParams();
-                    if (projectId) {
-                      params.set('project_id', projectId);
-                    }
-                    
-                    const queryString = params.toString();
-                    router.push(`/results${queryString ? `?${queryString}` : ''}`);
                   }}
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
-                  className="px-8 py-4 rounded-full bg-neutral-900 text-white text-base font-semibold shadow-lg hover:shadow-xl transition-all focus:outline-none focus:ring-2 focus:ring-neutral-900 focus:ring-offset-2"
+                  className="px-8 py-4 rounded-full bg-neutral-900 text-white text-base font-semibold shadow-lg hover:shadow-xl transition-all focus:outline-none focus:ring-2 focus:ring-neutral-900 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   Reveal My Sourcing Strategy
                 </motion.button>

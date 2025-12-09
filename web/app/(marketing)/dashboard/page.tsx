@@ -620,15 +620,33 @@ function TabButton({
   active: boolean
   onClick: () => void
 }) {
+  const [isNavigating, setIsNavigating] = useState(false)
+
+  const handleClick = async () => {
+    if (isNavigating || active) return
+    
+    try {
+      setIsNavigating(true)
+      onClick()
+      // 탭 전환 후 약간의 지연을 두어 DOM 업데이트가 완료되도록 함
+      await new Promise(resolve => setTimeout(resolve, 50))
+    } catch (error) {
+      console.error('[TabButton] Navigation error:', error)
+    } finally {
+      setIsNavigating(false)
+    }
+  }
+
   return (
     <button
       type="button"
-      onClick={onClick}
+      onClick={handleClick}
+      disabled={isNavigating || active}
       className={`pb-4 px-1 text-sm font-medium transition-colors relative ${
         active
           ? 'text-black font-semibold'
           : 'text-zinc-500 hover:text-black'
-      }`}
+      } ${isNavigating ? 'opacity-50 cursor-wait' : ''}`}
     >
       {label}
       {active && (

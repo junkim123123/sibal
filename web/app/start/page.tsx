@@ -504,14 +504,26 @@ export default function StartPage() {
               {aiReport && leadId && (
                 <div className="flex flex-wrap gap-3 mb-6">
                   <Button
-                    onClick={() => router.push(`/analyze?leadId=${leadId}`)}
+                    onClick={async () => {
+                      try {
+                        await router.push(`/analyze?leadId=${leadId}`);
+                      } catch (error) {
+                        console.error('[Start] Navigation error:', error);
+                      }
+                    }}
                     variant="primary"
                     className="rounded-full"
                   >
                     View full AI report
                   </Button>
                   <Button
-                    onClick={() => router.push('/contact')}
+                    onClick={async () => {
+                      try {
+                        await router.push('/contact');
+                      } catch (error) {
+                        console.error('[Start] Navigation error:', error);
+                      }
+                    }}
                     variant="outline"
                     className="rounded-full bg-white text-neutral-900 border-neutral-300 hover:bg-neutral-50"
                   >

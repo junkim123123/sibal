@@ -1456,9 +1456,11 @@ function ResultsContent() {
           if (Object.keys(parsedAnswers).length > 0) {
             console.log('[Results] Loaded answers from sessionStorage:', parsedAnswers);
             setAnswers(parsedAnswers);
-            setIsInitialized(true);
             // sessionStorage 데이터는 한 번 사용 후 삭제
             sessionStorage.removeItem('nexsupply_onboarding_data');
+            // answers가 로드되면 분석이 시작될 것이므로 로딩 상태로 전환
+            setIsLoading(true);
+            setIsInitialized(true);
             return;
           }
         }
@@ -1514,6 +1516,7 @@ function ResultsContent() {
               // 인증되지 않은 경우 Unauthorized 상태로 설정하여 회원가입 안내 UI 표시
               setIsUnauthorized(true);
               setError('Unauthorized');
+              setIsLoading(false);
               setIsInitialized(true);
               return;
             }
@@ -1537,15 +1540,18 @@ function ResultsContent() {
               setAiAnalysis(data.ai_analysis);
             }
             
+            setIsLoading(false);
             setIsInitialized(true);
           } else {
             console.error('[Results] Failed to load saved project:', data.error);
             setError(data.error || 'Failed to load saved project');
+            setIsLoading(false);
             setIsInitialized(true);
           }
         } catch (error) {
           console.error('[Results] Error loading saved project:', error);
           setError(error instanceof Error ? error.message : 'Failed to load saved project');
+          setIsLoading(false);
           setIsInitialized(true);
         }
       };
@@ -1557,6 +1563,7 @@ function ResultsContent() {
     // 4. project_id도 없고 answers도 없으면 경고
     if (!projectId && Object.keys(paramsAnswers).length === 0) {
       console.warn('[Results] No project_id and no answers data found.');
+      setIsLoading(false);
     }
     
     setIsInitialized(true);
@@ -1581,13 +1588,16 @@ function ResultsContent() {
       return;
     }
 
-    const fetchAnalysis = async () => {
-      setIsLoading(true);
-      setError(null);
-      setCriticalRisk(false);
-      setBlacklistDetails(null);
+    // answers가 있으면 즉시 분석 시작 (로딩 상태로 전환)
+    setIsLoading(true);
+    setError(null);
+    setCriticalRisk(false);
+    setBlacklistDetails(null);
 
+    const fetchAnalysis = async () => {
       try {
+        console.log('[Results] Starting analysis with answers:', Object.keys(answers));
+        
         const response = await fetch('/api/analyze', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -1604,6 +1614,7 @@ function ResultsContent() {
           if (response.status === 401 || data.error === 'Unauthorized') {
             setIsUnauthorized(true);
             setError('Unauthorized');
+            setIsLoading(false);
             return;
           }
           
@@ -1611,6 +1622,7 @@ function ResultsContent() {
           if (data.error_code === 'CRITICAL_RISK') {
             setCriticalRisk(true);
             setBlacklistDetails(data.blacklist_details);
+            setIsLoading(false);
             return;
           }
           
@@ -1618,6 +1630,7 @@ function ResultsContent() {
         }
 
         if (data.analysis) {
+          console.log('[Results] Analysis completed successfully');
           setAiAnalysis(data.analysis);
         } else {
           throw new Error('No analysis data in response');
@@ -1763,20 +1776,25 @@ function ResultsContent() {
   }
 
   // project_id가 있지만 분석 데이터를 불러오지 못한 경우
+  // 단, answers가 있어서 분석이 진행 중일 수 있으므로 충분히 기다린 후에만 표시
   if (isInitialized && projectId && !aiAnalysis && !isLoading && !error) {
     // answers가 있으면 분석을 다시 생성할 수 있음
     const canRegenerate = Object.keys(answers).length > 0 && 
                           (answers.project_name || answers.product_info);
+    
+    // answers가 있으면 분석이 곧 시작될 수 있으므로 잠시 대기
+    // (useEffect가 실행되기 전일 수 있음)
+    if (canRegenerate) {
+      // answers가 있으면 분석이 곧 시작될 것이므로 로딩 표시
+      return <AnalysisLoader />;
+    }
     
     return (
       <div className="min-h-screen bg-[#09090b] flex items-center justify-center p-4">
         <div className="text-center max-w-md">
           <div className="text-white text-xl mb-2">No Analysis Available</div>
           <div className="text-zinc-400 text-sm mb-4">
-            {canRegenerate 
-              ? 'This saved project does not have analysis data. You can regenerate the analysis using the saved information.'
-              : 'This saved project does not have analysis data. Please complete the chat flow first.'
-            }
+            This saved project does not have analysis data. Please complete the chat flow first.
           </div>
           <div className="flex flex-col gap-3">
             {canRegenerate ? (

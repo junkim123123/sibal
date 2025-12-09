@@ -65,6 +65,7 @@ export function MainHeader() {
     { label: 'Solutions', href: '/how-it-works' },
     { label: 'Use Cases', href: '/use-cases' },
     { label: 'Resources', href: '/resources' },
+    { label: 'Pricing', href: '/pricing' },
   ];
 
   // App navigation (for app pages)

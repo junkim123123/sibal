@@ -1191,6 +1191,14 @@ function ResultsActionButtons({ projectId, answers, aiAnalysis }: { projectId?: 
                     By proceeding, I agree that design/marketing services are excluded.
                   </p>
                 </div>
+                {/* Login reminder for unauthenticated users */}
+                {!isAuthenticated && (
+                  <div className="mt-3 text-center">
+                    <p className="text-xs text-gray-600">
+                      Sign in to save your data
+                    </p>
+                  </div>
+                )}
               </div>
             </div>
           </div>
@@ -1350,6 +1358,14 @@ function ResultsActionButtons({ projectId, answers, aiAnalysis }: { projectId?: 
                     By proceeding, I agree that design/marketing services are excluded.
                   </p>
                 </div>
+                {/* Login reminder for unauthenticated users */}
+                {!isAuthenticated && (
+                  <div className="mt-2 text-center">
+                    <p className="text-xs text-gray-600">
+                      Sign in to save your data
+                    </p>
+                  </div>
+                )}
               </div>
             </div>
           </div>
@@ -1898,6 +1914,23 @@ function ResultsContent() {
     }
   };
 
+  // Check authentication status for login reminder
+  const [isAuthenticatedForReminder, setIsAuthenticatedForReminder] = useState<boolean | null>(null);
+  
+  useEffect(() => {
+    const checkAuth = async () => {
+      try {
+        const { createClient } = await import('@/lib/supabase/client');
+        const supabase = createClient();
+        const { data: { user } } = await supabase.auth.getUser();
+        setIsAuthenticatedForReminder(!!user);
+      } catch (error) {
+        setIsAuthenticatedForReminder(false);
+      }
+    };
+    checkAuth();
+  }, []);
+
   return (
     <div className="min-h-screen bg-[#f9fafb] p-6 md:p-8">
       {/* Header with Logo */}
@@ -1905,6 +1938,12 @@ function ResultsContent() {
         <Link href="/" className="inline-block cursor-pointer hover:opacity-80 transition-opacity">
           <h1 className="text-2xl font-bold text-gray-900">NexSupply</h1>
         </Link>
+        {/* Login reminder text */}
+        {isAuthenticatedForReminder === false && (
+          <p className="mt-2 text-sm text-gray-600">
+            Sign in to save your data
+          </p>
+        )}
       </div>
       <div className="max-w-7xl mx-auto">
         {/* Grid Layout */}

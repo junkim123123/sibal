@@ -16,7 +16,7 @@ import SignInModal from '@/components/sign-in-modal';
 import LimitReachedCard from '@/components/LimitReachedCard';
 import { QuickAnalyzerInput } from '@/components/analyzer/QuickAnalyzerInput';
 
-export default function ProductAnalyzer({ source }: { source?: string }) {
+export default function ProductAnalyzerV2({ source }: { source?: string }) {
   const [input, setInput] = useState('');
   const [productImage, setProductImage] = useState<File | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -175,7 +175,7 @@ export default function ProductAnalyzer({ source }: { source?: string }) {
         <Card className="text-center">
           <Loader2 className="h-8 w-8 mx-auto animate-spin mb-4 text-primary" />
           <h3 className="card-title mb-2">Analyzing your product...</h3>
-          <p className="helper-text">We are estimating freight, duty, and risks.</p>
+          <p className="helper-text">Estimating landed cost, duties, compliance requirements, and sourcing risks. This usually takes 10-15 seconds.</p>
         </Card>
       );
     }
@@ -227,7 +227,7 @@ export default function ProductAnalyzer({ source }: { source?: string }) {
       return (
         <Card className="text-center border-destructive/50">
           <AlertTriangle className="h-8 w-8 mx-auto text-destructive mb-4" />
-          <h3 className="card-title mb-2">Something went wrong</h3>
+          <h3 className="card-title mb-2">Analysis Failed</h3>
           <p className="helper-text mb-6">{error}</p>
           <Button onClick={() => handleAnalyze()}>
             Try Again
@@ -385,10 +385,10 @@ export default function ProductAnalyzer({ source }: { source?: string }) {
     }
 
     return (
-      <Card className="text-center">
-        <h3 className="card-title mb-2">No analysis yet</h3>
-        <p className="helper-text">Describe a product or upload a photo, then we will estimate landed cost and risk.</p>
-      </Card>
+        <Card className="text-center">
+          <h3 className="card-title mb-2">Ready to Analyze</h3>
+          <p className="helper-text">Describe your product, paste an Alibaba link, or upload a photo. We'll estimate landed cost, duties, compliance requirements, and risks.</p>
+        </Card>
     );
   };
 
@@ -401,31 +401,36 @@ export default function ProductAnalyzer({ source }: { source?: string }) {
       <div className={`${CONTAINER_MAX_WIDTH} mx-auto ${CONTAINER_PADDING}`}>
         <motion.div key="form" className="space-y-12">
           <div className="text-center">
-            <h2 className="section-title">Start Your Analysis with Copilot</h2>
+            <h2 className="section-title">Analyze Your Product Sourcing Opportunity</h2>
             <p className="section-description">
-              New to importing? Let our AI assistant guide you. We’ll ask 3-5 quick questions to generate a comprehensive landed cost and risk report for your product idea.
+              Get instant landed cost estimates, compliance requirements, and risk analysis. Our AI assistant will guide you through a few quick questions to generate a comprehensive report.
             </p>
           </div>
 
-          <Card className="text-center space-y-4 p-8 bg-gradient-to-br from-primary/5 to-primary/10 border-primary/20">
-            <h3 className="text-xl font-semibold">Let's Analyze Your Product Idea</h3>
-            <p className="text-sm text-muted-foreground">
-              Our Copilot makes it easy to understand your sourcing risks and opportunities.
-            </p>
+          <Card className="text-center space-y-5 p-8 sm:p-10 bg-gradient-to-br from-primary/5 to-primary/10 border-primary/20">
+            <div className="space-y-3">
+              <h3 className="text-2xl font-bold">Start with NexSupply Copilot</h3>
+              <p className="text-base text-muted-foreground max-w-xl mx-auto">
+                New to importing? Not sure what to consider? I'll ask 3-5 quick questions about your product, then generate a detailed landed cost and risk report.
+              </p>
+            </div>
             <Link href="/chat">
-              <Button size="lg" className="text-base px-8 py-6">
+              <Button size="lg" className="text-base px-8 py-6 w-full sm:w-auto">
                 <MessageSquare className="h-5 w-5 mr-2" />
-                Start with a Conversation
+                Start Analysis with Copilot
               </Button>
             </Link>
           </Card>
 
           <div className="text-center space-y-3">
+            <p className="text-sm text-muted-foreground">
+              Already know exactly what you're looking for?
+            </p>
             <button
               onClick={() => setShowQuickInput(!showQuickInput)}
-              className="text-xs text-muted-foreground hover:text-primary transition-colors"
+              className="text-sm text-muted-foreground hover:text-primary transition-colors underline underline-offset-2"
             >
-              I already know exactly what I want (quick input)
+              Use quick input instead
             </button>
             <AnimatePresence>
               {showQuickInput && (

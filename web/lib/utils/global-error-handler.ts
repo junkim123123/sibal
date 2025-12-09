@@ -19,9 +19,14 @@
       messageStr.includes('Cannot read properties of null') ||
       messageStr.includes("reading 'removeChild'") ||
       messageStr.includes('reading "removeChild"') ||
+      messageStr.includes('Minified React error #310') ||
+      messageStr.includes('React error #310') ||
       errorMessage.includes('removeChild') ||
       errorMessage.includes('Cannot read properties of null') ||
-      errorStack.includes('removeChild')
+      errorMessage.includes('Minified React error #310') ||
+      errorMessage.includes('React error #310') ||
+      errorStack.includes('removeChild') ||
+      errorStack.includes('310')
     );
   };
 

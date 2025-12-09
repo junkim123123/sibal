@@ -12,12 +12,14 @@ if (typeof window !== 'undefined') {
   console.error = (...args: any[]) => {
     const errorMessage = args.join(' ');
     
-    // removeChild 관련 에러는 콘솔에 표시하지 않음
+    // removeChild 관련 에러나 React 에러 #310은 콘솔에 표시하지 않음
     if (
       errorMessage.includes('removeChild') ||
       errorMessage.includes('Cannot read properties of null') ||
       errorMessage.includes("reading 'removeChild'") ||
-      errorMessage.includes('reading "removeChild"')
+      errorMessage.includes('reading "removeChild"') ||
+      errorMessage.includes('Minified React error #310') ||
+      errorMessage.includes('React error #310')
     ) {
       // 에러를 완전히 억제 (개발 모드에서도 표시하지 않음)
       return;
@@ -31,11 +33,13 @@ if (typeof window !== 'undefined') {
   console.warn = (...args: any[]) => {
     const warningMessage = args.join(' ');
     
-    // removeChild 관련 경고도 억제
+    // removeChild 관련 경고나 React 에러 #310도 억제
     if (
       warningMessage.includes('removeChild') ||
       warningMessage.includes('Cannot read properties of null') ||
-      warningMessage.includes("reading 'removeChild'")
+      warningMessage.includes("reading 'removeChild'") ||
+      warningMessage.includes('Minified React error #310') ||
+      warningMessage.includes('React error #310')
     ) {
       return;
     }

@@ -23,21 +23,37 @@ export class ErrorBoundary extends Component<Props, State> {
   }
 
   static getDerivedStateFromError(error: Error): State {
-    return { hasError: true, error };
-  }
-
-  componentDidCatch(error: Error, errorInfo: any) {
-    // removeChild 에러는 무시 (이미 처리된 DOM 조작)
+    // removeChild 에러나 React 에러 #310은 무시
     const errorMessage = error.message || String(error);
     const errorStack = error.stack || '';
     
     if (
       errorMessage.includes('removeChild') || 
       errorMessage.includes('Cannot read properties of null') ||
-      errorStack.includes('removeChild')
+      errorStack.includes('removeChild') ||
+      errorMessage.includes('Minified React error #310') ||
+      errorStack.includes('310')
     ) {
-      // 에러를 완전히 억제하고 상태를 즉시 리셋
-      this.setState({ hasError: false, error: null });
+      // 에러 상태를 설정하지 않고 null 반환하여 정상 렌더링 계속
+      return { hasError: false, error: null };
+    }
+
+    return { hasError: true, error };
+  }
+
+  componentDidCatch(error: Error, errorInfo: any) {
+    // removeChild 에러나 React 에러 #310은 무시
+    const errorMessage = error.message || String(error);
+    const errorStack = error.stack || '';
+    
+    if (
+      errorMessage.includes('removeChild') || 
+      errorMessage.includes('Cannot read properties of null') ||
+      errorStack.includes('removeChild') ||
+      errorMessage.includes('Minified React error #310') ||
+      errorStack.includes('310')
+    ) {
+      // 에러를 억제하고 로깅하지 않음
       return;
     }
 

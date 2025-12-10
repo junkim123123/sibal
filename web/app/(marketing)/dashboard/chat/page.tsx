@@ -10,8 +10,9 @@ import { useState, useEffect, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { ManagerChat } from '@/components/ManagerChat';
 import { createClient } from '@/lib/supabase/client';
-import { Loader2, ArrowLeft, MessageSquare } from 'lucide-react';
+import { Loader2, ArrowLeft, MessageSquare, FileText, Package } from 'lucide-react';
 import Link from 'next/link';
+import Image from 'next/image';
 
 function ClientChatContent() {
   const searchParams = useSearchParams();
@@ -23,10 +24,12 @@ function ClientChatContent() {
   const [userId, setUserId] = useState<string | null>(null);
   const [projectName, setProjectName] = useState<string>('');
   const [project, setProject] = useState<any>(null);
+  const [projectSpecs, setProjectSpecs] = useState<{ qty?: number; targetPrice?: number; port?: string; image?: string } | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [chatSessions, setChatSessions] = useState<any[]>([]);
   const [selectedSession, setSelectedSession] = useState<string | null>(sessionIdParam);
-  const [todoList, setTodoList] = useState<Array<{ id: string; task: string; status: 'pending' | 'completed'; requestedBy: string; requestedAt: string }>>([]);
+  const [milestones, setMilestones] = useState<any[]>([]);
+  const [currentMilestoneIndex, setCurrentMilestoneIndex] = useState<number>(0);
 
   useEffect(() => {
     const init = async () => {
@@ -127,37 +130,10 @@ function ClientChatContent() {
     }
   };
 
-  // To-Do 리스트 로드 (매니저가 요청한 작업들)
-  const loadTodoList = async () => {
-    if (!projectId) return;
-    
-    try {
-      const supabase = createClient();
-      
-      // 프로젝트의 마일스톤에서 pending 상태인 작업들 가져오기
-      const { data: projectData } = await supabase
-        .from('projects')
-        .select('milestones')
-        .eq('id', projectId)
-        .single();
-
-      if (projectData?.milestones) {
-        const milestones = Array.isArray(projectData.milestones) ? projectData.milestones : [];
-        const todos = milestones
-          .filter((m: any) => m.status === 'pending' || m.status === 'in_progress')
-          .map((m: any, index: number) => ({
-            id: `milestone-${index}`,
-            task: m.title || m.task || 'Complete milestone',
-            status: m.status === 'completed' ? 'completed' as const : 'pending' as const,
-            requestedBy: 'Process Agent',
-            requestedAt: m.date || new Date().toISOString(),
-          }));
-        
-        setTodoList(todos);
-      }
-    } catch (error) {
-      console.error('[ClientChatPage] Error loading todo list:', error);
-    }
+  // 채팅 세션 클릭 핸들러
+  const handleSessionClick = (session: any) => {
+    setSelectedSession(session.id);
+    router.push(`/dashboard/chat?project_id=${session.project_id}&session_id=${session.id}`);
   };
 
   // 프로젝트의 manager_id가 변경되었을 때 세션 업데이트
@@ -186,7 +162,7 @@ function ClientChatContent() {
       // 프로젝트 정보 가져오기 (클라이언트에서는 createClient 사용)
       const { data: project, error: projectError } = await supabase
         .from('projects')
-        .select('name, manager_id, user_id, status')
+        .select('name, manager_id, user_id, status, milestones, current_milestone_index, analysis_data')
         .eq('id', projectId)
         .single();
 
@@ -205,8 +181,31 @@ function ClientChatContent() {
       setProjectName(project.name);
       setProject(project); // 프로젝트 정보 저장 (매니저 배당 상태 확인용)
       
-      // To-Do 리스트 로드
-      await loadTodoList();
+      // 마일스톤 정보 로드
+      if (project.milestones && Array.isArray(project.milestones)) {
+        setMilestones(project.milestones);
+        setCurrentMilestoneIndex(project.current_milestone_index || 0);
+      }
+      
+      // 프로젝트 스펙 정보 추출 (analysis_data에서)
+      if (project.analysis_data) {
+        try {
+          const analysisData = typeof project.analysis_data === 'string' 
+            ? JSON.parse(project.analysis_data) 
+            : project.analysis_data;
+          
+          const answers = analysisData.answers || analysisData.userContext || {};
+          const specs = {
+            qty: answers.volume || answers.quantity,
+            targetPrice: answers.target_price || answers.price,
+            port: answers.source_country || answers.origin,
+            // image는 나중에 추가 가능
+          };
+          setProjectSpecs(specs);
+        } catch (e) {
+          console.error('[ClientChatPage] Failed to parse analysis_data:', e);
+        }
+      }
       
       // sessionId가 설정되면 selectedSession도 업데이트
       if (sessionId) {
@@ -219,6 +218,11 @@ function ClientChatContent() {
         const finalSessionId = await loadOrCreateSession(projectId, user.id, project?.manager_id);
         if (finalSessionId) {
           setSessionId(finalSessionId);
+          
+          // 매니저가 없으면 AI 비서 환영 메시지 전송
+          if (!project?.manager_id) {
+            await sendWelcomeMessage(finalSessionId, user.id);
+          }
         } else {
           console.error('[ClientChatPage] Failed to create or load session, but continuing anyway');
           // 세션 생성 실패해도 계속 진행 (나중에 재시도 가능)
@@ -363,6 +367,42 @@ function ClientChatContent() {
     }
   };
 
+  // AI 비서 환영 메시지 전송
+  const sendWelcomeMessage = async (sessionId: string, userId: string) => {
+    try {
+      // 이미 환영 메시지가 있는지 확인
+      const supabase = createClient();
+      const { data: existingMessages } = await supabase
+        .from('chat_messages')
+        .select('id')
+        .eq('session_id', sessionId)
+        .eq('role', 'system')
+        .limit(1);
+
+      if (existingMessages && existingMessages.length > 0) {
+        // 이미 환영 메시지가 있으면 스킵
+        return;
+      }
+
+      // API를 통해 시스템 메시지 전송
+      const response = await fetch('/api/chat-messages', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          session_id: sessionId,
+          role: 'system',
+          content: "안녕하세요! 프로젝트 접수가 완료되었습니다. 담당 매니저가 배정되기 전까지, 혹시 **제품 사양서(Spec Sheet)**나 **참고 이미지**가 있다면 여기에 미리 올려주시겠어요? 파일을 업로드하시면 매니저가 더 빠르게 견적을 준비할 수 있습니다. 📎",
+        }),
+      });
+
+      if (!response.ok) {
+        console.error('[ClientChatPage] Failed to send welcome message');
+      }
+    } catch (error) {
+      console.error('[ClientChatPage] Error sending welcome message:', error);
+    }
+  };
+
   if (isLoading) {
     return (
       <div className="min-h-screen bg-white flex items-center justify-center">
@@ -502,10 +542,11 @@ function ClientChatContent() {
               </p>
             ) : (
               chatSessions.map((session) => (
-                <Link
+                <button
                   key={session.id}
-                  href={`/dashboard/chat?project_id=${session.project_id}&session_id=${session.id}`}
-                  className={`block p-3 rounded-lg border transition-all ${
+                  type="button"
+                  onClick={() => handleSessionClick(session)}
+                  className={`w-full text-left p-3 rounded-lg border transition-all ${
                     selectedSession === session.id
                       ? 'border-blue-500 bg-blue-50'
                       : 'border-gray-200 hover:border-gray-300 hover:bg-white bg-white'
@@ -524,7 +565,7 @@ function ClientChatContent() {
                       {session.lastMessage}
                     </p>
                   )}
-                </Link>
+                </button>
               ))
             )}
           </div>
@@ -534,8 +575,44 @@ function ClientChatContent() {
         <div className="col-span-12 lg:col-span-6 bg-white flex flex-col overflow-hidden">
           {/* Chat Header */}
           <div className="p-4 border-b border-gray-200 flex-shrink-0">
-            <h1 className="text-xl font-bold text-gray-900">{projectName}</h1>
-            <p className="text-xs text-gray-500 mt-1">
+            <h1 className="text-xl font-bold text-gray-900 mb-2">{projectName}</h1>
+            
+            {/* Project Summary Bar */}
+            {projectSpecs && (projectSpecs.qty || projectSpecs.targetPrice || projectSpecs.port) && (
+              <div className="flex items-center gap-4 px-3 py-2 bg-gray-50 rounded-lg border border-gray-200 mb-2">
+                {projectSpecs.image && (
+                  <div className="w-10 h-10 rounded bg-gray-200 flex-shrink-0 overflow-hidden">
+                    <Image
+                      src={projectSpecs.image}
+                      alt={projectName}
+                      width={40}
+                      height={40}
+                      className="object-cover"
+                    />
+                  </div>
+                )}
+                <div className="flex items-center gap-4 text-xs text-gray-600 flex-wrap">
+                  {projectSpecs.qty && (
+                    <span className="font-medium">
+                      <Package className="w-3 h-3 inline mr-1" />
+                      Qty: {projectSpecs.qty.toLocaleString()}
+                    </span>
+                  )}
+                  {projectSpecs.targetPrice && (
+                    <span className="font-medium">
+                      Target: ${projectSpecs.targetPrice}
+                    </span>
+                  )}
+                  {projectSpecs.port && (
+                    <span className="font-medium">
+                      Port: {projectSpecs.port}
+                    </span>
+                  )}
+                </div>
+              </div>
+            )}
+            
+            <p className="text-xs text-gray-500">
               {project?.manager_id 
                 ? `Chat with ${chatSessions.find(s => s.project_id === projectId)?.managerName || 'your manager'}` 
                 : 'Manager will be assigned within 24 hours. You can send messages now.'
@@ -568,54 +645,105 @@ function ClientChatContent() {
         {/* Right: Project Context / Action Items (col-span-3) */}
         <div className="col-span-12 lg:col-span-3 bg-gray-50 border-l border-gray-200 overflow-y-auto">
           <div className="p-4">
-            {todoList.length > 0 ? (
+            {milestones.length > 0 ? (
               <>
-                <h2 className="text-sm font-semibold text-gray-900 mb-4">Action Items</h2>
-                {/* Vertical Timeline Style */}
+                {/* Progress Bar */}
+                <div className="mb-6">
+                  <div className="flex items-center justify-between mb-2">
+                    <h2 className="text-sm font-semibold text-gray-900">Project Progress</h2>
+                    <span className="text-xs font-medium text-gray-600">
+                      {Math.round((milestones.filter((m: any) => m.status === 'completed').length / milestones.length) * 100)}%
+                    </span>
+                  </div>
+                  <div className="w-full h-2 bg-gray-200 rounded-full overflow-hidden">
+                    <div 
+                      className="h-full bg-[#008080] transition-all duration-300"
+                      style={{ 
+                        width: `${(milestones.filter((m: any) => m.status === 'completed').length / milestones.length) * 100}%` 
+                      }}
+                    />
+                  </div>
+                </div>
+
+                {/* Timeline */}
                 <div className="relative">
                   {/* Timeline Line */}
-                  <div className="absolute left-3 top-0 bottom-0 w-0.5 bg-gray-200"></div>
+                  <div className="absolute left-4 top-0 bottom-0 w-0.5 bg-gray-200"></div>
                   
-                  <div className="space-y-4">
-                    {todoList.map((todo, index) => (
-                      <div key={todo.id} className="relative flex items-start gap-3">
-                        {/* Timeline Dot */}
-                        <div className={`relative z-10 flex items-center justify-center w-6 h-6 rounded-full border-2 ${
-                          todo.status === 'completed'
-                            ? 'bg-emerald-500 border-emerald-500'
-                            : 'bg-white border-gray-300'
-                        }`}>
-                          {todo.status === 'completed' ? (
-                            <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
-                            </svg>
-                          ) : (
-                            <div className="w-2 h-2 rounded-full bg-gray-400"></div>
-                          )}
-                        </div>
-                        
-                        {/* Content */}
-                        <div className="flex-1 min-w-0 pt-0.5">
-                          <p className={`text-sm ${
-                            todo.status === 'completed' 
-                              ? 'text-gray-500 line-through' 
-                              : 'text-gray-900 font-medium'
+                  <div className="space-y-5">
+                    {milestones.map((milestone: any, index: number) => {
+                      const isCompleted = milestone.status === 'completed';
+                      const isInProgress = milestone.status === 'in_progress';
+                      const isCurrent = index === currentMilestoneIndex && !isCompleted;
+                      
+                      return (
+                        <div key={milestone.index || index} className="relative flex items-start gap-4">
+                          {/* Timeline Dot */}
+                          <div className={`relative z-10 flex items-center justify-center w-8 h-8 rounded-full border-2 transition-all ${
+                            isCompleted
+                              ? 'bg-emerald-500 border-emerald-500'
+                              : isInProgress || isCurrent
+                              ? 'bg-[#008080] border-[#008080] animate-pulse'
+                              : 'bg-white border-gray-300'
                           }`}>
-                            {todo.task}
-                          </p>
-                          <p className="text-xs text-gray-500 mt-1">
-                            {todo.requestedBy}
-                          </p>
+                            {isCompleted ? (
+                              <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                              </svg>
+                            ) : (
+                              <div className={`w-3 h-3 rounded-full ${
+                                isInProgress || isCurrent ? 'bg-white' : 'bg-gray-400'
+                              }`} />
+                            )}
+                          </div>
+                          
+                          {/* Content */}
+                          <div className="flex-1 min-w-0 pt-1">
+                            <p className={`text-sm font-medium ${
+                              isCompleted 
+                                ? 'text-gray-500 line-through' 
+                                : isInProgress || isCurrent
+                                ? 'text-[#008080] font-semibold'
+                                : 'text-gray-900'
+                            }`}>
+                              {milestone.title}
+                            </p>
+                            {milestone.date && (
+                              <p className="text-xs text-gray-500 mt-1">
+                                {new Date(milestone.date).toLocaleDateString('en-US', { 
+                                  month: 'short', 
+                                  day: 'numeric',
+                                  year: 'numeric'
+                                })}
+                              </p>
+                            )}
+                            {!milestone.date && (isInProgress || isCurrent) && (
+                              <p className="text-xs text-[#008080] mt-1 font-medium">
+                                In Progress
+                              </p>
+                            )}
+                            {!milestone.date && !isCompleted && !isInProgress && !isCurrent && (
+                              <p className="text-xs text-gray-400 mt-1">
+                                Est: {new Date(Date.now() + (index - currentMilestoneIndex) * 7 * 24 * 60 * 60 * 1000).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                              </p>
+                            )}
+                            {milestone.title === 'Samples Ordered' && isCompleted && (
+                              <button className="mt-2 text-xs text-[#008080] hover:underline flex items-center gap-1">
+                                <FileText className="w-3 h-3" />
+                                View Invoice
+                              </button>
+                            )}
+                          </div>
                         </div>
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 </div>
               </>
             ) : (
               <div className="text-center py-8">
-                <p className="text-sm text-gray-500">No action items</p>
-                <p className="text-xs text-gray-400 mt-1">Action items will appear here</p>
+                <p className="text-sm text-gray-500">No milestones</p>
+                <p className="text-xs text-gray-400 mt-1">Project milestones will appear here</p>
               </div>
             )}
           </div>

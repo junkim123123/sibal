@@ -89,7 +89,7 @@ export function MainHeader() {
 
           {/* Center: Navigation Links (Based on Page Type) */}
           {!isLoading && (
-            <nav className="hidden md:flex md:items-center md:gap-8 md:absolute md:left-1/2 md:-translate-x-1/2">
+            <nav className="hidden md:flex md:items-center md:gap-8 md:absolute md:left-1/2 md:-translate-x-1/2 z-10">
               {currentNavItems.map((item) => (
                 <Link
                   key={item.href}
@@ -99,10 +99,6 @@ export function MainHeader() {
                       ? 'text-black after:absolute after:bottom-0 after:left-0 after:right-0 after:h-0.5 after:bg-black'
                       : 'text-zinc-700 hover:text-black'
                   }`}
-                  onClick={(e) => {
-                    // 클릭 이벤트가 정상적으로 작동하도록 보장
-                    e.stopPropagation();
-                  }}
                 >
                   {item.label}
                 </Link>

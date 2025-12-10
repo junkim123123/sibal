@@ -428,7 +428,11 @@ def render_header_with_assumptions(data: Dict, query: str) -> None:
     nav_left, nav_right = st.columns([3, 1])
     
     with nav_left:
-        if st.button(t("btn_back"), type="secondary"):
+        # 🔴 [수정] st.button을 st.form_submit_button으로 변경하여 두 번 클릭 문제 해결
+        with st.form(key="back_navigation_form"):
+            back_clicked = st.form_submit_button(t("btn_back"), type="secondary", use_container_width=False)
+        
+        if back_clicked:
             state = get_sourcing_state()
             state.reset()
             st.rerun()
@@ -1216,25 +1220,34 @@ def render_next_actions_and_cta(data: Dict) -> None:
         # Pre-fill message with analysis summary
         default_message = f"Product: {product_name}\nVolume: {quantity_basis:,} units\nLanded cost: ${landed_cost_data.get('cost_per_unit_usd', 0):.2f}/unit\n\nPlease help me get real quotes and factory verification."
         
-        # Email input form
-        user_email = st.text_input(
-            "Your Email",
-            placeholder="your@email.com",
-            key="consultation_email",
-            label_visibility="collapsed"
-        )
+        # 🔴 [수정] st.form으로 감싸서 두 번 클릭 문제 해결
+        with st.form(key="consultation_form", clear_on_submit=False):
+            # Email input form
+            user_email = st.text_input(
+                "Your Email",
+                placeholder="your@email.com",
+                key="consultation_email",
+                label_visibility="collapsed"
+            )
+            
+            # Optional message (pre-filled)
+            user_message = st.text_area(
+                "Message (optional)",
+                value=default_message,
+                height=100,
+                key="consultation_message",
+                label_visibility="collapsed"
+            )
+            
+            # 🔴 [수정] st.button 대신 st.form_submit_button 사용
+            submit_clicked = st.form_submit_button(
+                "🔒 Secure Real Quotes & Factory Visits – Start Now", 
+                type="primary", 
+                use_container_width=True
+            )
         
-        # Optional message (pre-filled)
-        user_message = st.text_area(
-            "Message (optional)",
-            value=default_message,
-            height=100,
-            key="consultation_message",
-            label_visibility="collapsed"
-        )
-        
-        # Send button (MAIN ACTION - only real CTA) - STRONGER LANGUAGE
-        if st.button("🔒 Secure Real Quotes & Factory Visits – Start Now", type="primary", use_container_width=True):
+        # 🔴 [수정] 폼 바깥에서 로직 처리 (폼 제출 후 실행)
+        if submit_clicked:
             # Validate inputs using centralized validation
             from utils.validation import validate_consultation_input
             
@@ -1328,7 +1341,11 @@ def render_results_page():
         
         _, center, _ = st.columns([1, 1, 1])
         with center:
-            if st.button(t("btn_back"), type="primary", use_container_width=True):
+            # 🔴 [수정] st.button을 st.form_submit_button으로 변경하여 두 번 클릭 문제 해결
+            with st.form(key="back_navigation_form_no_results"):
+                back_clicked = st.form_submit_button(t("btn_back"), type="primary", use_container_width=True)
+            
+            if back_clicked:
                 state.reset()
                 st.rerun()
         return

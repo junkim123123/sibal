@@ -20,7 +20,11 @@ with top_right:
 # Navigation
 col1, col2 = st.columns([1, 1])
 with col1:
-    if st.button("← Back to Home", use_container_width=True):
+    # 🔴 [수정] st.button을 st.form_submit_button으로 변경하여 두 번 클릭 문제 해결
+    with st.form(key="back_to_home_form"):
+        back_clicked = st.form_submit_button("← Back to Home", use_container_width=True)
+    
+    if back_clicked:
         st.session_state.page = "home"
         st.rerun()
 

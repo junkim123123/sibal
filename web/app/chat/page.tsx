@@ -195,15 +195,16 @@ export default function ChatPage() {
   // 프로젝트 생성 (첫 번째 질문 답변 후)
   useEffect(() => {
     const createProject = async () => {
-      if (!isAuthenticated || !selectedOptions.product_info || projectId) return;
+      if (!isAuthenticated || !selectedOptions?.product_info || projectId) return;
       
       try {
+        const productInfo = selectedOptions.product_info || '';
         const response = await fetch('/api/projects', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ 
-            name: selectedOptions.product_info.split('-')[0]?.trim() || 
-                  selectedOptions.product_info.split(',')[0]?.trim() || 
+            name: productInfo.split('-')[0]?.trim() || 
+                  productInfo.split(',')[0]?.trim() || 
                   'New Analysis Project'
           }),
         });
@@ -329,11 +330,30 @@ export default function ChatPage() {
         setTextInput('');
         setShowInput(false);
         
+        // 사용자가 선택한 시장 정보 가져오기 (안전한 접근)
+        const selectedMarket = (selectedOptions?.market || 'North America (US / Canada)') as string;
+        const productInfo = (selectedOptions?.product_info?.toLowerCase() || '') as string;
+        
+        // 니치 제품인지 판단 (한국 특산품, 지역 특화 제품 등)
+        const isNicheProduct = (productInfo && (
+          productInfo.includes('한라산') || 
+          productInfo.includes('hallasan') ||
+          (productInfo.includes('premium') && selectedMarket && (selectedMarket.includes('Southeast Asia') || selectedMarket.includes('East Asia')))
+        ));
+        
+        // 동적 메시지 생성
+        let responseMessage = "No worries. ";
+        if (isNicheProduct && selectedMarket && !selectedMarket.includes('North America')) {
+          responseMessage += `Data for this specific niche in ${selectedMarket} is limited. I will infer pricing based on similar premium products in the global market.`;
+        } else {
+          responseMessage += `I will estimate the market average based on ${selectedMarket} sales data.`;
+        }
+        
         // AI 안심 메시지 추가
         setMessages(prev => [...prev, {
           id: `ai-response-${Date.now()}`,
           type: 'system',
-          content: "No worries. I will estimate the market average based on North American sales data.",
+          content: responseMessage,
           timestamp: Date.now(),
         }]);
         
@@ -443,11 +463,30 @@ export default function ChatPage() {
     
     const currentStep = SOURCING_STEPS.find(s => s.id === notSureResponse);
     if (currentStep) {
+      // 사용자가 선택한 시장 정보 가져오기 (안전한 접근)
+      const selectedMarket = (selectedOptions?.market || 'North America (US / Canada)') as string;
+      const productInfo = (selectedOptions?.product_info?.toLowerCase() || '') as string;
+      
+      // 니치 제품인지 판단
+      const isNicheProduct = (productInfo && (
+        productInfo.includes('한라산') || 
+        productInfo.includes('hallasan') ||
+        (productInfo.includes('premium') && selectedMarket && (selectedMarket.includes('Southeast Asia') || selectedMarket.includes('East Asia')))
+      ));
+      
+      // 동적 메시지 생성
+      let responseMessage = "No worries. ";
+      if (isNicheProduct && selectedMarket && !selectedMarket.includes('North America')) {
+        responseMessage += `Data for this specific niche in ${selectedMarket} is limited. I will infer pricing based on similar premium products in the global market.`;
+      } else {
+        responseMessage += `I will estimate the market average based on ${selectedMarket} sales data.`;
+      }
+      
       // AI 안심 메시지 추가
       setMessages(prev => [...prev, {
         id: `ai-response-${Date.now()}`,
         type: 'system',
-        content: "No worries. I will estimate the market average based on North American sales data.",
+        content: responseMessage,
         timestamp: Date.now(),
       }]);
       
@@ -482,11 +521,30 @@ export default function ChatPage() {
       setNotSureResponse(currentStep.id);
       setShowInput(false);
       
+      // 사용자가 선택한 시장 정보 가져오기 (안전한 접근)
+      const selectedMarket = (selectedOptions?.market || 'North America (US / Canada)') as string;
+      const productInfo = (selectedOptions?.product_info?.toLowerCase() || '') as string;
+      
+      // 니치 제품인지 판단
+      const isNicheProduct = (productInfo && (
+        productInfo.includes('한라산') || 
+        productInfo.includes('hallasan') ||
+        (productInfo.includes('premium') && selectedMarket && (selectedMarket.includes('Southeast Asia') || selectedMarket.includes('East Asia')))
+      ));
+      
+      // 동적 메시지 생성
+      let responseMessage = "No worries. ";
+      if (isNicheProduct && selectedMarket && !selectedMarket.includes('North America')) {
+        responseMessage += `Data for this specific niche in ${selectedMarket} is limited. I will infer pricing based on similar premium products in the global market.`;
+      } else {
+        responseMessage += `I will estimate the market average based on ${selectedMarket} sales data.`;
+      }
+      
       // AI 안심 메시지 추가
       setMessages(prev => [...prev, {
         id: `ai-response-${Date.now()}`,
         type: 'system',
-        content: "No worries. I will estimate the market average based on North American sales data.",
+        content: responseMessage,
         timestamp: Date.now(),
       }]);
       

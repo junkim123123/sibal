@@ -206,7 +206,7 @@ function LoginPageContent() {
                 type="button"
                 onClick={() => handleOAuthSignIn('google')}
                 disabled={isLoading}
-                className="flex items-center justify-center gap-2 px-4 py-3 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-gray-50 hover:bg-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                className="flex items-center justify-center gap-2 px-4 py-3 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <svg className="h-5 w-5" viewBox="0 0 24 24">
                   <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
@@ -222,7 +222,7 @@ function LoginPageContent() {
                 type="button"
                 onClick={() => handleOAuthSignIn('kakao')}
                 disabled={isLoading}
-                className="flex items-center justify-center gap-2 px-4 py-3 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-gray-50 hover:bg-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                className="flex items-center justify-center gap-2 px-4 py-3 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <svg
                   className="h-5 w-5"
@@ -249,7 +249,7 @@ function LoginPageContent() {
             </div>
 
             {/* Form */}
-            <form onSubmit={handleSubmit} className="space-y-5">
+            <form onSubmit={handleSubmit} className="space-y-4">
               {/* Name Input (Sign Up only) */}
               {isSignUp && (
                 <div>
@@ -267,7 +267,7 @@ function LoginPageContent() {
                     required
                     value={name}
                     onChange={(e) => setName(e.target.value)}
-                    className="w-full px-4 py-3 border border-neutral-300 rounded-lg text-neutral-900 placeholder:text-neutral-400 bg-white focus:outline-none focus:ring-2 focus:ring-neutral-900 focus:border-transparent transition-all text-sm"
+                    className="w-full px-4 py-3 border border-neutral-300 rounded-lg text-neutral-900 placeholder:text-neutral-400 bg-white focus:outline-none focus:ring-2 focus:ring-[#008080] focus:border-[#008080] transition-all text-sm"
                     placeholder="John Doe"
                     disabled={isLoading}
                   />
@@ -290,7 +290,7 @@ function LoginPageContent() {
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="w-full px-4 py-3 border border-neutral-300 rounded-lg text-neutral-900 placeholder:text-neutral-400 bg-white focus:outline-none focus:ring-2 focus:ring-neutral-900 focus:border-transparent transition-all text-sm"
+                  className="w-full px-4 py-3 border border-neutral-300 rounded-lg text-neutral-900 placeholder:text-neutral-400 bg-white focus:outline-none focus:ring-2 focus:ring-[#008080] focus:border-[#008080] transition-all text-sm"
                   placeholder="you@example.com"
                   disabled={isLoading}
                 />
@@ -312,7 +312,7 @@ function LoginPageContent() {
                     autoComplete="organization"
                     value={company}
                     onChange={(e) => setCompany(e.target.value)}
-                    className="w-full px-4 py-3 border border-neutral-300 rounded-lg text-neutral-900 placeholder:text-neutral-400 bg-white focus:outline-none focus:ring-2 focus:ring-neutral-900 focus:border-transparent transition-all text-sm"
+                    className="w-full px-4 py-3 border border-neutral-300 rounded-lg text-neutral-900 placeholder:text-neutral-400 bg-white focus:outline-none focus:ring-2 focus:ring-[#008080] focus:border-[#008080] transition-all text-sm"
                     placeholder="ex. Amazon Store, Brand Name"
                     disabled={isLoading}
                   />
@@ -336,7 +336,7 @@ function LoginPageContent() {
                     required
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    className="w-full px-4 py-3 pr-12 border border-neutral-300 rounded-lg text-neutral-900 placeholder:text-neutral-400 bg-white focus:outline-none focus:ring-2 focus:ring-neutral-900 focus:border-transparent transition-all text-sm"
+                    className="w-full px-4 py-3 pr-12 border border-neutral-300 rounded-lg text-neutral-900 placeholder:text-neutral-400 bg-white focus:outline-none focus:ring-2 focus:ring-[#008080] focus:border-[#008080] transition-all text-sm"
                     placeholder="••••••••"
                     disabled={isLoading}
                     minLength={6}
@@ -366,7 +366,7 @@ function LoginPageContent() {
                 type="submit"
                 variant="primary"
                 size="lg"
-                className="w-full bg-[#008080] hover:bg-teal-700 text-white"
+                className="w-full bg-[#008080] hover:bg-teal-700 text-white font-bold"
                 disabled={isLoading}
               >
                 {isLoading ? 'Processing...' : isSignUp ? 'Sign Up' : 'Sign In'}

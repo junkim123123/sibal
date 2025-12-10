@@ -1869,8 +1869,53 @@ function ResultsContent() {
     return null;
   }
 
-  if (!aiAnalysis) return null;
+  // Safety check: aiAnalysis가 없거나 필수 데이터가 없으면 에러 UI 표시
+  if (!aiAnalysis || !aiAnalysis.ai_analysis) {
+    return (
+      <div className="min-h-screen bg-[#f9fafb] flex items-center justify-center p-4">
+        <Card className="text-center max-w-md bg-white border border-gray-200 p-8 shadow-sm">
+          <div className="mb-6">
+            <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <XCircle className="w-6 h-6 text-red-600" />
+            </div>
+            <h2 className="text-2xl font-bold text-neutral-900 mb-2">
+              Analysis Incomplete
+            </h2>
+            <p className="text-sm text-neutral-600 mb-4">
+              The analysis data could not be retrieved. This may be due to a timeout or incomplete API response.
+            </p>
+          </div>
+          
+          <div className="space-y-3">
+            <button
+              onClick={() => {
+                // 현재 URL에서 project_id가 있으면 재시도
+                if (projectId) {
+                  window.location.reload();
+                } else {
+                  // project_id가 없으면 chat으로 돌아가기
+                  window.location.href = '/chat';
+                }
+              }}
+              className="w-full px-6 py-3 bg-[#008080] text-white rounded-lg hover:bg-teal-700 transition-colors font-medium"
+            >
+              {projectId ? 'Retry Analysis' : 'Start New Analysis'}
+            </button>
+            {projectId && (
+              <Link 
+                href="/chat"
+                className="block w-full px-6 py-3 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors text-center font-medium"
+              >
+                Start New Analysis
+              </Link>
+            )}
+          </div>
+        </Card>
+      </div>
+    );
+  }
   
+  // 안전한 구조 분해 할당 (optional chaining 사용)
   const { 
     financials, 
     cost_breakdown, 
@@ -1881,23 +1926,26 @@ function ResultsContent() {
     market_benchmark,
     strategic_advice,
   } = aiAnalysis;
-  // Extract product name from new streamlined field or legacy fields
-  const productName = answers.product_info?.split('-')[0]?.trim() || 
-                      answers.product_info?.split(',')[0]?.trim() ||
-                      answers.product_desc?.split(',')[0] || 
-                      answers.project_name || 
+  // Extract product name from new streamlined field or legacy fields (안전한 접근)
+  const productName = (answers?.product_info?.split('-')[0]?.trim()) || 
+                      (answers?.product_info?.split(',')[0]?.trim()) ||
+                      (answers?.product_desc?.split(',')[0]) || 
+                      (answers?.project_name) || 
                       'Product Analysis';
+  
+  // 안전한 재무 데이터 접근
   const totalLandedCost = financials?.estimated_landed_cost || 0;
+  const marginPct = financials?.estimated_margin_pct || 0;
   const margin = {
-    min: Math.max(0, Math.floor((financials?.estimated_margin_pct || 0) - 5)),
-    max: Math.ceil((financials?.estimated_margin_pct || 0) + 5),
+    min: Math.max(0, Math.floor(marginPct - 5)),
+    max: Math.ceil(marginPct + 5),
   };
 
-  // Check for critical risk
+  // Check for critical risk (안전한 접근)
   const executiveSummary = aiAnalysis?.executive_summary || '';
-  const strategicAdvice = aiAnalysis?.strategic_advice?.key_action || '';
+  const strategicAdvice = aiAnalysis?.strategic_advice?.key_action || strategic_advice?.key_action || '';
   const osintRiskScore = aiAnalysis?.osint_risk_score || 0;
-  const complianceRisk = aiAnalysis?.risks?.compliance?.level || '';
+  const complianceRisk = aiAnalysis?.risks?.compliance?.level || risks?.compliance?.level || '';
   
   const hasCriticalRisk = 
     executiveSummary.toLowerCase().includes('immediate halt') ||
@@ -1971,16 +2019,16 @@ function ResultsContent() {
 
           {/* Logistics & Duty Intelligence */}
           <LogisticsDutyIntelligence 
-            dutyAnalysis={duty_analysis}
-            logisticsInsight={logistics_insight}
-            sizeTier={answers.size_tier}
+            dutyAnalysis={duty_analysis || {}}
+            logisticsInsight={logistics_insight || {}}
+            sizeTier={answers?.size_tier}
           />
 
           {/* Profitability Simulator */}
           <ProfitabilitySimulator 
             totalLandedCost={totalLandedCost}
-            answers={answers}
-            costBreakdown={cost_breakdown}
+            answers={answers || {}}
+            costBreakdown={cost_breakdown || {}}
             aiAnalysis={aiAnalysis}
           />
 
@@ -1988,20 +2036,20 @@ function ResultsContent() {
           <ScaleAnalysis 
             scaleAnalysis={scale_analysis || []}
             totalLandedCost={totalLandedCost}
-            costBreakdown={cost_breakdown}
+            costBreakdown={cost_breakdown || {}}
           />
 
           {/* Risk Assessment */}
           <RiskAssessment
             risks={risks || {}}
-            osintRiskScore={aiAnalysis?.osint_risk_score}
+            osintRiskScore={aiAnalysis?.osint_risk_score || 0}
           />
 
           {/* Level 2 Features: Compliance Checklist */}
           <ComplianceChecklist
-            checklist={aiAnalysis?.compliance_checklist}
+            checklist={aiAnalysis?.compliance_checklist || []}
             hsCode={duty_analysis?.hs_code}
-            market={answers.market}
+            market={answers?.market}
           />
 
           {/* Level 2 Features: Market Trend */}

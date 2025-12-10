@@ -1446,6 +1446,41 @@ function ResultsContent() {
             setAiAnalysis(data.ai_analysis);
           } else {
             console.warn('[Results] No AI analysis data found in project analysis. Will trigger new analysis if answers are available.');
+            
+            // ✨ 자동 재분석: answers가 있으면 자동으로 재분석 시도
+            if (data.answers && Object.keys(data.answers).length > 0) {
+              const hasRequiredFields = data.answers.project_name || data.answers.product_info;
+              if (hasRequiredFields) {
+                console.log('[Results] Auto-regenerating analysis from saved answers...');
+                setIsLoading(true);
+                
+                try {
+                  const analyzeResponse = await fetch('/api/analyze', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ 
+                      userContext: data.answers,
+                      project_id: projectId,
+                    }),
+                  });
+
+                  const analyzeData = await analyzeResponse.json();
+
+                  if (analyzeResponse.ok && analyzeData.ok && analyzeData.analysis) {
+                    console.log('[Results] Auto-regenerated analysis successfully');
+                    setAiAnalysis(analyzeData.analysis);
+                  } else {
+                    console.error('[Results] Auto-regeneration failed:', analyzeData.error);
+                    // 에러는 표시하지 않고, 사용자가 수동으로 재생성할 수 있도록 함
+                  }
+                } catch (regenerateError) {
+                  console.error('[Results] Auto-regeneration error:', regenerateError);
+                  // 에러는 표시하지 않고, 사용자가 수동으로 재생성할 수 있도록 함
+                } finally {
+                  setIsLoading(false);
+                }
+              }
+            }
           }
         } else {
           console.error('[Results] Failed to load project analysis:', data.error);
@@ -1783,6 +1818,7 @@ function ResultsContent() {
   }
 
   // project_id가 있지만 분석 데이터를 불러오지 못한 경우
+  // (자동 재분석이 실패했거나, answers가 없는 경우)
   if (isInitialized && projectId && !aiAnalysis && !isLoading && !error) {
     // answers가 있으면 분석을 다시 생성할 수 있음
     const canRegenerate = Object.keys(answers).length > 0 && 
@@ -1794,7 +1830,7 @@ function ResultsContent() {
           <div className="text-white text-xl mb-2">No Analysis Available</div>
           <div className="text-zinc-400 text-sm mb-4">
             {canRegenerate 
-              ? 'This saved project does not have analysis data. You can regenerate the analysis using the saved information.'
+              ? 'This saved project does not have analysis data. Click below to regenerate the analysis using the saved information.'
               : 'This saved project does not have analysis data. Please complete the chat flow first.'
             }
           </div>
@@ -1819,17 +1855,34 @@ function ResultsContent() {
                     const data = await response.json();
 
                     if (!response.ok || !data.ok) {
+                      // Unauthorized 에러 처리
+                      if (response.status === 401 || data.error === 'Unauthorized') {
+                        setIsUnauthorized(true);
+                        setError('Unauthorized');
+                        setIsLoading(false);
+                        return;
+                      }
+                      
                       if (data.error_code === 'CRITICAL_RISK') {
                         setCriticalRisk(true);
                         setBlacklistDetails(data.blacklist_details);
                         setIsLoading(false);
                         return;
                       }
+                      
+                      // Usage limit 에러 처리
+                      if (data.error_code === 'USAGE_LIMIT_EXCEEDED') {
+                        setError(`Monthly limit exceeded (${data.current_count}/${data.limit}). Please subscribe for unlimited analysis.`);
+                        setIsLoading(false);
+                        return;
+                      }
+                      
                       throw new Error(data.error || 'Failed to analyze project');
                     }
 
                     if (data.analysis) {
                       setAiAnalysis(data.analysis);
+                      // 성공적으로 재생성되면 페이지가 자동으로 리렌더링됨
                     } else {
                       throw new Error('No analysis data in response');
                     }
@@ -1840,7 +1893,7 @@ function ResultsContent() {
                     setIsLoading(false);
                   }
                 }}
-                className="inline-block px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                className="inline-block px-6 py-3 bg-[#008080] text-white rounded-lg hover:bg-teal-700 transition-colors font-medium"
               >
                 Regenerate Analysis
               </button>

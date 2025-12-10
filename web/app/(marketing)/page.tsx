@@ -32,7 +32,7 @@ export default async function HomePage() {
   });
 
   return (
-    <div className="bg-white">
+    <div className="bg-white dark:bg-gray-900">
       <HomeHero page={page} />
       <PortfolioMarquee />
       <HomeUseCases />

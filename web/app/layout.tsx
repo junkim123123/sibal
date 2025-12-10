@@ -2,6 +2,8 @@ import type { Metadata } from "next"
 import { Inter, JetBrains_Mono } from "next/font/google"
 import "./globals.css"
 import AuthProvider from "@/components/auth-provider"
+import { ThemeProvider } from "@/components/theme-provider"
+import { LanguageProvider } from "@/components/i18n/language-provider"
 import { Analytics } from "@vercel/analytics/next"
 import { ErrorHandler } from "@/components/error-handler"
 
@@ -28,7 +30,7 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="en" className="dark scroll-smooth" suppressHydrationWarning>
+    <html lang="en" className="scroll-smooth" suppressHydrationWarning>
       <head>
         <meta httpEquiv="X-UA-Compatible" content="IE=edge" />
         <meta charSet="utf-8" />
@@ -36,7 +38,7 @@ export default function RootLayout({
         {/* Content Security Policy로 외부 스크립트 제한 */}
         <meta
           httpEquiv="Content-Security-Policy"
-          content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://vercel.live https://gumroad.com https://assets.gumroad.com https://www.googletagmanager.com https://www.google-analytics.com https://clarity.ms https://connect.facebook.net; script-src-elem 'self' 'unsafe-inline' 'unsafe-eval' https://vercel.live https://gumroad.com https://assets.gumroad.com https://www.googletagmanager.com https://www.google-analytics.com https://clarity.ms https://connect.facebook.net; style-src 'self' 'unsafe-inline' https://assets.gumroad.com; style-src-elem 'self' 'unsafe-inline' https://assets.gumroad.com; img-src 'self' data: https:; font-src 'self' data: https://assets.gumroad.com; font-src-elem 'self' data: https://assets.gumroad.com; connect-src 'self' https: https://gumroad.com https://api.gumroad.com https://assets.gumroad.com https://www.google-analytics.com https://clarity.ms https://www.facebook.com; frame-src 'self' https://www.youtube.com https://youtube.com https://gumroad.com;"
+          content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://vercel.live https://gumroad.com https://www.gumroad.com https://assets.gumroad.com https://www.googletagmanager.com https://www.google-analytics.com https://clarity.ms https://connect.facebook.net; script-src-elem 'self' 'unsafe-inline' 'unsafe-eval' https://vercel.live https://gumroad.com https://www.gumroad.com https://assets.gumroad.com https://www.googletagmanager.com https://www.google-analytics.com https://clarity.ms https://connect.facebook.net; style-src 'self' 'unsafe-inline' https://assets.gumroad.com; style-src-elem 'self' 'unsafe-inline' https://assets.gumroad.com; img-src 'self' data: https:; font-src 'self' data: https://assets.gumroad.com; font-src-elem 'self' data: https://assets.gumroad.com; connect-src 'self' https: https://gumroad.com https://www.gumroad.com https://api.gumroad.com https://assets.gumroad.com https://www.google-analytics.com https://clarity.ms https://www.facebook.com; frame-src 'self' https://www.youtube.com https://youtube.com https://gumroad.com https://www.gumroad.com;"
         />
         {/* Gumroad Overlay Script */}
         <script src="https://gumroad.com/js/gumroad.js" async></script>
@@ -233,9 +235,13 @@ export default function RootLayout({
         className={`${inter.variable} ${jetbrainsMono.variable} font-sans antialiased bg-background text-foreground`}
         suppressHydrationWarning
       >
-        <ErrorHandler />
-        <AuthProvider>{children}</AuthProvider>
-        <Analytics />
+        <ThemeProvider defaultTheme="system" storageKey="nexsupply-theme">
+          <LanguageProvider defaultLanguage="en" storageKey="nexsupply-language">
+            <ErrorHandler />
+            <AuthProvider>{children}</AuthProvider>
+            <Analytics />
+          </LanguageProvider>
+        </ThemeProvider>
       </body>
     </html>
   )

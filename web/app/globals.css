@@ -4,7 +4,43 @@
 
 @layer base {
   :root {
-    /* Base Colors - HSL values for Tailwind variables */
+    /* Light Mode Colors - HSL values for Tailwind variables */
+    --background: 0 0% 100%;  /* #FFFFFF */
+    --foreground: 0 0% 3.9%;  /* #0A0A0A */
+
+    --card: 0 0% 100%;        /* #FFFFFF */
+    --card-foreground: 0 0% 3.9%;
+
+    --popover: 0 0% 100%;      /* #FFFFFF */
+    --popover-foreground: 0 0% 3.9%;
+
+    --primary: 183 100% 50%;  /* #00F0FF */
+    --primary-foreground: 0 0% 0%;
+
+    --secondary: 211 100% 50%; /* #007AFF */
+    --secondary-foreground: 0 0% 100%;
+
+    --muted: 0 0% 96.1%;
+    --muted-foreground: 0 0% 45.1%;
+
+    --accent: 45 100% 50%;    /* #FFBF00 */
+    --accent-foreground: 0 0% 0%;
+
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 98%;
+
+    --success: 155 100% 50%;  /* #00FF94 */
+    --success-foreground: 0 0% 0%;
+
+    --border: 0 0% 89.8%;
+    --input: 0 0% 89.8%;
+    --ring: 183 100% 50%;     /* Primary color for rings */
+
+    --radius: 0.5rem;
+  }
+
+  .dark {
+    /* Dark Mode Colors - HSL values for Tailwind variables */
     --background: 0 0% 2%;    /* #050505 */
     --foreground: 0 0% 100%;  /* #FFFFFF */
 
@@ -35,8 +71,6 @@
     --border: 0 0% 100%;      /* Used with opacity in utilities */
     --input: 0 0% 20%;
     --ring: 183 100% 50%;     /* Primary color for rings */
-
-    --radius: 0.5rem;
   }
 }
 
@@ -145,5 +179,36 @@
   }
   .animate-marquee {
     animation: marquee 60s linear infinite;
+  }
+
+  /* Mobile Optimizations */
+  @media (max-width: 640px) {
+    /* Touch-friendly tap targets */
+    button, a {
+      min-height: 44px;
+      min-width: 44px;
+    }
+
+    /* Improved text readability on mobile */
+    body {
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+  }
+
+  /* Safe area insets for mobile devices */
+  @supports (padding: max(0px)) {
+    .safe-top {
+      padding-top: max(1rem, env(safe-area-inset-top));
+    }
+    .safe-bottom {
+      padding-bottom: max(1rem, env(safe-area-inset-bottom));
+    }
+    .safe-left {
+      padding-left: max(1rem, env(safe-area-inset-left));
+    }
+    .safe-right {
+      padding-right: max(1rem, env(safe-area-inset-right));
+    }
   }
 }

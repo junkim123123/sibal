@@ -11,8 +11,6 @@ import { resourcePageConfig } from '@/lib/content/resources';
 import { MapPin, DollarSign, Rocket, Play } from 'lucide-react';
 import React from 'react';
 
-export const revalidate = 60;
-
 export default function ResourcesPage() {
   const { hero, startHere, featuredProjects, knowledgeHub, faq } = resourcePageConfig;
 

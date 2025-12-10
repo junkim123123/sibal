@@ -16,8 +16,8 @@ import Link from 'next/link';
 function ClientChatContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
-  const projectId = searchParams.get('project_id');
-  const sessionIdParam = searchParams.get('session_id');
+  const projectId = searchParams?.get('project_id') || null;
+  const sessionIdParam = searchParams?.get('session_id') || null;
   
   const [sessionId, setSessionId] = useState<string | null>(sessionIdParam);
   const [userId, setUserId] = useState<string | null>(null);
@@ -553,9 +553,12 @@ function ClientChatContent() {
                     >
                       <input
                         type="checkbox"
+                        id={`todo-${todo.id}`}
+                        name={`todo-${todo.id}`}
                         checked={todo.status === 'completed'}
                         disabled
                         className="mt-1 w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                        aria-label={`${todo.task} - ${todo.status === 'completed' ? 'Completed' : 'Pending'}`}
                       />
                       <div className="flex-1">
                         <p className={`text-sm font-medium ${

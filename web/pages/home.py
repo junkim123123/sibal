@@ -383,58 +383,75 @@ def render_home_page():
                 </div>
             """, unsafe_allow_html=True)
         
-        # --- Input 1: Product or Keyword ---
-        st.markdown(f'<span class="input-label">🏷️ {t("input_label_product")}</span>', unsafe_allow_html=True)
-        
-        product_query = st.text_input(
-            "Product or keyword",
-            value=st.session_state.search_query,
-            placeholder=t('input_placeholder_product'),
-            label_visibility="collapsed",
-            key="product_input"
-        )
-        st.session_state.search_query = product_query
-        
-        st.markdown("<div style='height: 24px;'></div>", unsafe_allow_html=True)
-        
-        # --- Input 2: Context (Optional) ---
-        st.markdown(f'<span class="input-label">📋 {t("input_label_context")}</span>', unsafe_allow_html=True)
-        
-        context_query = st.text_area(
-            "Context and requirements",
-            value=st.session_state.context_query,
-            placeholder=t('input_placeholder_context'),
-            height=120,
-            label_visibility="collapsed",
-            key="context_input"
-        )
-        st.session_state.context_query = context_query
-        
-        # --- Hint ---
-        st.markdown(f"""
-            <div class="hint-text">
-                💡 {t('input_hint')}
-            </div>
-        """, unsafe_allow_html=True)
-        
-        st.markdown("<div style='height: 20px;'></div>", unsafe_allow_html=True)
+        # 🔴 [수정] st.form으로 감싸서 두 번 클릭 문제 해결
+        with st.form(key="analysis_form", clear_on_submit=False):
+            # --- Input 1: Product or Keyword ---
+            st.markdown(f'<span class="input-label">🏷️ {t("input_label_product")}</span>', unsafe_allow_html=True)
+            
+            product_query = st.text_input(
+                "Product or keyword",
+                value=st.session_state.search_query,
+                placeholder=t('input_placeholder_product'),
+                label_visibility="collapsed",
+                key="product_input"
+            )
+            
+            st.markdown("<div style='height: 24px;'></div>", unsafe_allow_html=True)
+            
+            # --- Input 2: Context (Optional) ---
+            st.markdown(f'<span class="input-label">📋 {t("input_label_context")}</span>', unsafe_allow_html=True)
+            
+            context_query = st.text_area(
+                "Context and requirements",
+                value=st.session_state.context_query,
+                placeholder=t('input_placeholder_context'),
+                height=120,
+                label_visibility="collapsed",
+                key="context_input"
+            )
+            
+            # --- Hint ---
+            st.markdown(f"""
+                <div class="hint-text">
+                    💡 {t('input_hint')}
+                </div>
+            """, unsafe_allow_html=True)
+            
+            st.markdown("<div style='height: 20px;'></div>", unsafe_allow_html=True)
 
-        # --- Action Row: Attach + Analyze ---
-        col1, col2 = st.columns([1, 2])
-        
-        with col1:
-            with st.popover("📎 Attach File"):
-                uploaded = st.file_uploader(
-                    "Select file",
-                    type=["png", "jpg", "jpeg", "pdf"],
-                    label_visibility="collapsed"
+            # --- Action Row: Attach + Analyze ---
+            col1, col2 = st.columns([1, 2])
+            
+            with col1:
+                with st.popover("📎 Attach File"):
+                    uploaded = st.file_uploader(
+                        "Select file",
+                        type=["png", "jpg", "jpeg", "pdf"],
+                        label_visibility="collapsed"
+                    )
+                    if uploaded:
+                        st.session_state.uploaded_file = uploaded
+                        st.success(f"✓ {uploaded.name}")
+                    st.caption("Images (JPG, PNG) or PDF")
+            
+            with col2:
+                # 🔴 [수정] st.button 대신 st.form_submit_button 사용
+                analyze_clicked = st.form_submit_button(
+                    f"🔍 {t('btn_analyze')}", 
+                    type="primary", 
+                    use_container_width=True
                 )
-                if uploaded:
-                    st.session_state.uploaded_file = uploaded
-                    st.success(f"✓ {uploaded.name}")
-                st.caption("Images (JPG, PNG) or PDF")
         
-        with col2:
+        # 🔴 [수정] 폼 바깥에서 로직 처리 (폼 제출 후 실행)
+        if analyze_clicked:
+            # 입력값 세션 상태에 저장
+            st.session_state.search_query = product_query
+            st.session_state.context_query = context_query
+            
+            # 파일 업로드 상태 동기화
+            if uploaded:
+                st.session_state.uploaded_file = uploaded
+            
             # Combine inputs
             full_query = product_query.strip()
             if context_query.strip():
@@ -442,155 +459,146 @@ def render_home_page():
             
             has_input = bool(full_query) or st.session_state.uploaded_file
             
-            # Analyze button
-            analyze_clicked = st.button(
-                f"🔍 {t('btn_analyze')}", 
-                type="primary", 
-                use_container_width=True,
-                key="main_analyze_btn"
-            )
-            
-            if analyze_clicked:
-                if not has_input:
-                    st.warning(t("error_no_input"))
-                else:
-                    st.session_state.search_query = full_query
-                    state.clear_error()
-                    
-                    # 프로젝트 생성 (Supabase 연동)
-                    project_id = None
-                    user_id = None
-                    if st.session_state.get("user") and isinstance(st.session_state.user, dict):
-                        user_id = st.session_state.user.get("id")
-                        if user_id:
-                            try:
-                                from utils.project_manager import create_new_project
-                                # 제품 이름 추출 (프로젝트 이름으로 사용)
-                                project_name = product_query.strip()[:50] if product_query.strip() else None
-                                project_id = create_new_project(user_id, project_name)
-                            except Exception as e:
-                                # 프로젝트 생성 실패해도 분석은 계속 진행
-                                print(f"[Project Creation Error] {e}")
-                    
-                    # === STEP-BY-STEP PROGRESS (Security-Aware Messages) ===
-                    with st.status("🔎 AI is building your Sourcing Blueprint...", expanded=True) as status:
-                        st.write("⏱️ *This analysis takes 10-20 seconds*")
-                        st.write("")
-                        st.write("📊 **Step 1/3:** Calculating Landed Cost & Margin Estimate...")
-                        start_time = time.time()
-                        
+            if not has_input:
+                st.warning(t("error_no_input"))
+            else:
+                st.session_state.search_query = full_query
+                state.clear_error()
+                
+                # 프로젝트 생성 (Supabase 연동)
+                project_id = None
+                user_id = None
+                if st.session_state.get("user") and isinstance(st.session_state.user, dict):
+                    user_id = st.session_state.user.get("id")
+                    if user_id:
                         try:
-                            service = GeminiService()
-                            
-                            # Step 2
-                            elapsed = int(time.time() - start_time)
-                            if elapsed > 5:  # Only update if taking time
-                                status.update(label="🧠 Deep-diving into complex supply chains...")
-                                st.write("📊 **Step 2/3:** Analyzing Market Demand & Competition Risk...")
-                            
-                            # Check elapsed time before analysis
-                            elapsed = time.time() - start_time
-                            if elapsed > 25:  # If already taking long, show timeout message
-                                status.update(label="⏳ Taking Longer Than Expected...")
-                                st.warning("⏳ **Taking Longer Than Expected!**\n\nDo you want us to email the full report and supplier shortlist when it's ready?")
-                                # Email collection form (shown in status)
-                                email_for_report = st.text_input("Your Email (optional)", key="timeout_email", placeholder="your@email.com")
-                                if email_for_report and "@" in email_for_report:
-                                    st.info("✅ We'll email you the report when ready. Continuing analysis...")
-                            
-                            result = service.analyze_product(state.get_input())
-                            
-                            # Step 3
-                            elapsed = int(time.time() - start_time)
-                            if elapsed > 15:  # If taking longer, show progress
-                                status.update(label="🔍 Vetting Suppliers & Running Risk Assessment...")
-                            else:
-                                status.update(label="✅ Step 3/3: Generating report...")
-                            
-                            st.write("📊 **Step 3/3:** Vetting Suppliers & Running Risk Assessment...")
-                            
-                            if result["success"]:
-                                status.update(label="✅ Analysis complete!", state="complete")
-                                converted = convert_api_response(result["data"])
-                                converted["analysis_mode"] = result.get("mode", "general")
-                                
-                                # 분석 결과를 데이터베이스에 저장 (프로젝트가 있는 경우)
-                                if project_id:
-                                    try:
-                                        from utils.project_manager import (
-                                            save_message_to_db,
-                                            update_project_with_analysis,
-                                            extract_analysis_results
-                                        )
-                                        
-                                        # 사용자 입력 메시지 저장
-                                        if full_query:
-                                            save_message_to_db(project_id, "user", full_query)
-                                        
-                                        # AI 응답 저장 (요약)
-                                        ai_summary = f"Analysis completed: {converted.get('product_info', {}).get('product_name', 'Product analysis')}"
-                                        save_message_to_db(project_id, "ai", ai_summary)
-                                        
-                                        # 분석 결과 데이터 추출 및 프로젝트 업데이트
-                                        risk_score, landed_cost = extract_analysis_results(converted)
-                                        update_project_with_analysis(
-                                            project_id=project_id,
-                                            risk_score=risk_score,
-                                            landed_cost=landed_cost,
-                                            status="completed"
-                                        )
-                                    except Exception as e:
-                                        # DB 저장 실패해도 결과는 표시
-                                        print(f"[DB Save Error] Failed to save analysis: {e}")
-                                
-                                state.set_result(converted)
-                                st.session_state.analysis_mode = result.get("mode", "general")
-                                st.session_state.page = "results"
-                                st.rerun()
-                            else:
-                                status.update(label="❌ Analysis failed", state="error")
-                                error_code = "A-101"  # Generic error code
-                                from utils.config import Config
-                                contact_email = Config.get_consultation_email()
-                                
-                                # Get error details from result if available
-                                error_msg = result.get("error", "Unknown error")
-                                error_details = result.get("error_details", "")
-                                
-                                # Display error with traceback
-                                st.error(f"⚠️ **Analysis Failed. (Error Code: {error_code})**\n\nWe apologize for the issue. Please **refresh the page** or email us the details directly at **{contact_email}**")
-                                
-                                # Print full traceback to terminal
-                                print(f"\n{'='*80}")
-                                print(f"ERROR CODE: {error_code}")
-                                print(f"{'='*80}")
-                                print(f"Error Message: {error_msg}")
-                                if error_details:
-                                    print(f"Error Details: {error_details}")
-                                print(f"Full Result: {result}")
-                                print(f"{'='*80}\n")
-                                
-                                st.session_state.last_error = error_code
-                        
+                            from utils.project_manager import create_new_project
+                            # 제품 이름 추출 (프로젝트 이름으로 사용)
+                            project_name = product_query.strip()[:50] if product_query.strip() else None
+                            project_id = create_new_project(user_id, project_name)
                         except Exception as e:
-                            status.update(label="❌ Error occurred", state="error")
-                            error_code = "A-102"  # Generic error code
+                            # 프로젝트 생성 실패해도 분석은 계속 진행
+                            print(f"[Project Creation Error] {e}")
+                
+                # === STEP-BY-STEP PROGRESS (Security-Aware Messages) ===
+                with st.status("🔎 AI is building your Sourcing Blueprint...", expanded=True) as status:
+                    st.write("⏱️ *This analysis takes 10-20 seconds*")
+                    st.write("")
+                    st.write("📊 **Step 1/3:** Calculating Landed Cost & Margin Estimate...")
+                    start_time = time.time()
+                    
+                    try:
+                        service = GeminiService()
+                        
+                        # Step 2
+                        elapsed = int(time.time() - start_time)
+                        if elapsed > 5:  # Only update if taking time
+                            status.update(label="🧠 Deep-diving into complex supply chains...")
+                            st.write("📊 **Step 2/3:** Analyzing Market Demand & Competition Risk...")
+                        
+                        # Check elapsed time before analysis
+                        elapsed = time.time() - start_time
+                        if elapsed > 25:  # If already taking long, show timeout message
+                            status.update(label="⏳ Taking Longer Than Expected...")
+                            st.warning("⏳ **Taking Longer Than Expected!**\n\nDo you want us to email the full report and supplier shortlist when it's ready?")
+                            # Email collection form (shown in status)
+                            email_for_report = st.text_input("Your Email (optional)", key="timeout_email", placeholder="your@email.com")
+                            if email_for_report and "@" in email_for_report:
+                                st.info("✅ We'll email you the report when ready. Continuing analysis...")
+                        
+                        result = service.analyze_product(state.get_input())
+                        
+                        # Step 3
+                        elapsed = int(time.time() - start_time)
+                        if elapsed > 15:  # If taking longer, show progress
+                            status.update(label="🔍 Vetting Suppliers & Running Risk Assessment...")
+                        else:
+                            status.update(label="✅ Step 3/3: Generating report...")
+                        
+                        st.write("📊 **Step 3/3:** Vetting Suppliers & Running Risk Assessment...")
+                        
+                        if result["success"]:
+                            status.update(label="✅ Analysis complete!", state="complete")
+                            converted = convert_api_response(result["data"])
+                            converted["analysis_mode"] = result.get("mode", "general")
+                            
+                            # 분석 결과를 데이터베이스에 저장 (프로젝트가 있는 경우)
+                            if project_id:
+                                try:
+                                    from utils.project_manager import (
+                                        save_message_to_db,
+                                        update_project_with_analysis,
+                                        extract_analysis_results
+                                    )
+                                    
+                                    # 사용자 입력 메시지 저장
+                                    if full_query:
+                                        save_message_to_db(project_id, "user", full_query)
+                                    
+                                    # AI 응답 저장 (요약)
+                                    ai_summary = f"Analysis completed: {converted.get('product_info', {}).get('product_name', 'Product analysis')}"
+                                    save_message_to_db(project_id, "ai", ai_summary)
+                                    
+                                    # 분석 결과 데이터 추출 및 프로젝트 업데이트
+                                    risk_score, landed_cost = extract_analysis_results(converted)
+                                    update_project_with_analysis(
+                                        project_id=project_id,
+                                        risk_score=risk_score,
+                                        landed_cost=landed_cost,
+                                        status="completed"
+                                    )
+                                except Exception as e:
+                                    # DB 저장 실패해도 결과는 표시
+                                    print(f"[DB Save Error] Failed to save analysis: {e}")
+                            
+                            state.set_result(converted)
+                            st.session_state.analysis_mode = result.get("mode", "general")
+                            st.session_state.page = "results"
+                            st.rerun()
+                        else:
+                            status.update(label="❌ Analysis failed", state="error")
+                            error_code = "A-101"  # Generic error code
                             from utils.config import Config
                             contact_email = Config.get_consultation_email()
+                            
+                            # Get error details from result if available
+                            error_msg = result.get("error", "Unknown error")
+                            error_details = result.get("error_details", "")
+                            
+                            # Display error with traceback
                             st.error(f"⚠️ **Analysis Failed. (Error Code: {error_code})**\n\nWe apologize for the issue. Please **refresh the page** or email us the details directly at **{contact_email}**")
-                            st.session_state.last_error = error_code
                             
                             # Print full traceback to terminal
                             print(f"\n{'='*80}")
                             print(f"ERROR CODE: {error_code}")
                             print(f"{'='*80}")
-                            traceback.print_exc()
+                            print(f"Error Message: {error_msg}")
+                            if error_details:
+                                print(f"Error Details: {error_details}")
+                            print(f"Full Result: {result}")
                             print(f"{'='*80}\n")
                             
-                            # Log error internally (not shown to user)
-                            import logging
-                            logger = logging.getLogger(__name__)
-                            logger.error(f"Analysis error (code {error_code}): {str(e)}", exc_info=True)
+                            st.session_state.last_error = error_code
+                    
+                    except Exception as e:
+                        status.update(label="❌ Error occurred", state="error")
+                        error_code = "A-102"  # Generic error code
+                        from utils.config import Config
+                        contact_email = Config.get_consultation_email()
+                        st.error(f"⚠️ **Analysis Failed. (Error Code: {error_code})**\n\nWe apologize for the issue. Please **refresh the page** or email us the details directly at **{contact_email}**")
+                        st.session_state.last_error = error_code
+                        
+                        # Print full traceback to terminal
+                        print(f"\n{'='*80}")
+                        print(f"ERROR CODE: {error_code}")
+                        print(f"{'='*80}")
+                        traceback.print_exc()
+                        print(f"{'='*80}\n")
+                        
+                        # Log error internally (not shown to user)
+                        import logging
+                        logger = logging.getLogger(__name__)
+                        logger.error(f"Analysis error (code {error_code}): {str(e)}", exc_info=True)
         
         # Demo button (shown separately if there was an error)
         if st.session_state.get("last_error"):

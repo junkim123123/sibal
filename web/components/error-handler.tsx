@@ -99,6 +99,77 @@ export function ErrorHandler() {
       }
     }
 
+    // MutationObserver로 외부 스크립트/iframe 감지 및 제거
+    const observer = new MutationObserver((mutations) => {
+      mutations.forEach((mutation) => {
+        mutation.addedNodes.forEach((node) => {
+          if (node.nodeType === Node.ELEMENT_NODE) {
+            const element = node as HTMLElement
+            
+            // itemscout.io 관련 스크립트 태그 제거
+            if (element.tagName === 'SCRIPT') {
+              const script = element as HTMLScriptElement
+              if (
+                script.src?.includes('itemscout.io') ||
+                script.src?.includes('4bd1b696-182b6b13bdad92e3.js')
+              ) {
+                console.log('[ErrorHandler] Blocked itemscout.io script:', script.src)
+                script.remove()
+                return
+              }
+            }
+            
+            // itemscout.io 관련 iframe 제거
+            if (element.tagName === 'IFRAME') {
+              const iframe = element as HTMLIFrameElement
+              if (
+                iframe.src?.includes('itemscout.io') ||
+                iframe.src?.includes('pixel.itemscout.io')
+              ) {
+                console.log('[ErrorHandler] Blocked itemscout.io iframe:', iframe.src)
+                iframe.remove()
+                return
+              }
+            }
+            
+            // 내부에 itemscout.io 관련 요소가 있는지 확인
+            const itemscoutElements = element.querySelectorAll?.(
+              'script[src*="itemscout.io"], iframe[src*="itemscout.io"]'
+            )
+            itemscoutElements?.forEach((el) => {
+              console.log('[ErrorHandler] Blocked nested itemscout.io element')
+              el.remove()
+            })
+          }
+        })
+      })
+    })
+
+    // DOM 전체 감시 시작
+    observer.observe(document.documentElement, {
+      childList: true,
+      subtree: true,
+    })
+
+    // 기존 itemscout.io 요소 제거
+    const removeExistingItemscoutElements = () => {
+      const scripts = document.querySelectorAll('script[src*="itemscout.io"]')
+      scripts.forEach((script) => {
+        console.log('[ErrorHandler] Removed existing itemscout.io script')
+        script.remove()
+      })
+
+      const iframes = document.querySelectorAll('iframe[src*="itemscout.io"]')
+      iframes.forEach((iframe) => {
+        console.log('[ErrorHandler] Removed existing itemscout.io iframe')
+        iframe.remove()
+      })
+    }
+
+    // 즉시 실행 및 주기적 체크
+    removeExistingItemscoutElements()
+    const checkInterval = setInterval(removeExistingItemscoutElements, 1000)
+
     return () => {
       // 정리
       window.removeEventListener('error', handleError, true)
@@ -106,6 +177,8 @@ export function ErrorHandler() {
       console.error = originalError
       console.warn = originalWarn
       Node.prototype.removeChild = originalRemoveChild
+      observer.disconnect()
+      clearInterval(checkInterval)
     }
   }, [])
 

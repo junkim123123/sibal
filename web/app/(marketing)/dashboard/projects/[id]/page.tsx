@@ -380,32 +380,41 @@ function ProjectDetailPageContent() {
             </div>
             {/* Quick Upload Button */}
             <div className="ml-6">
+              <label htmlFor="file-upload-header" className="sr-only">
+                Upload project file
+              </label>
               <input
+                id="file-upload-header"
+                name="file-upload-header"
                 ref={fileInputRef}
                 type="file"
                 className="hidden"
                 onChange={handleFileUpload}
                 accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png,.gif"
+                aria-label="Upload project file"
               />
               <button
                 onClick={() => fileInputRef.current?.click()}
                 disabled={isUploading}
                 className="inline-flex items-center gap-2 px-4 py-2 bg-black text-white rounded-lg hover:bg-gray-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                aria-label="Upload file"
               >
                 {isUploading ? (
                   <>
-                    <Loader2Icon className="w-4 h-4 animate-spin" />
+                    <Loader2Icon className="w-4 h-4 animate-spin" aria-hidden="true" />
                     <span>Uploading...</span>
                   </>
                 ) : (
                   <>
-                    <Upload className="w-4 h-4" />
+                    <Upload className="w-4 h-4" aria-hidden="true" />
                     <span>Upload File</span>
                   </>
                 )}
               </button>
               {uploadSuccess && (
-                <p className="text-xs text-green-600 mt-2 text-center">File uploaded successfully!</p>
+                <p className="text-xs text-green-600 mt-2 text-center" role="status" aria-live="polite">
+                  File uploaded successfully!
+                </p>
               )}
             </div>
           </div>
@@ -503,6 +512,9 @@ function ProjectDetailPageContent() {
               {/* Quick File Upload Card */}
               <div className="bg-white rounded-lg border border-gray-200 p-6">
                 <h2 className="text-sm font-semibold text-gray-500 uppercase mb-4">Quick Upload</h2>
+                <label htmlFor="file-upload-dropzone" className="sr-only">
+                  Upload project files by dragging and dropping or clicking
+                </label>
                 <div
                   ref={dropZoneRef}
                   onDragEnter={handleDragEnter}
@@ -515,22 +527,34 @@ function ProjectDetailPageContent() {
                       : 'border-gray-300 hover:border-gray-400'
                   }`}
                   onClick={() => !isUploading && fileInputRef.current?.click()}
+                  role="button"
+                  tabIndex={0}
+                  onKeyDown={(e) => {
+                    if ((e.key === 'Enter' || e.key === ' ') && !isUploading) {
+                      e.preventDefault()
+                      fileInputRef.current?.click()
+                    }
+                  }}
+                  aria-label="File upload drop zone"
                 >
                   <input
+                    id="file-upload-dropzone"
+                    name="file-upload-dropzone"
                     ref={fileInputRef}
                     type="file"
                     className="hidden"
                     onChange={handleFileUpload}
                     accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png,.gif"
+                    aria-label="Upload project files"
                   />
                   {isUploading ? (
                     <div className="flex flex-col items-center gap-3">
-                      <Loader2Icon className="w-8 h-8 text-gray-400 animate-spin" />
+                      <Loader2Icon className="w-8 h-8 text-gray-400 animate-spin" aria-hidden="true" />
                       <p className="text-sm text-gray-600">Uploading file...</p>
                     </div>
                   ) : (
                     <div className="flex flex-col items-center gap-3">
-                      <Upload className={`w-8 h-8 ${isDragging ? 'text-blue-500' : 'text-gray-400'}`} />
+                      <Upload className={`w-8 h-8 ${isDragging ? 'text-blue-500' : 'text-gray-400'}`} aria-hidden="true" />
                       <div>
                         <p className="text-sm font-medium text-gray-900 mb-1">
                           {isDragging ? 'Drop file here' : 'Drag and drop files here, or click to upload'}
@@ -541,11 +565,13 @@ function ProjectDetailPageContent() {
                       </div>
                       {!isDragging && (
                         <button
+                          type="button"
                           onClick={(e) => {
                             e.stopPropagation()
                             fileInputRef.current?.click()
                           }}
                           className="mt-2 px-4 py-2 bg-black text-white rounded-lg hover:bg-gray-800 transition-colors text-sm font-medium"
+                          aria-label="Select file to upload"
                         >
                           Select File
                         </button>
@@ -553,7 +579,9 @@ function ProjectDetailPageContent() {
                     </div>
                   )}
                   {uploadSuccess && (
-                    <p className="text-sm text-green-600 mt-3">✓ File uploaded successfully!</p>
+                    <p className="text-sm text-green-600 mt-3" role="status" aria-live="polite">
+                      ✓ File uploaded successfully!
+                    </p>
                   )}
                 </div>
                 <p className="text-xs text-gray-500 mt-4 text-center">

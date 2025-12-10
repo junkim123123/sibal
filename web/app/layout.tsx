@@ -33,13 +33,71 @@ export default function RootLayout({
         <meta httpEquiv="X-UA-Compatible" content="IE=edge" />
         <meta charSet="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
+        {/* Content Security Policy로 외부 스크립트 제한 */}
+        <meta
+          httpEquiv="Content-Security-Policy"
+          content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://vercel.live https://gumroad.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data:; connect-src 'self' https:; frame-src 'self'; frame-ancestors 'self';"
+        />
         {/* 외부 스크립트 오류를 가장 먼저 차단하는 인라인 스크립트 */}
         <script
           dangerouslySetInnerHTML={{
             __html: `
               (function() {
                 'use strict';
-                // 콘솔 오류 필터링 (가장 먼저 실행)
+                
+                // 즉시 itemscout.io 요소 제거
+                function removeItemscoutElements() {
+                  // 스크립트 태그 제거
+                  document.querySelectorAll('script[src*="itemscout.io"]').forEach(function(el) {
+                    el.remove();
+                  });
+                  
+                  // iframe 제거
+                  document.querySelectorAll('iframe[src*="itemscout.io"]').forEach(function(el) {
+                    el.remove();
+                  });
+                  
+                  // pixel.itemscout.io 관련 요소 제거
+                  document.querySelectorAll('[src*="pixel.itemscout.io"]').forEach(function(el) {
+                    el.remove();
+                  });
+                }
+                
+                // DOMContentLoaded 전에 실행
+                if (document.readyState === 'loading') {
+                  document.addEventListener('DOMContentLoaded', removeItemscoutElements);
+                } else {
+                  removeItemscoutElements();
+                }
+                
+                // MutationObserver로 실시간 감시
+                if (typeof MutationObserver !== 'undefined') {
+                  const observer = new MutationObserver(function(mutations) {
+                    mutations.forEach(function(mutation) {
+                      mutation.addedNodes.forEach(function(node) {
+                        if (node.nodeType === 1) { // ELEMENT_NODE
+                          var element = node;
+                          if (element.tagName === 'SCRIPT' || element.tagName === 'IFRAME') {
+                            var src = element.src || element.getAttribute('src') || '';
+                            if (src.indexOf('itemscout.io') !== -1) {
+                              element.remove();
+                            }
+                          }
+                        }
+                      });
+                    });
+                  });
+                  
+                  observer.observe(document.documentElement, {
+                    childList: true,
+                    subtree: true
+                  });
+                  
+                  // 주기적 체크
+                  setInterval(removeItemscoutElements, 500);
+                }
+                
+                // 콘솔 오류 필터링
                 const originalError = console.error;
                 const originalWarn = console.warn;
                 
@@ -53,7 +111,7 @@ export default function RootLayout({
                     message.includes('ud @') ||
                     message.includes('uf @')
                   ) {
-                    return; // 오류 무시
+                    return;
                   }
                   originalError.apply(console, arguments);
                 };
@@ -65,22 +123,22 @@ export default function RootLayout({
                     message.includes('itemscout.io') ||
                     message.includes('4bd1b696-182b6b13bdad92e3.js')
                   ) {
-                    return; // 경고 무시
+                    return;
                   }
                   originalWarn.apply(console, arguments);
                 };
                 
-                // 전역 에러 핸들러 (capture phase)
+                // 전역 에러 핸들러
                 window.addEventListener('error', function(e) {
                   const filename = e.filename || '';
                   const message = e.message || '';
                   if (
-                    filename.includes('itemscout.io') ||
-                    filename.includes('4bd1b696-182b6b13bdad92e3.js') ||
-                    filename.includes('extension://') ||
-                    filename.includes('chrome-extension://') ||
-                    message.includes('removeChild') ||
-                    message.includes('itemscout')
+                    filename.indexOf('itemscout.io') !== -1 ||
+                    filename.indexOf('4bd1b696-182b6b13bdad92e3.js') !== -1 ||
+                    filename.indexOf('extension://') !== -1 ||
+                    filename.indexOf('chrome-extension://') !== -1 ||
+                    message.indexOf('removeChild') !== -1 ||
+                    message.indexOf('itemscout') !== -1
                   ) {
                     e.preventDefault();
                     e.stopPropagation();
@@ -98,9 +156,9 @@ export default function RootLayout({
                     ? reason.message 
                     : String(reason);
                   if (
-                    reasonStr.includes('removeChild') ||
-                    reasonStr.includes('itemscout') ||
-                    reasonStr.includes('4bd1b696')
+                    reasonStr.indexOf('removeChild') !== -1 ||
+                    reasonStr.indexOf('itemscout') !== -1 ||
+                    reasonStr.indexOf('4bd1b696') !== -1
                   ) {
                     e.preventDefault();
                     e.stopPropagation();

@@ -89,7 +89,7 @@ export function ClientList({ onProjectSelect, selectedProjectId }: ClientListPro
   return (
     <div className="bg-white rounded-lg border border-gray-200 h-full flex flex-col">
       {/* Header */}
-      <div className="p-4 border-b border-gray-200">
+      <div className="p-4 border-b border-gray-200 bg-gray-50">
         <h2 className="text-lg font-semibold text-gray-900">Clients</h2>
         <p className="text-xs text-gray-500 mt-1">{clients.length} active projects</p>
       </div>
@@ -113,11 +113,13 @@ export function ClientList({ onProjectSelect, selectedProjectId }: ClientListPro
               <div className="flex items-start justify-between gap-3">
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 mb-1">
-                    <p className="text-sm font-medium text-gray-900 truncate">
+                    <p className={`text-sm truncate ${
+                      client.unread_count > 0 ? 'font-bold text-gray-900' : 'font-medium text-gray-900'
+                    }`}>
                       {client.client_name}
                     </p>
                     {client.unread_count > 0 && (
-                      <span className="flex-shrink-0 w-5 h-5 rounded-full bg-blue-600 text-white text-xs flex items-center justify-center">
+                      <span className="flex-shrink-0 min-w-[20px] h-5 px-1.5 rounded-full bg-red-600 text-white text-xs font-bold flex items-center justify-center">
                         {client.unread_count}
                       </span>
                     )}

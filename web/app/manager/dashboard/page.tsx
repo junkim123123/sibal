@@ -10,7 +10,7 @@ import { useState, useEffect } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { getAdminClient } from '@/lib/supabase/admin';
 import { 
-  Users, 
+  Users2, 
   DollarSign, 
   MessageSquare, 
   FileText,
@@ -187,7 +187,7 @@ export default function ManagerDashboardPage() {
         <StatCard
           title="Active Clients"
           value={stats.activeClients}
-          icon={<Users className="w-5 h-5" />}
+          icon={<Users2 className="w-5 h-5" />}
           description="Active projects"
           color="blue"
         />

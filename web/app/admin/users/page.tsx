@@ -149,7 +149,7 @@ export default function UserManagementPage() {
       </div>
 
       {/* Users Table */}
-      <div className="bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden">
+      <div className="bg-white rounded-lg border border-gray-200 shadow-md overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead className="bg-gray-50 border-b border-gray-200">
@@ -174,8 +174,16 @@ export default function UserManagementPage() {
             <tbody className="bg-white divide-y divide-gray-200">
               {filteredUsers.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className="px-6 py-12 text-center text-gray-500">
-                    No users found
+                  <td colSpan={5} className="px-6 py-16 text-center">
+                    <div className="flex flex-col items-center justify-center">
+                      <div className="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mb-4">
+                        <Users className="w-12 h-12 text-gray-400" />
+                      </div>
+                      <p className="text-lg font-medium text-gray-900 mb-2">No users found</p>
+                      <p className="text-sm text-gray-500">
+                        {searchQuery ? 'Try a different search term' : 'No users have signed up yet'}
+                      </p>
+                    </div>
                   </td>
                 </tr>
               ) : (
@@ -251,19 +259,19 @@ export default function UserManagementPage() {
 
       {/* Stats Summary */}
       <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div className="bg-white rounded-lg border border-gray-200 p-4">
+        <div className="bg-white rounded-lg border border-gray-200 p-4 shadow-md">
           <p className="text-sm text-gray-500">Total Users</p>
-          <p className="text-2xl font-bold text-gray-900">{users.length}</p>
+          <p className="text-3xl font-bold text-gray-900">{users.length}</p>
         </div>
-        <div className="bg-white rounded-lg border border-gray-200 p-4">
+        <div className="bg-white rounded-lg border border-gray-200 p-4 shadow-md">
           <p className="text-sm text-gray-500">Banned Users</p>
-          <p className="text-2xl font-bold text-red-600">
+          <p className="text-3xl font-bold text-red-600">
             {users.filter((u) => u.is_banned).length}
           </p>
         </div>
-        <div className="bg-white rounded-lg border border-gray-200 p-4">
+        <div className="bg-white rounded-lg border border-gray-200 p-4 shadow-md">
           <p className="text-sm text-gray-500">Total Revenue</p>
-          <p className="text-2xl font-bold text-green-600">
+          <p className="text-3xl font-bold text-green-600">
             ${users.reduce((sum, u) => sum + u.total_spend, 0).toFixed(2)}
           </p>
         </div>

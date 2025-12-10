@@ -881,6 +881,15 @@ function PaymentModal({
   isProcessing: boolean
   projectId?: string | null
 }) {
+  const [ndaAccepted, setNdaAccepted] = useState(false)
+
+  // Reset NDA acceptance when modal closes
+  useEffect(() => {
+    if (!isOpen) {
+      setNdaAccepted(false)
+    }
+  }, [isOpen])
+
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-lg">
@@ -947,6 +956,35 @@ function PaymentModal({
             </div>
           </div>
 
+          {/* NDA Agreement */}
+          <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
+            <label className="flex items-start gap-3 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={ndaAccepted}
+                onChange={(e) => setNdaAccepted(e.target.checked)}
+                className="mt-1 w-4 h-4 text-[#008080] border-gray-300 rounded focus:ring-[#008080]"
+              />
+              <div className="flex-1">
+                <p className="text-sm font-medium text-gray-900">
+                  I agree to the NexSupply Standard NDA (Non-Disclosure Agreement)
+                </p>
+                <p className="text-xs text-gray-600 mt-1">
+                  By proceeding, you acknowledge that all project information will be kept confidential and protected under our standard NDA terms.{' '}
+                  <a
+                    href="/terms#nda"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-[#008080] hover:underline"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    View NDA Terms
+                  </a>
+                </p>
+              </div>
+            </label>
+          </div>
+
           {/* Non-refundable Notice (Microcopy) */}
           <div className="pt-2 border-t border-gray-200">
             <p className="text-xs text-gray-500 text-center leading-relaxed">
@@ -973,8 +1011,19 @@ function PaymentModal({
                 : 'https://junkim82.gumroad.com/l/wmtnuv'
               }
               data-gumroad-single-product="true"
-              onClick={onProceed}
-              className="w-full inline-flex items-center justify-center bg-[#008080] hover:bg-teal-700 text-white font-semibold py-3 rounded-lg transition-colors"
+              onClick={(e) => {
+                if (!ndaAccepted) {
+                  e.preventDefault()
+                  alert('Please accept the NDA agreement to proceed with payment.')
+                  return
+                }
+                onProceed(e)
+              }}
+              className={`w-full inline-flex items-center justify-center font-semibold py-3 rounded-lg transition-colors ${
+                ndaAccepted
+                  ? 'bg-[#008080] hover:bg-teal-700 text-white cursor-pointer'
+                  : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+              }`}
             >
               Proceed to Payment
             </a>

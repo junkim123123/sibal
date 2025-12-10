@@ -92,55 +92,55 @@ export default function SuperAdminDashboard() {
       {/* KPI Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
         {/* Unassigned Pro Projects */}
-        <div className="bg-white rounded-lg border border-gray-200 p-6 shadow-sm">
+        <div className="bg-white rounded-lg border border-gray-200 p-6 shadow-md hover:shadow-lg transition-shadow">
           <div className="flex items-center justify-between mb-4">
-            <div className="p-3 bg-red-100 rounded-lg">
-              <AlertCircle className="w-6 h-6 text-red-600" />
+            <div className="p-3 bg-red-50 rounded-lg">
+              <AlertCircle className="w-6 h-6 text-red-500" />
             </div>
             {stats.unassignedProjects > 0 && (
-              <span className="px-3 py-1 bg-red-100 text-red-700 rounded-full text-sm font-semibold">
+              <span className="px-3 py-1 bg-red-50 text-red-700 rounded-full text-sm font-semibold">
                 {stats.unassignedProjects}
               </span>
             )}
           </div>
           <h3 className="text-sm font-medium text-gray-500 mb-1">Unassigned Projects</h3>
-          <p className="text-3xl font-bold text-gray-900">{stats.unassignedProjects}</p>
+          <p className="text-4xl font-bold text-gray-900">{stats.unassignedProjects}</p>
           <p className="text-xs text-gray-500 mt-2">Projects waiting for manager assignment</p>
         </div>
 
         {/* Active Projects */}
-        <div className="bg-white rounded-lg border border-gray-200 p-6 shadow-sm">
+        <div className="bg-white rounded-lg border border-gray-200 p-6 shadow-md hover:shadow-lg transition-shadow">
           <div className="flex items-center justify-between mb-4">
-            <div className="p-3 bg-blue-100 rounded-lg">
+            <div className="p-3 bg-blue-50 rounded-lg">
               <TrendingUp className="w-6 h-6 text-blue-600" />
             </div>
           </div>
           <h3 className="text-sm font-medium text-gray-500 mb-1">Active Projects</h3>
-          <p className="text-3xl font-bold text-gray-900">{stats.activeProjects}</p>
+          <p className="text-4xl font-bold text-gray-900">{stats.activeProjects}</p>
           <p className="text-xs text-gray-500 mt-2">Currently in progress</p>
         </div>
 
         {/* Total Revenue */}
-        <div className="bg-white rounded-lg border border-gray-200 p-6 shadow-sm">
+        <div className="bg-white rounded-lg border border-gray-200 p-6 shadow-md hover:shadow-lg transition-shadow">
           <div className="flex items-center justify-between mb-4">
-            <div className="p-3 bg-green-100 rounded-lg">
+            <div className="p-3 bg-green-50 rounded-lg">
               <DollarSign className="w-6 h-6 text-green-600" />
             </div>
           </div>
           <h3 className="text-sm font-medium text-gray-500 mb-1">Total Revenue</h3>
-          <p className="text-3xl font-bold text-gray-900">${stats.totalRevenue.toLocaleString()}</p>
+          <p className="text-4xl font-bold text-gray-900">${stats.totalRevenue.toLocaleString()}</p>
           <p className="text-xs text-gray-500 mt-2">This month</p>
         </div>
 
         {/* Manager Utilization */}
-        <div className="bg-white rounded-lg border border-gray-200 p-6 shadow-sm">
+        <div className="bg-white rounded-lg border border-gray-200 p-6 shadow-md hover:shadow-lg transition-shadow">
           <div className="flex items-center justify-between mb-4">
-            <div className="p-3 bg-purple-100 rounded-lg">
+            <div className="p-3 bg-purple-50 rounded-lg">
               <Users className="w-6 h-6 text-purple-600" />
             </div>
           </div>
           <h3 className="text-sm font-medium text-gray-500 mb-1">Manager Utilization</h3>
-          <p className="text-3xl font-bold text-gray-900">
+          <p className="text-4xl font-bold text-gray-900">
             {stats.managerUtilization.available}/{stats.managerUtilization.total}
           </p>
           <p className="text-xs text-gray-500 mt-2">Available managers</p>
@@ -148,14 +148,14 @@ export default function SuperAdminDashboard() {
       </div>
 
       {/* Quick Actions */}
-      <div className="bg-white rounded-lg border border-gray-200 p-6 shadow-sm">
+      <div className="bg-white rounded-lg border border-gray-200 p-6 shadow-md">
         <h2 className="text-lg font-semibold text-gray-900 mb-4">Quick Actions</h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <a
             href="/admin/dispatch"
-            className="p-4 border border-gray-200 rounded-lg hover:border-blue-500 hover:bg-blue-50 transition-colors"
+            className="p-4 border border-gray-200 rounded-lg hover:border-[#008080] hover:bg-teal-50 hover:shadow-lg hover:-translate-y-1 transition-all duration-200"
           >
-            <UserCheck className="w-5 h-5 text-blue-600 mb-2" />
+            <UserCheck className="w-5 h-5 text-[#008080] mb-2" />
             <h3 className="font-semibold text-gray-900 mb-1">Dispatch Projects</h3>
             <p className="text-sm text-gray-500">
               Assign {stats.unassignedProjects > 0 ? `${stats.unassignedProjects} ` : ''}unassigned project{stats.unassignedProjects !== 1 ? 's' : ''}
@@ -163,17 +163,17 @@ export default function SuperAdminDashboard() {
           </a>
           <a
             href="/admin/users"
-            className="p-4 border border-gray-200 rounded-lg hover:border-purple-500 hover:bg-purple-50 transition-colors"
+            className="p-4 border border-gray-200 rounded-lg hover:border-[#008080] hover:bg-teal-50 hover:shadow-lg hover:-translate-y-1 transition-all duration-200"
           >
-            <Users className="w-5 h-5 text-purple-600 mb-2" />
+            <Users className="w-5 h-5 text-[#008080] mb-2" />
             <h3 className="font-semibold text-gray-900 mb-1">Manage Users</h3>
             <p className="text-sm text-gray-500">View, ban, or refund users</p>
           </a>
           <a
             href="/admin/revenue"
-            className="p-4 border border-gray-200 rounded-lg hover:border-green-500 hover:bg-green-50 transition-colors"
+            className="p-4 border border-gray-200 rounded-lg hover:border-[#008080] hover:bg-teal-50 hover:shadow-lg hover:-translate-y-1 transition-all duration-200"
           >
-            <TrendingUp className="w-5 h-5 text-green-600 mb-2" />
+            <TrendingUp className="w-5 h-5 text-[#008080] mb-2" />
             <h3 className="font-semibold text-gray-900 mb-1">Revenue Dashboard</h3>
             <p className="text-sm text-gray-500">View sales and refunds</p>
           </a>

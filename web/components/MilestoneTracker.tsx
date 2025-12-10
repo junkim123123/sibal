@@ -174,7 +174,7 @@ export function MilestoneTracker({ projectId, managerId }: MilestoneTrackerProps
 
   return (
     <div className="bg-white rounded-lg border border-gray-200 p-4 h-full flex flex-col">
-      <div className="mb-4">
+      <div className="mb-4 pb-3 border-b border-gray-200 bg-gray-50 -mx-4 -mt-4 px-4 pt-4">
         <h3 className="text-sm font-semibold text-gray-900 mb-1">Project Milestones</h3>
         <p className="text-xs text-gray-500">진행 단계를 업데이트하세요</p>
       </div>
@@ -214,9 +214,9 @@ export function MilestoneTracker({ projectId, managerId }: MilestoneTrackerProps
                     <p
                       className={`text-sm font-medium ${
                         isCompleted
-                          ? 'text-gray-900'
+                          ? 'text-[#008080] line-through'
                           : isInProgress
-                          ? 'text-blue-600'
+                          ? 'text-[#008080]'
                           : 'text-gray-400'
                       }`}
                     >
@@ -235,17 +235,17 @@ export function MilestoneTracker({ projectId, managerId }: MilestoneTrackerProps
                   </div>
                   
                   {/* Toggle Switch */}
-                  <div className="flex items-center gap-2">
+                  <div className="flex flex-col items-end gap-1">
                     {isCompleted ? (
-                      <div className="relative inline-flex h-6 w-11 items-center rounded-full bg-green-500">
+                      <div className="relative inline-flex h-6 w-11 items-center rounded-full bg-[#008080]">
                         <span className="inline-block h-4 w-4 transform rounded-full bg-white translate-x-6 transition-transform" />
                       </div>
                     ) : toggleable ? (
                       <button
                         onClick={() => toggleMilestone(idx, isCompleted)}
                         disabled={isUpdating}
-                        className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed ${
-                          isInProgress ? 'bg-blue-500' : 'bg-gray-200 hover:bg-gray-300'
+                        className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-[#008080] focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed ${
+                          isInProgress ? 'bg-[#008080]' : 'bg-gray-200 hover:bg-gray-300'
                         }`}
                         title={isInProgress ? '완료 처리하기' : '시작하기'}
                       >
@@ -262,6 +262,11 @@ export function MilestoneTracker({ projectId, managerId }: MilestoneTrackerProps
                       <div className="relative inline-flex h-6 w-11 items-center rounded-full bg-gray-200 opacity-50">
                         <span className="inline-block h-4 w-4 transform rounded-full bg-white translate-x-1" />
                       </div>
+                    )}
+                    {(isCompleted || isInProgress) && (
+                      <p className="text-xs text-gray-500 text-right whitespace-nowrap">
+                        고객 대시보드에 업데이트됨
+                      </p>
                     )}
                   </div>
                 </div>

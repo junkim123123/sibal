@@ -171,6 +171,13 @@ export default function ResourcesPage() {
                               src={`https://img.youtube.com/vi/${video.youtubeId}/maxresdefault.jpg`}
                               alt={video.title}
                               className="w-full h-full object-cover"
+                              onError={(e) => {
+                                // maxresdefault가 없으면 hqdefault로 fallback
+                                const target = e.target as HTMLImageElement;
+                                if (target.src.includes('maxresdefault')) {
+                                  target.src = `https://img.youtube.com/vi/${video.youtubeId}/hqdefault.jpg`;
+                                }
+                              }}
                             />
                             <div className="absolute inset-0 bg-black/30 group-hover:bg-black/40 transition-colors flex items-center justify-center">
                               <div className="w-16 h-16 rounded-full bg-white/90 flex items-center justify-center group-hover:scale-110 transition-transform">
@@ -219,6 +226,13 @@ export default function ResourcesPage() {
                               src={`https://img.youtube.com/vi/${video.youtubeId}/maxresdefault.jpg`}
                               alt={video.title}
                               className="w-full h-full object-cover"
+                              onError={(e) => {
+                                // maxresdefault가 없으면 hqdefault로 fallback
+                                const target = e.target as HTMLImageElement;
+                                if (target.src.includes('maxresdefault')) {
+                                  target.src = `https://img.youtube.com/vi/${video.youtubeId}/hqdefault.jpg`;
+                                }
+                              }}
                             />
                             <div className="absolute inset-0 bg-black/30 group-hover:bg-black/40 transition-colors flex items-center justify-center">
                               <div className="w-16 h-16 rounded-full bg-white/90 flex items-center justify-center group-hover:scale-110 transition-transform">

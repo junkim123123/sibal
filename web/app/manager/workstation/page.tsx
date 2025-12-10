@@ -30,7 +30,7 @@ function WorkstationPageContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const [selectedProjectId, setSelectedProjectId] = useState<string | null>(
-    searchParams.get('project_id')
+    searchParams?.get('project_id') || null
   );
   const [chatSessionId, setChatSessionId] = useState<string | null>(null);
   const [managerId, setManagerId] = useState<string | null>(null);
@@ -51,7 +51,7 @@ function WorkstationPageContent() {
         setManagerId(user.id);
 
         // URL에서 project_id가 있으면 로드
-        const projectId = searchParams.get('project_id');
+        const projectId = searchParams?.get('project_id');
         if (projectId && projectId !== selectedProjectId) {
           await loadProject(projectId, user.id);
         }
@@ -153,9 +153,9 @@ function WorkstationPageContent() {
       </div>
 
       {/* Split View */}
-      <div className="grid grid-cols-12 gap-4 h-[calc(100vh-12rem)]">
+      <div className="grid grid-cols-12 gap-0 h-[calc(100vh-12rem)] border border-gray-200 rounded-lg overflow-hidden">
         {/* Left: Client List (30%) */}
-        <div className="col-span-12 lg:col-span-3">
+        <div className="col-span-12 lg:col-span-3 border-r border-gray-300">
           <ClientList
             onProjectSelect={handleProjectSelect}
             selectedProjectId={selectedProjectId}
@@ -163,7 +163,7 @@ function WorkstationPageContent() {
         </div>
 
         {/* Center: Chat (40%) */}
-        <div className="col-span-12 lg:col-span-5">
+        <div className="col-span-12 lg:col-span-5 border-r border-gray-300">
           {selectedProjectId && chatSessionId && managerId ? (
             <ManagerChat
               sessionId={chatSessionId}
@@ -171,6 +171,10 @@ function WorkstationPageContent() {
               userId={managerId}
               showQuickReplies={true}
               isManager={true}
+              projectData={project ? {
+                name: project.name,
+                // TODO: Load quantity, targetPrice, port from analysis_data
+              } : null}
             />
           ) : selectedProjectId && managerId ? (
             <div className="h-full bg-white rounded-lg border border-gray-200 flex items-center justify-center">

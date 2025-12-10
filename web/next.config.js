@@ -6,7 +6,14 @@ const nextConfig = {
   // Set the root directory for file tracing to avoid workspace root inference issues
   outputFileTracingRoot: path.join(__dirname),
   images: {
-    domains: ['cdn.sanity.io'],
+    domains: ['cdn.sanity.io', 'img.youtube.com'],
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'img.youtube.com',
+        pathname: '/vi/**',
+      },
+    ],
   },
   // HTML 최적화 및 DOCTYPE 명시
   poweredByHeader: false,

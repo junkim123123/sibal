@@ -147,7 +147,7 @@ export default function ManagerSettingsPage() {
         <div className="p-6 space-y-6">
           {/* Name */}
           <div>
-            <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
+            <label className="flex items-center gap-2 text-sm font-semibold text-gray-800 mb-2">
               <User className="w-4 h-4" />
               이름
             </label>
@@ -155,14 +155,14 @@ export default function ManagerSettingsPage() {
               type="text"
               value={profile.name}
               onChange={(e) => setProfile({ ...profile, name: e.target.value })}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 placeholder:text-gray-500"
               placeholder="이름을 입력하세요"
             />
           </div>
 
           {/* Email (Read-only) */}
           <div>
-            <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
+            <label className="flex items-center gap-2 text-sm font-semibold text-gray-800 mb-2">
               <Mail className="w-4 h-4" />
               이메일
             </label>
@@ -170,14 +170,14 @@ export default function ManagerSettingsPage() {
               type="email"
               value={profile.email}
               disabled
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg bg-gray-50 text-gray-500"
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg bg-gray-50 text-gray-700"
             />
-            <p className="mt-1 text-xs text-gray-500">이메일은 변경할 수 없습니다</p>
+            <p className="mt-1 text-xs text-gray-600">이메일은 변경할 수 없습니다</p>
           </div>
 
           {/* Company */}
           <div>
-            <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
+            <label className="flex items-center gap-2 text-sm font-semibold text-gray-800 mb-2">
               <Building2 className="w-4 h-4" />
               회사/소속
             </label>
@@ -185,14 +185,14 @@ export default function ManagerSettingsPage() {
               type="text"
               value={profile.company}
               onChange={(e) => setProfile({ ...profile, company: e.target.value })}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 placeholder:text-gray-500"
               placeholder="회사 또는 소속을 입력하세요"
             />
           </div>
 
           {/* Bio */}
           <div>
-            <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
+            <label className="flex items-center gap-2 text-sm font-semibold text-gray-800 mb-2">
               <Briefcase className="w-4 h-4" />
               소개
             </label>
@@ -200,14 +200,14 @@ export default function ManagerSettingsPage() {
               value={profile.bio}
               onChange={(e) => setProfile({ ...profile, bio: e.target.value })}
               rows={4}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 placeholder:text-gray-500"
               placeholder="자신에 대한 간단한 소개를 입력하세요"
             />
           </div>
 
           {/* Expertise Tags */}
           <div>
-            <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
+            <label className="flex items-center gap-2 text-sm font-semibold text-gray-800 mb-2">
               <Briefcase className="w-4 h-4" />
               전문 분야
             </label>
@@ -222,7 +222,7 @@ export default function ManagerSettingsPage() {
                     addExpertise();
                   }
                 }}
-                className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 placeholder:text-gray-500"
                 placeholder="전문 분야를 입력하고 Enter를 누르세요"
               />
               <Button onClick={addExpertise} variant="outline">
@@ -249,7 +249,7 @@ export default function ManagerSettingsPage() {
 
           {/* Availability Status */}
           <div>
-            <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
+            <label className="flex items-center gap-2 text-sm font-semibold text-gray-800 mb-2">
               상태
             </label>
             <select

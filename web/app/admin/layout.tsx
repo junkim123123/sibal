@@ -31,6 +31,7 @@ export default function SuperAdminLayout({
   const pathname = usePathname();
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
   const [isSuperAdmin, setIsSuperAdmin] = useState(false);
+  const [userRole, setUserRole] = useState<'super_admin' | 'manager' | null>(null);
   const [userName, setUserName] = useState<string>('');
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
@@ -54,6 +55,7 @@ export default function SuperAdminLayout({
           // 이메일로 super admin 확인됨
           setIsSuperAdmin(true);
           setIsAuthenticated(true);
+          setUserRole('super_admin');
           setUserName(user.email?.split('@')[0] || 'Super Admin');
           return;
         }
@@ -70,15 +72,16 @@ export default function SuperAdminLayout({
           return;
         }
 
-        if (profile.role !== 'super_admin') {
-          // 슈퍼 어드민이 아닌 경우 접근 차단
+        // super_admin 또는 manager만 접근 허용
+        if (profile.role !== 'super_admin' && profile.role !== 'manager') {
           router.push('/dashboard');
           return;
         }
 
-        setIsSuperAdmin(true);
+        setIsSuperAdmin(profile.role === 'super_admin');
+        setUserRole(profile.role as 'super_admin' | 'manager');
         setIsAuthenticated(true);
-        setUserName(profile.name || user.email?.split('@')[0] || 'Super Admin');
+        setUserName(profile.name || user.email?.split('@')[0] || 'Admin');
       } catch (error) {
         console.error('[Super Admin Layout] Auth check error:', error);
         router.push('/login?redirect=/admin');
@@ -106,12 +109,13 @@ export default function SuperAdminLayout({
     return null;
   }
 
+  // Role-based navigation items
   const navItems = [
-    { href: '/admin', label: 'Dashboard', icon: LayoutDashboard },
-    { href: '/admin/dispatch', label: 'Dispatch Center', icon: UserCheck },
-    { href: '/admin/users', label: 'User Management', icon: Users },
-    { href: '/admin/revenue', label: 'Revenue', icon: TrendingUp },
-  ];
+    { href: '/admin', label: 'Dashboard', icon: LayoutDashboard, roles: ['super_admin', 'manager'] },
+    { href: '/admin/dispatch', label: 'Dispatch Center', icon: UserCheck, roles: ['super_admin', 'manager'] },
+    { href: '/admin/users', label: 'User Management', icon: Users, roles: ['super_admin'] },
+    { href: '/admin/revenue', label: 'Revenue', icon: TrendingUp, roles: ['super_admin'] },
+  ].filter(item => !userRole || item.roles.includes(userRole));
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -137,10 +141,14 @@ export default function SuperAdminLayout({
             {/* Header */}
             <div className="p-6 border-b border-neutral-800">
               <div className="flex items-center gap-3 mb-2">
-                <Shield className="w-6 h-6 text-yellow-500" />
-                <h1 className="text-xl font-bold">Super Admin</h1>
+                <Shield className="w-6 h-6 text-[#008080]" />
+                <h1 className="text-xl font-bold">
+                  {userRole === 'super_admin' ? 'Super Admin' : 'Manager Portal'}
+                </h1>
               </div>
-              <p className="text-sm text-neutral-400">God Mode</p>
+              <p className="text-sm text-neutral-400">
+                {userRole === 'super_admin' ? 'God Mode' : 'Project Management'}
+              </p>
             </div>
 
             {/* Navigation */}
@@ -156,7 +164,7 @@ export default function SuperAdminLayout({
                     onClick={() => setSidebarOpen(false)}
                     className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
                       isActive
-                        ? 'bg-yellow-600 text-white'
+                        ? 'bg-[#008080] text-white'
                         : 'text-neutral-300 hover:bg-neutral-800 hover:text-white'
                     }`}
                   >
@@ -171,7 +179,9 @@ export default function SuperAdminLayout({
             <div className="p-4 border-t border-neutral-800">
               <div className="mb-3 px-4">
                 <p className="text-sm font-medium text-white">{userName}</p>
-                <p className="text-xs text-neutral-400">Super Admin</p>
+                <p className="text-xs text-neutral-400">
+                  {userRole === 'super_admin' ? 'Super Admin' : 'Manager'}
+                </p>
               </div>
               <button
                 onClick={handleSignOut}

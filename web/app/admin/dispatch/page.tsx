@@ -158,12 +158,12 @@ export default function DispatchCenterPage() {
       {/* Split View */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Left: Unassigned Projects */}
-        <div className="bg-white rounded-lg border border-gray-200 shadow-sm">
+        <div className="bg-white rounded-lg border border-gray-200 shadow-md">
           <div className="p-6 border-b border-gray-200">
             <div className="flex items-center justify-between">
               <h2 className="text-xl font-semibold text-gray-900">Unassigned Projects</h2>
               {unassignedProjects.length > 0 && (
-                <span className="px-3 py-1 bg-red-100 text-red-700 rounded-full text-sm font-semibold">
+                <span className="px-3 py-1 bg-red-50 text-red-700 rounded-full text-sm font-semibold">
                   {unassignedProjects.length}
                 </span>
               )}
@@ -186,16 +186,16 @@ export default function DispatchCenterPage() {
                   <button
                     key={project.id}
                     onClick={() => setSelectedProjectId(project.id)}
-                    className={`w-full text-left p-4 rounded-lg border-2 transition-all ${
+                    className={`w-full text-left p-4 rounded-lg border-2 transition-all shadow-sm hover:shadow-md ${
                       selectedProjectId === project.id
-                        ? 'border-blue-500 bg-blue-50'
-                        : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
+                        ? 'border-[#008080] bg-teal-50'
+                        : 'border-gray-200 hover:border-[#008080]/30 hover:bg-gray-50'
                     }`}
                   >
                     <div className="flex items-start justify-between mb-2">
                       <h3 className="font-semibold text-gray-900">{project.name}</h3>
                       {selectedProjectId === project.id && (
-                        <CheckCircle2 className="w-5 h-5 text-blue-600 flex-shrink-0" />
+                        <CheckCircle2 className="w-5 h-5 text-[#008080] flex-shrink-0" />
                       )}
                     </div>
                     <p className="text-sm text-gray-600 mb-1">{project.user_name}</p>
@@ -216,7 +216,7 @@ export default function DispatchCenterPage() {
         </div>
 
         {/* Right: Manager Pool */}
-        <div className="bg-white rounded-lg border border-gray-200 shadow-sm">
+        <div className="bg-white rounded-lg border border-gray-200 shadow-md">
           <div className="p-6 border-b border-gray-200">
             <h2 className="text-xl font-semibold text-gray-900">Manager Pool</h2>
             <p className="text-sm text-gray-500 mt-1">Select a manager to assign</p>
@@ -236,12 +236,12 @@ export default function DispatchCenterPage() {
                     key={manager.id}
                     onClick={() => setSelectedManagerId(manager.id)}
                     disabled={manager.availability_status === 'offline'}
-                    className={`w-full text-left p-4 rounded-lg border-2 transition-all ${
+                    className={`w-full text-left p-4 rounded-lg border-2 transition-all shadow-sm hover:shadow-md ${
                       selectedManagerId === manager.id
-                        ? 'border-blue-500 bg-blue-50'
+                        ? 'border-[#008080] bg-teal-50'
                         : manager.availability_status === 'offline'
                         ? 'border-gray-200 bg-gray-50 opacity-50 cursor-not-allowed'
-                        : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
+                        : 'border-gray-200 hover:border-[#008080]/30 hover:bg-gray-50'
                     }`}
                   >
                     <div className="flex items-start justify-between mb-2">
@@ -250,7 +250,7 @@ export default function DispatchCenterPage() {
                         <p className="text-sm text-gray-600">{manager.email}</p>
                       </div>
                       {selectedManagerId === manager.id && (
-                        <CheckCircle2 className="w-5 h-5 text-blue-600 flex-shrink-0" />
+                        <CheckCircle2 className="w-5 h-5 text-[#008080] flex-shrink-0" />
                       )}
                     </div>
                     <div className="flex items-center gap-4 mt-2 text-xs">
@@ -295,7 +295,7 @@ export default function DispatchCenterPage() {
           <button
             onClick={handleAssign}
             disabled={isAssigning}
-            className="px-8 py-3 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+            className="px-8 py-3 bg-[#008080] text-white rounded-lg font-semibold hover:bg-[#006666] transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 shadow-md hover:shadow-lg"
           >
             {isAssigning ? (
               <>

@@ -44,6 +44,12 @@ interface ManagerChatProps {
   onClose?: () => void;
   showQuickReplies?: boolean;
   isManager?: boolean;
+  projectData?: {
+    name?: string;
+    quantity?: number;
+    targetPrice?: number;
+    port?: string;
+  } | null;
 }
 
 const QUICK_REPLIES = [
@@ -69,6 +75,7 @@ export function ManagerChat({
   onClose,
   showQuickReplies = false,
   isManager = false,
+  projectData = null,
 }: ManagerChatProps) {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [inputMessage, setInputMessage] = useState('');
@@ -409,10 +416,37 @@ export function ManagerChat({
   return (
     <div className="flex flex-col h-full bg-white rounded-lg border border-gray-200 shadow-sm">
       {/* Chat Header */}
-      <div className="flex items-center justify-between p-4 border-b border-gray-200">
-        <div>
+      <div className="flex items-center justify-between p-4 border-b border-gray-200 bg-gray-50">
+        <div className="flex-1">
           <h3 className="font-semibold text-gray-900">Live Chat</h3>
           <p className="text-xs text-gray-500">Chat with your NexSupply expert</p>
+          {/* Contextual Summary (Manager Only) */}
+          {isManager && projectData && (
+            <div className="mt-2 pt-2 border-t border-gray-200">
+              <div className="flex flex-wrap gap-3 text-xs">
+                {projectData.name && (
+                  <span className="text-gray-700">
+                    <span className="font-semibold">Product:</span> {projectData.name}
+                  </span>
+                )}
+                {projectData.quantity && (
+                  <span className="text-gray-700">
+                    <span className="font-semibold">QTY:</span> {projectData.quantity.toLocaleString()} units
+                  </span>
+                )}
+                {projectData.targetPrice && (
+                  <span className="text-gray-700">
+                    <span className="font-semibold">Target:</span> ${projectData.targetPrice}
+                  </span>
+                )}
+                {projectData.port && (
+                  <span className="text-gray-700">
+                    <span className="font-semibold">Port:</span> {projectData.port}
+                  </span>
+                )}
+              </div>
+            </div>
+          )}
         </div>
         <div className="flex items-center gap-2">
           {/* View AI Analysis Button (Manager Only) */}
@@ -633,10 +667,63 @@ export function ManagerChat({
             {QUICK_REPLIES.map((reply, idx) => (
               <button
                 key={idx}
-                onClick={() => {
-                  setInputMessage(reply);
+                onClick={async () => {
+                  if (!sessionId || isSending) return;
+                  
+                  const tempMessageId = `temp-${Date.now()}`;
+                  const optimisticMessage: ChatMessage = {
+                    id: tempMessageId,
+                    sender_id: userId,
+                    role: 'manager',
+                    content: reply,
+                    created_at: new Date().toISOString(),
+                    file_url: null,
+                    file_type: null,
+                    file_name: null,
+                  };
+                  
+                  setMessages((prev) => [...prev, optimisticMessage]);
+                  setIsSending(true);
+
+                  try {
+                    const response = await fetch('/api/chat-messages', {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify({
+                        session_id: sessionId,
+                        sender_id: userId,
+                        role: 'manager',
+                        content: reply,
+                      }),
+                    });
+
+                    const data = await response.json();
+                    if (!data.ok) throw new Error(data.error || 'Failed to send message');
+
+                    if (data.message) {
+                      setMessages((prev) => {
+                        const tempIndex = prev.findIndex((msg) => msg.id === tempMessageId);
+                        if (tempIndex >= 0) {
+                          const updated = [...prev];
+                          updated[tempIndex] = {
+                            ...data.message,
+                            sender_id: userId,
+                            role: 'manager',
+                          };
+                          return updated;
+                        }
+                        return prev;
+                      });
+                    }
+                  } catch (error) {
+                    console.error('[ManagerChat] Failed to send quick reply:', error);
+                    setMessages((prev) => prev.filter((msg) => msg.id !== tempMessageId));
+                  } finally {
+                    setIsSending(false);
+                  }
                 }}
-                className="px-3 py-1.5 text-xs bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg transition-colors"
+                disabled={isSending}
+                className="px-3 py-1.5 text-xs bg-gray-100 hover:bg-[#008080] hover:text-white text-gray-700 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {reply}
               </button>

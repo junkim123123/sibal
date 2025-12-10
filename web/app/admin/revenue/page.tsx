@@ -65,8 +65,8 @@ export default function RevenuePage() {
         (p: any) => p.payment_date && new Date(p.payment_date) >= thisMonthStart
       ).length || 0;
 
-      // Placeholder: $199 per project
-      const pricePerProject = 199;
+      // $49 Deposit per project (updated pricing model)
+      const pricePerProject = 49;
       const totalRevenue = (totalPaid || 0) * pricePerProject;
       const thisMonthRevenue = thisMonthProjects * pricePerProject;
 
@@ -103,54 +103,54 @@ export default function RevenuePage() {
       {/* Revenue Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
         {/* Total Revenue */}
-        <div className="bg-white rounded-lg border border-gray-200 p-6 shadow-sm">
+        <div className="bg-white rounded-lg border border-gray-200 p-6 shadow-md hover:shadow-lg transition-shadow">
           <div className="flex items-center justify-between mb-4">
-            <div className="p-3 bg-green-100 rounded-lg">
+            <div className="p-3 bg-green-50 rounded-lg">
               <DollarSign className="w-6 h-6 text-green-600" />
             </div>
           </div>
           <h3 className="text-sm font-medium text-gray-500 mb-1">Total Revenue</h3>
-          <p className="text-3xl font-bold text-gray-900">
+          <p className="text-4xl font-bold text-gray-900">
             ${stats.totalRevenue.toLocaleString()}
           </p>
           <p className="text-xs text-gray-500 mt-2">All time</p>
         </div>
 
         {/* This Month Revenue */}
-        <div className="bg-white rounded-lg border border-gray-200 p-6 shadow-sm">
+        <div className="bg-white rounded-lg border border-gray-200 p-6 shadow-md hover:shadow-lg transition-shadow">
           <div className="flex items-center justify-between mb-4">
-            <div className="p-3 bg-blue-100 rounded-lg">
+            <div className="p-3 bg-blue-50 rounded-lg">
               <TrendingUp className="w-6 h-6 text-blue-600" />
             </div>
           </div>
           <h3 className="text-sm font-medium text-gray-500 mb-1">This Month</h3>
-          <p className="text-3xl font-bold text-gray-900">
+          <p className="text-4xl font-bold text-gray-900">
             ${stats.thisMonthRevenue.toLocaleString()}
           </p>
           <p className="text-xs text-gray-500 mt-2">Current month</p>
         </div>
 
         {/* Paid Projects */}
-        <div className="bg-white rounded-lg border border-gray-200 p-6 shadow-sm">
+        <div className="bg-white rounded-lg border border-gray-200 p-6 shadow-md hover:shadow-lg transition-shadow">
           <div className="flex items-center justify-between mb-4">
-            <div className="p-3 bg-purple-100 rounded-lg">
+            <div className="p-3 bg-purple-50 rounded-lg">
               <ArrowUpRight className="w-6 h-6 text-purple-600" />
             </div>
           </div>
           <h3 className="text-sm font-medium text-gray-500 mb-1">Paid Projects</h3>
-          <p className="text-3xl font-bold text-gray-900">{stats.paidProjects}</p>
+          <p className="text-4xl font-bold text-gray-900">{stats.paidProjects}</p>
           <p className="text-xs text-gray-500 mt-2">Completed payments</p>
         </div>
 
         {/* Refunded Projects */}
-        <div className="bg-white rounded-lg border border-gray-200 p-6 shadow-sm">
+        <div className="bg-white rounded-lg border border-gray-200 p-6 shadow-md hover:shadow-lg transition-shadow">
           <div className="flex items-center justify-between mb-4">
-            <div className="p-3 bg-red-100 rounded-lg">
+            <div className="p-3 bg-red-50 rounded-lg">
               <TrendingDown className="w-6 h-6 text-red-600" />
             </div>
           </div>
           <h3 className="text-sm font-medium text-gray-500 mb-1">Refunded</h3>
-          <p className="text-3xl font-bold text-gray-900">{stats.refundedProjects}</p>
+          <p className="text-4xl font-bold text-gray-900">{stats.refundedProjects}</p>
           <p className="text-xs text-gray-500 mt-2">Total refunds</p>
         </div>
       </div>
@@ -158,7 +158,7 @@ export default function RevenuePage() {
       {/* Note */}
       <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
         <p className="text-sm text-yellow-800">
-          <strong>Note:</strong> Revenue calculation is based on project count × $199 per project.
+          <strong>Note:</strong> Revenue calculation is based on project count × $49 (Deposit) per project.
           For accurate revenue data, integrate with Lemon Squeezy API or payment tracking system.
         </p>
       </div>

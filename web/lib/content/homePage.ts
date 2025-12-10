@@ -238,6 +238,60 @@ export const homePageConfig: HomePageConfig = {
         role: 'DTC brand operator',
         date: 'November 22, 2025',
       },
+      {
+        id: 'retail-buyer',
+        headline: 'Avoided a costly compliance mistake',
+        quote:
+          'We were exploring a new hardlines category with complex compliance requirements. The compliance flags helped us avoid a very expensive mistake on a new category launch.',
+        name: 'Michael Chen',
+        role: 'Retail buyer, hardlines',
+        date: 'November 20, 2025',
+      },
+      {
+        id: 'fba-seller-2',
+        headline: 'Validated margins before committing',
+        quote:
+          'When launching a new snack category, we were worried about duties and AD/CVD risk. NexSupply gave us a way to validate unit profitability and duties before we committed to inventory.',
+        name: 'Sarah Martinez',
+        role: 'Amazon FBA seller, CPG',
+        date: 'November 18, 2025',
+      },
+      {
+        id: 'trading-company',
+        headline: 'Faster supplier comparison',
+        quote:
+          'As a trading company, we source for multiple clients. NexSupply helped us compare three different factories and their landed costs in one report. Saved us weeks of back-and-forth.',
+        name: 'James Park',
+        role: 'Trading company owner',
+        date: 'November 15, 2025',
+      },
+      {
+        id: 'dtc-brand',
+        headline: 'Transparent pricing from day one',
+        quote:
+          'We needed to test a new snack product quickly without committing to a large order. NexSupply handled the pilot through to a larger order—the process felt fast and contained.',
+        name: 'Rachel Kim',
+        role: 'Food & beverage brand manager',
+        date: 'November 12, 2025',
+      },
+      {
+        id: 'wholesale',
+        headline: 'Better than our old sourcing agent',
+        quote:
+          'We used to work with a sourcing agent who took weeks to get quotes. NexSupply gave us the same level of detail in 24 hours. The AI analysis caught things our agent missed.',
+        name: 'David Thompson',
+        role: 'Wholesale distributor',
+        date: 'November 10, 2025',
+      },
+      {
+        id: 'fba-seller-3',
+        headline: 'Risk assessment saved us',
+        quote:
+          'The risk scoring flagged potential AD/CVD issues on a product we were considering. We switched suppliers and avoided what could have been a 30% duty surprise.',
+        name: 'Lisa Wang',
+        role: 'Amazon FBA seller',
+        date: 'November 8, 2025',
+      },
     ],
   },
   teamSection: {

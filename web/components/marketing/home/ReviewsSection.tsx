@@ -36,34 +36,39 @@ export function ReviewsSection({ section }: { section: HomeReviewsSection }) {
           </div>
         </div>
 
-        <div className="mt-10 grid gap-6 sm:gap-8 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
-          {reviews.map((review) => {
-            // Extract the most impactful sentence (first sentence) and bold it
-            const quoteParts = review.quote.split('. ');
-            const firstSentence = quoteParts[0];
-            const restOfQuote = quoteParts.slice(1).join('. ');
-            
-            return (
-              <article
-                key={review.id}
-                className="flex h-full flex-col rounded-2xl bg-neutral-50 p-5 shadow-sm border border-neutral-100"
-              >
-                <h3 className="text-sm font-semibold leading-snug text-neutral-900">
-                  {review.headline}
-                </h3>
-                <p className="mt-3 text-sm text-neutral-700 flex-1 leading-relaxed">
-                  &ldquo;<strong className="font-semibold text-neutral-900">{firstSentence}</strong>{restOfQuote ? '. ' + restOfQuote : ''}&rdquo;
-                </p>
-              <div className="mt-4 text-xs text-neutral-500">
-                <p className="font-medium text-neutral-700">
-                  {review.name}
-                  {review.role ? ` · ${review.role}` : ''}
-                </p>
-                <p>{review.date}</p>
-              </div>
-            </article>
-            );
-          })}
+        {/* Horizontal Scroll Container */}
+        <div className="mt-10 -mx-4 sm:-mx-6 px-4 sm:px-6">
+          <div className="overflow-x-auto pb-4 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+            <div className="flex gap-6 sm:gap-8 min-w-max">
+              {reviews.map((review) => {
+                // Extract the most impactful sentence (first sentence) and bold it
+                const quoteParts = review.quote.split('. ');
+                const firstSentence = quoteParts[0];
+                const restOfQuote = quoteParts.slice(1).join('. ');
+                
+                return (
+                  <article
+                    key={review.id}
+                    className="flex flex-col w-[320px] sm:w-[360px] flex-shrink-0 rounded-2xl bg-neutral-50 p-5 sm:p-6 shadow-sm border border-neutral-100"
+                  >
+                    <h3 className="text-sm font-semibold leading-snug text-neutral-900">
+                      {review.headline}
+                    </h3>
+                    <p className="mt-3 text-sm text-neutral-700 flex-1 leading-relaxed">
+                      &ldquo;<strong className="font-semibold text-neutral-900">{firstSentence}</strong>{restOfQuote ? '. ' + restOfQuote : ''}&rdquo;
+                    </p>
+                    <div className="mt-4 text-xs text-neutral-500">
+                      <p className="font-medium text-neutral-700">
+                        {review.name}
+                        {review.role ? ` · ${review.role}` : ''}
+                      </p>
+                      <p>{review.date}</p>
+                    </div>
+                  </article>
+                );
+              })}
+            </div>
+          </div>
         </div>
       </div>
     </section>

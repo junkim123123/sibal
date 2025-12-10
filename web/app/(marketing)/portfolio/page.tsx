@@ -78,7 +78,12 @@ export default function PortfolioPage() {
           {categories.length > 0 && (
             <div className="flex flex-wrap justify-center gap-3 max-w-4xl mx-auto">
               <button
-                onClick={() => setSelectedCategory('all')}
+                type="button"
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  setSelectedCategory('all');
+                }}
                 className={`px-6 py-2 rounded-full text-sm font-medium transition-colors ${
                   selectedCategory === 'all'
                     ? 'bg-[#008080] text-white'
@@ -90,7 +95,12 @@ export default function PortfolioPage() {
               {categories.map((category) => (
                 <button
                   key={category}
-                  onClick={() => setSelectedCategory(category)}
+                  type="button"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    setSelectedCategory(category);
+                  }}
                   className={`px-6 py-2 rounded-full text-sm font-medium transition-colors ${
                     selectedCategory === category
                       ? 'bg-[#008080] text-white'

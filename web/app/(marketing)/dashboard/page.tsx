@@ -99,14 +99,14 @@ function DashboardPageContent() {
       console.log('[Dashboard] Projects with saved status:', savedCount);
 
       if (data.ok && data.projects) {
-        // My Requests: 모든 프로젝트 (active, in_progress, saved 모두 포함)
-        // 별표 기능은 추후 추가 예정
+        // My Requests: 모든 프로젝트 (active, in_progress, saved, completed 모두 포함)
+        // ✨ completed 상태도 포함하여 분석 완료된 프로젝트도 표시
         const allRequests = data.projects
-          .filter((p: any) => p.status === 'active' || p.status === 'in_progress' || p.status === 'saved')
+          .filter((p: any) => p.status === 'active' || p.status === 'in_progress' || p.status === 'saved' || p.status === 'completed')
           .map((p: any) => ({
             id: p.id,
             productName: p.name,
-            landedCost: p.total_landed_cost ? `$${p.total_landed_cost.toFixed(2)}` : 'N/A',
+            landedCost: p.total_landed_cost ? `$${p.total_landed_cost.toFixed(2)}` : 'N/A per unit',
             date: new Date(p.created_at).toLocaleDateString('en-US', { 
               month: 'short', 
               day: 'numeric', 
@@ -223,7 +223,7 @@ function DashboardPageContent() {
     checkAuth()
   }, [])
 
-  // 페이지 포커스 시 데이터 다시 불러오기
+  // 페이지 포커스/가시성 변경 시 데이터 다시 불러오기
   useEffect(() => {
     if (!userId || !isAuthenticated || !loadProjects) return
 
@@ -233,11 +233,23 @@ function DashboardPageContent() {
       loadUsageData(userId) // 사용량 데이터도 새로고침
     }
 
+    const handleVisibilityChange = () => {
+      // 페이지가 보이게 되었을 때 (다른 탭에서 돌아왔을 때) 데이터 새로고침
+      if (!document.hidden) {
+        console.log('[Dashboard] Page visible, reloading data...')
+        loadProjects(userId)
+        loadUsageData(userId)
+      }
+    }
+
     // 페이지 포커스 시 데이터 새로고침
     window.addEventListener('focus', handleFocus)
+    // 페이지 가시성 변경 시 데이터 새로고침 (다른 탭에서 돌아올 때)
+    document.addEventListener('visibilitychange', handleVisibilityChange)
 
     return () => {
       window.removeEventListener('focus', handleFocus)
+      document.removeEventListener('visibilitychange', handleVisibilityChange)
     }
   }, [userId, isAuthenticated, loadProjects])
 

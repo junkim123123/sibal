@@ -1086,21 +1086,20 @@ function ResultsActionButtons({
     setShowPaymentModal(true);
   };
 
-  // 결제 진행 핸들러 - Gumroad 결제 페이지로 이동
-  const handleProceedToPayment = async () => {
+  // 결제 진행 핸들러 - 프로젝트 생성 및 모달 닫기 (Gumroad Overlay는 <a> 태그가 자동 처리)
+  const handleProceedToPayment = async (e: React.MouseEvent<HTMLAnchorElement>) => {
     if (!isAuthenticated) {
+      e.preventDefault();
       window.location.href = '/login?redirect=/results';
       return;
     }
 
-    setIsProcessingPayment(true);
-    setShowPaymentModal(false);
-    
-    try {
-      // 프로젝트가 없으면 먼저 생성
-      let finalProjectId = projectId;
+    // 프로젝트가 없으면 먼저 생성
+    if (!projectId) {
+      e.preventDefault();
+      setIsProcessingPayment(true);
       
-      if (!finalProjectId) {
+      try {
         // 프로젝트 이름 추출
         const productName = answers?.product_info?.split('-')[0]?.trim() || 
                            answers?.product_info?.split(',')[0]?.trim() ||
@@ -1123,24 +1122,41 @@ function ResultsActionButtons({
 
         const projectData = await projectResponse.json();
         if (projectData.ok && projectData.projectId) {
-          finalProjectId = projectData.projectId;
+          setIsProcessingPayment(false);
+          setShowPaymentModal(false);
+          
+          // 프로젝트 ID를 포함한 Gumroad 링크로 Overlay 열기
+          const gumroadUrl = `https://junkim82.gumroad.com/l/wmtnuv?custom_field1=${projectData.projectId}`;
+          const gumroadLink = document.createElement('a');
+          gumroadLink.href = gumroadUrl;
+          gumroadLink.setAttribute('data-gumroad-single-product', 'true');
+          gumroadLink.style.display = 'none';
+          document.body.appendChild(gumroadLink);
+          
+          // Gumroad 스크립트가 로드될 때까지 대기 후 클릭
+          const triggerGumroad = () => {
+            if (typeof (window as any).GumroadOverlay !== 'undefined') {
+              gumroadLink.click();
+              setTimeout(() => {
+                document.body.removeChild(gumroadLink);
+              }, 100);
+            } else {
+              setTimeout(triggerGumroad, 100);
+            }
+          };
+          
+          triggerGumroad();
         } else {
           throw new Error('Failed to create project');
         }
+      } catch (error) {
+        console.error('[Payment] Failed to proceed:', error);
+        alert(`Failed to proceed with payment: ${error instanceof Error ? error.message : 'Unknown error'}`);
+        setIsProcessingPayment(false);
       }
-
-      // Gumroad 결제 페이지로 리다이렉트 (프로젝트 ID를 URL 파라미터로 전달)
-      const gumroadUrl = new URL('https://junkim82.gumroad.com/l/wmtnuv');
-      if (finalProjectId) {
-        gumroadUrl.searchParams.set('custom_field1', finalProjectId);
-      }
-      
-      // Gumroad 결제 페이지로 이동
-      window.location.href = gumroadUrl.toString();
-    } catch (error) {
-      console.error('[Payment] Failed to proceed:', error);
-      alert(`Failed to proceed with payment: ${error instanceof Error ? error.message : 'Unknown error'}`);
-      setIsProcessingPayment(false);
+    } else {
+      // 프로젝트가 이미 있으면 모달만 닫기 (Gumroad Overlay는 자동으로 열림)
+      setShowPaymentModal(false);
     }
   };
 
@@ -1237,29 +1253,38 @@ function ResultsActionButtons({
               </div>
             </div>
 
-            <DialogFooter className="flex-col sm:flex-col gap-3">
-              <Button
-                onClick={handleProceedToPayment}
-                disabled={isProcessingPayment}
-                className="w-full bg-[#008080] hover:bg-teal-700 text-white font-semibold py-3"
-              >
-                {isProcessingPayment ? (
-                  <span className="flex items-center gap-2">
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                    <span>Processing...</span>
-                  </span>
-                ) : (
-                  'Proceed to Payment'
-                )}
-              </Button>
-              <button
-                onClick={() => setShowPaymentModal(false)}
-                className="text-sm text-gray-500 hover:text-gray-700"
-                disabled={isProcessingPayment}
-              >
-                Cancel
-              </button>
-            </DialogFooter>
+        <DialogFooter className="flex-col sm:flex-col gap-3">
+          {isProcessingPayment ? (
+            <Button
+              disabled
+              className="w-full bg-[#008080] hover:bg-teal-700 text-white font-semibold py-3"
+            >
+              <span className="flex items-center gap-2">
+                <Loader2 className="w-4 h-4 animate-spin" />
+                <span>Processing...</span>
+              </span>
+            </Button>
+          ) : (
+            <a
+              href={projectId 
+                ? `https://junkim82.gumroad.com/l/wmtnuv?custom_field1=${projectId}`
+                : 'https://junkim82.gumroad.com/l/wmtnuv'
+              }
+              data-gumroad-single-product="true"
+              onClick={handleProceedToPayment}
+              className="w-full inline-flex items-center justify-center bg-[#008080] hover:bg-teal-700 text-white font-semibold py-3 rounded-lg transition-colors"
+            >
+              Proceed to Payment
+            </a>
+          )}
+          <button
+            onClick={() => setShowPaymentModal(false)}
+            className="text-sm text-gray-500 hover:text-gray-700"
+            disabled={isProcessingPayment}
+          >
+            Cancel
+          </button>
+        </DialogFooter>
           </DialogContent>
         </Dialog>
       </>
@@ -1278,20 +1303,34 @@ function ResultsActionButtons({
             <div className="flex flex-col items-end gap-3 min-w-[360px] ml-auto">
               {/* Main CTA Button */}
               <div className="w-full">
-                <Button
-                  onClick={handleStartSourcing}
-                  disabled={isProcessingPayment}
-                  className="w-full bg-[#008080] hover:bg-teal-700 text-white font-semibold py-3.5 px-6"
-                >
-                  {isProcessingPayment ? (
-                    <span className="flex items-center gap-2">
-                      <Loader2 className="w-4 h-4 animate-spin" />
-                      <span>Processing...</span>
-                    </span>
-                  ) : (
-                    <span className="text-base">Request Official Quote</span>
-                  )}
-                </Button>
+              <a
+                href={projectId 
+                  ? `https://junkim82.gumroad.com/l/wmtnuv?custom_field1=${projectId}`
+                  : 'https://junkim82.gumroad.com/l/wmtnuv'
+                }
+                data-gumroad-single-product="true"
+                onClick={(e) => {
+                  if (!isAuthenticated) {
+                    e.preventDefault();
+                    window.location.href = '/login?redirect=/results';
+                    return;
+                  }
+                  if (!projectId) {
+                    e.preventDefault();
+                    handleStartSourcing();
+                  }
+                }}
+                className="w-full inline-flex items-center justify-center bg-[#008080] hover:bg-teal-700 text-white font-semibold py-3.5 px-6 rounded-lg transition-colors"
+              >
+                {isProcessingPayment ? (
+                  <span className="flex items-center gap-2">
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    <span>Processing...</span>
+                  </span>
+                ) : (
+                  <span className="text-base">Request Official Quote</span>
+                )}
+              </a>
                 {/* Info Badge */}
                 <div className="mt-2 text-center">
                   <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-gray-600">
@@ -1373,20 +1412,29 @@ function ResultsActionButtons({
               </div>
 
               <DialogFooter className="flex-col sm:flex-col gap-3">
-                <Button
-                  onClick={handleProceedToPayment}
-                  disabled={isProcessingPayment}
-                  className="w-full bg-neutral-900 hover:bg-neutral-800 text-white font-semibold py-3"
-                >
-                  {isProcessingPayment ? (
+                {isProcessingPayment ? (
+                  <Button
+                    disabled
+                    className="w-full bg-neutral-900 hover:bg-neutral-800 text-white font-semibold py-3"
+                  >
                     <span className="flex items-center gap-2">
                       <Loader2 className="w-4 h-4 animate-spin" />
                       <span>Processing...</span>
                     </span>
-                  ) : (
-                    'Pay $49 & Start Sourcing'
-                  )}
-                </Button>
+                  </Button>
+                ) : (
+                  <a
+                    href={projectId 
+                      ? `https://junkim82.gumroad.com/l/wmtnuv?custom_field1=${projectId}`
+                      : 'https://junkim82.gumroad.com/l/wmtnuv'
+                    }
+                    data-gumroad-single-product="true"
+                    onClick={handleProceedToPayment}
+                    className="w-full inline-flex items-center justify-center bg-neutral-900 hover:bg-neutral-800 text-white font-semibold py-3 rounded-lg transition-colors"
+                  >
+                    Pay $49 & Start Sourcing
+                  </a>
+                )}
                 <button
                   onClick={() => setShowPaymentModal(false)}
                   className="text-sm text-gray-500 hover:text-gray-700"

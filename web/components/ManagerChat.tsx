@@ -9,7 +9,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { createClient } from '@/lib/supabase/client';
-import { Send, Loader2, FileText, X } from 'lucide-react';
+import { Send, Loader2, FileText, X, Paperclip, Image as ImageIcon, CheckCircle2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -22,12 +22,19 @@ import {
 interface ChatMessage {
   id: string;
   sender_id: string;
-  role: 'user' | 'manager';
+  role: 'user' | 'manager' | 'system';
   content: string;
   created_at: string;
   file_url?: string | null;
   file_type?: string | null;
   file_name?: string | null;
+  message_type?: 'text' | 'quote' | 'system';
+  quote_data?: {
+    title: string;
+    price: number;
+    currency?: string;
+    description?: string;
+  };
 }
 
 interface ManagerChatProps {
@@ -70,6 +77,9 @@ export function ManagerChat({
   const [showAnalysisModal, setShowAnalysisModal] = useState(false);
   const [analysisData, setAnalysisData] = useState<any>(null);
   const [isLoadingAnalysis, setIsLoadingAnalysis] = useState(false);
+  const [uploadingFile, setUploadingFile] = useState(false);
+  const [previewFile, setPreviewFile] = useState<{ file: File; preview: string } | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const supabase = createClient();
 
@@ -194,6 +204,118 @@ export function ManagerChat({
       setAnalysisData(null);
     } finally {
       setIsLoadingAnalysis(false);
+    }
+  };
+
+  // 파일 업로드 핸들러
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // 이미지 미리보기
+    if (file.type.startsWith('image/')) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setPreviewFile({
+          file,
+          preview: reader.result as string,
+        });
+      };
+      reader.readAsDataURL(file);
+    } else {
+      setPreviewFile({ file, preview: '' });
+    }
+  };
+
+  // 파일 업로드 및 메시지 전송
+  const handleFileUpload = async () => {
+    if (!previewFile || !sessionId || uploadingFile) return;
+
+    setUploadingFile(true);
+    const tempMessageId = `temp-${Date.now()}`;
+
+    try {
+      // Supabase Storage에 파일 업로드
+      const fileExt = previewFile.file.name.split('.').pop();
+      const fileName = `${sessionId}/${Date.now()}.${fileExt}`;
+      const filePath = `chat-files/${fileName}`;
+
+      const { data: uploadData, error: uploadError } = await supabase.storage
+        .from('chat-files')
+        .upload(filePath, previewFile.file, {
+          cacheControl: '3600',
+          upsert: false,
+        });
+
+      if (uploadError) {
+        throw uploadError;
+      }
+
+      // 공개 URL 가져오기
+      const { data: { publicUrl } } = supabase.storage
+        .from('chat-files')
+        .getPublicUrl(filePath);
+
+      // Optimistic update
+      const optimisticMessage: ChatMessage = {
+        id: tempMessageId,
+        sender_id: userId,
+        role: isManager ? 'manager' : 'user',
+        content: previewFile.file.name,
+        created_at: new Date().toISOString(),
+        file_url: publicUrl,
+        file_type: previewFile.file.type,
+        file_name: previewFile.file.name,
+      };
+
+      setMessages((prev) => [...prev, optimisticMessage]);
+      setPreviewFile(null);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+
+      // API를 통해 메시지 전송
+      const response = await fetch('/api/chat-messages', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          session_id: sessionId,
+          sender_id: userId,
+          role: isManager ? 'manager' : 'user',
+          content: previewFile.file.name,
+          file_url: publicUrl,
+          file_type: previewFile.file.type,
+          file_name: previewFile.file.name,
+        }),
+      });
+
+      const data = await response.json();
+      if (!data.ok) {
+        throw new Error(data.error || 'Failed to send file');
+      }
+
+      // 실제 메시지로 교체
+      if (data.message) {
+        setMessages((prev) => {
+          const tempIndex = prev.findIndex((msg) => msg.id === tempMessageId);
+          if (tempIndex >= 0) {
+            const updated = [...prev];
+            updated[tempIndex] = {
+              ...data.message,
+              sender_id: userId,
+              role: isManager ? 'manager' : 'user',
+            };
+            return updated;
+          }
+          return prev;
+        });
+      }
+    } catch (error) {
+      console.error('[ManagerChat] Failed to upload file:', error);
+      setMessages((prev) => prev.filter((msg) => msg.id !== tempMessageId));
+      alert(`Failed to upload file: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    } finally {
+      setUploadingFile(false);
     }
   };
 
@@ -365,20 +487,77 @@ export function ManagerChat({
             </div>
           </div>
         ) : (
-          messages.map((message) => {
+          messages.map((message, index) => {
             const isManagerMessage = message.role === 'manager';
-            const isSystemMessage = message.content.startsWith('System:');
+            const isSystemMessage = message.role === 'system' || message.content.startsWith('System:') || message.content.startsWith('[System]');
+            const isQuoteMessage = message.message_type === 'quote' || message.quote_data;
             
             // 자신의 메시지인지 확인
-            // 매니저일 때: role이 'manager'이고 sender_id가 자신의 userId
-            // 클라이언트일 때: role이 'user'이고 sender_id가 자신의 userId
             const isOwnMessage = 
               (isManager && isManagerMessage && message.sender_id === userId) ||
               (!isManager && !isManagerMessage && message.sender_id === userId);
             
-            // 상대방 메시지 (항상 표시되어야 함)
+            // 상대방 메시지
             const isOtherMessage = !isOwnMessage && !isSystemMessage;
             
+            // 시스템 메시지 렌더링
+            if (isSystemMessage) {
+              return (
+                <div key={message.id} className="flex items-center justify-center my-4">
+                  <div className="flex items-center gap-2 px-4 py-2 bg-gray-100 rounded-full">
+                    <div className="w-1 h-1 bg-gray-400 rounded-full"></div>
+                    <p className="text-xs text-gray-500 text-center">
+                      {message.content.replace(/^\[System\]:?\s*/i, '').replace(/^System:\s*/i, '')}
+                    </p>
+                    <div className="w-1 h-1 bg-gray-400 rounded-full"></div>
+                  </div>
+                </div>
+              );
+            }
+
+            // 견적서 카드 렌더링
+            if (isQuoteMessage && message.quote_data) {
+              return (
+                <div
+                  key={message.id}
+                  className={`flex ${isOwnMessage ? 'justify-end' : 'justify-start'}`}
+                >
+                  <div className="max-w-[80%] rounded-lg border-2 border-[#008080] bg-white shadow-md overflow-hidden">
+                    <div className="bg-[#008080] text-white px-4 py-2">
+                      <p className="text-sm font-semibold">{message.quote_data.title || 'Official Quote Ready'}</p>
+                    </div>
+                    <div className="p-4">
+                      {message.quote_data.description && (
+                        <p className="text-sm text-gray-700 mb-3">{message.quote_data.description}</p>
+                      )}
+                      <div className="flex items-baseline gap-2 mb-4">
+                        <span className="text-2xl font-bold text-gray-900">
+                          {message.quote_data.currency || '$'}{message.quote_data.price.toLocaleString()}
+                        </span>
+                        <span className="text-sm text-gray-500">per unit</span>
+                      </div>
+                      <Button
+                        onClick={() => {
+                          // 견적서 승인 로직 (프로젝트 상세 페이지로 이동)
+                          window.location.href = `/dashboard/projects/${projectId}`;
+                        }}
+                        className="w-full bg-[#008080] hover:bg-teal-700 text-white"
+                      >
+                        View & Approve
+                      </Button>
+                    </div>
+                    <p className="text-xs text-gray-400 px-4 pb-2 text-right">
+                      {new Date(message.created_at).toLocaleTimeString('en-US', {
+                        hour: '2-digit',
+                        minute: '2-digit',
+                      })}
+                    </p>
+                  </div>
+                </div>
+              );
+            }
+            
+            // 일반 메시지 렌더링
             return (
               <div
                 key={message.id}
@@ -386,37 +565,51 @@ export function ManagerChat({
               >
                 <div
                   className={`max-w-[80%] rounded-lg p-3 ${
-                    isSystemMessage
-                      ? 'bg-yellow-50 border border-yellow-200'
-                      : isOwnMessage
+                    isOwnMessage
                       ? 'bg-blue-600 text-white'
                       : 'bg-gray-100 text-gray-900'
                   }`}
                 >
-                  {isSystemMessage && (
-                    <p className="text-xs font-semibold text-yellow-700 mb-1">System</p>
-                  )}
                   {isOtherMessage && (
                     <p className="text-xs font-medium text-gray-600 mb-1">
                       {isManagerMessage ? 'Manager' : 'You'}
                     </p>
                   )}
                   <p className="text-sm whitespace-pre-wrap">{message.content}</p>
+                  
+                  {/* 파일 미리보기 */}
                   {message.file_url && (
-                    <a
-                      href={message.file_url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-xs underline mt-1 block"
-                    >
-                      📎 {message.file_name || 'File'}
-                    </a>
+                    <div className="mt-2">
+                      {message.file_type?.startsWith('image/') ? (
+                        <a
+                          href={message.file_url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="block rounded-lg overflow-hidden border border-gray-300 hover:border-gray-400 transition-colors"
+                        >
+                          <img
+                            src={message.file_url}
+                            alt={message.file_name || 'Image'}
+                            className="max-w-full h-auto max-h-64 object-contain"
+                          />
+                        </a>
+                      ) : (
+                        <a
+                          href={message.file_url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-2 px-3 py-2 bg-white/10 hover:bg-white/20 rounded-lg mt-2 transition-colors"
+                        >
+                          <FileText className="w-4 h-4" />
+                          <span className="text-sm">{message.file_name || 'File'}</span>
+                        </a>
+                      )}
+                    </div>
                   )}
+                  
                   <p className={`text-xs mt-1 ${
                     isOwnMessage 
                       ? 'text-blue-100' 
-                      : isSystemMessage
-                      ? 'text-yellow-600'
                       : 'text-gray-500'
                   }`}>
                     {new Date(message.created_at).toLocaleTimeString('en-US', {
@@ -452,9 +645,82 @@ export function ManagerChat({
         </div>
       )}
 
+      {/* File Preview */}
+      {previewFile && (
+        <div className="px-4 pt-4 border-t border-gray-200">
+          <div className="bg-gray-50 rounded-lg p-3 border border-gray-200 flex items-start gap-3">
+            {previewFile.preview ? (
+              <img
+                src={previewFile.preview}
+                alt="Preview"
+                className="w-16 h-16 object-cover rounded"
+              />
+            ) : (
+              <FileText className="w-8 h-8 text-gray-400 flex-shrink-0" />
+            )}
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-medium text-gray-900 truncate">
+                {previewFile.file.name}
+              </p>
+              <p className="text-xs text-gray-500">
+                {(previewFile.file.size / 1024).toFixed(1)} KB
+              </p>
+            </div>
+            <button
+              onClick={() => setPreviewFile(null)}
+              className="text-gray-400 hover:text-gray-600"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+          <div className="mt-2 flex gap-2">
+            <Button
+              onClick={handleFileUpload}
+              disabled={uploadingFile}
+              className="bg-[#008080] hover:bg-teal-700 text-white"
+            >
+              {uploadingFile ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                  Uploading...
+                </>
+              ) : (
+                'Send File'
+              )}
+            </Button>
+            <Button
+              onClick={() => setPreviewFile(null)}
+              variant="outline"
+              disabled={uploadingFile}
+            >
+              Cancel
+            </Button>
+          </div>
+        </div>
+      )}
+
       {/* Input */}
       <div className="p-4 border-t border-gray-200">
         <div className="flex gap-2">
+          {/* File Upload Button */}
+          <input
+            ref={fileInputRef}
+            type="file"
+            id="file-upload"
+            className="hidden"
+            accept="image/*,.pdf,.doc,.docx,.xls,.xlsx"
+            onChange={handleFileSelect}
+          />
+          <button
+            type="button"
+            onClick={() => fileInputRef.current?.click()}
+            className="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
+            disabled={isSending || uploadingFile || !!previewFile}
+            title="Attach file"
+          >
+            <Paperclip className="w-5 h-5" />
+          </button>
+          
           <input
             type="text"
             value={inputMessage}
@@ -467,11 +733,11 @@ export function ManagerChat({
             }}
             placeholder="Type your message..."
             className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 bg-white"
-            disabled={isSending}
+            disabled={isSending || uploadingFile || !!previewFile}
           />
           <Button
             onClick={handleSendMessage}
-            disabled={!inputMessage.trim() || isSending}
+            disabled={!inputMessage.trim() || isSending || uploadingFile || !!previewFile}
             className="bg-blue-600 hover:bg-blue-700 text-white"
           >
             {isSending ? (

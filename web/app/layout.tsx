@@ -36,8 +36,10 @@ export default function RootLayout({
         {/* Content Security Policy로 외부 스크립트 제한 */}
         <meta
           httpEquiv="Content-Security-Policy"
-          content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://vercel.live https://gumroad.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data:; connect-src 'self' https:; frame-src 'self' https://www.youtube.com https://youtube.com; frame-ancestors 'self';"
+          content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://vercel.live https://gumroad.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data:; connect-src 'self' https:; frame-src 'self' https://www.youtube.com https://youtube.com https://gumroad.com; frame-ancestors 'self';"
         />
+        {/* Gumroad Overlay Script */}
+        <script src="https://gumroad.com/js/gumroad.js" async></script>
         {/* 외부 스크립트 오류를 가장 먼저 차단하는 인라인 스크립트 */}
         <script
           dangerouslySetInnerHTML={{

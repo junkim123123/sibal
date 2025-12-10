@@ -872,12 +872,14 @@ function PaymentModal({
   isOpen, 
   onClose, 
   onProceed, 
-  isProcessing 
+  isProcessing,
+  projectId
 }: { 
   isOpen: boolean
   onClose: () => void
-  onProceed: () => void
+  onProceed: (e: React.MouseEvent<HTMLAnchorElement>) => void
   isProcessing: boolean
+  projectId?: string | null
 }) {
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -954,20 +956,29 @@ function PaymentModal({
         </div>
 
         <DialogFooter className="flex-col sm:flex-col gap-3">
-          <Button
-            onClick={onProceed}
-            disabled={isProcessing}
-            className="w-full bg-[#008080] hover:bg-teal-700 text-white font-semibold py-3"
-          >
-            {isProcessing ? (
+          {isProcessing ? (
+            <Button
+              disabled
+              className="w-full bg-[#008080] hover:bg-teal-700 text-white font-semibold py-3"
+            >
               <span className="flex items-center gap-2">
                 <Loader2 className="w-4 h-4 animate-spin" />
                 <span>Processing...</span>
               </span>
-            ) : (
-              'Proceed to Payment'
-            )}
-          </Button>
+            </Button>
+          ) : (
+            <a
+              href={projectId 
+                ? `https://junkim82.gumroad.com/l/wmtnuv?custom_field1=${projectId}`
+                : 'https://junkim82.gumroad.com/l/wmtnuv'
+              }
+              data-gumroad-single-product="true"
+              onClick={onProceed}
+              className="w-full inline-flex items-center justify-center bg-[#008080] hover:bg-teal-700 text-white font-semibold py-3 rounded-lg transition-colors"
+            >
+              Proceed to Payment
+            </a>
+          )}
           <button
             onClick={onClose}
             className="text-sm text-gray-500 hover:text-gray-700"
@@ -994,25 +1005,9 @@ function EstimatesList({ estimates }: { estimates: any[] }) {
     setShowPaymentModal(true)
   }
 
-  const handleProceedToPayment = async () => {
-    if (!selectedProjectId) return
-    
-    setIsProcessingPayment(true)
+  const handleProceedToPayment = (e: React.MouseEvent<HTMLAnchorElement>) => {
+    // 모달만 닫기 (Gumroad Overlay는 <a> 태그가 자동 처리)
     setShowPaymentModal(false)
-    
-    try {
-      // Gumroad 결제 페이지로 이동 (프로젝트 ID를 URL 파라미터로 전달)
-      const gumroadUrl = new URL('https://junkim82.gumroad.com/l/wmtnuv')
-      gumroadUrl.searchParams.set('custom_field1', selectedProjectId)
-      
-      // Gumroad 결제 페이지로 이동
-      window.open(gumroadUrl.toString(), '_blank')
-    } catch (error) {
-      console.error('[Payment] Failed to proceed:', error)
-      alert(`Failed to proceed with payment: ${error instanceof Error ? error.message : 'Unknown error'}`)
-    } finally {
-      setIsProcessingPayment(false)
-    }
   }
 
   if (estimates.length === 0) {
@@ -1105,6 +1100,7 @@ function EstimatesList({ estimates }: { estimates: any[] }) {
         onClose={() => setShowPaymentModal(false)}
         onProceed={handleProceedToPayment}
         isProcessing={isProcessingPayment}
+        projectId={selectedProjectId}
       />
     </div>
   )
@@ -1361,9 +1357,19 @@ function ShipmentsList({ shipments }: { shipments: any[] }) {
                   >
                     {shipment.batchName}
                   </Link>
-                  <p className="text-sm text-gray-600 mt-1">
-                    {shipment.destination} • {shipment.date}
-                  </p>
+                  {quoteStatus === 'preparing' ? (
+                    <p className="text-sm text-gray-500 mt-1">
+                      Waiting for Quote
+                    </p>
+                  ) : shipment.destination === 'TBD' ? (
+                    <p className="text-sm text-gray-600 mt-1">
+                      {shipment.date}
+                    </p>
+                  ) : (
+                    <p className="text-sm text-gray-600 mt-1">
+                      {shipment.destination} • {shipment.date}
+                    </p>
+                  )}
                   {shipment.awaitingManager && (
                     <p className="text-xs text-blue-600 font-medium mt-1">
                       ⏰ Manager will be assigned within 24 hours
@@ -1371,7 +1377,7 @@ function ShipmentsList({ shipments }: { shipments: any[] }) {
                   )}
                   {quoteStatus === 'preparing' && (
                     <p className="text-xs text-orange-600 font-medium mt-1">
-                      ⏳ Agent is preparing your quote
+                      Agent is preparing your quote
                     </p>
                   )}
                 </div>
@@ -1382,7 +1388,7 @@ function ShipmentsList({ shipments }: { shipments: any[] }) {
                   <Button
                     variant="outline"
                     size="sm"
-                    className="text-xs"
+                    className="text-xs text-gray-600 border-gray-300 hover:bg-gray-50"
                   >
                     Message Agent
                   </Button>

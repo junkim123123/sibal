@@ -476,128 +476,148 @@ function ClientChatContent() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-          {/* Left Sidebar: Chat Sessions List */}
-          <div className="lg:col-span-1">
-            <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-4 sticky top-8">
-              <div className="mb-4">
+    <div className="h-screen bg-gray-50 flex flex-col">
+      {/* Header */}
+      <div className="bg-white border-b border-gray-200 px-6 py-4 flex-shrink-0">
+        <Link
+          href="/dashboard"
+          className="inline-flex items-center gap-2 text-sm text-gray-600 hover:text-gray-900 transition-colors"
+        >
+          <ArrowLeft className="w-4 h-4" />
+          Back to Dashboard
+        </Link>
+      </div>
+
+      {/* 3-Column Layout */}
+      <div className="flex-1 grid grid-cols-12 h-[calc(100vh-64px)] overflow-hidden">
+        {/* Left: Chat List (col-span-3) */}
+        <div className="col-span-12 lg:col-span-3 bg-gray-50 border-r border-gray-200 flex flex-col overflow-hidden">
+          <div className="p-4 border-b border-gray-200 flex-shrink-0">
+            <h2 className="text-lg font-semibold text-gray-900">Active Chats</h2>
+          </div>
+          <div className="flex-1 overflow-y-auto p-4 space-y-2">
+            {chatSessions.length === 0 ? (
+              <p className="text-sm text-gray-500 text-center py-4">
+                No active chats
+              </p>
+            ) : (
+              chatSessions.map((session) => (
                 <Link
-                  href="/dashboard"
-                  className="inline-flex items-center gap-2 text-sm text-gray-600 hover:text-gray-900 mb-4 transition-colors"
+                  key={session.id}
+                  href={`/dashboard/chat?project_id=${session.project_id}&session_id=${session.id}`}
+                  className={`block p-3 rounded-lg border transition-all ${
+                    selectedSession === session.id
+                      ? 'border-blue-500 bg-blue-50'
+                      : 'border-gray-200 hover:border-gray-300 hover:bg-white bg-white'
+                  }`}
                 >
-                  <ArrowLeft className="w-4 h-4" />
-                  Back to Dashboard
-                </Link>
-                <h2 className="text-lg font-semibold text-gray-900">Active Chats</h2>
-              </div>
-              <div className="space-y-2 max-h-[calc(100vh-12rem)] overflow-y-auto">
-                {chatSessions.length === 0 ? (
-                  <p className="text-sm text-gray-500 text-center py-4">
-                    No active chats
+                  <div className="flex items-start justify-between mb-1">
+                    <h3 className="font-medium text-sm text-gray-900 truncate">
+                      {session.projectName}
+                    </h3>
+                  </div>
+                  <p className="text-xs text-gray-500 truncate mb-1">
+                    {session.managerName}
                   </p>
-                ) : (
-                  chatSessions.map((session) => (
-                  <Link
-                    key={session.id}
-                    href={`/dashboard/chat?project_id=${session.project_id}&session_id=${session.id}`}
-                    className={`block p-3 rounded-lg border transition-all ${
-                      selectedSession === session.id
-                        ? 'border-blue-500 bg-blue-50'
-                        : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
-                    }`}
-                  >
-                    <div className="flex items-start justify-between mb-1">
-                      <h3 className="font-medium text-sm text-gray-900 truncate">
-                        {session.projectName}
-                      </h3>
-                    </div>
-                    <p className="text-xs text-gray-500 truncate mb-1">
-                      {session.managerName}
+                  {session.lastMessage && (
+                    <p className="text-xs text-gray-600 truncate">
+                      {session.lastMessage}
                     </p>
-                    {session.lastMessage && (
-                      <p className="text-xs text-gray-600 truncate">
-                        {session.lastMessage}
-                      </p>
-                    )}
-                  </Link>
-                  ))
-                )}
-              </div>
-            </div>
+                  )}
+                </Link>
+              ))
+            )}
+          </div>
+        </div>
+
+        {/* Center: Live Chat Area (col-span-6) - Main */}
+        <div className="col-span-12 lg:col-span-6 bg-white flex flex-col overflow-hidden">
+          {/* Chat Header */}
+          <div className="p-4 border-b border-gray-200 flex-shrink-0">
+            <h1 className="text-xl font-bold text-gray-900">{projectName}</h1>
+            <p className="text-xs text-gray-500 mt-1">
+              {project?.manager_id 
+                ? `Chat with ${chatSessions.find(s => s.project_id === projectId)?.managerName || 'your manager'}` 
+                : 'Manager will be assigned within 24 hours. You can send messages now.'
+              }
+            </p>
           </div>
 
-          {/* Main Content: Chat + To-Do List */}
-          <div className="lg:col-span-3 space-y-6">
-            {/* Header */}
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900">{projectName}</h1>
-              <p className="text-sm text-gray-500 mt-1">
-                {project?.manager_id 
-                  ? `Chat with ${chatSessions.find(s => s.project_id === projectId)?.managerName || 'your manager'}` 
-                  : '⏰ Manager will be assigned within 24 hours. You can send messages now.'
-                }
-              </p>
-            </div>
-
-            {/* To-Do List (if any) */}
-            {todoList.length > 0 && (
-              <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-5">
-                <h2 className="text-lg font-semibold text-gray-900 mb-4">Action Items</h2>
-                <div className="space-y-3">
-                  {todoList.map((todo) => (
-                    <div
-                      key={todo.id}
-                      className="flex items-start gap-3 p-3 bg-gray-50 rounded-lg border border-gray-200"
-                    >
-                      <input
-                        type="checkbox"
-                        id={`todo-${todo.id}`}
-                        name={`todo-${todo.id}`}
-                        checked={todo.status === 'completed'}
-                        disabled
-                        className="mt-1 w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
-                        aria-label={`${todo.task} - ${todo.status === 'completed' ? 'Completed' : 'Pending'}`}
-                      />
-                      <div className="flex-1">
-                        <p className={`text-sm font-medium ${
-                          todo.status === 'completed' 
-                            ? 'text-gray-500 line-through' 
-                            : 'text-gray-900'
-                        }`}>
-                          {todo.task}
-                        </p>
-                        <p className="text-xs text-gray-500 mt-1">
-                          Requested by {todo.requestedBy}
-                        </p>
-                      </div>
-                    </div>
-                  ))}
+          {/* Chat Body - Flex-1 to fill remaining space */}
+          <div className="flex-1 overflow-hidden">
+            {sessionId ? (
+              <ManagerChat
+                sessionId={sessionId}
+                projectId={projectId}
+                userId={userId}
+                isManager={false}
+                showQuickReplies={false}
+              />
+            ) : (
+              <div className="flex items-center justify-center h-full p-8">
+                <div className="text-center">
+                  <Loader2 className="w-8 h-8 animate-spin text-blue-600 mx-auto mb-4" />
+                  <p className="text-gray-600">Setting up chat session...</p>
+                  <p className="text-sm text-gray-400 mt-2">This may take a moment</p>
                 </div>
               </div>
             )}
+          </div>
+        </div>
 
-            {/* Chat Component */}
-            <div className="bg-white rounded-lg border border-gray-200 shadow-sm h-[calc(100vh-16rem)]">
-              {sessionId ? (
-                <ManagerChat
-                  sessionId={sessionId}
-                  projectId={projectId}
-                  userId={userId}
-                  isManager={false}
-                  showQuickReplies={false}
-                />
-              ) : (
-                <div className="flex items-center justify-center h-full p-8">
-                  <div className="text-center">
-                    <Loader2 className="w-8 h-8 animate-spin text-blue-600 mx-auto mb-4" />
-                    <p className="text-gray-600">Setting up chat session...</p>
-                    <p className="text-sm text-gray-400 mt-2">This may take a moment</p>
+        {/* Right: Project Context / Action Items (col-span-3) */}
+        <div className="col-span-12 lg:col-span-3 bg-gray-50 border-l border-gray-200 overflow-y-auto">
+          <div className="p-4">
+            {todoList.length > 0 ? (
+              <>
+                <h2 className="text-sm font-semibold text-gray-900 mb-4">Action Items</h2>
+                {/* Vertical Timeline Style */}
+                <div className="relative">
+                  {/* Timeline Line */}
+                  <div className="absolute left-3 top-0 bottom-0 w-0.5 bg-gray-200"></div>
+                  
+                  <div className="space-y-4">
+                    {todoList.map((todo, index) => (
+                      <div key={todo.id} className="relative flex items-start gap-3">
+                        {/* Timeline Dot */}
+                        <div className={`relative z-10 flex items-center justify-center w-6 h-6 rounded-full border-2 ${
+                          todo.status === 'completed'
+                            ? 'bg-emerald-500 border-emerald-500'
+                            : 'bg-white border-gray-300'
+                        }`}>
+                          {todo.status === 'completed' ? (
+                            <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                            </svg>
+                          ) : (
+                            <div className="w-2 h-2 rounded-full bg-gray-400"></div>
+                          )}
+                        </div>
+                        
+                        {/* Content */}
+                        <div className="flex-1 min-w-0 pt-0.5">
+                          <p className={`text-sm ${
+                            todo.status === 'completed' 
+                              ? 'text-gray-500 line-through' 
+                              : 'text-gray-900 font-medium'
+                          }`}>
+                            {todo.task}
+                          </p>
+                          <p className="text-xs text-gray-500 mt-1">
+                            {todo.requestedBy}
+                          </p>
+                        </div>
+                      </div>
+                    ))}
                   </div>
                 </div>
-              )}
-            </div>
+              </>
+            ) : (
+              <div className="text-center py-8">
+                <p className="text-sm text-gray-500">No action items</p>
+                <p className="text-xs text-gray-400 mt-1">Action items will appear here</p>
+              </div>
+            )}
           </div>
         </div>
       </div>

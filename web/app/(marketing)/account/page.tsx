@@ -118,7 +118,12 @@ function TabButton({
 }) {
   return (
     <button
-      onClick={onClick}
+      type="button"
+      onClick={(e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        onClick();
+      }}
       className={`pb-4 px-1 text-sm font-medium transition-colors relative ${
         active
           ? 'text-black'

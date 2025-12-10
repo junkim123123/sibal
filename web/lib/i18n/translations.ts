@@ -55,6 +55,80 @@ export interface Translations {
       description: string;
       buttonLabel: string;
     };
+    socialProof: {
+      title: string;
+      rating: {
+        value: string;
+        label: string;
+        badge: string;
+      };
+      summary: string;
+      quotes: Array<{
+        quote: string;
+        author: string;
+      }>;
+      verifiedShipment: string;
+    };
+    reviews: {
+      eyebrow: string;
+      title: string;
+      ratingLabel: string;
+    };
+    team: {
+      eyebrow: string;
+      title: string;
+      body: string;
+    };
+  };
+  pricing: {
+    hero: {
+      title: string;
+      subtitle: string;
+    };
+    tiers: {
+      starter: {
+        tag: string;
+        title: string;
+        price: string;
+        pricePeriod: string;
+        features: string[];
+        cta: string;
+      };
+      validator: {
+        tag: string;
+        title: string;
+        price: string;
+        pricePeriod: string;
+        features: string[];
+        cta: string;
+      };
+      executor: {
+        tag: string;
+        title: string;
+        price: string;
+        pricePeriod: string;
+        features: string[];
+        cta: string;
+      };
+    };
+    howItWorks: {
+      title: string;
+      steps: Array<{
+        title: string;
+        description: string;
+      }>;
+    };
+    guarantee: {
+      title: string;
+      description: string;
+    };
+    globalSync: {
+      title: string;
+      description: string;
+    };
+    disclaimer: string;
+    mostPopular: string;
+    sslSecure: string;
   };
 }
 
@@ -157,6 +231,116 @@ export const translations: Record<Language, Translations> = {
         description: 'Start with one product. We will run a full landed cost and risk review, usually within one day.',
         buttonLabel: 'Calculate My Profit',
       },
+      socialProof: {
+        title: 'See what importers are saying about NexSupply',
+        rating: {
+          value: '4.8 / 5',
+          label: 'from verified sourcing projects',
+          badge: 'Verified Sourcing Projects',
+        },
+        summary: 'Faster landed-cost clarity, fewer surprises at customs.',
+        quotes: [
+          {
+            quote: 'Finally, I can see landed cost before I wire any money.',
+            author: 'FBA Seller, CPG Category',
+          },
+          {
+            quote: 'The compliance check prevented a very expensive mistake.',
+            author: 'Retail Buyer, Hardlines',
+          },
+          {
+            quote: 'We used NexSupply to test a new snack product. The process was simple and fast.',
+            author: 'Brand Manager, Food & Beverage',
+          },
+        ],
+        verifiedShipment: 'Verified Shipment',
+      },
+      reviews: {
+        eyebrow: 'Showing featured reviews',
+        title: 'See what importers are saying about NexSupply',
+        ratingLabel: 'Four point six average rating based on internal pilot users',
+      },
+      team: {
+        eyebrow: 'NexSupply behind the scenes',
+        title: 'Built by 2nd-Gen Traders & FBA Veterans',
+        body: "NexSupply is built by sourcing agents, logistics managers, and compliance specialists who have actually run containers between Asia and the US. We don't just quote landed costs — we've dealt with the factories, trucks, and customs paperwork ourselves.",
+      },
+    },
+    pricing: {
+      hero: {
+        title: 'Simple Pricing, Zero Hidden Costs',
+        subtitle: 'From instant AI analysis to door-to-door delivery. Scale your sourcing without the guesswork.',
+      },
+      tiers: {
+        starter: {
+          tag: 'Free Tool',
+          title: 'Market Intelligence',
+          price: 'Free',
+          pricePeriod: ' / Forever',
+          features: [
+            'Instant Landed Cost Simulation',
+            'Regulatory Risk Check (FDA/CPSIA)',
+            '30 AI Reports per month',
+            'No credit card required',
+          ],
+          cta: 'Start Free Analysis',
+        },
+        validator: {
+          tag: 'Start with One Box',
+          title: 'Verified Sourcing Plan',
+          price: '$49',
+          pricePeriod: ' / Refundable Deposit',
+          features: [
+            'Real Factory Quotes (48h)',
+            'Sample Consolidation',
+            '100% Credited to Your Order',
+            'Dedicated Sourcing Expert assigned',
+            'Supplier Background Check',
+          ],
+          cta: 'Start Risk-Free Project',
+        },
+        executor: {
+          tag: 'End-to-End Solution',
+          title: 'End-to-End Execution',
+          price: 'Flat 5%',
+          pricePeriod: ' Service Fee',
+          features: [
+            'Production Management & QC',
+            'Labeling & Packaging (Kitting)',
+            'DDP Logistics Coordination',
+            'Net-30 Payment Terms (Qualified)',
+          ],
+          cta: 'Contact Sales',
+        },
+      },
+      howItWorks: {
+        title: 'How Our Pricing Works',
+        steps: [
+          {
+            title: 'Place Deposit',
+            description: 'Confirm your seriousness with a $49 fully refundable deposit. This activates your dedicated team.',
+          },
+          {
+            title: 'Receive Quotes',
+            description: 'We negotiate directly with verified manufacturers to secure the best FOB pricing and MOQ.',
+          },
+          {
+            title: '100% Credit Back',
+            description: 'When you place the production order, the $49 is fully deducted from your invoice. You lose nothing.',
+          },
+        ],
+      },
+      guarantee: {
+        title: 'Response Guarantee',
+        description: 'We guarantee a response within 24 business hours. No more ghosting factories.',
+      },
+      globalSync: {
+        title: 'Global Sync',
+        description: 'Our local teams bridge the time zone gap, ensuring communication flows while you sleep.',
+      },
+      disclaimer: 'Service fees are based on FOB value. AI estimates are for reference only. Final pricing is confirmed upon retainer payment.',
+      mostPopular: 'Most Popular',
+      sslSecure: 'SSL Secure Payment',
     },
   },
   ko: {
@@ -257,6 +441,116 @@ export const translations: Record<Language, Translations> = {
         description: '하나의 제품으로 시작하세요. 일반적으로 하루 이내에 전체 랜딩 비용 및 위험 검토를 실행합니다.',
         buttonLabel: '내 수익 계산하기',
       },
+      socialProof: {
+        title: '수입업체가 NexSupply에 대해 말하는 것',
+        rating: {
+          value: '4.8 / 5',
+          label: '검증된 소싱 프로젝트에서',
+          badge: '검증된 소싱 프로젝트',
+        },
+        summary: '더 빠른 랜딩 비용 명확성, 세관에서 더 적은 놀라움.',
+        quotes: [
+          {
+            quote: '드디어 돈을 송금하기 전에 랜딩 비용을 볼 수 있습니다.',
+            author: 'FBA 판매자, CPG 카테고리',
+          },
+          {
+            quote: '규정 준수 확인이 매우 비싼 실수를 방지했습니다.',
+            author: '소매 구매자, 하드라인',
+          },
+          {
+            quote: '우리는 NexSupply를 사용하여 새로운 스낵 제품을 테스트했습니다. 프로세스가 간단하고 빠릅니다.',
+            author: '브랜드 매니저, 식음료',
+          },
+        ],
+        verifiedShipment: '검증된 배송',
+      },
+      reviews: {
+        eyebrow: '추천 리뷰 표시',
+        title: '수입업체가 NexSupply에 대해 말하는 것',
+        ratingLabel: '내부 파일럿 사용자를 기반으로 한 평균 4.6점 평가',
+      },
+      team: {
+        eyebrow: 'NexSupply 배경',
+        title: '2세대 무역업자 및 FBA 베테랑이 구축',
+        body: 'NexSupply는 실제로 아시아와 미국 사이에서 컨테이너를 운영한 소싱 에이전트, 물류 관리자 및 규정 준수 전문가가 구축했습니다. 우리는 단순히 랜딩 비용을 견적하는 것이 아닙니다 — 우리는 공장, 트럭 및 세관 서류를 직접 처리했습니다.',
+      },
+    },
+    pricing: {
+      hero: {
+        title: '간단한 가격, 숨겨진 비용 없음',
+        subtitle: '즉각적인 AI 분석부터 문앞 배송까지. 추측 없이 소싱을 확장하세요.',
+      },
+      tiers: {
+        starter: {
+          tag: '무료 도구',
+          title: '시장 인텔리전스',
+          price: '무료',
+          pricePeriod: ' / 영구',
+          features: [
+            '즉각적인 랜딩 비용 시뮬레이션',
+            '규제 위험 확인 (FDA/CPSIA)',
+            '월 30개의 AI 보고서',
+            '신용카드 불필요',
+          ],
+          cta: '무료 분석 시작하기',
+        },
+        validator: {
+          tag: '한 박스로 시작',
+          title: '검증된 소싱 플랜',
+          price: '$49',
+          pricePeriod: ' / 환불 가능한 예치금',
+          features: [
+            '실제 공장 견적 (48시간)',
+            '샘플 통합',
+            '주문 시 100% 크레딧',
+            '전담 소싱 전문가 배정',
+            '공급업체 배경 조사',
+          ],
+          cta: '리스크 없는 프로젝트 시작하기',
+        },
+        executor: {
+          tag: '엔드투엔드 솔루션',
+          title: '엔드투엔드 실행',
+          price: '고정 5%',
+          pricePeriod: ' 서비스 수수료',
+          features: [
+            '생산 관리 및 QC',
+            '라벨링 및 패키징 (키팅)',
+            'DDP 물류 조정',
+            'Net-30 결제 조건 (자격 있는 경우)',
+          ],
+          cta: '영업팀에 문의',
+        },
+      },
+      howItWorks: {
+        title: '가격 작동 방식',
+        steps: [
+          {
+            title: '예치금 납입',
+            description: '$49 완전 환불 가능한 예치금으로 진지함을 확인하세요. 이것이 전담 팀을 활성화합니다.',
+          },
+          {
+            title: '견적 수신',
+            description: '검증된 제조업체와 직접 협상하여 최고의 FOB 가격 및 MOQ를 확보합니다.',
+          },
+          {
+            title: '100% 크레딧 반환',
+            description: '생산 주문을 하면 $49가 인보이스에서 완전히 공제됩니다. 손실이 없습니다.',
+          },
+        ],
+      },
+      guarantee: {
+        title: '응답 보장',
+        description: '24 영업일 이내에 응답을 보장합니다. 더 이상 공장이 사라지지 않습니다.',
+      },
+      globalSync: {
+        title: '글로벌 동기화',
+        description: '우리 현지 팀은 시간대 차이를 연결하여 수면 중에도 커뮤니케이션이 흐르도록 보장합니다.',
+      },
+      disclaimer: '서비스 수수료는 FOB 가치를 기반으로 합니다. AI 추정치는 참고용입니다. 최종 가격은 예치금 결제 시 확인됩니다.',
+      mostPopular: '가장 인기',
+      sslSecure: 'SSL 보안 결제',
     },
   },
 };

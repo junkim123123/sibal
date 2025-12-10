@@ -3,9 +3,11 @@
 import { HomeReviewsSection } from '@/lib/content/homePage';
 import { useRef, useState, useEffect } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { useLanguage } from '@/components/i18n/language-provider';
 
 export function ReviewsSection({ section }: { section: HomeReviewsSection }) {
   const { eyebrow, title, subtitle, averageRating, ratingLabel, reviews } = section;
+  const { t } = useLanguage();
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(true);
@@ -45,20 +47,20 @@ export function ReviewsSection({ section }: { section: HomeReviewsSection }) {
   };
 
   return (
-    <section className="py-16 sm:py-24 border-t-2 border-b-2 border-neutral-300 bg-white">
+    <section className="py-16 sm:py-24 border-t-2 border-b-2 border-neutral-300 dark:border-gray-700 bg-white dark:bg-gray-900">
       <div className="mx-auto max-w-6xl px-4 sm:px-6">
         <div className="flex flex-col gap-8 md:flex-row md:items-end md:justify-between mb-10">
           <div className="max-w-xl space-y-3">
-            {eyebrow && (
-              <p className="text-xs font-semibold uppercase tracking-wide text-neutral-500">
-                {eyebrow}
+            {t.home.reviews.eyebrow && (
+              <p className="text-xs font-semibold uppercase tracking-wide text-neutral-500 dark:text-gray-400">
+                {t.home.reviews.eyebrow}
               </p>
             )}
-            <h2 className="text-2xl sm:text-3xl font-semibold tracking-tight text-neutral-900">
-              {title}
+            <h2 className="text-2xl sm:text-3xl font-semibold tracking-tight text-neutral-900 dark:text-white">
+              {t.home.reviews.title}
             </h2>
             {subtitle && (
-              <p className="text-sm sm:text-base text-neutral-600">{subtitle}</p>
+              <p className="text-sm sm:text-base text-neutral-600 dark:text-gray-400">{subtitle}</p>
             )}
           </div>
           <div className="flex items-center gap-3 text-sm sm:text-base">
@@ -71,8 +73,8 @@ export function ReviewsSection({ section }: { section: HomeReviewsSection }) {
               ))}
             </div>
             <div className="flex flex-col">
-              <span className="font-semibold text-neutral-900">{averageRating.toFixed(1)} / 5</span>
-              <span className="text-xs text-neutral-500">{ratingLabel}</span>
+              <span className="font-semibold text-neutral-900 dark:text-white">{averageRating.toFixed(1)} / 5</span>
+              <span className="text-xs text-neutral-500 dark:text-gray-400">{t.home.reviews.ratingLabel}</span>
             </div>
           </div>
         </div>

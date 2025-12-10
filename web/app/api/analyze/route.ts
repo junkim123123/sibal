@@ -373,35 +373,18 @@ async function analyzeSourcingProject(
   const apiKey = getApiKey();
   const genAI = new GoogleGenerativeAI(apiKey);
   
-  // Use faster Flash model for Vercel timeout compliance
+  // 커스텀 모델 ID 사용 (환경 변수에서 로드)
   const customModelId = process.env.GEMINI_CUSTOM_MODEL_ID;
-  const modelName = customModelId || "gemini-1.5-flash";
+  const modelName = customModelId || "gemini-2.5-pro";
   
   const model = genAI.getGenerativeModel({
     model: modelName,
     generationConfig: {
       responseMimeType: "application/json",
-      temperature: 0.7,
-      maxOutputTokens: 2000,
+      temperature: 0.2,
     },
-    safetySettings: [
-      {
-        category: "HARM_CATEGORY_HARASSMENT" as any,
-        threshold: "BLOCK_ONLY_HIGH" as any,
-      },
-      {
-        category: "HARM_CATEGORY_HATE_SPEECH" as any,
-        threshold: "BLOCK_ONLY_HIGH" as any,
-      },
-      {
-        category: "HARM_CATEGORY_SEXUALLY_EXPLICIT" as any,
-        threshold: "BLOCK_ONLY_HIGH" as any,
-      },
-      {
-        category: "HARM_CATEGORY_DANGEROUS_CONTENT" as any,
-        threshold: "BLOCK_ONLY_HIGH" as any,
-      },
-    ] as any,
+    // Note: Google Search Grounding may require different configuration
+    // For now, we'll rely on the prompt to instruct Gemini to use web search capabilities
   });
 
   const prompt = buildSourcingPrompt(userContext);

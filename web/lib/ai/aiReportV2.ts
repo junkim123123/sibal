@@ -147,30 +147,10 @@ export async function generateAIReportV2(context: StartIntakeContext): Promise<N
 
     const genAI = new GoogleGenerativeAI(apiKey);
     const model = genAI.getGenerativeModel({
-      model: "gemini-1.5-flash",
+      model: "gemini-2.5-pro",
       generationConfig: {
         responseMimeType: "application/json",
-        temperature: 0.7,
-        maxOutputTokens: 2000,
       },
-      safetySettings: [
-        {
-          category: "HARM_CATEGORY_HARASSMENT" as any,
-          threshold: "BLOCK_ONLY_HIGH" as any,
-        },
-        {
-          category: "HARM_CATEGORY_HATE_SPEECH" as any,
-          threshold: "BLOCK_ONLY_HIGH" as any,
-        },
-        {
-          category: "HARM_CATEGORY_SEXUALLY_EXPLICIT" as any,
-          threshold: "BLOCK_ONLY_HIGH" as any,
-        },
-        {
-          category: "HARM_CATEGORY_DANGEROUS_CONTENT" as any,
-          threshold: "BLOCK_ONLY_HIGH" as any,
-        },
-      ] as any,
     });
 
     const prompt = buildAIReportV2Prompt(context);

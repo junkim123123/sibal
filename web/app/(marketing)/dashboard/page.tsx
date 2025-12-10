@@ -4,11 +4,11 @@ import { useState, useEffect, Suspense, useCallback, useMemo } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
-import { ChevronRight, Package, Truck, Folder, MessageSquare, FileText, BarChart3, Clock, CheckCircle2 } from 'lucide-react'
+import { ChevronRight, Package, Truck, Folder, MessageSquare, FileText, BarChart3, Clock, CheckCircle2, Shield, Loader2 } from 'lucide-react'
 import { AssetLibrary } from '@/components/AssetLibrary'
 import { ClientMessagesList } from '@/components/ClientMessagesList'
-import { Loader2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 
 // 더미 데이터 제거 - 실제 Supabase 데이터 사용
 
@@ -344,27 +344,7 @@ function DashboardPageContent() {
         }
       })
 
-      // 1. status='active' 또는 'in_progress'인 프로젝트들 (새로 생성된 소싱 요청 또는 매니저가 할당된 프로젝트)
-      const activeProjects = projects
-        .filter((p: any) => p.status === 'active' || p.status === 'in_progress')
-        .map((p: any) => ({
-          id: p.id,
-          batchName: p.name,
-          destination: 'TBD',
-          date: new Date(p.created_at).toLocaleDateString('en-US', { 
-            month: 'short', 
-            day: 'numeric', 
-            year: 'numeric' 
-          }),
-          status: p.status === 'in_progress' ? 'In Progress' : 'Processing', // 매니저가 할당되면 In Progress, 아니면 Processing
-          projectName: p.name,
-          href: `/dashboard/chat?project_id=${p.id}`, // 매니저 채팅 페이지로 이동
-          isNewRequest: p.status === 'active', // active 상태면 새 소싱 요청
-          hasManager: p.status === 'in_progress', // in_progress 상태면 매니저가 할당됨
-          milestones: milestonesMap.get(p.id) || [],
-        }))
-
-      // 2. 선택된 견적이 있는 프로젝트 ID 목록 가져오기
+      // 2. 선택된 견적이 있는 프로젝트 ID 목록 가져오기 (먼저 가져와서 activeProjects에서 사용)
       const { data: selectedQuotes, error: quotesError } = await supabase
         .from('factory_quotes')
         .select('project_id, factory_name, created_at, updated_at')
@@ -374,6 +354,32 @@ function DashboardPageContent() {
       if (quotesError) {
         console.error('[Dashboard] Failed to load quotes:', quotesError)
       }
+
+      // 1. status='active' 또는 'in_progress'인 프로젝트들 (새로 생성된 소싱 요청 또는 매니저가 할당된 프로젝트)
+      const activeProjects = projects
+        .filter((p: any) => p.status === 'active' || p.status === 'in_progress')
+        .map((p: any) => {
+          // 이 프로젝트에 선택된 견적이 있는지 확인
+          const hasSelectedQuote = selectedQuotes?.some((q: any) => q.project_id === p.id) || false
+          
+          return {
+            id: p.id,
+            batchName: p.name,
+            destination: 'TBD',
+            date: new Date(p.created_at).toLocaleDateString('en-US', { 
+              month: 'short', 
+              day: 'numeric', 
+              year: 'numeric' 
+            }),
+            status: p.status === 'in_progress' ? 'In Progress' : 'Processing', // 매니저가 할당되면 In Progress, 아니면 Processing
+            projectName: p.name,
+            href: `/dashboard/chat?project_id=${p.id}`, // 매니저 채팅 페이지로 이동
+            isNewRequest: p.status === 'active', // active 상태면 새 소싱 요청
+            hasManager: p.status === 'in_progress', // in_progress 상태면 매니저가 할당됨
+            hasSelectedQuote: hasSelectedQuote, // 견적이 선택되었는지 여부
+            milestones: milestonesMap.get(p.id) || [],
+          }
+        })
 
       // 선택된 견적이 있지만 매니저가 배당되지 않은 프로젝트 찾기
       const projectsWithSelectedQuotes = projects.filter((p: any) => {
@@ -861,8 +867,143 @@ function OverviewTab({
   )
 }
 
+// Payment Modal Component (Reusable)
+function PaymentModal({ 
+  isOpen, 
+  onClose, 
+  onProceed, 
+  isProcessing 
+}: { 
+  isOpen: boolean
+  onClose: () => void
+  onProceed: () => void
+  isProcessing: boolean
+}) {
+  return (
+    <Dialog open={isOpen} onOpenChange={onClose}>
+      <DialogContent className="sm:max-w-lg">
+        <DialogHeader>
+          <DialogTitle className="text-2xl font-bold text-gray-900">
+            Connect with a Dedicated Agent
+          </DialogTitle>
+          <DialogDescription className="text-gray-600">
+            Get official quotes and negotiate with suppliers.
+          </DialogDescription>
+        </DialogHeader>
+
+        <div className="space-y-6 py-4">
+          {/* Price Display */}
+          <div className="text-center">
+            <p className="text-sm text-gray-500 mb-2">One-time fee</p>
+            <div className="flex items-center justify-center gap-2">
+              <span className="text-4xl font-bold text-gray-900">$49</span>
+            </div>
+          </div>
+
+          {/* Risk-Free Policy (Most Important) */}
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+            <div className="flex items-start gap-2">
+              <Shield className="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" />
+              <p className="text-sm text-blue-900 font-medium leading-relaxed">
+                <strong>Risk-Free:</strong> This $49 fee will be <strong>fully deducted</strong> from your final service fee (5%) when you place an order.
+              </p>
+            </div>
+          </div>
+
+          {/* Feature List */}
+          <div className="space-y-3">
+            <div className="flex items-start gap-3">
+              <CheckCircle2 className="w-5 h-5 text-emerald-600 mt-0.5 flex-shrink-0" />
+              <div>
+                <p className="font-semibold text-gray-900">Verified Manufacturer Sourcing</p>
+                <p className="text-sm text-gray-600">
+                  We find and verify trusted factories for your product
+                </p>
+              </div>
+            </div>
+            <div className="flex items-start gap-3">
+              <CheckCircle2 className="w-5 h-5 text-emerald-600 mt-0.5 flex-shrink-0" />
+              <div>
+                <p className="font-semibold text-gray-900">Price Negotiation</p>
+                <p className="text-sm text-gray-600">
+                  Our agents negotiate the best prices on your behalf
+                </p>
+              </div>
+            </div>
+            <div className="flex items-start gap-3">
+              <CheckCircle2 className="w-5 h-5 text-emerald-600 mt-0.5 flex-shrink-0" />
+              <div>
+                <p className="font-semibold text-gray-900">Landed Cost Calculation</p>
+                <p className="text-sm text-gray-600">
+                  Accurate total cost including shipping, duties, and fees
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <DialogFooter className="flex-col sm:flex-col gap-3">
+          <Button
+            onClick={onProceed}
+            disabled={isProcessing}
+            className="w-full bg-[#008080] hover:bg-teal-700 text-white font-semibold py-3"
+          >
+            {isProcessing ? (
+              <span className="flex items-center gap-2">
+                <Loader2 className="w-4 h-4 animate-spin" />
+                <span>Processing...</span>
+              </span>
+            ) : (
+              'Proceed to Payment'
+            )}
+          </Button>
+          <button
+            onClick={onClose}
+            className="text-sm text-gray-500 hover:text-gray-700"
+            disabled={isProcessing}
+          >
+            Cancel
+          </button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  )
+}
+
 // Estimates List Component (Table Format)
 function EstimatesList({ estimates }: { estimates: any[] }) {
+  const [showPaymentModal, setShowPaymentModal] = useState(false)
+  const [selectedProjectId, setSelectedProjectId] = useState<string | null>(null)
+  const [isProcessingPayment, setIsProcessingPayment] = useState(false)
+
+  const handleConnectAgent = (e: React.MouseEvent, projectId: string) => {
+    e.preventDefault()
+    e.stopPropagation()
+    setSelectedProjectId(projectId)
+    setShowPaymentModal(true)
+  }
+
+  const handleProceedToPayment = async () => {
+    if (!selectedProjectId) return
+    
+    setIsProcessingPayment(true)
+    setShowPaymentModal(false)
+    
+    try {
+      // Gumroad 결제 페이지로 이동 (프로젝트 ID를 URL 파라미터로 전달)
+      const gumroadUrl = new URL('https://junkim82.gumroad.com/l/wmtnuv')
+      gumroadUrl.searchParams.set('custom_field1', selectedProjectId)
+      
+      // Gumroad 결제 페이지로 이동
+      window.open(gumroadUrl.toString(), '_blank')
+    } catch (error) {
+      console.error('[Payment] Failed to proceed:', error)
+      alert(`Failed to proceed with payment: ${error instanceof Error ? error.message : 'Unknown error'}`)
+    } finally {
+      setIsProcessingPayment(false)
+    }
+  }
+
   if (estimates.length === 0) {
     return (
       <EmptyState
@@ -924,11 +1065,7 @@ function EstimatesList({ estimates }: { estimates: any[] }) {
                   <td className="px-6 py-4 whitespace-nowrap text-center">
                     {isComplete ? (
                       <button
-                        onClick={(e) => {
-                          e.preventDefault()
-                          e.stopPropagation()
-                          window.location.href = `/dashboard/projects/${estimate.id}`
-                        }}
+                        onClick={(e) => handleConnectAgent(e, estimate.id)}
                         className="px-4 py-2 text-sm font-semibold bg-[#008080] hover:bg-teal-700 text-white rounded-lg transition-colors"
                       >
                         Connect Agent
@@ -950,6 +1087,14 @@ function EstimatesList({ estimates }: { estimates: any[] }) {
           </tbody>
         </table>
       </div>
+
+      {/* Payment Modal */}
+      <PaymentModal
+        isOpen={showPaymentModal}
+        onClose={() => setShowPaymentModal(false)}
+        onProceed={handleProceedToPayment}
+        isProcessing={isProcessingPayment}
+      />
     </div>
   )
 }
@@ -994,7 +1139,13 @@ function ProductsList({ products }: { products: any[] }) {
 }
 
 // Order Progress Stepper Component
-function OrderStepper({ currentStep }: { currentStep: number }) {
+function OrderStepper({ 
+  currentStep, 
+  quoteStatus 
+}: { 
+  currentStep: number
+  quoteStatus?: 'preparing' | 'ready' | 'approved'
+}) {
   const steps = [
     { label: 'Quote', key: 'quote' },
     { label: 'Deposit', key: 'deposit' },
@@ -1003,6 +1154,20 @@ function OrderStepper({ currentStep }: { currentStep: number }) {
     { label: 'Shipping', key: 'shipping' },
     { label: 'Delivered', key: 'delivered' },
   ]
+
+  // Step 1(Quote)의 상태 결정
+  const getQuoteStepState = () => {
+    if (quoteStatus === 'approved' || currentStep > 0) {
+      return { isCompleted: true, isCurrent: false, label: 'Quote' }
+    }
+    if (quoteStatus === 'ready') {
+      return { isCompleted: false, isCurrent: true, label: 'Quote Received' }
+    }
+    // quoteStatus === 'preparing' or undefined
+    return { isCompleted: false, isCurrent: true, label: 'Preparing Quote' }
+  }
+
+  const quoteState = getQuoteStepState()
 
   return (
     <div className="w-full">
@@ -1017,8 +1182,43 @@ function OrderStepper({ currentStep }: { currentStep: number }) {
 
         {/* Steps */}
         {steps.map((step, index) => {
+          // Step 1 (Quote)는 특별 처리
+          if (index === 0) {
+            return (
+              <div key={step.key} className="relative z-20 flex flex-col items-center flex-1">
+                {/* Step Circle */}
+                <div
+                  className={`w-10 h-10 rounded-full flex items-center justify-center border-2 transition-all ${
+                    quoteState.isCompleted
+                      ? 'bg-[#008080] border-[#008080] text-white'
+                      : quoteState.isCurrent
+                      ? 'bg-white border-[#008080] text-[#008080]'
+                      : 'bg-white border-gray-300 text-gray-400'
+                  }`}
+                >
+                  {quoteState.isCompleted ? (
+                    <CheckCircle2 className="w-5 h-5" />
+                  ) : (
+                    <span className="text-xs font-semibold">1</span>
+                  )}
+                </div>
+                {/* Step Label */}
+                <span
+                  className={`mt-2 text-xs font-medium ${
+                    quoteState.isCompleted || quoteState.isCurrent
+                      ? 'text-[#008080]'
+                      : 'text-gray-400'
+                  }`}
+                >
+                  {quoteState.label}
+                </span>
+              </div>
+            )
+          }
+
+          // 나머지 단계들
           const isCompleted = index < currentStep
-          const isCurrent = index === currentStep
+          const isCurrent = index === currentStep && currentStep > 0
           const isPending = index > currentStep
 
           return (
@@ -1071,31 +1271,60 @@ function ShipmentsList({ shipments }: { shipments: any[] }) {
     )
   }
 
+  // 견적 상태 확인 함수
+  const getQuoteStatus = (shipment: any): 'preparing' | 'ready' | 'approved' => {
+    // hasSelectedQuote가 true면 견적이 준비됨
+    if (shipment.hasSelectedQuote) {
+      // 실제로는 quote의 status나 payment_status를 확인해야 함
+      // 임시로 hasSelectedQuote만 확인
+      return 'ready' // 견적 도착, 승인 대기
+    }
+    // 매니저가 할당되었지만 견적이 아직 없음
+    if (shipment.hasManager || shipment.status === 'In Progress') {
+      return 'preparing' // 견적 준비 중
+    }
+    // 기본값: 준비 중
+    return 'preparing'
+  }
+
   // 상태를 Stepper 단계로 매핑
   const getStepFromStatus = (status: string, shipment: any): number => {
     // milestones 데이터가 있으면 사용
     if (shipment.milestones && Array.isArray(shipment.milestones)) {
       const completedCount = shipment.milestones.filter((m: any) => m.status === 'completed').length
-      return Math.min(completedCount, 5) // 최대 5단계 (0-5)
+      // Step 1(Quote)이 완료되려면 최소 1개 milestone이 완료되어야 함
+      return Math.max(0, Math.min(completedCount - 1, 5)) // 0-5 단계
     }
 
-    // 상태 기반 매핑
-    if (status === 'Awaiting Manager' || status === 'Processing' || status === 'active') return 0 // Quote
+    // 상태 기반 매핑 (견적이 확정된 후의 단계들)
+    // 견적이 아직 없으면 currentStep = 0 (Step 1 진행 중)
+    const quoteStatus = getQuoteStatus(shipment)
+    if (quoteStatus === 'preparing') return 0 // Step 1 진행 중
+    
+    // 견적이 도착했지만 아직 승인 안 함
+    if (quoteStatus === 'ready') return 0 // Step 1 완료 대기 (사용자 승인 필요)
+    
+    // 견적 승인 후 단계들
     if (status === 'In Progress' || status === 'in_progress') {
-      // manager_id가 있으면 Deposit 단계, 아니면 Quote
-      return shipment.hasManager ? 1 : 0
+      return shipment.hasManager ? 1 : 0 // Deposit 단계
     }
-    // 실제로는 milestones 데이터를 사용해야 하지만, 임시로 상태 기반 매핑
     if (status.includes('Production') || status.includes('Manufacturing')) return 2
     if (status.includes('QC') || status.includes('Inspection')) return 3
     if (status === 'Shipping' || status === 'In Transit') return 4
     if (status === 'Delivered' || status === 'Completed') return 5
-    return 1 // 기본값: Deposit
+    return 0 // 기본값: Step 1 진행 중
   }
 
   // 현재 단계에서 필요한 액션 결정
-  const getActionForStep = (step: number, shipment: any) => {
-    if (step === 0) return { label: 'Approve Quote & Pay', href: `/dashboard/projects/${shipment.id}` }
+  const getActionForStep = (step: number, shipment: any, quoteStatus: 'preparing' | 'ready' | 'approved') => {
+    // Step 1: 견적 상태에 따라 다른 액션
+    if (step === 0) {
+      if (quoteStatus === 'ready') {
+        return { label: 'View Quote & Approve', href: `/dashboard/projects/${shipment.id}` }
+      }
+      // preparing 상태일 때는 액션 버튼 없음 (Message Agent만 표시)
+      return null
+    }
     if (step === 3) return { label: 'View Inspection Report', href: `/dashboard/projects/${shipment.id}` }
     return null
   }
@@ -1103,8 +1332,9 @@ function ShipmentsList({ shipments }: { shipments: any[] }) {
   return (
     <div className="space-y-6">
       {shipments.map((shipment) => {
+        const quoteStatus = getQuoteStatus(shipment)
         const currentStep = getStepFromStatus(shipment.status, shipment)
-        const action = getActionForStep(currentStep, shipment)
+        const action = getActionForStep(currentStep, shipment, quoteStatus)
 
         return (
           <div key={shipment.id} className="bg-white border border-gray-200 rounded-xl p-6 hover:border-gray-300 hover:shadow-sm transition-all">
@@ -1128,6 +1358,11 @@ function ShipmentsList({ shipments }: { shipments: any[] }) {
                       ⏰ Manager will be assigned within 24 hours
                     </p>
                   )}
+                  {quoteStatus === 'preparing' && (
+                    <p className="text-xs text-orange-600 font-medium mt-1">
+                      ⏳ Agent is preparing your quote
+                    </p>
+                  )}
                 </div>
               </div>
               <div className="flex items-center gap-3">
@@ -1146,7 +1381,7 @@ function ShipmentsList({ shipments }: { shipments: any[] }) {
 
             {/* Stepper */}
             <div className="mb-6">
-              <OrderStepper currentStep={currentStep} />
+              <OrderStepper currentStep={currentStep} quoteStatus={quoteStatus} />
             </div>
 
             {/* Action Area */}

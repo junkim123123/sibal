@@ -1869,8 +1869,16 @@ function ResultsContent() {
     return null;
   }
 
-  // Safety check: aiAnalysis가 없거나 필수 데이터가 없으면 에러 UI 표시
-  if (!aiAnalysis || !aiAnalysis.ai_analysis) {
+  // Safety check: aiAnalysis가 없거나 필수 데이터(financials)가 없으면 에러 UI 표시
+  // 단, 로딩 중이거나 에러가 있으면 이미 다른 UI가 표시되므로 여기서는 체크하지 않음
+  if (!isLoading && !error && !isUnauthorized && (!aiAnalysis || !aiAnalysis.financials)) {
+    // 디버깅을 위한 로그
+    console.warn('[Results] Missing analysis data:', {
+      hasAiAnalysis: !!aiAnalysis,
+      hasFinancials: !!aiAnalysis?.financials,
+      aiAnalysisKeys: aiAnalysis ? Object.keys(aiAnalysis) : [],
+    });
+    
     return (
       <div className="min-h-screen bg-[#f9fafb] flex items-center justify-center p-4">
         <Card className="text-center max-w-md bg-white border border-gray-200 p-8 shadow-sm">
@@ -1915,7 +1923,12 @@ function ResultsContent() {
     );
   }
   
-  // 안전한 구조 분해 할당 (optional chaining 사용)
+  // aiAnalysis가 없으면 null 반환 (이미 위에서 체크했지만 타입 가드를 위해)
+  if (!aiAnalysis) {
+    return null;
+  }
+  
+  // 안전한 구조 분해 할당
   const { 
     financials, 
     cost_breakdown, 

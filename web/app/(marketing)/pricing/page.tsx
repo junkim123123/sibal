@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { ArrowRight, Lock, Shield } from 'lucide-react';
 
 
 export default function PricingPage() {
@@ -11,17 +12,17 @@ export default function PricingPage() {
       id: 'starter',
       tag: 'Free Tool',
       tagColor: 'bg-neutral-100 text-neutral-700',
-      title: 'Starter (AI Scout)',
-      price: '$0',
-      pricePeriod: '/ mo',
+      title: 'Market Intelligence',
+      price: 'Free',
+      pricePeriod: ' / Forever',
       features: [
-        'Real-Time Cost & Risk Analysis',
-        '30 Reports/month',
-        'Platform-neutral insights',
-        'Basic supplier database access'
+        'Instant Landed Cost Simulation',
+        'Regulatory Risk Check (FDA/CPSIA)',
+        '30 AI Reports per month',
+        'No credit card required'
       ],
       cta: {
-        label: 'Start Analysis',
+        label: 'Start Free Analysis',
         href: '/chat',
         variant: 'outline' as const
       }
@@ -30,42 +31,42 @@ export default function PricingPage() {
       id: 'validator',
       tag: 'Start with One Box',
       tagColor: 'bg-blue-100 text-blue-700',
-      title: 'Official Quote Request',
+      title: 'Verified Sourcing Plan',
       price: '$49',
-      pricePeriod: ' (One-time Fee)',
+      pricePeriod: ' / Refundable Deposit',
       features: [
         'Real Factory Quotes (48h)',
-        'Supplier Vetting',
-        '100% Credited on First Order',
-        'Priority support',
-        'Dedicated Sourcing Agent'
+        'Sample Consolidation',
+        '100% Credited to Your Order',
+        'Dedicated Sourcing Expert assigned',
+        'Supplier Background Check'
       ],
       cta: {
-        label: 'Pay $49 & Start Project',
+        label: 'Start Risk-Free Project',
         href: '/contact',
         variant: 'primary' as const
       },
-      highlight: false
+      highlight: true // 가운데 카드를 highlight로 변경
     },
     {
       id: 'executor',
       tag: 'End-to-End Solution',
       tagColor: 'bg-emerald-100 text-emerald-700',
-      title: 'Full Service Execution',
-      price: 'Starts at 5%',
-      pricePeriod: ' Commission',
+      title: 'End-to-End Execution',
+      price: 'Flat 5%',
+      pricePeriod: ' Service Fee',
       features: [
-        'QC & Logistics',
-        'Dedicated Manager',
-        'Global Sync Time',
-        '24-hour response (Mon-Fri)'
+        'Production Management & QC',
+        'Labeling & Packaging (Kitting)',
+        'DDP Logistics Coordination',
+        'Net-30 Payment Terms (Qualified)'
       ],
       cta: {
-        label: 'Get Started',
+        label: 'Contact Sales',
         href: '/contact',
         variant: 'primary' as const
       },
-      highlight: true
+      highlight: false
     }
   ];
 
@@ -76,10 +77,10 @@ export default function PricingPage() {
       <section aria-label="Pricing Hero" className="py-16 sm:py-20 bg-white">
         <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8 text-center">
           <h1 className="text-4xl sm:text-5xl font-semibold tracking-tight text-neutral-900 mb-6">
-            NexSupply Model 4.0
+            Simple Pricing, Zero Hidden Costs
           </h1>
           <p className="text-lg sm:text-xl text-neutral-600 max-w-2xl mx-auto leading-relaxed">
-            Choose the right plan for your sourcing journey. From free AI analysis to full-service execution.
+            From instant AI analysis to door-to-door delivery. Scale your sourcing without the guesswork.
           </p>
         </div>
       </section>
@@ -93,13 +94,13 @@ export default function PricingPage() {
                 key={tier.id}
                 className={`relative p-8 bg-white border rounded-xl transition-all ${
                   tier.highlight
-                    ? 'border-gray-300 shadow-xl'
+                    ? 'border-[#008080] border-2 shadow-2xl scale-105'
                     : 'border-gray-200 hover:border-gray-300'
                 }`}
               >
                 {tier.highlight && (
                   <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                    <span className="bg-gray-900 text-white text-xs px-3 py-1 rounded-full font-semibold">
+                    <span className="bg-[#008080] text-white text-xs px-3 py-1 rounded-full font-semibold">
                       Most Popular
                     </span>
                   </div>
@@ -138,22 +139,32 @@ export default function PricingPage() {
 
                 <Link href={tier.cta.href} className="block">
                   {tier.id === 'validator' ? (
-                    <button
-                      className="w-full rounded-full bg-gray-900 text-white hover:bg-gray-800 transition-colors px-6 py-3 text-sm font-medium"
-                    >
-                      {tier.cta.label}
-                    </button>
+                    <div>
+                      <button
+                        className="w-full rounded-full bg-[#008080] text-white hover:bg-[#006666] transition-colors px-6 py-3 text-sm font-medium flex items-center justify-center gap-2"
+                      >
+                        {tier.cta.label}
+                        <ArrowRight className="w-4 h-4" />
+                      </button>
+                      <div className="mt-3 flex items-center justify-center gap-2 text-xs text-gray-500">
+                        <Lock className="w-3 h-3" />
+                        <span>SSL Secure Payment</span>
+                        <Shield className="w-3 h-3 ml-2" />
+                      </div>
+                    </div>
                   ) : tier.highlight ? (
                     <button
-                      className="w-full rounded-full bg-[#008080] text-white hover:bg-[#006666] transition-colors px-6 py-3 text-sm font-medium"
+                      className="w-full rounded-full bg-[#008080] text-white hover:bg-[#006666] transition-colors px-6 py-3 text-sm font-medium flex items-center justify-center gap-2"
                     >
-                      {tier.cta.label} →
+                      {tier.cta.label}
+                      <ArrowRight className="w-4 h-4" />
                     </button>
                   ) : (
                     <button
-                      className="w-full rounded-full border border-gray-300 text-gray-700 hover:bg-gray-50 transition-colors px-6 py-3 text-sm font-medium"
+                      className="w-full rounded-full border border-gray-300 text-gray-700 hover:bg-gray-50 transition-colors px-6 py-3 text-sm font-medium flex items-center justify-center gap-2"
                     >
-                      {tier.cta.label} →
+                      {tier.cta.label}
+                      <ArrowRight className="w-4 h-4" />
                     </button>
                   )}
                 </Link>
@@ -169,38 +180,46 @@ export default function PricingPage() {
           <h2 className="text-2xl sm:text-3xl font-semibold text-neutral-900 mb-12 text-center">
             How Our Pricing Works
           </h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-3xl mx-auto">
-            <div className="text-center">
-              <div className="w-12 h-12 rounded-full bg-[#008080] text-white flex items-center justify-center font-bold text-xl mx-auto mb-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-8 max-w-3xl mx-auto relative">
+            <div className="text-center relative">
+              <div className="w-12 h-12 rounded-full bg-[#008080] text-white flex items-center justify-center font-bold text-xl mx-auto mb-4 relative z-10">
                 1
               </div>
               <h3 className="text-lg font-semibold text-neutral-900 mb-3">
-                Start with $49
+                Place Deposit
               </h3>
               <p className="text-sm text-gray-600 leading-relaxed">
-                This fee confirms your commitment and activates your dedicated agent.
+                Confirm your seriousness with a $49 fully refundable deposit. This activates your dedicated team.
               </p>
+              {/* Arrow to next step - desktop only */}
+              <div className="hidden md:block absolute top-6 -right-4 z-0">
+                <ArrowRight className="w-6 h-6 text-[#008080]" />
+              </div>
             </div>
-            <div className="text-center">
-              <div className="w-12 h-12 rounded-full bg-[#008080] text-white flex items-center justify-center font-bold text-xl mx-auto mb-4">
+            <div className="text-center relative">
+              <div className="w-12 h-12 rounded-full bg-[#008080] text-white flex items-center justify-center font-bold text-xl mx-auto mb-4 relative z-10">
                 2
               </div>
               <h3 className="text-lg font-semibold text-neutral-900 mb-3">
-                Get Quotes
+                Receive Quotes
               </h3>
               <p className="text-sm text-gray-600 leading-relaxed">
-                Your agent works to get you the best price from verified factories.
+                We negotiate directly with verified manufacturers to secure the best FOB pricing and MOQ.
               </p>
+              {/* Arrow to next step - desktop only */}
+              <div className="hidden md:block absolute top-6 -right-4 z-0">
+                <ArrowRight className="w-6 h-6 text-[#008080]" />
+              </div>
             </div>
-            <div className="text-center">
-              <div className="w-12 h-12 rounded-full bg-[#008080] text-white flex items-center justify-center font-bold text-xl mx-auto mb-4">
+            <div className="text-center relative">
+              <div className="w-12 h-12 rounded-full bg-[#008080] text-white flex items-center justify-center font-bold text-xl mx-auto mb-4 relative z-10">
                 3
               </div>
               <h3 className="text-lg font-semibold text-neutral-900 mb-3">
-                The Refund
+                100% Credit Back
               </h3>
               <p className="text-sm text-gray-600 leading-relaxed">
-                When you place your order, the <strong className="font-bold text-[#008080]">$49 is fully deducted</strong> from your final 5% commission. You only pay the commission once the order is placed.
+                When you place the production order, the <strong className="font-bold text-[#008080]">$49 is fully deducted</strong> from your invoice. You lose nothing.
               </p>
             </div>
           </div>
@@ -216,18 +235,18 @@ export default function PricingPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             <div className="bg-white rounded-xl border border-gray-200 p-8">
               <h3 className="text-2xl font-bold text-neutral-900 mb-4">
-                24-Hour Response
+                Response Guarantee
               </h3>
               <p className="text-sm text-gray-600 leading-relaxed">
-                We reply within 24 hours (Mon-Fri). Your questions and requests are our priority.
+                We guarantee a response within 24 business hours. No more ghosting factories.
               </p>
             </div>
             <div className="bg-white rounded-xl border border-gray-200 p-8">
               <h3 className="text-2xl font-bold text-neutral-900 mb-4">
-                Global Sync Time
+                Global Sync
               </h3>
               <p className="text-sm text-gray-600 leading-relaxed">
-                Dedicated communication slot aligned with factory hours. No time zone confusion.
+                Our local teams bridge the time zone gap, ensuring communication flows while you sleep.
               </p>
             </div>
           </div>

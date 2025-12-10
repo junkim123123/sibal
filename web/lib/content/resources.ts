@@ -59,6 +59,8 @@ const featuredProjectsSection: FeaturedProjectsSection = {
       title: 'Verified IP Sourcing for 7-Eleven',
       description: 'Navigated complex IP licensing and food safety compliance to deliver Pokemon-branded confectioneries to 7-Eleven shelves.',
       tag: 'Retail Sourcing / IP Licensing',
+      result: 'Result: 0% Defect Rate over 50k units',
+      country: 'US',
       image: {
         src: '/images/projects/pokemon-7eleven.png',
         alt: 'Pokemon jelly beans at 7-Eleven store',
@@ -69,6 +71,8 @@ const featuredProjectsSection: FeaturedProjectsSection = {
       title: 'Strict QA for Don Quijote Japan',
       description: 'Passed rigorous Japanese food safety standards to supply seasonal confectionery to Don Quijote retail chain.',
       tag: 'Japan Export / Food Safety',
+      result: 'Result: 100% Compliance Pass Rate',
+      country: 'JP',
       image: {
         src: '/images/projects/donquijote-marshmallow.png',
         alt: 'Marshmallow skewers for Don Quijote Japan',
@@ -79,6 +83,8 @@ const featuredProjectsSection: FeaturedProjectsSection = {
       title: 'High-Volume Toy Sourcing for FBA',
       description: 'Managed end-to-end production and CPC certification for a top-ranking toy category in Southeast Asia.',
       tag: 'Amazon FBA / Toy Compliance',
+      result: 'Result: Top 3 Ranking in Category',
+      country: 'SEA',
       image: {
         src: '/images/projects/amazon-fingerboard.png',
         alt: 'Fingerboard toy set for Amazon FBA',
@@ -93,39 +99,45 @@ const knowledgeHubSection: KnowledgeHubSection = {
   videos: [
     {
       id: 'inside-nexsupply',
-      title: 'Inside NexSupply',
+      title: 'Virtual Tour: Our Shenzhen Packing Hub',
       description: 'See how our on-ground team manages QC and logistics in real-time.',
       youtubeId: '1pMa-6muGQ0',
+      category: 'operations',
     },
     {
       id: 'service-nexsupply',
-      title: 'Service NexSupply',
+      title: 'How We Work: From Quote to Delivery',
       description: 'Learn about our comprehensive sourcing services and how we help importers succeed.',
       youtubeId: 'aJOCT_E0RlE',
+      category: 'operations',
     },
     {
       id: 'on-site-nexsupply',
       title: 'On Site NexSupply',
       description: 'Get a behind-the-scenes look at our operations and infrastructure.',
       youtubeId: 'iJRGh4Tyhbw',
+      category: 'operations',
     },
     {
       id: 'earth-conquest-01',
       title: 'Earth Conquest Report #01: The Peelable Virus 🦠',
       description: 'Market intelligence and trend analysis for innovative products.',
       youtubeId: 'VJNJC-8Fwtk',
+      category: 'trends',
     },
     {
       id: 'earth-conquest-02',
       title: 'Earth Conquest Report #02: The Labor Paradox 🍣',
       description: 'Deep dive into manufacturing and labor market insights.',
       youtubeId: 'EdP6Wrd6Tug',
+      category: 'trends',
     },
     {
       id: 'long-long-man-scam',
       title: 'The "Long Long Man" Candy Scam? 👽📏',
       description: 'Product analysis and market trend scouting.',
       youtubeId: 'VkRKPXEwRQs',
+      category: 'trends',
     },
   ],
 };
@@ -138,7 +150,7 @@ const faqSection: FAQSection = {
       id: 'what-does-nexsupply-do',
       question: 'What does NexSupply actually do?',
       answer:
-        "NexSupply uses AI plus real-world trade data to turn a rough product idea into a landed cost and risk report.\n\nWe don't just find factories – we show you margin, freight, duties, and key compliance flags so you can make a clean go / no-go decision.",
+        "NexSupply uses AI plus real-world trade data to turn a rough product idea into a landed cost and risk report.\n\nWe don't just find factories – we show you **margin, freight, duties**, and key compliance flags so you can make a **clean go / no-go decision**.",
     },
     {
       id: 'shipping-or-analysis',
@@ -156,7 +168,7 @@ const faqSection: FAQSection = {
       id: 'how-accurate-are-numbers',
       question: 'How accurate are the numbers?',
       answer:
-        "We combine supplier quotes, reference transactions, and live duty and freight data. The output is an estimate, not a guaranteed quote, but it's designed to be directionally accurate enough for budgeting, pricing, and go / no-go decisions.",
+        "We combine supplier quotes, reference transactions, and live duty and freight data. The output is an estimate, not a guaranteed quote, but it's designed to be directionally accurate enough for **budgeting, pricing**, and **go / no-go decisions**.",
     },
     {
       id: 'how-long-analysis-take',

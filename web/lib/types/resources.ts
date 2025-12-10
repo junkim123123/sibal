@@ -30,6 +30,8 @@ export interface FeaturedProject {
   title: string;
   description: string;
   tag: string;
+  result?: string;
+  country?: string;
   image: {
     src: string;
     alt: string;
@@ -49,6 +51,7 @@ export interface VideoGuide {
   youtubeId?: string; // 특정 비디오 ID (예: "dQw4w9WgXcQ")
   youtubeChannel?: string; // 채널 핸들 (예: "@nexsupply.global") - 비디오 ID가 없을 때 사용
   thumbnail?: string;
+  category?: 'operations' | 'trends';
 }
 
 export interface KnowledgeHubSection {

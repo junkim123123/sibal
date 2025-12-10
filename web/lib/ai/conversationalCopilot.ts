@@ -234,10 +234,30 @@ export async function handleAiChat(
     const apiKey = await getApiKey();
     const genAI = new GoogleGenerativeAI(apiKey);
     const model = genAI.getGenerativeModel({
-      model: "gemini-2.5-pro",
+      model: "gemini-1.5-flash",
       generationConfig: {
         responseMimeType: "application/json",
+        temperature: 0.7,
+        maxOutputTokens: 2000,
       },
+      safetySettings: [
+        {
+          category: "HARM_CATEGORY_HARASSMENT" as any,
+          threshold: "BLOCK_ONLY_HIGH" as any,
+        },
+        {
+          category: "HARM_CATEGORY_HATE_SPEECH" as any,
+          threshold: "BLOCK_ONLY_HIGH" as any,
+        },
+        {
+          category: "HARM_CATEGORY_SEXUALLY_EXPLICIT" as any,
+          threshold: "BLOCK_ONLY_HIGH" as any,
+        },
+        {
+          category: "HARM_CATEGORY_DANGEROUS_CONTENT" as any,
+          threshold: "BLOCK_ONLY_HIGH" as any,
+        },
+      ] as any,
       systemInstruction: SYSTEM_PROMPT,
     });
 

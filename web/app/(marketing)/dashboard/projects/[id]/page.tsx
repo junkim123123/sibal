@@ -220,19 +220,18 @@ function ProjectDetailPageContent() {
         return
       }
       
-      // 세션이 없으면 생성 (API를 통해)
-      const response = await fetch('/api/messages', {
+      // 세션이 없으면 생성 (올바른 API 사용)
+      const response = await fetch('/api/chat-sessions', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           project_id: projectId,
-          action: 'create_session',
         }),
       })
       
       const data = await response.json()
-      if (data.ok && data.sessionId) {
-        setSessionId(data.sessionId)
+      if (data.ok && data.session) {
+        setSessionId(data.session.id)
       }
     } catch (error) {
       console.error('[Project Detail] Failed to load/create chat session:', error)

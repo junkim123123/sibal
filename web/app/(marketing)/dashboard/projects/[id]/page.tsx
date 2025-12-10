@@ -13,18 +13,24 @@ function ProgressTracker({ projectId, managerId }: { projectId: string; managerI
   const [milestones, setMilestones] = useState<any[]>([])
   const [isLoading, setIsLoading] = useState(true)
 
+  // [수정] 컴포넌트가 마운트될 때마다 데이터를 새로 불러오도록 보장
   useEffect(() => {
+    console.log('🔄 ProgressTracker Mounted: Loading milestones for project:', projectId)
     loadMilestones()
-  }, [projectId])
+  }, [projectId]) // projectId가 변경되거나 컴포넌트가 재마운트될 때 실행
 
   const loadMilestones = async () => {
     try {
       setIsLoading(true)
+      console.log('[ProgressTracker] Fetching milestones from API...')
       const response = await fetch(`/api/projects/${projectId}/progress`)
       const data = await response.json()
       
       if (data.ok && data.milestones) {
+        console.log('[ProgressTracker] Milestones loaded:', data.milestones.length)
         setMilestones(data.milestones)
+      } else {
+        console.warn('[ProgressTracker] No milestones returned from API')
       }
     } catch (error) {
       console.error('[ProgressTracker] Failed to load milestones:', error)
@@ -222,9 +228,17 @@ function ProjectDetailPageContent() {
   const uploadFile = async (file: File) => {
     if (!file || !projectId) return
 
+    // [중요] 사용자가 파일을 선택하자마자 일단 input을 비워버립니다.
+    // 그래야 실패하든 성공하든 바로 다음 클릭(같은 파일 선택)이 먹힙니다.
+    if (fileInputRef.current) {
+      fileInputRef.current.value = ''
+    }
+
     try {
       setIsUploading(true)
       setUploadSuccess(false)
+
+      console.log('[File Upload] Starting upload for file:', file.name)
 
       const formData = new FormData()
       formData.append('file', file)
@@ -241,12 +255,8 @@ function ProjectDetailPageContent() {
         throw new Error(data.error || 'Failed to upload file')
       }
 
+      console.log('[File Upload] Upload successful')
       setUploadSuccess(true)
-      
-      // 파일 입력 초기화
-      if (fileInputRef.current) {
-        fileInputRef.current.value = ''
-      }
 
       // 파일 업로드 성공 후 Overview 탭으로 전환 (Documents 탭 제거됨)
       // 필요시 Overview 탭에서 파일 목록을 표시할 수 있음
@@ -265,8 +275,11 @@ function ProjectDetailPageContent() {
 
   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0]
+    console.log('[File Upload] File selected:', file?.name)
     if (file) {
       await uploadFile(file)
+    } else {
+      console.warn('[File Upload] No file selected')
     }
   }
 
@@ -390,6 +403,7 @@ function ProjectDetailPageContent() {
             label="Chat"
             active={activeTab === 'chat'}
             onClick={() => {
+              console.log('👆 Clicked Chat Tab, current tab:', activeTab)
               setActiveTab('chat')
             }}
           />
@@ -397,13 +411,16 @@ function ProjectDetailPageContent() {
             label="Progress"
             active={activeTab === 'progress'}
             onClick={() => {
+              console.log('👆 Clicked Progress Tab, current tab:', activeTab)
               setActiveTab('progress')
+              // 탭 전환 시 ProgressTracker가 재마운트되어 자동으로 데이터를 새로 불러옴
             }}
           />
           <TabButton
             label="Overview"
             active={activeTab === 'overview'}
             onClick={() => {
+              console.log('👆 Clicked Overview Tab, current tab:', activeTab)
               setActiveTab('overview')
             }}
           />
@@ -432,7 +449,12 @@ function ProjectDetailPageContent() {
           {activeTab === 'progress' && project && (
             <div className="bg-white rounded-lg border border-gray-200 p-6">
               {project.manager_id ? (
-                <ProgressTracker projectId={projectId} managerId={project.manager_id} />
+                // key prop 추가하여 탭 전환 시 강제로 재마운트 (데이터 새로고침 보장)
+                <ProgressTracker 
+                  key={`progress-${projectId}-${activeTab}`}
+                  projectId={projectId} 
+                  managerId={project.manager_id} 
+                />
               ) : (
                 <div className="text-center py-12">
                   <CheckCircle2 className="w-12 h-12 text-gray-400 mx-auto mb-4" />

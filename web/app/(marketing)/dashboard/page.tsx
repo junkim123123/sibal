@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, Suspense, useCallback } from 'react'
+import { useState, useEffect, Suspense, useCallback, useMemo } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
@@ -568,24 +568,32 @@ function DashboardPageContent() {
           <TabButton
             label="My Requests"
             active={activeTab === 'requests'}
-            onClick={() => {
+            onClick={(e) => {
+              e.preventDefault()
+              e.stopPropagation()
               console.log('[Dashboard] Tab clicked: requests, current:', activeTab)
-              setActiveTab('requests')
-              // 탭 클릭 시 즉시 데이터 로드
-              if (userId && isAuthenticated) {
-                loadProjects(userId)
+              if (activeTab !== 'requests') {
+                setActiveTab('requests')
+                // 탭 클릭 시 즉시 데이터 로드
+                if (userId && isAuthenticated) {
+                  loadProjects(userId)
+                }
               }
             }}
           />
           <TabButton
             label="Production & Shipping"
             active={activeTab === 'production'}
-            onClick={() => {
+            onClick={(e) => {
+              e.preventDefault()
+              e.stopPropagation()
               console.log('[Dashboard] Tab clicked: production, current:', activeTab)
-              setActiveTab('production')
-              // 탭 클릭 시 즉시 데이터 로드
-              if (userId && isAuthenticated) {
-                loadProjects(userId)
+              if (activeTab !== 'production') {
+                setActiveTab('production')
+                // 탭 클릭 시 즉시 데이터 로드
+                if (userId && isAuthenticated) {
+                  loadProjects(userId)
+                }
               }
             }}
           />
@@ -621,7 +629,7 @@ function TabButton({
 }: {
   label: string
   active: boolean
-  onClick: () => void
+  onClick: (e: React.MouseEvent<HTMLButtonElement>) => void
 }) {
   return (
     <button
@@ -632,6 +640,8 @@ function TabButton({
           ? 'text-black font-semibold'
           : 'text-zinc-500 hover:text-black'
       }`}
+      aria-pressed={active}
+      aria-label={`${label} tab`}
     >
       {label}
       {active && (

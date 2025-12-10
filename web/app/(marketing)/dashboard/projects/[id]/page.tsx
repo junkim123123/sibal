@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, Suspense, useRef } from 'react'
+import { useState, useEffect, Suspense, useRef, useCallback, useTransition } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
@@ -135,6 +135,20 @@ function ProjectDetailPageContent() {
   const [isDragging, setIsDragging] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
   const dropZoneRef = useRef<HTMLDivElement>(null)
+  const [isPending, startTransition] = useTransition()
+
+  // 탭 변경 핸들러를 useCallback으로 메모이제이션
+  const handleTabChange = useCallback((tab: ProjectTabType) => {
+    console.log('👆 Tab change requested:', tab, 'current:', activeTab)
+    
+    // 즉시 상태 업데이트 (startTransition으로 감싸지 않음 - 즉시 반영 필요)
+    if (activeTab !== tab) {
+      setActiveTab(tab)
+      console.log('✅ Tab state updated to:', tab)
+    } else {
+      console.log('⚠️ Tab already active, skipping update')
+    }
+  }, [activeTab])
 
   useEffect(() => {
     async function checkAuth() {
@@ -402,27 +416,17 @@ function ProjectDetailPageContent() {
           <TabButton
             label="Chat"
             active={activeTab === 'chat'}
-            onClick={() => {
-              console.log('👆 Clicked Chat Tab, current tab:', activeTab)
-              setActiveTab('chat')
-            }}
+            onClick={() => handleTabChange('chat')}
           />
           <TabButton
             label="Progress"
             active={activeTab === 'progress'}
-            onClick={() => {
-              console.log('👆 Clicked Progress Tab, current tab:', activeTab)
-              setActiveTab('progress')
-              // 탭 전환 시 ProgressTracker가 재마운트되어 자동으로 데이터를 새로 불러옴
-            }}
+            onClick={() => handleTabChange('progress')}
           />
           <TabButton
             label="Overview"
             active={activeTab === 'overview'}
-            onClick={() => {
-              console.log('👆 Clicked Overview Tab, current tab:', activeTab)
-              setActiveTab('overview')
-            }}
+            onClick={() => handleTabChange('overview')}
           />
         </div>
 
@@ -575,15 +579,24 @@ function TabButton({
   active: boolean
   onClick: () => void
 }) {
+  const handleClick = (e: React.MouseEvent<HTMLButtonElement>) => {
+    e.preventDefault()
+    e.stopPropagation()
+    console.log(`🔘 TabButton "${label}" clicked, active:`, active)
+    onClick()
+  }
+
   return (
     <button
       type="button"
-      onClick={onClick}
+      onClick={handleClick}
       className={`pb-4 px-1 text-sm font-medium transition-colors relative ${
         active
           ? 'text-black font-semibold'
           : 'text-zinc-500 hover:text-black'
       }`}
+      aria-pressed={active}
+      aria-label={`${label} tab`}
     >
       {label}
       {active && (

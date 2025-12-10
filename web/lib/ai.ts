@@ -1,3 +1,4 @@
+import 'server-only';
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import type { SampleRequestData } from './validation';
 
@@ -10,8 +11,12 @@ import type { SampleRequestData } from './validation';
  * GEMINI_API_KEY="YOUR_GEMINI_KEY"
  */
 
-// Initialize the Gemini client
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "");
+async function getApiKey(): Promise<string> {
+  if (typeof process === 'undefined' || !process.env.GEMINI_API_KEY) {
+    throw new Error('GEMINI_API_KEY is not configured in your .env.local file.');
+  }
+  return process.env.GEMINI_API_KEY;
+}
 
 /**
  * Generates a JSON summary for a sample request using Gemini.
@@ -19,6 +24,8 @@ const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "");
  * @returns A promise that resolves to a JSON object with the summary.
  */
 export async function generateSampleRequestSummary(data: SampleRequestData): Promise<object> {
+  const apiKey = await getApiKey();
+  const genAI = new GoogleGenerativeAI(apiKey);
   const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
   const prompt = `

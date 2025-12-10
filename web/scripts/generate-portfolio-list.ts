@@ -1,10 +1,14 @@
 import { readdir, stat, writeFile } from 'fs/promises';
 import { join } from 'path';
+import { getProductInfo } from '../lib/data/product-mapping';
 
 interface PortfolioItem {
   id: string;
   image: string;
   productName: string;
+  productNameEn: string;
+  category: string;
+  subcategory?: string;
   alt: string;
 }
 
@@ -34,12 +38,16 @@ async function generatePortfolioList() {
             );
             
             // 각 이미지를 개별 아이템으로 추가
+            const productInfo = getProductInfo(folder);
             imageFiles.forEach((file, index) => {
               items.push({
                 id: `${folder}-${index}`,
                 image: `/images/portfolio/${folder}/${file}`,
                 productName: folder.replace(/-/g, ' ').replace(/_/g, ' '),
-                alt: `${folder} - ${file.replace(/\.[^/.]+$/, '')}`,
+                productNameEn: productInfo.englishName,
+                category: productInfo.category,
+                subcategory: productInfo.subcategory,
+                alt: `${productInfo.englishName} - ${file.replace(/\.[^/.]+$/, '')}`,
               });
             });
           } catch (error) {

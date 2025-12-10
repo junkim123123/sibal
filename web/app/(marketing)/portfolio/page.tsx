@@ -9,13 +9,16 @@ interface PortfolioItem {
   id: string;
   image: string;
   productName: string;
+  productNameEn?: string;
+  category?: string;
+  subcategory?: string;
   alt: string;
 }
 
 export default function PortfolioPage() {
   const [portfolioItems, setPortfolioItems] = useState<PortfolioItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [selectedProduct, setSelectedProduct] = useState<string>('all');
+  const [selectedCategory, setSelectedCategory] = useState<string>('all');
 
   useEffect(() => {
     async function loadPortfolio() {
@@ -39,14 +42,23 @@ export default function PortfolioPage() {
     loadPortfolio();
   }, []);
 
-  // 고유한 상품명 목록 추출
-  const uniqueProducts = Array.from(
-    new Set(portfolioItems.map(item => item.productName))
+  // 카테고리 목록 추출
+  const categories = Array.from(
+    new Set(portfolioItems.map(item => item.category || 'other'))
   ).sort();
 
-  const filteredItems = selectedProduct === 'all'
+  const filteredItems = selectedCategory === 'all'
     ? portfolioItems
-    : portfolioItems.filter(item => item.productName === selectedProduct);
+    : portfolioItems.filter(item => (item.category || 'other') === selectedCategory);
+
+  // 카테고리 표시 이름
+  const categoryNames: Record<string, string> = {
+    all: 'All Products',
+    confectionery: 'Confectionery',
+    toys: 'Toys & Novelties',
+    character: 'Character Licensing',
+    other: 'Other',
+  };
 
   return (
     <div className="bg-white min-h-screen">
@@ -62,30 +74,30 @@ export default function PortfolioPage() {
             </p>
           </div>
 
-          {/* Product Filter */}
-          {uniqueProducts.length > 0 && (
+          {/* Category Filter */}
+          {categories.length > 0 && (
             <div className="flex flex-wrap justify-center gap-3 max-w-4xl mx-auto">
               <button
-                onClick={() => setSelectedProduct('all')}
+                onClick={() => setSelectedCategory('all')}
                 className={`px-6 py-2 rounded-full text-sm font-medium transition-colors ${
-                  selectedProduct === 'all'
+                  selectedCategory === 'all'
                     ? 'bg-[#008080] text-white'
                     : 'bg-neutral-100 text-neutral-700 hover:bg-neutral-200'
                 }`}
               >
                 All Products
               </button>
-              {uniqueProducts.map((productName) => (
+              {categories.map((category) => (
                 <button
-                  key={productName}
-                  onClick={() => setSelectedProduct(productName)}
+                  key={category}
+                  onClick={() => setSelectedCategory(category)}
                   className={`px-6 py-2 rounded-full text-sm font-medium transition-colors ${
-                    selectedProduct === productName
+                    selectedCategory === category
                       ? 'bg-[#008080] text-white'
                       : 'bg-neutral-100 text-neutral-700 hover:bg-neutral-200'
                   }`}
                 >
-                  {productName}
+                  {categoryNames[category] || category}
                 </button>
               ))}
             </div>
@@ -127,6 +139,12 @@ export default function PortfolioPage() {
                       className="object-cover group-hover:scale-105 transition-transform duration-300"
                       sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
                     />
+                    {/* Product name overlay on hover */}
+                    <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center p-4">
+                      <p className="text-white text-sm font-medium text-center">
+                        {item.productNameEn || item.productName}
+                      </p>
+                    </div>
                   </div>
                 </div>
               ))}

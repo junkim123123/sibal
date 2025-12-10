@@ -34,13 +34,13 @@ export default async function HomePage() {
   return (
     <div className="bg-white">
       <HomeHero page={page} />
+      <PortfolioMarquee />
       <HomeUseCases />
       <HomeSocialProofStrip />
       <HomeBenefitsGrid />
       <ReviewsSection section={homePageConfig.reviewsSection} />
       <ProTeamSection section={homePageConfig.teamSection} />
       <ExpertPanelSection panel={page?.expertPanel} />
-      <PortfolioMarquee />
       <HomeImpactBand />
     </div>
   );

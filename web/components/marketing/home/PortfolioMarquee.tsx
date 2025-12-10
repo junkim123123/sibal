@@ -36,14 +36,14 @@ export function PortfolioMarquee() {
   }
 
   return (
-    <section className="py-12 bg-neutral-50 border-y border-neutral-200 overflow-hidden">
+    <section className="py-4 bg-white border-b border-neutral-200 overflow-hidden">
       <div className="relative">
-        <div className="flex animate-marquee gap-6">
+        <div className="flex animate-marquee gap-4">
           {/* 첫 번째 세트 */}
           {images.map((image, index) => (
             <div
               key={`first-${index}`}
-              className="flex-shrink-0 w-32 h-32 md:w-40 md:h-40 rounded-lg overflow-hidden bg-neutral-200 group"
+              className="flex-shrink-0 w-20 h-20 md:w-24 md:h-24 rounded-lg overflow-hidden bg-neutral-100 group"
             >
               <div className="relative w-full h-full grayscale group-hover:grayscale-0 transition-all duration-300">
                 <Image
@@ -51,7 +51,7 @@ export function PortfolioMarquee() {
                   alt={`Portfolio item ${index + 1}`}
                   fill
                   className="object-cover"
-                  sizes="160px"
+                  sizes="96px"
                   onError={(e) => {
                     // 이미지 로드 실패 시 플레이스홀더 표시
                     e.currentTarget.style.display = 'none';
@@ -64,7 +64,7 @@ export function PortfolioMarquee() {
           {images.map((image, index) => (
             <div
               key={`second-${index}`}
-              className="flex-shrink-0 w-32 h-32 md:w-40 md:h-40 rounded-lg overflow-hidden bg-neutral-200 group"
+              className="flex-shrink-0 w-20 h-20 md:w-24 md:h-24 rounded-lg overflow-hidden bg-neutral-100 group"
             >
               <div className="relative w-full h-full grayscale group-hover:grayscale-0 transition-all duration-300">
                 <Image
@@ -72,7 +72,7 @@ export function PortfolioMarquee() {
                   alt={`Portfolio item ${index + 1}`}
                   fill
                   className="object-cover"
-                  sizes="160px"
+                  sizes="96px"
                   onError={(e) => {
                     e.currentTarget.style.display = 'none';
                   }}
@@ -82,7 +82,6 @@ export function PortfolioMarquee() {
           ))}
         </div>
       </div>
-      
     </section>
   );
 }

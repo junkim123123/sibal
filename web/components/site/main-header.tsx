@@ -94,6 +94,13 @@ export function MainHeader() {
                 <Link
                   key={item.href}
                   href={item.href}
+                  onClick={(e) => {
+                    // 중복 클릭 방지
+                    if (pathname === item.href) {
+                      e.preventDefault();
+                      return;
+                    }
+                  }}
                   className={`text-sm font-normal transition-colors relative ${
                     pathname === item.href
                       ? 'text-black after:absolute after:bottom-0 after:left-0 after:right-0 after:h-0.5 after:bg-black'

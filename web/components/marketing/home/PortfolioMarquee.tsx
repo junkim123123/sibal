@@ -20,7 +20,7 @@ export function PortfolioMarquee() {
               imageMap.set(item.productName, item.image);
             }
           });
-          const uniqueImages = Array.from(imageMap.values()).slice(0, 30);
+          const uniqueImages = Array.from(imageMap.values()).slice(0, 15);
           // 무한 루프를 위해 2배로 복제
           setImages([...uniqueImages, ...uniqueImages]);
         }

@@ -140,7 +140,7 @@ export default function SupportPage() {
             </p>
             <a
               href="mailto:support@nexsupply.net"
-              className="block w-full text-center px-4 py-2 bg-black text-white rounded-lg font-medium hover:bg-zinc-800 transition-colors"
+              className="block w-full text-center px-4 py-2 bg-[#008080] text-white rounded-lg font-medium hover:bg-[#006666] transition-colors"
             >
               Email Support
             </a>

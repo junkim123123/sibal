@@ -395,7 +395,7 @@ function ProjectDetailPageContent() {
               <button
                 onClick={() => fileInputRef.current?.click()}
                 disabled={isUploading}
-                className="inline-flex items-center gap-2 px-4 py-2 bg-black text-white rounded-lg hover:bg-gray-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                className="inline-flex items-center gap-2 px-4 py-2 bg-[#008080] text-white rounded-lg hover:bg-[#006666] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 aria-label="Upload file"
               >
                 {isUploading ? (
@@ -569,7 +569,7 @@ function ProjectDetailPageContent() {
                             e.stopPropagation()
                             fileInputRef.current?.click()
                           }}
-                          className="mt-2 px-4 py-2 bg-black text-white rounded-lg hover:bg-gray-800 transition-colors text-sm font-medium"
+                          className="mt-2 px-4 py-2 bg-[#008080] text-white rounded-lg hover:bg-[#006666] transition-colors text-sm font-medium"
                           aria-label="Select file to upload"
                         >
                           Select File

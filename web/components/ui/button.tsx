@@ -18,7 +18,7 @@ export function Button({
   const baseClasses = 'inline-flex items-center justify-center font-semibold transition-all disabled:opacity-50 disabled:cursor-not-allowed';
   
   const variantClasses = {
-    primary: 'bg-black text-white hover:bg-neutral-800',
+    primary: 'bg-[#008080] text-white hover:bg-[#006666]',
     secondary: 'bg-secondary text-white hover:bg-secondary/90',
     outline: 'border border-neutral-300 bg-white text-neutral-900 hover:bg-neutral-50',
     ghost: 'bg-transparent hover:bg-white/5 text-muted-foreground',

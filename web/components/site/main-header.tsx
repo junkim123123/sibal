@@ -126,7 +126,7 @@ export function MainHeader() {
                     }
                   }}
                   disabled={isLoading}
-                  className="rounded-full bg-black px-5 py-2 text-sm font-medium text-white hover:bg-zinc-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="rounded-full bg-[#008080] px-5 py-2 text-sm font-medium text-white hover:bg-[#006666] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   Get Started
                 </button>
@@ -254,7 +254,7 @@ export function MainHeader() {
                         }
                       }}
                       disabled={isLoading}
-                      className="block w-full rounded-full bg-black px-6 py-2 text-center text-sm font-medium text-white hover:bg-zinc-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="block w-full rounded-full bg-[#008080] px-6 py-2 text-center text-sm font-medium text-white hover:bg-[#006666] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       Get Started
                     </button>

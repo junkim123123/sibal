@@ -591,7 +591,7 @@ function DashboardPageContent() {
               <Link href="/chat">
                 <Button
                   size="lg"
-                  className="bg-neutral-900 hover:bg-neutral-800 text-white rounded-lg px-6 py-3 font-semibold"
+                  className="bg-[#008080] hover:bg-[#006666] text-white rounded-lg px-6 py-3 font-semibold"
                 >
                   + New Analysis Request
                 </Button>
@@ -855,7 +855,7 @@ function OverviewTab({
             <Link href="/chat">
               <Button
                 size="lg"
-                className="w-full bg-neutral-900 hover:bg-neutral-800 text-white rounded-lg py-6 font-semibold text-base"
+                className="w-full bg-[#008080] hover:bg-[#006666] text-white rounded-lg py-6 font-semibold text-base"
               >
                 + New Analysis Request
               </Button>
@@ -1482,7 +1482,7 @@ function EmptyState({
       </p>
       <Link
         href={actionHref}
-        className="inline-flex items-center gap-2 px-6 py-3 bg-black text-white rounded-lg font-medium hover:bg-zinc-800 transition-colors"
+        className="inline-flex items-center gap-2 px-6 py-3 bg-[#008080] text-white rounded-lg font-medium hover:bg-[#006666] transition-colors"
       >
         {actionLabel}
         <ChevronRight className="h-5 w-5" />

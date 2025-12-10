@@ -410,7 +410,7 @@ function ClientChatContent() {
               </p>
               <Link
                 href="/chat"
-                className="inline-flex items-center gap-2 px-4 py-2 bg-black text-white rounded-lg hover:bg-zinc-800 transition-colors"
+                className="inline-flex items-center gap-2 px-4 py-2 bg-[#008080] text-white rounded-lg hover:bg-[#006666] transition-colors"
               >
                 Start New Analysis
               </Link>

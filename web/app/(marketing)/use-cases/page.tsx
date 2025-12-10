@@ -61,7 +61,7 @@ export default async function UseCasesPage() {
                   <div className="grid gap-4 lg:grid-cols-[1.2fr,1.8fr] items-start">
                     {/* Left column */}
                     <div>
-                      <div className="h-10 w-10 rounded-xl bg-black text-white flex items-center justify-center mb-4">
+                      <div className="h-10 w-10 rounded-xl bg-[#008080] text-white flex items-center justify-center mb-4">
                         <Icon className="h-5 w-5 text-white" />
                       </div>
                       <h3 className="text-lg font-semibold text-neutral-900">

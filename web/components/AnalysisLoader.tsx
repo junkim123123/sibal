@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { Factory } from 'lucide-react';
 
 // Progress-based steps (0.5초마다 변경)
 const PROGRESS_STEPS = [
@@ -99,8 +100,8 @@ export default function AnalysisLoader() {
                       }}
                       className="w-3 h-3 bg-blue-600 rounded-full"
                     />
-                    <div className="absolute -bottom-5 left-1/2 -translate-x-1/2 text-xs text-neutral-500 whitespace-nowrap">
-                      CN
+                    <div className="absolute -bottom-7 left-1/2 -translate-x-1/2 flex items-center justify-center">
+                      <Factory className="w-6 h-6 text-blue-600" strokeWidth={1.5} />
                     </div>
                   </div>
 
@@ -119,8 +120,27 @@ export default function AnalysisLoader() {
                       }}
                       className="w-3 h-3 bg-green-600 rounded-full"
                     />
-                    <div className="absolute -bottom-5 left-1/2 -translate-x-1/2 text-xs text-neutral-500 whitespace-nowrap">
-                      US
+                    <div className="absolute -bottom-7 left-1/2 -translate-x-1/2 flex items-center justify-center">
+                      {/* 서비스 로고 플레이스홀더 */}
+                      <div className="relative w-6 h-6 flex items-center justify-center">
+                        <img 
+                          src="/logo.png" 
+                          alt="NexSupply" 
+                          className="w-6 h-6 object-contain"
+                          onError={(e) => {
+                            // 로고가 없으면 숨기고 fallback 표시
+                            e.currentTarget.style.display = 'none';
+                            const fallback = e.currentTarget.nextElementSibling as HTMLElement;
+                            if (fallback) {
+                              fallback.style.display = 'flex';
+                            }
+                          }}
+                        />
+                        {/* Fallback: 로고가 없을 때 표시되는 기본 아이콘 */}
+                        <div className="absolute inset-0 w-6 h-6 bg-[#008080] rounded flex items-center justify-center" style={{ display: 'none' }}>
+                          <span className="text-white text-xs font-bold">N</span>
+                        </div>
+                      </div>
                     </div>
                   </div>
 

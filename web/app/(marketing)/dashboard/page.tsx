@@ -4,7 +4,7 @@ import { useState, useEffect, Suspense, useCallback, useMemo } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
-import { ChevronRight, Package, Truck, Folder, MessageSquare, FileText } from 'lucide-react'
+import { ChevronRight, Package, Truck, Folder, MessageSquare, FileText, BarChart3, Clock, CheckCircle2 } from 'lucide-react'
 import { AssetLibrary } from '@/components/AssetLibrary'
 import { ClientMessagesList } from '@/components/ClientMessagesList'
 import { Loader2 } from 'lucide-react'
@@ -20,20 +20,22 @@ function formatStatus(status: string): string {
     .join(' ')
 }
 
-type TabType = 'requests' | 'production' | 'agent'
+type TabType = 'overview' | 'requests' | 'production' | 'agent'
 
 function DashboardPageContent() {
   const searchParams = useSearchParams()
-  const tabParam = searchParams?.get('tab') || 'requests'
+  const tabParam = searchParams?.get('tab') || 'overview'
   
   // 하위 호환성: 기존 탭 이름 매핑
-  let initialTab: TabType = 'requests'
-  if (tabParam === 'estimates' || tabParam === 'products' || tabParam === 'documents') {
+  let initialTab: TabType = 'overview'
+  if (tabParam === 'overview' || tabParam === 'home' || tabParam === 'dashboard') {
+    initialTab = 'overview'
+  } else if (tabParam === 'estimates' || tabParam === 'products' || tabParam === 'documents' || tabParam === 'requests') {
     initialTab = 'requests'
-  } else if (tabParam === 'orders' || tabParam === 'active') {
+  } else if (tabParam === 'orders' || tabParam === 'active' || tabParam === 'production') {
     initialTab = 'production'
-  } else if (tabParam === 'requests' || tabParam === 'production' || tabParam === 'agent') {
-    initialTab = tabParam as TabType
+  } else if (tabParam === 'agent') {
+    initialTab = 'agent'
   }
   
   const [activeTab, setActiveTab] = useState<TabType>(initialTab)
@@ -323,6 +325,25 @@ function DashboardPageContent() {
     try {
       const supabase = createClient()
       
+      // milestones 데이터 가져오기
+      const projectIds = projects.map((p: any) => p.id)
+      const { data: milestonesData } = await supabase
+        .from('projects')
+        .select('id, milestones')
+        .in('id', projectIds)
+
+      const milestonesMap = new Map()
+      milestonesData?.forEach((p: any) => {
+        if (p.milestones) {
+          try {
+            const milestones = typeof p.milestones === 'string' ? JSON.parse(p.milestones) : p.milestones
+            milestonesMap.set(p.id, Array.isArray(milestones) ? milestones : [])
+          } catch {
+            milestonesMap.set(p.id, [])
+          }
+        }
+      })
+
       // 1. status='active' 또는 'in_progress'인 프로젝트들 (새로 생성된 소싱 요청 또는 매니저가 할당된 프로젝트)
       const activeProjects = projects
         .filter((p: any) => p.status === 'active' || p.status === 'in_progress')
@@ -340,6 +361,7 @@ function DashboardPageContent() {
           href: `/dashboard/chat?project_id=${p.id}`, // 매니저 채팅 페이지로 이동
           isNewRequest: p.status === 'active', // active 상태면 새 소싱 요청
           hasManager: p.status === 'in_progress', // in_progress 상태면 매니저가 할당됨
+          milestones: milestonesMap.get(p.id) || [],
         }))
 
       // 2. 선택된 견적이 있는 프로젝트 ID 목록 가져오기
@@ -384,6 +406,7 @@ function DashboardPageContent() {
             hasSelectedQuote: true,
             awaitingManager: true,
             hoursSinceSelection: hoursSinceSelection,
+            milestones: milestonesMap.get(p.id) || [],
           }
         })
 
@@ -464,6 +487,7 @@ function DashboardPageContent() {
             status: status,
             projectName: project.name,
             href: `/dashboard/chat?project_id=${projectId}`, // 매니저 채팅 페이지로 이동
+            milestones: milestonesMap.get(projectId) || [],
             isNewRequest: false,
           }
         })
@@ -575,18 +599,16 @@ function DashboardPageContent() {
           </p>
         </div>
 
-        {/* Tabs Navigation - 3-Tab Structure (Past/Current/Future) */}
+        {/* Tabs Navigation */}
         <div className="flex gap-8 mb-8 border-b border-gray-200">
           <TabButton
-            label="My Requests"
-            active={activeTab === 'requests'}
+            label="Overview"
+            active={activeTab === 'overview'}
             onClick={(e) => {
               e.preventDefault()
               e.stopPropagation()
-              console.log('[Dashboard] Tab clicked: requests, current:', activeTab)
-              if (activeTab !== 'requests') {
-                setActiveTab('requests')
-                // 탭 클릭 시 즉시 데이터 로드
+              if (activeTab !== 'overview') {
+                setActiveTab('overview')
                 if (userId && isAuthenticated) {
                   loadProjects(userId)
                 }
@@ -594,15 +616,27 @@ function DashboardPageContent() {
             }}
           />
           <TabButton
-            label="Production & Shipping"
+            label="Sourcing Estimates"
+            active={activeTab === 'requests'}
+            onClick={(e) => {
+              e.preventDefault()
+              e.stopPropagation()
+              if (activeTab !== 'requests') {
+                setActiveTab('requests')
+                if (userId && isAuthenticated) {
+                  loadProjects(userId)
+                }
+              }
+            }}
+          />
+          <TabButton
+            label="Active Orders"
             active={activeTab === 'production'}
             onClick={(e) => {
               e.preventDefault()
               e.stopPropagation()
-              console.log('[Dashboard] Tab clicked: production, current:', activeTab)
               if (activeTab !== 'production') {
                 setActiveTab('production')
-                // 탭 클릭 시 즉시 데이터 로드
                 if (userId && isAuthenticated) {
                   loadProjects(userId)
                 }
@@ -619,6 +653,13 @@ function DashboardPageContent() {
             </div>
           ) : (
             <>
+              {activeTab === 'overview' && (
+                <OverviewTab 
+                  estimates={estimates} 
+                  shipments={shipments}
+                  userId={userId}
+                />
+              )}
               {activeTab === 'requests' && (
                 <EstimatesList estimates={estimates} />
               )}
@@ -663,14 +704,171 @@ function TabButton({
   )
 }
 
-// Estimates List Component
+// Summary Card Component
+function SummaryCard({ 
+  icon, 
+  label, 
+  value, 
+  color 
+}: { 
+  icon: React.ReactNode
+  label: string
+  value: number
+  color: 'blue' | 'orange' | 'green' | 'red'
+}) {
+  const colorClasses = {
+    blue: 'bg-blue-50 text-blue-600',
+    orange: 'bg-orange-50 text-orange-600',
+    green: 'bg-green-50 text-green-600',
+    red: 'bg-red-50 text-red-600',
+  }
+
+  return (
+    <div className="bg-white border border-gray-200 rounded-xl p-6">
+      <div className="flex items-center justify-between">
+        <div>
+          <p className="text-sm text-gray-600 mb-1">{label}</p>
+          <p className="text-3xl font-bold text-gray-900">{value}</p>
+        </div>
+        <div className={`${colorClasses[color]} p-3 rounded-lg`}>
+          {icon}
+        </div>
+      </div>
+    </div>
+  )
+}
+
+// Overview Tab Component
+function OverviewTab({ 
+  estimates, 
+  shipments,
+  userId 
+}: { 
+  estimates: any[]
+  shipments: any[]
+  userId: string | null
+}) {
+  // Action Required: 승인 대기 중인 견적 (status가 completed이고 아직 agent 요청 안 한 것)
+  const actionRequired = estimates.filter((e: any) => 
+    e.status === 'completed' && !shipments.some((s: any) => s.id === e.id)
+  ).length
+
+  // In Transit: 배송 중인 주문
+  const inTransit = shipments.filter((s: any) => 
+    s.status === 'Shipping' || s.status === 'In Transit' || s.status === 'Customs Clearance'
+  ).length
+
+  // Total Spend 계산 (이번 달)
+  const currentMonth = new Date().getMonth()
+  const currentYear = new Date().getFullYear()
+  const totalSpend = shipments
+    .filter((s: any) => {
+      const shipmentDate = new Date(s.date || s.created_at || 0)
+      return shipmentDate.getMonth() === currentMonth && shipmentDate.getFullYear() === currentYear
+    })
+    .length * 0 // 실제로는 프로젝트의 결제 금액을 합산해야 함 (임시로 주문 건수 표시)
+
+  // Recent Activity: 최근 업데이트된 항목들 (estimates와 shipments 합쳐서 정렬)
+  const recentActivity = [
+    ...estimates.slice(0, 3).map((e: any) => ({ ...e, type: 'estimate' })),
+    ...shipments.slice(0, 2).map((s: any) => ({ ...s, type: 'order' }))
+  ]
+    .sort((a: any, b: any) => {
+      const dateA = new Date(a.date || a.created_at || 0).getTime()
+      const dateB = new Date(b.date || b.created_at || 0).getTime()
+      return dateB - dateA
+    })
+    .slice(0, 4)
+
+  return (
+    <div className="space-y-8">
+      {/* Stats Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <SummaryCard
+          icon={<Clock className="w-5 h-5" />}
+          label="Action Required"
+          value={actionRequired}
+          color="red"
+        />
+        <SummaryCard
+          icon={<Truck className="w-5 h-5" />}
+          label="In Transit"
+          value={inTransit}
+          color="blue"
+        />
+        <SummaryCard
+          icon={<BarChart3 className="w-5 h-5" />}
+          label="Active Orders"
+          value={shipments.length}
+          color="green"
+        />
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        {/* Recent Activity */}
+        <div className="lg:col-span-2">
+          <div className="bg-white border border-gray-200 rounded-xl p-6">
+            <h2 className="text-lg font-semibold text-gray-900 mb-4">Recent Activity</h2>
+            {recentActivity.length === 0 ? (
+              <p className="text-sm text-gray-500">No recent activity</p>
+            ) : (
+              <div className="space-y-3">
+                {recentActivity.map((item: any) => (
+                  <Link
+                    key={item.id}
+                    href={item.type === 'estimate' ? `/results?project_id=${item.id}` : `/dashboard/projects/${item.id}`}
+                    className="block p-3 rounded-lg hover:bg-gray-50 transition-colors"
+                  >
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        {item.type === 'estimate' ? (
+                          <Package className="w-5 h-5 text-gray-400" />
+                        ) : (
+                          <Truck className="w-5 h-5 text-blue-600" />
+                        )}
+                        <div>
+                          <p className="text-sm font-medium text-gray-900">
+                            {item.productName || item.batchName}
+                          </p>
+                          <p className="text-xs text-gray-500">{item.date}</p>
+                        </div>
+                      </div>
+                      <StatusBadge status={item.status} />
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Quick Action */}
+        <div className="lg:col-span-1">
+          <div className="bg-white border border-gray-200 rounded-xl p-6">
+            <h2 className="text-lg font-semibold text-gray-900 mb-4">Quick Actions</h2>
+            <Link href="/chat">
+              <Button
+                size="lg"
+                className="w-full bg-neutral-900 hover:bg-neutral-800 text-white rounded-lg py-6 font-semibold text-base"
+              >
+                + New Analysis Request
+              </Button>
+            </Link>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+// Estimates List Component (Table Format)
 function EstimatesList({ estimates }: { estimates: any[] }) {
   if (estimates.length === 0) {
     return (
       <EmptyState
         icon={<Package className="h-12 w-12" />}
-        title="No requests yet"
-        description="Start by analyzing your first product to see your requests here."
+        title="No estimates yet"
+        description="Start by analyzing your first product to see your estimates here."
         actionLabel="Create first request"
         actionHref="/chat"
       />
@@ -678,35 +876,81 @@ function EstimatesList({ estimates }: { estimates: any[] }) {
   }
 
   return (
-    <>
-      {estimates.map((estimate) => (
-        <Link
-          key={estimate.id}
-          href={`/dashboard/projects/${estimate.id}`}
-          className="group block"
-        >
-          <DashboardCard
-            icon={<Package className="h-5 w-5" />}
-            title={estimate.productName}
-            subtitle={estimate.date}
-            rightContent={
-              <div className="flex items-center gap-6 ml-6">
-                <div className="text-right">
-                  <p className="text-lg font-semibold text-black">
-                    {estimate.landedCost}
-                  </p>
-                  <p className="text-xs text-zinc-500">per unit</p>
-                </div>
-                <div className="flex items-center gap-3">
-                  <StatusBadge status={estimate.status} />
-                  <ChevronRight className="h-5 w-5 text-zinc-400 group-hover:text-black transition-colors" />
-                </div>
-              </div>
-            }
-          />
-        </Link>
-      ))}
-    </>
+    <div className="bg-white border border-gray-200 rounded-xl overflow-hidden">
+      <div className="overflow-x-auto">
+        <table className="w-full">
+          <thead className="bg-gray-50 border-b border-gray-200">
+            <tr>
+              <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Product Info</th>
+              <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Date</th>
+              <th className="px-6 py-3 text-right text-xs font-semibold text-gray-600 uppercase tracking-wider">Est. Unit Cost</th>
+              <th className="px-6 py-3 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">Status</th>
+              <th className="px-6 py-3 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">Action</th>
+            </tr>
+          </thead>
+          <tbody className="bg-white divide-y divide-gray-200">
+            {estimates.map((estimate) => {
+              const isComplete = estimate.status === 'completed'
+              const isPending = estimate.status === 'active' || estimate.status === 'in_progress'
+              
+              return (
+                <tr key={estimate.id} className="hover:bg-gray-50 transition-colors">
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center flex-shrink-0">
+                        <Package className="h-5 w-5 text-gray-600" />
+                      </div>
+                      <div>
+                        <Link 
+                          href={`/results?project_id=${estimate.id}`}
+                          className="text-sm font-medium text-gray-900 hover:text-blue-600"
+                        >
+                          {estimate.productName}
+                        </Link>
+                      </div>
+                    </div>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                    {estimate.date}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-right">
+                    <span className="text-sm font-bold text-gray-900">{estimate.landedCost}</span>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-center">
+                    <StatusBadge 
+                      status={isComplete ? 'Analysis Complete' : isPending ? 'Pending' : formatStatus(estimate.status)} 
+                    />
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-center">
+                    {isComplete ? (
+                      <button
+                        onClick={(e) => {
+                          e.preventDefault()
+                          e.stopPropagation()
+                          window.location.href = `/dashboard/projects/${estimate.id}`
+                        }}
+                        className="px-4 py-2 text-sm font-semibold bg-[#008080] hover:bg-teal-700 text-white rounded-lg transition-colors"
+                      >
+                        Connect Agent
+                      </button>
+                    ) : (
+                      <Link href={`/results?project_id=${estimate.id}`}>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                        >
+                          View Report
+                        </Button>
+                      </Link>
+                    )}
+                  </td>
+                </tr>
+              )
+            })}
+          </tbody>
+        </table>
+      </div>
+    </div>
   )
 }
 
@@ -749,51 +993,178 @@ function ProductsList({ products }: { products: any[] }) {
   )
 }
 
-// Active Orders List Component
+// Order Progress Stepper Component
+function OrderStepper({ currentStep }: { currentStep: number }) {
+  const steps = [
+    { label: 'Quote', key: 'quote' },
+    { label: 'Deposit', key: 'deposit' },
+    { label: 'Production', key: 'production' },
+    { label: 'QC', key: 'qc' },
+    { label: 'Shipping', key: 'shipping' },
+    { label: 'Delivered', key: 'delivered' },
+  ]
+
+  return (
+    <div className="w-full">
+      <div className="flex items-center justify-between relative">
+        {/* Progress Line */}
+        <div className="absolute top-5 left-0 right-0 h-0.5 bg-gray-200 z-0">
+          <div 
+            className="absolute top-0 left-0 h-full bg-[#008080] transition-all duration-300 z-10"
+            style={{ width: `${(currentStep / (steps.length - 1)) * 100}%` }}
+          />
+        </div>
+
+        {/* Steps */}
+        {steps.map((step, index) => {
+          const isCompleted = index < currentStep
+          const isCurrent = index === currentStep
+          const isPending = index > currentStep
+
+          return (
+            <div key={step.key} className="relative z-20 flex flex-col items-center flex-1">
+              {/* Step Circle */}
+              <div
+                className={`w-10 h-10 rounded-full flex items-center justify-center border-2 transition-all ${
+                  isCompleted
+                    ? 'bg-[#008080] border-[#008080] text-white'
+                    : isCurrent
+                    ? 'bg-white border-[#008080] text-[#008080]'
+                    : 'bg-white border-gray-300 text-gray-400'
+                }`}
+              >
+                {isCompleted ? (
+                  <CheckCircle2 className="w-5 h-5" />
+                ) : (
+                  <span className="text-xs font-semibold">{index + 1}</span>
+                )}
+              </div>
+              {/* Step Label */}
+              <span
+                className={`mt-2 text-xs font-medium ${
+                  isCompleted || isCurrent
+                    ? 'text-[#008080]'
+                    : 'text-gray-400'
+                }`}
+              >
+                {step.label}
+              </span>
+            </div>
+          )
+        })}
+      </div>
+    </div>
+  )
+}
+
+// Active Orders List Component with Stepper
 function ShipmentsList({ shipments }: { shipments: any[] }) {
   if (shipments.length === 0) {
     return (
       <EmptyState
         icon={<Truck className="h-12 w-12" />}
         title="No active orders yet"
-        description="Start a sourcing request to see your active orders here."
-        actionLabel="View projects"
+        description="Request an agent from your estimates to see active orders here."
+        actionLabel="View estimates"
         actionHref="/dashboard?tab=requests"
       />
     )
   }
 
+  // 상태를 Stepper 단계로 매핑
+  const getStepFromStatus = (status: string, shipment: any): number => {
+    // milestones 데이터가 있으면 사용
+    if (shipment.milestones && Array.isArray(shipment.milestones)) {
+      const completedCount = shipment.milestones.filter((m: any) => m.status === 'completed').length
+      return Math.min(completedCount, 5) // 최대 5단계 (0-5)
+    }
+
+    // 상태 기반 매핑
+    if (status === 'Awaiting Manager' || status === 'Processing' || status === 'active') return 0 // Quote
+    if (status === 'In Progress' || status === 'in_progress') {
+      // manager_id가 있으면 Deposit 단계, 아니면 Quote
+      return shipment.hasManager ? 1 : 0
+    }
+    // 실제로는 milestones 데이터를 사용해야 하지만, 임시로 상태 기반 매핑
+    if (status.includes('Production') || status.includes('Manufacturing')) return 2
+    if (status.includes('QC') || status.includes('Inspection')) return 3
+    if (status === 'Shipping' || status === 'In Transit') return 4
+    if (status === 'Delivered' || status === 'Completed') return 5
+    return 1 // 기본값: Deposit
+  }
+
+  // 현재 단계에서 필요한 액션 결정
+  const getActionForStep = (step: number, shipment: any) => {
+    if (step === 0) return { label: 'Approve Quote & Pay', href: `/dashboard/projects/${shipment.id}` }
+    if (step === 3) return { label: 'View Inspection Report', href: `/dashboard/projects/${shipment.id}` }
+    return null
+  }
+
   return (
-    <>
-      {shipments.map((shipment) => (
-        <div key={shipment.id} className="group">
-          <Link href={`/dashboard/projects/${shipment.id}`} className="block">
-            <DashboardCard
-              icon={<Truck className="h-5 w-5" />}
-              title={shipment.batchName}
-              subtitle={
-                shipment.awaitingManager ? (
-                  <span className="flex items-center gap-2">
-                    <span>{shipment.destination} • {shipment.date}</span>
-                    <span className="text-xs text-blue-600 font-medium">
-                      ⏰ Manager will be assigned within 24 hours
-                    </span>
-                  </span>
-                ) : (
-                  `${shipment.destination} • ${shipment.date}`
-                )
-              }
-              rightContent={
-                <div className="flex items-center gap-3 ml-6">
-                  <StatusBadge status={shipment.status} />
-                  <ChevronRight className="h-5 w-5 text-zinc-400 group-hover:text-black transition-colors" />
+    <div className="space-y-6">
+      {shipments.map((shipment) => {
+        const currentStep = getStepFromStatus(shipment.status, shipment)
+        const action = getActionForStep(currentStep, shipment)
+
+        return (
+          <div key={shipment.id} className="bg-white border border-gray-200 rounded-xl p-6 hover:border-gray-300 hover:shadow-sm transition-all">
+            <div className="flex items-start justify-between mb-6">
+              <div className="flex items-center gap-4 flex-1">
+                <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
+                  <Truck className="h-6 w-6 text-blue-600" />
                 </div>
-              }
-            />
-          </Link>
-        </div>
-      ))}
-    </>
+                <div className="flex-1 min-w-0">
+                  <Link 
+                    href={shipment.href || `/dashboard/projects/${shipment.id}`}
+                    className="text-lg font-semibold text-gray-900 hover:text-blue-600"
+                  >
+                    {shipment.batchName}
+                  </Link>
+                  <p className="text-sm text-gray-600 mt-1">
+                    {shipment.destination} • {shipment.date}
+                  </p>
+                  {shipment.awaitingManager && (
+                    <p className="text-xs text-blue-600 font-medium mt-1">
+                      ⏰ Manager will be assigned within 24 hours
+                    </p>
+                  )}
+                </div>
+              </div>
+              <div className="flex items-center gap-3">
+                <StatusBadge status={shipment.status} />
+                <Link href={`/dashboard/chat?project_id=${shipment.id}`}>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="text-xs"
+                  >
+                    Message Agent
+                  </Button>
+                </Link>
+              </div>
+            </div>
+
+            {/* Stepper */}
+            <div className="mb-6">
+              <OrderStepper currentStep={currentStep} />
+            </div>
+
+            {/* Action Area */}
+            {action && (
+              <div className="pt-4 border-t border-gray-200">
+                <Link href={action.href}>
+                  <button
+                    className="px-4 py-2 text-sm font-semibold bg-[#008080] hover:bg-teal-700 text-white rounded-lg transition-colors"
+                  >
+                    {action.label}
+                  </button>
+                </Link>
+              </div>
+            )}
+          </div>
+        )
+      })}
+    </div>
   )
 }
 
@@ -814,13 +1185,13 @@ function DashboardCard({
       <div className="flex items-center justify-between">
         {/* Left: Info */}
         <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-3 mb-1">
-            <div className="text-zinc-600 flex-shrink-0">{icon}</div>
+          <div className="flex items-center gap-4 mb-2">
+            {icon}
             <h3 className="text-lg font-semibold text-black truncate">
               {title}
             </h3>
           </div>
-          <div className="text-sm text-zinc-600 ml-8">
+          <div className="text-sm text-zinc-600 ml-14">
             {subtitle}
           </div>
         </div>
@@ -874,14 +1245,16 @@ function StatusBadge({ status }: { status: string }) {
   const formattedStatus = formatStatus(status)
   
   const statusColors: Record<string, string> = {
-    Completed: 'bg-green-50 text-green-700 border-green-200',
-    Draft: 'bg-yellow-50 text-yellow-700 border-yellow-200',
+    'Analysis Complete': 'bg-green-50 text-green-700 border-green-200',
+    'Completed': 'bg-green-50 text-green-700 border-green-200',
+    'Pending': 'bg-orange-50 text-orange-700 border-orange-200',
+    'Processing': 'bg-blue-50 text-blue-700 border-blue-200',
+    'In Progress': 'bg-blue-50 text-blue-700 border-blue-200',
+    'Draft': 'bg-yellow-50 text-yellow-700 border-yellow-200',
     'In Transit': 'bg-blue-50 text-blue-700 border-blue-200',
     'Customs Clearance': 'bg-orange-50 text-orange-700 border-orange-200',
-    Saved: 'bg-gray-50 text-gray-700 border-gray-200',
-    Processing: 'bg-blue-50 text-blue-700 border-blue-200',
+    'Saved': 'bg-gray-50 text-gray-700 border-gray-200',
     'Awaiting Manager': 'bg-purple-50 text-purple-700 border-purple-200',
-    'In Progress': 'bg-blue-50 text-blue-700 border-blue-200',
   }
 
   const colorClass = statusColors[formattedStatus] || 

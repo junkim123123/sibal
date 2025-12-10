@@ -13,14 +13,15 @@ export default function HomeUseCases() {
           {useCases.cards.map((useCase) => (
             <div
               key={useCase.title}
-              className="bg-transparent border border-neutral-200 shadow-sm rounded-xl p-4 md:p-5 lg:p-8 hover:shadow-lg transition-shadow duration-300"
+              className="bg-transparent border border-neutral-200 shadow-sm rounded-xl p-6 md:p-8 lg:p-10 hover:shadow-lg hover:border-neutral-300 transition-all duration-300"
             >
               <h3 className="text-base md:text-lg lg:text-xl font-semibold text-neutral-900">
                 {useCase.title}
               </h3>
-              <p className="mt-3 text-sm md:text-base text-[#444] leading-relaxed">
-                {useCase.body}
-              </p>
+              <p 
+                className="mt-4 text-sm md:text-base text-[#444] leading-relaxed"
+                dangerouslySetInnerHTML={{ __html: useCase.body }}
+              />
               {useCase.target && (
                 <p className="mt-4 text-xs text-neutral-500 italic">
                   {useCase.target}

@@ -36,18 +36,24 @@ export function ReviewsSection({ section }: { section: HomeReviewsSection }) {
           </div>
         </div>
 
-        <div className="mt-10 grid gap-6 sm:gap-8 sm:grid-cols-2 lg:grid-cols-3">
-          {reviews.map((review) => (
-            <article
-              key={review.id}
-              className="flex h-full flex-col rounded-2xl bg-neutral-50 p-5 shadow-sm border border-neutral-100"
-            >
-              <h3 className="text-sm font-semibold leading-snug text-neutral-900">
-                {review.headline}
-              </h3>
-              <p className="mt-3 text-sm text-neutral-700 flex-1 leading-relaxed">
-                &ldquo;{review.quote}&rdquo;
-              </p>
+        <div className="mt-10 grid gap-6 sm:gap-8 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
+          {reviews.map((review) => {
+            // Extract the most impactful sentence (first sentence) and bold it
+            const quoteParts = review.quote.split('. ');
+            const firstSentence = quoteParts[0];
+            const restOfQuote = quoteParts.slice(1).join('. ');
+            
+            return (
+              <article
+                key={review.id}
+                className="flex h-full flex-col rounded-2xl bg-neutral-50 p-5 shadow-sm border border-neutral-100"
+              >
+                <h3 className="text-sm font-semibold leading-snug text-neutral-900">
+                  {review.headline}
+                </h3>
+                <p className="mt-3 text-sm text-neutral-700 flex-1 leading-relaxed">
+                  &ldquo;<strong className="font-semibold text-neutral-900">{firstSentence}</strong>{restOfQuote ? '. ' + restOfQuote : ''}&rdquo;
+                </p>
               <div className="mt-4 text-xs text-neutral-500">
                 <p className="font-medium text-neutral-700">
                   {review.name}
@@ -56,7 +62,8 @@ export function ReviewsSection({ section }: { section: HomeReviewsSection }) {
                 <p>{review.date}</p>
               </div>
             </article>
-          ))}
+            );
+          })}
         </div>
       </div>
     </section>

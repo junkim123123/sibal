@@ -141,7 +141,7 @@ export default async function HowItWorksPage() {
       {/* Step by Step Timeline */}
       <SectionLayout
         title={steps.title}
-        className="bg-white"
+        className="bg-white py-16 md:py-20 lg:py-24"
       >
         <div className="max-w-4xl mx-auto">
           <div className="space-y-8 md:space-y-12 lg:space-y-16">
@@ -149,19 +149,16 @@ export default async function HowItWorksPage() {
               const Icon = step.icon;
               return (
                 <div key={step.stepNumber} className="flex gap-4 md:gap-6">
-                  {/* Left: Icon and Number */}
+                  {/* Left: Number Bubble */}
                   <div className="flex-shrink-0">
                     <div className="relative">
-                      <div className="w-12 h-12 md:w-16 md:h-16 rounded-full bg-neutral-900 text-white flex items-center justify-center font-bold text-xl md:text-2xl">
+                      <div className="w-12 h-12 md:w-16 md:h-16 rounded-full bg-[#008080] text-white flex items-center justify-center font-bold text-xl md:text-2xl">
                         {step.stepNumber}
-                      </div>
-                      <div className="absolute -bottom-1 -right-1 md:-bottom-2 md:-right-2 bg-neutral-100 rounded-full p-1.5 md:p-2">
-                        <Icon className="h-4 w-4 md:h-5 md:w-5 text-neutral-900" />
                       </div>
                     </div>
                     {/* Vertical line (except last) */}
                     {index < steps.items.length - 1 && (
-                      <div className="w-0.5 h-full bg-neutral-200 ml-6 md:ml-8 mt-4" style={{ height: 'calc(100% + 2rem)' }}></div>
+                      <div className="border-l-2 border-gray-200 ml-6 md:ml-8 mt-4" style={{ height: 'calc(100% + 2rem)' }}></div>
                     )}
                   </div>
 
@@ -177,17 +174,31 @@ export default async function HowItWorksPage() {
                         </span>
                       )}
                     </div>
-                    <p className="text-sm md:text-base lg:text-lg text-neutral-600 mb-4 md:mb-6 leading-relaxed">
+                    <p className="text-sm md:text-base lg:text-lg text-neutral-600 mb-6 md:mb-8 leading-relaxed">
                       {step.body}
                     </p>
                     {step.bullets && step.bullets.length > 0 && (
-                      <ul className="space-y-2 md:space-y-3">
-                        {step.bullets.map((bullet, i) => (
-                          <li key={i} className="flex items-start gap-2 md:gap-3">
-                            <div className="w-1.5 h-1.5 rounded-full bg-neutral-900 mt-2 md:mt-2.5 flex-shrink-0" />
-                            <span className="text-xs md:text-sm lg:text-base text-neutral-600 leading-relaxed">{bullet}</span>
-                          </li>
-                        ))}
+                      <ul className="space-y-4 md:space-y-5">
+                        {step.bullets.map((bullet, i) => {
+                          // Parse "You do:", "We do:", "You get:" prefixes
+                          const prefixMatch = bullet.match(/^(You do:|We do:|You get:)\s*(.+)$/);
+                          if (prefixMatch) {
+                            const [, prefix, content] = prefixMatch;
+                            return (
+                              <li key={i} className="mb-4">
+                                <span className="text-sm md:text-base font-semibold text-gray-900">{prefix}</span>
+                                <span className="text-sm md:text-base text-gray-600 ml-1">{content}</span>
+                              </li>
+                            );
+                          }
+                          // Fallback for bullets without prefix
+                          return (
+                            <li key={i} className="flex items-start gap-2 md:gap-3">
+                              <div className="w-1.5 h-1.5 rounded-full bg-neutral-900 mt-2 md:mt-2.5 flex-shrink-0" />
+                              <span className="text-xs md:text-sm lg:text-base text-neutral-600 leading-relaxed">{bullet}</span>
+                            </li>
+                          );
+                        })}
                       </ul>
                     )}
                   </div>
@@ -201,23 +212,24 @@ export default async function HowItWorksPage() {
       {/* Pricing and Coverage Band */}
       <SectionLayout
         title={pricing.title}
-        className="bg-neutral-50"
+        className="bg-neutral-50 py-16 md:py-20 lg:py-24"
       >
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6 lg:gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8 lg:gap-10">
           {pricing.cards.map((card, idx) => (
-            <MarketingCard key={idx}>
-              <div className="p-4 md:p-6">
-                <h3 className="text-xl md:text-2xl font-bold text-neutral-900 mb-4 md:mb-6">{card.title}</h3>
-                <ul className="space-y-3 md:space-y-4">
-                  {card.items.map((item, i) => (
-                    <li key={i} className="flex items-start gap-2 md:gap-3">
-                      <div className="w-1.5 h-1.5 rounded-full bg-neutral-900 mt-2 md:mt-2.5 flex-shrink-0" />
-                      <span className="text-sm md:text-base text-neutral-600 leading-relaxed">{item}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            </MarketingCard>
+            <div
+              key={idx}
+              className="border border-gray-200 rounded-xl p-8 hover:border-[#008080]/50 transition-colors duration-300 bg-white"
+            >
+              <h3 className="text-xl font-bold text-neutral-900 mb-6">{card.title}</h3>
+              <ul className="space-y-4">
+                {card.items.map((item, i) => (
+                  <li key={i} className="flex items-start gap-3">
+                    <div className="w-1.5 h-1.5 rounded-full bg-neutral-900 mt-2 flex-shrink-0" />
+                    <span className="text-sm md:text-base text-neutral-600 leading-relaxed">{item}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
           ))}
         </div>
       </SectionLayout>
@@ -225,7 +237,7 @@ export default async function HowItWorksPage() {
       {/* FAQ Section */}
       <SectionLayout
         title={faq.title}
-        className="bg-white"
+        className="bg-white py-16 md:py-20 lg:py-24"
       >
         <div className="max-w-3xl mx-auto">
           <Accordion>

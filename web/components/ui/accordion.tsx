@@ -18,18 +18,15 @@ export function AccordionItem({ question, answer, defaultOpen = false }: Accordi
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}
-        className="w-full py-4 flex items-center justify-between text-left hover:text-neutral-900 transition-colors"
+        className="w-full py-5 flex items-center justify-between text-left hover:text-neutral-900 transition-colors"
       >
-        <span className="font-semibold text-neutral-900 pr-8">{question}</span>
-        <ChevronDown
-          className={cn(
-            'h-5 w-5 text-neutral-500 flex-shrink-0 transition-transform',
-            isOpen && 'transform rotate-180'
-          )}
-        />
+        <span className="font-medium text-neutral-900 pr-8 text-base">{question}</span>
+        <span className="text-neutral-500 flex-shrink-0 text-lg">
+          {isOpen ? '−' : '+'}
+        </span>
       </button>
       {isOpen && (
-        <div className="pb-4 text-neutral-600 leading-relaxed whitespace-pre-line">
+        <div className="pb-5 text-neutral-700 leading-relaxed whitespace-pre-line text-base">
           {answer}
         </div>
       )}

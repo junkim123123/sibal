@@ -125,17 +125,17 @@ export const homePageConfig: HomePageConfig = {
     cards: [
       {
         title: 'Launch a new FBA brand',
-        body: 'Validate margin and duty risk before you launch your first private label product.',
+        body: '<strong>Validate margin</strong> and duty risk before you launch your first private label product.',
         target: 'Typical users: CPG brands and FBA aggregators',
       },
       {
         title: 'Re-source an existing SKU',
-        body: 'Compare your current factory to vetted alternatives on landed cost and risk.',
+        body: 'Compare your current factory to vetted alternatives on landed cost and risk. Often <strong>70% cheaper</strong> than current suppliers.',
         target: 'Typical users: Established sellers optimizing margins',
       },
       {
         title: 'Test a higher-risk category',
-        body: 'Get an AD or CVD and compliance check before you import into a new category.',
+        body: 'Get an AD or CVD and <strong>compliance check</strong> before you import into a new category.',
         target: 'Typical users: Brands entering regulated categories',
       },
     ],

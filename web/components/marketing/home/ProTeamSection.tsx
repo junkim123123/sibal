@@ -25,10 +25,17 @@ export function ProTeamSection({ section }: { section: HomeTeamSection }) {
                 key={member.id}
                 className="flex h-full flex-col rounded-2xl bg-neutral-50 p-5 shadow-sm border border-neutral-100"
               >
-                {/* Later we can add a photo/avatar at the top if desired */}
-                <div className="space-y-1">
-                  <h3 className="text-sm font-semibold text-neutral-900">{member.name}</h3>
-                  <p className="text-xs text-neutral-500">{member.title}</p>
+                {/* Team Member Avatar */}
+                <div className="flex items-start gap-4 mb-3">
+                  <div className="w-16 h-16 rounded-full bg-neutral-200 flex-shrink-0 flex items-center justify-center">
+                    <span className="text-xl font-bold text-neutral-500">
+                      {member.name.split(' ').map(n => n[0]).join('')}
+                    </span>
+                  </div>
+                  <div className="space-y-1 flex-1">
+                    <h3 className="text-sm font-semibold text-neutral-900">{member.name}</h3>
+                    <p className="text-xs text-neutral-500">{member.title}</p>
+                  </div>
                 </div>
                 <p className="mt-3 text-sm text-neutral-700 flex-1 leading-relaxed">
                   {member.bio}

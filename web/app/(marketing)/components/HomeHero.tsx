@@ -43,10 +43,8 @@ export default function HomeHero({ page }: Props) {
             {/* CTA Buttons */}
             <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center pt-2">
               <Button
-                variant="primary"
-                size="lg"
                 onClick={handleStartAnalysis}
-                className="inline-flex items-center gap-2 group"
+                className="inline-flex items-center gap-2 group bg-[#008080] hover:bg-[#006666] text-white font-semibold px-6 py-3 rounded-lg transition-colors"
               >
                 Start Free Analysis
                 <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
@@ -88,7 +86,7 @@ export default function HomeHero({ page }: Props) {
                     <div className="w-10 h-10 rounded-lg bg-blue-50 flex items-center justify-center flex-shrink-0">
                       <Factory className="w-5 h-5 text-blue-600" />
                     </div>
-                    <span className="text-sm font-medium text-neutral-700">Factory Cost</span>
+                    <span className="text-sm font-semibold text-neutral-700">Factory Cost</span>
                   </div>
                   <span className="text-base font-bold font-mono text-neutral-900">$1.50</span>
                 </div>
@@ -98,7 +96,7 @@ export default function HomeHero({ page }: Props) {
                     <div className="w-10 h-10 rounded-lg bg-teal-50 flex items-center justify-center flex-shrink-0">
                       <Ship className="w-5 h-5 text-teal-600" />
                     </div>
-                    <span className="text-sm font-medium text-neutral-700">Int&apos;l Logistics</span>
+                    <span className="text-sm font-semibold text-neutral-700">Int&apos;l Logistics</span>
                   </div>
                   <span className="text-base font-bold font-mono text-neutral-900">$0.40</span>
                 </div>
@@ -108,7 +106,7 @@ export default function HomeHero({ page }: Props) {
                     <div className="w-10 h-10 rounded-lg bg-purple-50 flex items-center justify-center flex-shrink-0">
                       <Scale className="w-5 h-5 text-purple-600" />
                     </div>
-                    <span className="text-sm font-medium text-neutral-700">Est. Duties</span>
+                    <span className="text-sm font-semibold text-neutral-700">Est. Duties</span>
                   </div>
                   <span className="text-base font-bold font-mono text-neutral-900">$0.20</span>
                 </div>

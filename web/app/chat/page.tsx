@@ -21,7 +21,6 @@ import { Send } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
-import { safeNavigate } from '@/lib/utils/safe-navigation';
 
 // Sourcing Flow 5.0: Streamlined & Non-Redundant
 const SOURCING_STEPS = [
@@ -172,10 +171,8 @@ export default function ChatPage() {
   const [isCompleted, setIsCompleted] = useState(false);
   const [projectId, setProjectId] = useState<string | null>(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [isNavigating, setIsNavigating] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
-  const buttonRef = useRef<HTMLButtonElement>(null);
 
   const currentStep = SOURCING_STEPS[currentStepIndex];
   const progress = isCompleted ? 100 : ((currentStepIndex + 1) / SOURCING_STEPS.length) * 100;
@@ -628,7 +625,7 @@ export default function ChatPage() {
     exit: {
       opacity: 0,
       scale: 0.95,
-      transition: { duration: 0.3, ease: "easeInOut" } // exit 애니메이션 시간 증가
+      transition: { duration: 0.2 }
     }
   };
 
@@ -666,8 +663,8 @@ export default function ChatPage() {
   const inputVariants = {
     hidden: { opacity: 0, y: 10 },
     visible: { 
-      opacity: 1, 
-      y: 0, 
+      opacity: 1,
+      y: 0,
       transition: {
         type: "spring",
         stiffness: 300,
@@ -678,10 +675,7 @@ export default function ChatPage() {
     exit: {
       opacity: 0,
       y: -10,
-      transition: { 
-        duration: 0.3, // exit 애니메이션 시간을 늘려서 완료 보장
-        ease: "easeInOut"
-      }
+      transition: { duration: 0.2 }
     }
   };
 
@@ -922,13 +916,8 @@ export default function ChatPage() {
           </AnimatePresence>
 
           {/* Completion State - Reveal My Sourcing Strategy Button */}
-          <AnimatePresence 
-            mode="wait"
-            onExitComplete={() => {
-              // exit 애니메이션 완료 후 추가 정리 작업이 필요하면 여기서 수행
-            }}
-          >
-            {isCompleted && !isNavigating && (
+          <AnimatePresence>
+            {isCompleted && (
               <motion.div
                 initial="hidden"
                 animate="visible"
@@ -937,55 +926,26 @@ export default function ChatPage() {
                 className="flex justify-center pt-4"
               >
                 <motion.button
-                  ref={buttonRef}
-                  onClick={async (e) => {
-                    // 중복 클릭 방지
-                    const button = e.currentTarget;
-                    if (button.disabled || isNavigating) return;
-                    
-                    setIsNavigating(true);
-                    button.disabled = true;
-
-                    try {
-                      // selectedOptions를 sessionStorage에 저장 (URL 길이 제한 회피)
-                      if (typeof window !== 'undefined') {
-                        sessionStorage.setItem('nexsupply_onboarding_data', JSON.stringify(selectedOptions));
-                      }
-                      
-                      // URL에는 project_id만 전달
-                      const params = new URLSearchParams();
-                      if (projectId) {
-                        params.set('project_id', projectId);
-                      }
-                      
-                      const queryString = params.toString();
-                      const targetUrl = `/results${queryString ? `?${queryString}` : ''}`;
-                      
-                      // 안전한 라우팅 실행 (애니메이션 완료 대기 포함)
-                      await safeNavigate(router, targetUrl, {
-                        waitTime: 400, // exit 애니메이션(300ms) + 여유 시간을 위한 대기 시간
-                        onBeforeNavigate: async () => {
-                          // 라우팅 전 추가 작업이 필요하면 여기서 수행
-                          // 컴포넌트가 완전히 언마운트될 때까지 대기
-                          await new Promise((resolve) => setTimeout(resolve, 100));
-                        },
-                        onError: (error) => {
-                          console.error('[Chat] Navigation error:', error);
-                          setIsNavigating(false);
-                          button.disabled = false;
-                        }
-                      });
-                    } catch (error) {
-                      console.error('[Chat] Navigation error:', error);
-                      setIsNavigating(false);
-                      button.disabled = false;
+                  onClick={() => {
+                    // selectedOptions를 sessionStorage에 저장 (URL 길이 제한 회피)
+                    if (typeof window !== 'undefined') {
+                      sessionStorage.setItem('nexsupply_onboarding_data', JSON.stringify(selectedOptions));
                     }
+                    
+                    // URL에는 project_id만 전달
+                    const params = new URLSearchParams();
+                    if (projectId) {
+                      params.set('project_id', projectId);
+                    }
+                    
+                    const queryString = params.toString();
+                    router.push(`/results${queryString ? `?${queryString}` : ''}`);
                   }}
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
-                  className="px-8 py-4 rounded-full bg-neutral-900 text-white text-base font-semibold shadow-lg hover:shadow-xl transition-all focus:outline-none focus:ring-2 focus:ring-neutral-900 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="px-8 py-4 rounded-full bg-neutral-900 text-white text-base font-semibold shadow-lg hover:shadow-xl transition-all focus:outline-none focus:ring-2 focus:ring-neutral-900 focus:ring-offset-2"
                 >
-                  {isNavigating ? 'Loading...' : 'Reveal My Sourcing Strategy'}
+                  Reveal My Sourcing Strategy
                 </motion.button>
               </motion.div>
             )}

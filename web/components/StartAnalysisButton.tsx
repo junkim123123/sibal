@@ -4,7 +4,6 @@ import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
-import { safeNavigate } from '@/lib/utils/safe-navigation'
 
 interface StartAnalysisButtonProps {
   href: string
@@ -16,7 +15,6 @@ export function StartAnalysisButton({ href, label, className }: StartAnalysisBut
   const router = useRouter()
   const [isLoading, setIsLoading] = useState(true)
   const [isAuthenticated, setIsAuthenticated] = useState(false)
-  const [isNavigating, setIsNavigating] = useState(false)
 
   useEffect(() => {
     async function checkAuth() {
@@ -28,25 +26,13 @@ export function StartAnalysisButton({ href, label, className }: StartAnalysisBut
     checkAuth()
   }, [])
 
-  const handleClick = async (e: React.MouseEvent<HTMLButtonElement>) => {
+  const handleClick = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault()
     
-    if (isLoading || isNavigating) return
+    if (isLoading) return
     
-    try {
-      setIsNavigating(true)
-      // Always redirect to /chat for unified chat experience
-      await safeNavigate(router, '/chat', {
-        waitTime: 100,
-        onError: (error) => {
-          console.error('[StartAnalysisButton] Navigation error:', error)
-          setIsNavigating(false)
-        }
-      })
-    } catch (error) {
-      console.error('[StartAnalysisButton] Navigation error:', error)
-      setIsNavigating(false)
-    }
+    // Always redirect to /chat for unified chat experience
+    router.push('/chat')
   }
 
   if (isLoading) {
@@ -68,9 +54,8 @@ export function StartAnalysisButton({ href, label, className }: StartAnalysisBut
       size="lg"
       className={className}
       onClick={handleClick}
-      disabled={isNavigating}
     >
-      {isNavigating ? 'Loading...' : label}
+      {label}
     </Button>
   )
 }

@@ -118,7 +118,7 @@ type ProjectTabType = 'chat' | 'progress' | 'overview'
 function ProjectDetailPageContent() {
   const params = useParams()
   const router = useRouter()
-  const projectId = params.id as string
+  const projectId = (params?.id as string) || ''
   const [activeTab, setActiveTab] = useState<ProjectTabType>('chat')
   const [project, setProject] = useState<any>(null)
   const [isLoading, setIsLoading] = useState(true)
@@ -170,7 +170,7 @@ function ProjectDetailPageContent() {
       setProject(projectData)
       
       // 채팅 세션 찾기 또는 생성
-      await loadOrCreateChatSession(projectData.id, user.id)
+      await loadOrCreateChatSession(projectData.id, userId)
     } catch (error) {
       console.error('[Project Detail] Error:', error)
       router.push('/dashboard')
@@ -389,17 +389,29 @@ function ProjectDetailPageContent() {
           <TabButton
             label="Chat"
             active={activeTab === 'chat'}
-            onClick={() => setActiveTab('chat')}
+            onClick={() => {
+              if (activeTab !== 'chat') {
+                setActiveTab('chat')
+              }
+            }}
           />
           <TabButton
             label="Progress"
             active={activeTab === 'progress'}
-            onClick={() => setActiveTab('progress')}
+            onClick={() => {
+              if (activeTab !== 'progress') {
+                setActiveTab('progress')
+              }
+            }}
           />
           <TabButton
             label="Overview"
             active={activeTab === 'overview'}
-            onClick={() => setActiveTab('overview')}
+            onClick={() => {
+              if (activeTab !== 'overview') {
+                setActiveTab('overview')
+              }
+            }}
           />
         </div>
 

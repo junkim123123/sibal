@@ -85,7 +85,7 @@ export default function AnalysisLoader() {
               <div className="relative w-64 h-48">
                 {/* Map Background */}
                 <div className="absolute inset-0 bg-gradient-to-br from-neutral-50 to-neutral-100 rounded-lg border border-neutral-200 overflow-hidden">
-                  {/* Origin Point (Factory) */}
+                  {/* Origin Point (China) */}
                   <div className="absolute left-8 top-1/2 -translate-y-1/2">
                     <motion.div
                       animate={{
@@ -100,11 +100,11 @@ export default function AnalysisLoader() {
                       className="w-3 h-3 bg-blue-600 rounded-full"
                     />
                     <div className="absolute -bottom-5 left-1/2 -translate-x-1/2 text-xs text-neutral-500 whitespace-nowrap">
-                      Factory
+                      CN
                     </div>
                   </div>
 
-                  {/* Destination Point (Nexy) */}
+                  {/* Destination Point (US) */}
                   <div className="absolute right-8 top-1/2 -translate-y-1/2">
                     <motion.div
                       animate={{
@@ -120,7 +120,7 @@ export default function AnalysisLoader() {
                       className="w-3 h-3 bg-green-600 rounded-full"
                     />
                     <div className="absolute -bottom-5 left-1/2 -translate-x-1/2 text-xs text-neutral-500 whitespace-nowrap">
-                      Nexy
+                      US
                     </div>
                   </div>
 

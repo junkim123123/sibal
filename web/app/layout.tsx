@@ -3,9 +3,6 @@ import { Inter, JetBrains_Mono } from "next/font/google"
 import "./globals.css"
 import AuthProvider from "@/components/auth-provider"
 import { Analytics } from "@vercel/analytics/next"
-import { ErrorBoundary } from "@/components/error-boundary"
-import "@/lib/utils/global-error-handler"
-import "@/lib/utils/react-error-suppression"
 
 const inter = Inter({
   subsets: ["latin"],
@@ -39,10 +36,8 @@ export default function RootLayout({
         className={`${inter.variable} ${jetbrainsMono.variable} font-sans antialiased bg-background text-foreground`}
         suppressHydrationWarning
       >
-        <ErrorBoundary>
-          <AuthProvider>{children}</AuthProvider>
-          <Analytics />
-        </ErrorBoundary>
+        <AuthProvider>{children}</AuthProvider>
+        <Analytics />
       </body>
     </html>
   )

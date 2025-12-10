@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, Suspense } from 'react'
+import { useState, useEffect, Suspense, useCallback } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
@@ -24,17 +24,16 @@ type TabType = 'requests' | 'production' | 'agent'
 
 function DashboardPageContent() {
   const searchParams = useSearchParams()
-  let initialTab = (searchParams?.get('tab') as TabType) || 'requests'
+  const tabParam = searchParams?.get('tab') || 'requests'
   
   // 하위 호환성: 기존 탭 이름 매핑
-  if (initialTab === 'estimates' || initialTab === 'products') {
+  let initialTab: TabType = 'requests'
+  if (tabParam === 'estimates' || tabParam === 'products' || tabParam === 'documents') {
     initialTab = 'requests'
-  }
-  if (initialTab === 'orders' || initialTab === 'active') {
+  } else if (tabParam === 'orders' || tabParam === 'active') {
     initialTab = 'production'
-  }
-  if (initialTab === 'documents') {
-    initialTab = 'requests' // Documents는 프로젝트별로 이동
+  } else if (tabParam === 'requests' || tabParam === 'production' || tabParam === 'agent') {
+    initialTab = tabParam as TabType
   }
   
   const [activeTab, setActiveTab] = useState<TabType>(initialTab)
@@ -53,106 +52,8 @@ function DashboardPageContent() {
   } | null>(null)
   const router = useRouter()
 
-  // URL 파라미터에서 탭 변경 감지 및 데이터 새로고침
-  useEffect(() => {
-    let tab = searchParams?.get('tab') as TabType
-    const refresh = searchParams?.get('refresh')
-    
-    // 'active'를 'orders'로 매핑 (하위 호환성)
-    if (tab === 'active') {
-      tab = 'orders'
-    }
-    
-    if (tab && ['requests', 'production', 'agent'].includes(tab)) {
-      setActiveTab(tab)
-      
-      // 탭 변경 시 데이터 새로고침 (특히 products 탭)
-      // refresh 파라미터가 있으면 강제로 새로고침
-      if (userId && isAuthenticated) {
-        console.log('[Dashboard] Tab changed or refresh requested, reloading projects...')
-        loadProjects(userId)
-        
-        // refresh 파라미터 제거 (URL 정리)
-        if (refresh) {
-          const newUrl = new URL(window.location.href)
-          newUrl.searchParams.delete('refresh')
-          window.history.replaceState({}, '', newUrl.toString())
-        }
-      }
-    }
-  }, [searchParams, userId, isAuthenticated])
-
-  // activeTab 변경 시 데이터 새로고침 (탭 클릭 시)
-  useEffect(() => {
-    if (userId && isAuthenticated && activeTab) {
-      console.log('[Dashboard] Active tab changed, reloading projects...', activeTab)
-      loadProjects(userId)
-    }
-  }, [activeTab, userId, isAuthenticated])
-
-  useEffect(() => {
-    async function checkAuth() {
-      try {
-        const supabase = createClient()
-        const { data: { user } } = await supabase.auth.getUser()
-        if (!user) {
-          window.location.href = '/login'
-          return
-        }
-        setIsAuthenticated(true)
-        setUserId(user.id)
-        
-        // 사용자 이름 가져오기 (profiles 테이블 우선, 없으면 metadata)
-        const { data: profile } = await supabase
-          .from('profiles')
-          .select('name')
-          .eq('id', user.id)
-          .single()
-        
-        // Real name 우선, 없으면 null (인사말에서 처리)
-        const name = profile?.name ||
-                     user.user_metadata?.full_name || 
-                     user.user_metadata?.name ||
-                     null
-        setUserName(name || '')
-        
-        // 프로젝트 데이터 로드
-        await loadProjects(user.id)
-        // 사용량 데이터 로드 (선택적 - 에러가 나도 계속 진행)
-        try {
-          await loadUsageData(user.id)
-        } catch (usageError) {
-          console.error('[Dashboard] Failed to load usage data:', usageError)
-          // 사용량 데이터 로드 실패는 치명적이지 않으므로 계속 진행
-        }
-      } catch (error) {
-        console.error('[Dashboard] Auth check error:', error)
-        window.location.href = '/login'
-      }
-    }
-    checkAuth()
-  }, [])
-
-  // 페이지 포커스 시 데이터 다시 불러오기
-  useEffect(() => {
-    if (!userId || !isAuthenticated) return
-
-    const handleFocus = () => {
-      console.log('[Dashboard] Page focused, reloading data...')
-      loadProjects(userId)
-      loadUsageData(userId) // 사용량 데이터도 새로고침
-    }
-
-    // 페이지 포커스 시 데이터 새로고침
-    window.addEventListener('focus', handleFocus)
-
-    return () => {
-      window.removeEventListener('focus', handleFocus)
-    }
-  }, [userId, isAuthenticated])
-
-  // 프로젝트 데이터 로드
-  async function loadProjects(userId: string) {
+  // 프로젝트 데이터 로드 함수 (useCallback으로 메모이제이션)
+  const loadProjects = useCallback(async (userId: string) => {
     try {
       setIsLoading(true)
       console.log('[Dashboard] Loading projects for user:', userId)
@@ -245,7 +146,106 @@ function DashboardPageContent() {
     } finally {
       setIsLoading(false)
     }
-  }
+  }, [])
+
+  // URL 파라미터에서 탭 변경 감지 (URL에서 직접 변경된 경우만)
+  useEffect(() => {
+    const tabParam = searchParams?.get('tab') || ''
+    const refresh = searchParams?.get('refresh')
+    
+    let tab: TabType | null = null
+    
+    // 하위 호환성: 기존 탭 이름 매핑
+    if (tabParam === 'estimates' || tabParam === 'products' || tabParam === 'documents') {
+      tab = 'requests'
+    } else if (tabParam === 'orders' || tabParam === 'active') {
+      tab = 'production'
+    } else if (tabParam === 'requests' || tabParam === 'production' || tabParam === 'agent') {
+      tab = tabParam as TabType
+    }
+    
+    if (tab && tab !== activeTab) {
+      // URL 파라미터가 현재 activeTab과 다를 때만 업데이트
+      setActiveTab(tab)
+    }
+    
+    // refresh 파라미터 제거 (URL 정리)
+    if (refresh) {
+      const newUrl = new URL(window.location.href)
+      newUrl.searchParams.delete('refresh')
+      window.history.replaceState({}, '', newUrl.toString())
+    }
+  }, [searchParams, activeTab])
+
+  // activeTab 변경 시 데이터 새로고침 (탭 클릭 시 또는 URL 변경 시)
+  useEffect(() => {
+    if (userId && isAuthenticated && activeTab && loadProjects) {
+      console.log('[Dashboard] Active tab changed, reloading projects...', activeTab)
+      loadProjects(userId)
+    }
+  }, [activeTab, userId, isAuthenticated, loadProjects])
+
+  useEffect(() => {
+    async function checkAuth() {
+      try {
+        const supabase = createClient()
+        const { data: { user } } = await supabase.auth.getUser()
+        if (!user) {
+          window.location.href = '/login'
+          return
+        }
+        setIsAuthenticated(true)
+        setUserId(user.id)
+        
+        // 사용자 이름 가져오기 (profiles 테이블 우선, 없으면 metadata)
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('name')
+          .eq('id', user.id)
+          .single()
+        
+        // Real name 우선, 없으면 null (인사말에서 처리)
+        const name = profile?.name ||
+                     user.user_metadata?.full_name || 
+                     user.user_metadata?.name ||
+                     null
+        setUserName(name || '')
+        
+        // 프로젝트 데이터 로드
+        await loadProjects(user.id)
+        // 사용량 데이터 로드 (선택적 - 에러가 나도 계속 진행)
+        try {
+          await loadUsageData(user.id)
+        } catch (usageError) {
+          console.error('[Dashboard] Failed to load usage data:', usageError)
+          // 사용량 데이터 로드 실패는 치명적이지 않으므로 계속 진행
+        }
+      } catch (error) {
+        console.error('[Dashboard] Auth check error:', error)
+        window.location.href = '/login'
+      }
+    }
+    checkAuth()
+  }, [])
+
+  // 페이지 포커스 시 데이터 다시 불러오기
+  useEffect(() => {
+    if (!userId || !isAuthenticated || !loadProjects) return
+
+    const handleFocus = () => {
+      console.log('[Dashboard] Page focused, reloading data...')
+      loadProjects(userId)
+      loadUsageData(userId) // 사용량 데이터도 새로고침
+    }
+
+    // 페이지 포커스 시 데이터 새로고침
+    window.addEventListener('focus', handleFocus)
+
+    return () => {
+      window.removeEventListener('focus', handleFocus)
+    }
+  }, [userId, isAuthenticated, loadProjects])
+
 
   // 사용량 데이터 로드
   async function loadUsageData(userId: string) {
@@ -574,16 +574,18 @@ function DashboardPageContent() {
             label="My Requests"
             active={activeTab === 'requests'}
             onClick={() => {
-              setActiveTab('requests')
-              // useEffect에서 activeTab 변경 시 자동으로 loadProjects 호출됨
+              if (activeTab !== 'requests') {
+                setActiveTab('requests')
+              }
             }}
           />
           <TabButton
             label="Production & Shipping"
             active={activeTab === 'production'}
             onClick={() => {
-              setActiveTab('production')
-              // useEffect에서 activeTab 변경 시 자동으로 loadProjects 호출됨
+              if (activeTab !== 'production') {
+                setActiveTab('production')
+              }
             }}
           />
         </div>
@@ -620,33 +622,15 @@ function TabButton({
   active: boolean
   onClick: () => void
 }) {
-  const [isNavigating, setIsNavigating] = useState(false)
-
-  const handleClick = async () => {
-    if (isNavigating || active) return
-    
-    try {
-      setIsNavigating(true)
-      onClick()
-      // 탭 전환 후 약간의 지연을 두어 DOM 업데이트가 완료되도록 함
-      await new Promise(resolve => setTimeout(resolve, 50))
-    } catch (error) {
-      console.error('[TabButton] Navigation error:', error)
-    } finally {
-      setIsNavigating(false)
-    }
-  }
-
   return (
     <button
       type="button"
-      onClick={handleClick}
-      disabled={isNavigating || active}
+      onClick={onClick}
       className={`pb-4 px-1 text-sm font-medium transition-colors relative ${
         active
           ? 'text-black font-semibold'
           : 'text-zinc-500 hover:text-black'
-      } ${isNavigating ? 'opacity-50 cursor-wait' : ''}`}
+      }`}
     >
       {label}
       {active && (

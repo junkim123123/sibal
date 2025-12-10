@@ -368,26 +368,14 @@ function AnalyzePageContent() {
         {/* CTA */}
         <div className="flex flex-col sm:flex-row gap-3 justify-center">
           <button
-            onClick={async () => {
-              try {
-                await router.push('/contact');
-              } catch (error) {
-                console.error('[Analyze] Navigation error:', error);
-              }
-            }}
-            className="px-6 py-3 rounded-full bg-neutral-900 text-white text-sm font-medium hover:bg-neutral-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            onClick={() => router.push('/contact')}
+            className="px-6 py-3 rounded-full bg-neutral-900 text-white text-sm font-medium hover:bg-neutral-800 transition-colors"
           >
             Talk to NexSupply about this project
           </button>
           <button
-            onClick={async () => {
-              try {
-                await router.push('/start');
-              } catch (error) {
-                console.error('[Analyze] Navigation error:', error);
-              }
-            }}
-            className="px-6 py-3 rounded-full border border-neutral-300 bg-white text-neutral-900 text-sm font-medium hover:bg-neutral-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            onClick={() => router.push('/start')}
+            className="px-6 py-3 rounded-full border border-neutral-300 bg-white text-neutral-900 text-sm font-medium hover:bg-neutral-50 transition-colors"
           >
             Start a new project
           </button>

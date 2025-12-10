@@ -13,6 +13,7 @@ export default function MarketingLayout({
 }) {
   const pathname = usePathname();
   const isDashboard = pathname?.startsWith('/dashboard');
+  const isAccount = pathname?.startsWith('/account');
 
   return (
     <div className="flex min-h-screen flex-col">
@@ -20,8 +21,8 @@ export default function MarketingLayout({
       {/* <Script src="https://gumroad.com/js/gumroad.js" strategy="lazyOnload" /> */}
       <MainHeader />
       <main className="flex-1">{children}</main>
-      {isDashboard ? (
-        // Dashboard: 간소화된 Footer
+      {isDashboard || isAccount ? (
+        // Dashboard & Account: 간소화된 Footer
         <footer className="border-t border-gray-200 bg-white py-6">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="flex items-center justify-between text-sm text-gray-600">

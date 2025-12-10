@@ -111,12 +111,25 @@ export function MainHeader() {
             <div className="hidden md:flex md:items-center md:gap-4">
               {/* Get Started Button (Show on marketing pages, regardless of auth status - Left position) */}
               {!isAppPage && (
-                <Link
-                  href="/chat"
-                  className="rounded-full bg-black px-5 py-2 text-sm font-medium text-white hover:bg-zinc-800 transition-colors"
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    if (isLoading) return;
+                    
+                    // 로그인한 경우 /chat으로, 로그인하지 않은 경우 /login으로
+                    if (isAuthenticated) {
+                      router.push('/chat');
+                    } else {
+                      router.push('/login');
+                    }
+                  }}
+                  disabled={isLoading}
+                  className="rounded-full bg-black px-5 py-2 text-sm font-medium text-white hover:bg-zinc-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   Get Started
-                </Link>
+                </button>
               )}
 
               {/* User Icon (Always visible - Right position) */}
@@ -226,13 +239,25 @@ export function MainHeader() {
                   )}
                   {/* Get Started Button (Show on marketing pages, regardless of auth status) */}
                   {!isAppPage && (
-                    <Link
-                      href="/chat"
-                      className="block w-full rounded-full bg-black px-6 py-2 text-center text-sm font-medium text-white hover:bg-zinc-800 transition-colors"
-                      onClick={() => setMobileMenuOpen(false)}
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        setMobileMenuOpen(false);
+                        if (isLoading) return;
+                        
+                        // 로그인한 경우 /chat으로, 로그인하지 않은 경우 /login으로
+                        if (isAuthenticated) {
+                          router.push('/chat');
+                        } else {
+                          router.push('/login');
+                        }
+                      }}
+                      disabled={isLoading}
+                      className="block w-full rounded-full bg-black px-6 py-2 text-center text-sm font-medium text-white hover:bg-zinc-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       Get Started
-                    </Link>
+                    </button>
                   )}
                   {isAuthenticated && (
                     <>

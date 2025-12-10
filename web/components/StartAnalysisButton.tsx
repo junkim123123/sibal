@@ -31,8 +31,12 @@ export function StartAnalysisButton({ href, label, className }: StartAnalysisBut
     
     if (isLoading) return
     
-    // Always redirect to /chat for unified chat experience
-    router.push('/chat')
+    // 로그인한 경우 /chat으로, 로그인하지 않은 경우 /login으로
+    if (isAuthenticated) {
+      router.push('/chat')
+    } else {
+      router.push('/login')
+    }
   }
 
   if (isLoading) {

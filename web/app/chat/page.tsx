@@ -177,17 +177,20 @@ export default function ChatPage() {
   const currentStep = SOURCING_STEPS[currentStepIndex];
   const progress = isCompleted ? 100 : ((currentStepIndex + 1) / SOURCING_STEPS.length) * 100;
 
-  // 인증 확인
+  // 인증 확인 및 리다이렉트
   useEffect(() => {
     const checkAuth = async () => {
       const supabase = createClient();
       const { data: { user } } = await supabase.auth.getUser();
       if (user) {
         setIsAuthenticated(true);
+      } else {
+        // 로그인하지 않은 경우 로그인 페이지로 리다이렉트
+        router.push('/login');
       }
     };
     checkAuth();
-  }, []);
+  }, [router]);
 
   // 프로젝트 생성 (첫 번째 질문 답변 후)
   useEffect(() => {

@@ -4,66 +4,8 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Check, ArrowRight, Sparkles, Rocket, ChevronDown } from 'lucide-react';
+import { Check, ArrowRight, Sparkles, Rocket } from 'lucide-react';
 
-type ModuleData = {
-  title: string;
-  commission: string;
-  focus: string;
-  ideal: string;
-  details: string[];
-};
-
-function ModuleCard({ moduleKey, moduleData }: { moduleKey: string; moduleData: ModuleData }) {
-  const [isOpen, setIsOpen] = useState(false);
-  return (
-    <div className="border border-neutral-200 rounded-2xl overflow-hidden">
-      <button
-        type="button"
-        onClick={() => setIsOpen(!isOpen)}
-        className="w-full p-6 flex items-center justify-between text-left hover:bg-neutral-50 transition-colors"
-      >
-        <div className="flex-1">
-          <h3 className="text-xl font-semibold text-neutral-900 mb-2">{moduleData.title}</h3>
-          <div className="flex items-center gap-3">
-            <span className={`px-3 py-1 rounded-full text-sm font-semibold ${
-              moduleKey === 'A' ? 'bg-blue-100 text-blue-700' : 'bg-emerald-100 text-emerald-700'
-            }`}>
-              {moduleData.commission} Commission
-            </span>
-          </div>
-        </div>
-        <ChevronDown
-          className={`h-5 w-5 text-neutral-500 flex-shrink-0 transition-transform ${
-            isOpen ? 'transform rotate-180' : ''
-          }`}
-        />
-      </button>
-      {isOpen && (
-        <div className="px-6 pb-6 pt-2 border-t border-neutral-200">
-          <div className="space-y-4">
-            <div>
-              <p className="text-sm text-neutral-600 mb-2">
-                <strong className="text-neutral-900">Focus:</strong> {moduleData.focus}
-              </p>
-              <p className="text-sm text-neutral-600">
-                <strong className="text-neutral-900">Ideal for:</strong> {moduleData.ideal}
-              </p>
-            </div>
-            <ul className="space-y-2">
-              {moduleData.details.map((detail, index) => (
-                <li key={index} className="flex items-start gap-2">
-                  <div className="w-1.5 h-1.5 rounded-full bg-neutral-900 mt-2 flex-shrink-0" />
-                  <span className="text-sm text-neutral-600 leading-relaxed">{detail}</span>
-                </li>
-              ))}
-            </ul>
-          </div>
-        </div>
-      )}
-    </div>
-  );
-}
 
 export default function PricingPage() {
   const pricingTiers = [
@@ -90,18 +32,18 @@ export default function PricingPage() {
       id: 'validator',
       tag: 'Start with One Box',
       tagColor: 'bg-blue-100 text-blue-700',
-      title: 'Validator (Entry)',
-      price: '$199',
-      pricePeriod: ' (Retainer)',
+      title: 'Official Quote Request',
+      price: '$49',
+      pricePeriod: ' (One-time Fee)',
       features: [
-        'Get Verified Quote',
+        'Real Factory Quotes (48h)',
         'Supplier Vetting',
-        '100% Credited on Order ($5k+)',
+        '100% Credited on First Order',
         'Priority support',
-        'Dedicated quote specialist'
+        'Dedicated Sourcing Agent'
       ],
       cta: {
-        label: 'Request Quote',
+        label: 'Pay $49 & Start Project',
         href: '/contact',
         variant: 'primary' as const
       },
@@ -111,11 +53,10 @@ export default function PricingPage() {
       id: 'executor',
       tag: 'End-to-End Solution',
       tagColor: 'bg-emerald-100 text-emerald-700',
-      title: 'Executor (Full Service)',
-      price: '3% - 9%',
+      title: 'Full Service Execution',
+      price: 'Starts at 5%',
       pricePeriod: ' Commission',
       features: [
-        'Module A or B Selection',
         'QC & Logistics',
         'Dedicated Manager',
         'Global Sync Time',
@@ -126,41 +67,10 @@ export default function PricingPage() {
         href: '/contact',
         variant: 'primary' as const
       },
-      highlight: true,
-      note: 'Min. service fee $500 applies.'
+      highlight: true
     }
   ];
 
-  const modules = {
-    A: {
-      title: 'Module A: Sourcing & Logistics',
-      commission: '3-5%',
-      focus: 'Sourcing, Repacking, FNSKU Labeling, DDP Shipping',
-      ideal: 'Ideal for Amazon FBA',
-      details: [
-        'Product sourcing from verified suppliers',
-        'Quality control & inspection',
-        'Repacking & custom packaging',
-        'FNSKU labeling for Amazon',
-        'DDP shipping coordination',
-        'Port-to-door logistics management'
-      ]
-    },
-    B: {
-      title: 'Module B: Product Development',
-      commission: '5-9%',
-      focus: 'OEM/ODM, Production Monitoring, Certification (FDA/CE), Factory Audit',
-      ideal: 'Ideal for DTC Brands',
-      details: [
-        'OEM/ODM product development',
-        'Production monitoring & QC',
-        'FDA/CE certification support',
-        'Factory audit & verification',
-        'Custom design & engineering',
-        'Prototype development'
-      ]
-    }
-  };
 
   return (
     <div className="bg-white">
@@ -208,9 +118,6 @@ export default function PricingPage() {
                     <span className="text-4xl font-bold text-neutral-900">{tier.price}</span>
                     <span className="text-lg text-neutral-600">{tier.pricePeriod}</span>
                   </div>
-                  {tier.note && (
-                    <p className="text-xs text-neutral-500 mt-2">{tier.note}</p>
-                  )}
                 </div>
 
                 <ul className="space-y-3 mb-8">
@@ -238,22 +145,54 @@ export default function PricingPage() {
         </div>
       </section>
 
-      {/* Module Details Section */}
-      <section aria-label="Module Details" className="py-16 sm:py-20 bg-white">
+      {/* How Our Pricing Works Section */}
+      <section aria-label="How Our Pricing Works" className="py-16 sm:py-20 bg-white">
         <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl sm:text-4xl font-semibold text-neutral-900 mb-4">
-              Executor Service Modules
+          <div className="bg-neutral-50 rounded-2xl border border-neutral-200 p-8 sm:p-10">
+            <h2 className="text-2xl sm:text-3xl font-semibold text-neutral-900 mb-8 text-center">
+              How Our Pricing Works
             </h2>
-            <p className="text-lg text-neutral-600 max-w-2xl mx-auto">
-              Choose Module A for logistics-focused sourcing or Module B for product development. Commission rates vary by complexity.
-            </p>
-          </div>
-
-          <div className="space-y-4">
-            {Object.entries(modules).map(([key, module]) => (
-              <ModuleCard key={key} moduleKey={key} moduleData={module} />
-            ))}
+            <div className="space-y-6 max-w-2xl mx-auto">
+              <div className="flex items-start gap-4">
+                <div className="flex-shrink-0 w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center">
+                  <span className="text-blue-600 font-bold text-sm">1</span>
+                </div>
+                <div>
+                  <h3 className="text-lg font-semibold text-neutral-900 mb-2">
+                    Start with $49
+                  </h3>
+                  <p className="text-sm text-neutral-600 leading-relaxed">
+                    This fee confirms your commitment and activates your dedicated agent.
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-start gap-4">
+                <div className="flex-shrink-0 w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center">
+                  <span className="text-blue-600 font-bold text-sm">2</span>
+                </div>
+                <div>
+                  <h3 className="text-lg font-semibold text-neutral-900 mb-2">
+                    Get Quotes
+                  </h3>
+                  <p className="text-sm text-neutral-600 leading-relaxed">
+                    Your agent works to get you the best price from verified factories.
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-start gap-4">
+                <div className="flex-shrink-0 w-8 h-8 rounded-full bg-emerald-100 flex items-center justify-center">
+                  <span className="text-emerald-600 font-bold text-sm">3</span>
+                </div>
+                <div>
+                  <h3 className="text-lg font-semibold text-neutral-900 mb-2">
+                    The Refund
+                  </h3>
+                  <p className="text-sm text-neutral-600 leading-relaxed">
+                    When you place your order, the <strong className="text-neutral-900">$49 is fully deducted</strong> from your final 5% commission. You only pay the commission once the order is placed.
+                  </p>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </section>

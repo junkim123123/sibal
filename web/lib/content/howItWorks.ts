@@ -88,17 +88,17 @@ export const howItWorksPageConfig: HowItWorksPageConfig = {
     title: 'Your sourcing journey in three moves',
     cards: [
       {
-        title: 'Start with a chat',
+        title: 'Submit Project Brief',
         body: 'Tell us what you want to sell, where you want to sell it, and how big you want to go. We capture the key details in a shared project brief.',
         icon: MessageSquare,
       },
       {
-        title: 'Get a cost and risk snapshot',
-        body: 'Our tools turn that brief into a landed cost and risk view, so you see margins, duties, and red flags before you spend on inventory.',
+        title: 'Get Landed Cost Reality Check',
+        body: 'Our AI tools turn that brief into a landed cost and risk view, so you see margins, duties, and red flags before you spend on inventory. Usually within 24 hours.',
         icon: TrendingUp,
       },
       {
-        title: 'Run a pilot with NexSupply',
+        title: 'Run Pilot & Ship',
         body: 'When the numbers look right, we help you line up suppliers, QC and logistics for a first controlled shipment, not a blind leap.',
         icon: Package,
       },
@@ -122,26 +122,15 @@ export const howItWorksPageConfig: HowItWorksPageConfig = {
         stepNumber: '2',
         title: 'AI cost and risk check',
         timeEstimate: 'Within 24 hours',
-        body: 'You do: Review a first-pass landed cost and risk snapshot.',
+        body: 'You do: Review a first-pass landed cost and risk snapshot. If the numbers look promising, we can discuss alternative scenarios and next steps.',
         bullets: [
-          'We do: Estimated DDP per unit (factory, freight, duty, and extras). Flag early signs of compliance or AD/CVD risk.',
-          'You get: A sanity check on whether the project makes sense before you commit.',
+          'We do: Estimated DDP per unit (factory, freight, duty, and extras). Flag early signs of compliance or AD/CVD risk. Pressure-test your assumptions on margin and risk. Suggest alternative scenarios (factory options, MOQ, route, etc.).',
+          'You get: A sanity check on whether the project makes sense before you commit. Human eyes on the numbers and a clear "go / pause / drop" recommendation.',
         ],
         icon: Brain,
       },
       {
         stepNumber: '3',
-        title: 'Talk to NexSupply',
-        timeEstimate: '30 minute call',
-        body: 'You do: Book a short call with our sourcing team if the numbers look promising.',
-        bullets: [
-          'We do: Pressure-test your assumptions on margin and risk. Suggest alternative scenarios (factory options, MOQ, route, etc.). Align on whether to move into supplier search.',
-          'You get: Human eyes on the numbers and a clear "go / pause / drop" recommendation.',
-        ],
-        icon: Users,
-      },
-      {
-        stepNumber: '4',
         title: 'Pilot run and beyond',
         timeEstimate: '1–2 week pilot',
         body: 'You do: Decide when you\'re ready to move from analysis into a first test order.',

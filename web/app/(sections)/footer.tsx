@@ -8,9 +8,13 @@ const footerLinks = {
     { label: 'Get Started', href: '/chat' },
   ],
   company: [
-    { label: 'About Us', href: '/about' },
-    { label: 'Blog', href: '/blog' },
-    { label: 'Contact', href: '/contact' },
+    { label: 'About NexSupply', href: '/about' },
+    { label: 'Terms of Service', href: '/terms' },
+    { label: 'Privacy Policy', href: '/privacy' },
+  ],
+  support: [
+    { label: 'FAQ', href: '/faq' },
+    { label: 'Email us', href: 'mailto:sourcing@nexsupply.net' },
   ],
   legal: [
     { label: 'Terms of Service', href: '/terms' },
@@ -46,6 +50,27 @@ export default function Footer() {
                   </Link>
                 </li>
               ))}
+            </ul>
+          </div>
+          <div>
+            <h3 className="text-sm font-semibold text-neutral-900">Support</h3>
+            <ul className="mt-4 space-y-2">
+              {footerLinks.support.map((link) => (
+                <li key={link.href}>
+                  {link.href.startsWith('mailto:') ? (
+                    <a href={link.href} className="text-base text-neutral-600 hover:text-neutral-900">
+                      {link.label}
+                    </a>
+                  ) : (
+                    <Link href={link.href} className="text-base text-neutral-600 hover:text-neutral-900">
+                      {link.label}
+                    </Link>
+                  )}
+                </li>
+              ))}
+              <li className="text-sm text-neutral-500 mt-2">
+                sourcing@nexsupply.net
+              </li>
             </ul>
           </div>
           <div>

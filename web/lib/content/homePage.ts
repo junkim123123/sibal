@@ -221,12 +221,12 @@ export const homePageConfig: HomePageConfig = {
     ratingLabel: 'Four point six average rating based on internal pilot users',
     reviews: [
       {
-        id: 'kevin',
+        id: 'verified-fba',
         headline: 'Great partner for test orders',
         quote:
           'We used NexSupply to ship only a few cartons of a new snack. Once it sold through they scaled us to pallets without any drama.',
-        name: 'Kevin Park',
-        role: 'Amazon FBA seller',
+        name: 'Verified FBA Seller',
+        role: 'Miami-based Importer',
         date: 'November 25, 2025',
       },
       {
@@ -237,15 +237,6 @@ export const homePageConfig: HomePageConfig = {
         name: 'Ashley Gomez',
         role: 'DTC brand operator',
         date: 'November 22, 2025',
-      },
-      {
-        id: 'daniel',
-        headline: 'Helped us avoid a compliance mess',
-        quote:
-          'NexSupply flagged a potential safety test issue on a toy project. Fixing it early probably saved us months.',
-        name: 'Daniel Lee',
-        role: 'Retail buyer',
-        date: 'November 18, 2025',
       },
     ],
   },

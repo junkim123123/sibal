@@ -4,7 +4,7 @@ export function ReviewsSection({ section }: { section: HomeReviewsSection }) {
   const { eyebrow, title, subtitle, averageRating, ratingLabel, reviews } = section;
 
   return (
-    <section className="py-16 sm:py-24 border-t border-neutral-200 bg-white">
+    <section className="py-16 sm:py-24 border-t-2 border-b-2 border-neutral-300 bg-white">
       <div className="mx-auto max-w-6xl px-4 sm:px-6">
         <div className="flex flex-col gap-8 md:flex-row md:items-end md:justify-between mb-10">
           <div className="max-w-xl space-y-3">

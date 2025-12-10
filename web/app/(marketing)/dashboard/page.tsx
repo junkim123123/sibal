@@ -894,19 +894,23 @@ function PaymentModal({
         <div className="space-y-6 py-4">
           {/* Price Display */}
           <div className="text-center">
-            <p className="text-sm text-gray-500 mb-2">One-time fee</p>
+            <p className="text-sm text-gray-500 mb-2">$49 Sourcing Retainer</p>
             <div className="flex items-center justify-center gap-2">
               <span className="text-4xl font-bold text-gray-900">$49</span>
             </div>
+            <p className="text-xs text-gray-500 mt-1">One-time sourcing initiation fee</p>
           </div>
 
-          {/* Risk-Free Policy (Most Important) */}
+          {/* Credited Upon Order Policy (Most Important) */}
           <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
             <div className="flex items-start gap-2">
               <Shield className="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" />
-              <p className="text-sm text-blue-900 font-medium leading-relaxed">
-                <strong>Risk-Free:</strong> This $49 fee will be <strong>fully deducted</strong> from your final service fee (5%) when you place an order.
-              </p>
+              <div>
+                <p className="text-sm font-semibold text-blue-900 mb-1">Credited Upon Order</p>
+                <p className="text-sm text-blue-900 leading-relaxed">
+                  This fee covers the agent's labor for negotiation and is <strong>non-refundable</strong>. However, it will be <strong>fully deducted</strong> from your final 5% service fee when you proceed with the order.
+                </p>
+              </div>
             </div>
           </div>
 
@@ -915,30 +919,37 @@ function PaymentModal({
             <div className="flex items-start gap-3">
               <CheckCircle2 className="w-5 h-5 text-emerald-600 mt-0.5 flex-shrink-0" />
               <div>
-                <p className="font-semibold text-gray-900">Verified Manufacturer Sourcing</p>
+                <p className="font-semibold text-gray-900">Dedicated Agent Assignment</p>
                 <p className="text-sm text-gray-600">
-                  We find and verify trusted factories for your product
+                  Your personal sourcing specialist assigned to your project
                 </p>
               </div>
             </div>
             <div className="flex items-start gap-3">
               <CheckCircle2 className="w-5 h-5 text-emerald-600 mt-0.5 flex-shrink-0" />
               <div>
-                <p className="font-semibold text-gray-900">Price Negotiation</p>
+                <p className="font-semibold text-gray-900">Factory Verification & Price Negotiation</p>
                 <p className="text-sm text-gray-600">
-                  Our agents negotiate the best prices on your behalf
+                  We find and verify trusted factories, then negotiate the best prices
                 </p>
               </div>
             </div>
             <div className="flex items-start gap-3">
               <CheckCircle2 className="w-5 h-5 text-emerald-600 mt-0.5 flex-shrink-0" />
               <div>
-                <p className="font-semibold text-gray-900">Landed Cost Calculation</p>
+                <p className="font-semibold text-gray-900">Official Quote (PI) Issuance</p>
                 <p className="text-sm text-gray-600">
-                  Accurate total cost including shipping, duties, and fees
+                  Receive formal Proforma Invoice from verified manufacturers
                 </p>
               </div>
             </div>
+          </div>
+
+          {/* Non-refundable Notice (Microcopy) */}
+          <div className="pt-2 border-t border-gray-200">
+            <p className="text-xs text-gray-500 text-center leading-relaxed">
+              The sourcing fee is non-refundable once the official quote has been delivered.
+            </p>
           </div>
         </div>
 

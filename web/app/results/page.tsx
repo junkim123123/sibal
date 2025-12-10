@@ -1380,6 +1380,8 @@ function ResultsActionButtons({ projectId, answers, aiAnalysis }: { projectId?: 
 // Main Results Content
 function ResultsContent() {
   const searchParams = useSearchParams();
+  
+  // 🚨 모든 Hook은 최상단에 선언 (Hooks 규칙 준수)
   const [answers, setAnswers] = useState<Answers>({});
   const [isInitialized, setIsInitialized] = useState(false);
   const [aiAnalysis, setAiAnalysis] = useState<AIAnalysisResult | null>(null);
@@ -1388,7 +1390,24 @@ function ResultsContent() {
   const [criticalRisk, setCriticalRisk] = useState(false);
   const [blacklistDetails, setBlacklistDetails] = useState<any>(null);
   const [isUnauthorized, setIsUnauthorized] = useState(false);
+  const [isAuthenticatedForReminder, setIsAuthenticatedForReminder] = useState<boolean | null>(null);
+  
   const projectId = searchParams?.get('project_id') || null;
+  
+  // Auth Check Effect (맨 위로 이동 - Hooks 규칙 준수)
+  useEffect(() => {
+    const checkAuth = async () => {
+      try {
+        const { createClient } = await import('@/lib/supabase/client');
+        const supabase = createClient();
+        const { data: { user } } = await supabase.auth.getUser();
+        setIsAuthenticatedForReminder(!!user);
+      } catch (error) {
+        setIsAuthenticatedForReminder(false);
+      }
+    };
+    checkAuth();
+  }, []);
 
   // 프로젝트 분석 데이터 로드 (project_id가 있을 때)
   useEffect(() => {
@@ -1564,7 +1583,8 @@ function ResultsContent() {
   useEffect(() => {
     if (!isInitialized) return;
     
-    // 이미 aiAnalysis가 있으면 (저장된 데이터에서 불러온 경우) 재분석 불필요
+    // 🚨 무한 루프 방지: aiAnalysis가 이미 있으면 재분석 불필요
+    // (의존성 배열에서 aiAnalysis를 제거했으므로 내부에서 체크)
     if (aiAnalysis) {
       console.log('[Results] AI analysis already loaded, skipping fetch');
       return;
@@ -1635,7 +1655,8 @@ function ResultsContent() {
     };
 
     fetchAnalysis();
-  }, [isInitialized, answers, aiAnalysis, projectId]);
+    // 🚨 중요: aiAnalysis를 의존성 배열에서 제거하여 무한 루프 방지
+  }, [isInitialized, answers, projectId]);
 
   if (isLoading) {
     return <AnalysisLoader />;
@@ -1982,22 +2003,6 @@ function ResultsContent() {
     }
   };
 
-  // Check authentication status for login reminder
-  const [isAuthenticatedForReminder, setIsAuthenticatedForReminder] = useState<boolean | null>(null);
-  
-  useEffect(() => {
-    const checkAuth = async () => {
-      try {
-        const { createClient } = await import('@/lib/supabase/client');
-        const supabase = createClient();
-        const { data: { user } } = await supabase.auth.getUser();
-        setIsAuthenticatedForReminder(!!user);
-      } catch (error) {
-        setIsAuthenticatedForReminder(false);
-      }
-    };
-    checkAuth();
-  }, []);
 
   return (
     <div className="min-h-screen bg-[#f9fafb] p-6 md:p-8">

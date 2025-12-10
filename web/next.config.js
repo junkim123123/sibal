@@ -8,6 +8,9 @@ const nextConfig = {
   images: {
     domains: ['cdn.sanity.io'],
   },
+  // HTML 최적화 및 DOCTYPE 명시
+  poweredByHeader: false,
+  compress: true,
   eslint: {
     ignoreDuringBuilds: true,
   },

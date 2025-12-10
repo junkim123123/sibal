@@ -3,6 +3,7 @@ import { Inter, JetBrains_Mono } from "next/font/google"
 import "./globals.css"
 import AuthProvider from "@/components/auth-provider"
 import { Analytics } from "@vercel/analytics/next"
+import { ErrorHandler } from "@/components/error-handler"
 
 const inter = Inter({
   subsets: ["latin"],
@@ -36,6 +37,7 @@ export default function RootLayout({
         className={`${inter.variable} ${jetbrainsMono.variable} font-sans antialiased bg-background text-foreground`}
         suppressHydrationWarning
       >
+        <ErrorHandler />
         <AuthProvider>{children}</AuthProvider>
         <Analytics />
       </body>

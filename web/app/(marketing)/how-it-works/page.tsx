@@ -16,7 +16,7 @@ export default async function HowItWorksPage() {
   return (
     <div className="bg-white">
       {/* Hero Section */}
-      <section aria-label="Hero" className="py-10 md:py-16 bg-white">
+      <section aria-label="Hero" className="py-16 md:py-20 lg:py-24 bg-white">
         <div className="mx-auto max-w-6xl px-4 md:px-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
             {/* Left: Text Content */}
@@ -112,7 +112,7 @@ export default async function HowItWorksPage() {
       <SectionLayout
         title={journey.title}
         subtitle={journey.subtitle}
-        className="bg-neutral-50"
+        className="bg-neutral-50 py-16 md:py-20 lg:py-24"
       >
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
           {journey.cards.map((card, idx) => {

@@ -9,18 +9,21 @@ export function PortfolioMarquee() {
   useEffect(() => {
     async function loadImages() {
       try {
-        const response = await fetch('/api/portfolio');
-        const data = await response.json();
-        // 각 상품의 첫 번째 이미지만 가져와서 30개로 제한
-        const imageMap = new Map<string, string>();
-        data.items?.forEach((item: { image: string; productName: string }) => {
-          if (!imageMap.has(item.productName)) {
-            imageMap.set(item.productName, item.image);
-          }
-        });
-        const uniqueImages = Array.from(imageMap.values()).slice(0, 30);
-        // 무한 루프를 위해 2배로 복제
-        setImages([...uniqueImages, ...uniqueImages]);
+        // 정적 JSON 파일을 직접 로드
+        const response = await fetch('/portfolio-list.json');
+        if (response.ok) {
+          const data = await response.json();
+          // 각 상품의 첫 번째 이미지만 가져와서 30개로 제한
+          const imageMap = new Map<string, string>();
+          data.items?.forEach((item: { image: string; productName: string }) => {
+            if (!imageMap.has(item.productName)) {
+              imageMap.set(item.productName, item.image);
+            }
+          });
+          const uniqueImages = Array.from(imageMap.values()).slice(0, 30);
+          // 무한 루프를 위해 2배로 복제
+          setImages([...uniqueImages, ...uniqueImages]);
+        }
       } catch (error) {
         console.error('Failed to load portfolio images:', error);
       }

@@ -20,11 +20,18 @@ export default function PortfolioPage() {
   useEffect(() => {
     async function loadPortfolio() {
       try {
-        const response = await fetch('/api/portfolio');
-        const data = await response.json();
-        setPortfolioItems(data.items || []);
+        // 정적 JSON 파일을 직접 로드
+        const response = await fetch('/portfolio-list.json');
+        if (response.ok) {
+          const data = await response.json();
+          setPortfolioItems(data.items || []);
+        } else {
+          // 파일이 없으면 빈 배열
+          setPortfolioItems([]);
+        }
       } catch (error) {
         console.error('Failed to load portfolio:', error);
+        setPortfolioItems([]);
       } finally {
         setIsLoading(false);
       }

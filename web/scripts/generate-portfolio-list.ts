@@ -1,17 +1,19 @@
-import { NextResponse } from 'next/server';
-import { readdir, stat } from 'fs/promises';
+import { readdir, stat, writeFile } from 'fs/promises';
 import { join } from 'path';
 
-export async function GET() {
+interface PortfolioItem {
+  id: string;
+  image: string;
+  productName: string;
+  alt: string;
+}
+
+async function generatePortfolioList() {
   try {
     const portfolioDir = join(process.cwd(), 'public', 'images', 'portfolio');
+    const outputFile = join(process.cwd(), 'public', 'portfolio-list.json');
     
-    const items: Array<{ 
-      id: string; 
-      image: string; 
-      productName: string;
-      alt: string;
-    }> = [];
+    const items: PortfolioItem[] = [];
     
     // portfolio 폴더 내의 모든 하위 폴더(상품명) 스캔
     try {
@@ -36,12 +38,11 @@ export async function GET() {
               items.push({
                 id: `${folder}-${index}`,
                 image: `/images/portfolio/${folder}/${file}`,
-                productName: folder.replace(/-/g, ' ').replace(/_/g, ' '), // 폴더명을 상품명으로 사용 (하이픈/언더스코어를 공백으로)
-                alt: `${folder} - ${file.replace(/\.[^/.]+$/, '')}`, // 파일명에서 확장자 제거
+                productName: folder.replace(/-/g, ' ').replace(/_/g, ' '),
+                alt: `${folder} - ${file.replace(/\.[^/.]+$/, '')}`,
               });
             });
           } catch (error) {
-            // 개별 폴더 읽기 실패 시 무시
             console.log(`Failed to read folder ${folder}:`, error);
           }
         }
@@ -50,10 +51,16 @@ export async function GET() {
       console.error('Error reading portfolio directory:', error);
     }
     
-    return NextResponse.json({ items });
+    // JSON 파일로 저장
+    await writeFile(outputFile, JSON.stringify({ items }, null, 2), 'utf-8');
+    console.log(`✅ Generated portfolio list with ${items.length} items`);
   } catch (error) {
-    console.error('Error loading portfolio:', error);
-    return NextResponse.json({ items: [] }, { status: 200 });
+    console.error('Error generating portfolio list:', error);
+    // 빌드 실패를 방지하기 위해 빈 배열로 저장
+    const outputFile = join(process.cwd(), 'public', 'portfolio-list.json');
+    await writeFile(outputFile, JSON.stringify({ items: [] }, null, 2), 'utf-8');
   }
 }
+
+generatePortfolioList();
 

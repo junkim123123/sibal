@@ -4,13 +4,15 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
+    "prebuild": "tsx scripts/generate-portfolio-list.ts",
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
     "postinstall": "prisma generate",
     "generate:category-popularity": "tsx scripts/generateCategoryPopularity.ts",
     "reinforce:top-categories": "tsx scripts/reinforceTopCategories.ts",
-    "generate:regulation-patterns": "tsx scripts/generateRegulationPatterns.ts"
+    "generate:regulation-patterns": "tsx scripts/generateRegulationPatterns.ts",
+    "generate:portfolio": "tsx scripts/generate-portfolio-list.ts"
   },
   "dependencies": {
     "@google/generative-ai": "^0.24.1",

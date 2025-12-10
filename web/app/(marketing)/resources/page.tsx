@@ -179,13 +179,35 @@ export default function ResourcesPage() {
                                 maxresImg.onload = () => {
                                   target.src = `https://img.youtube.com/vi/${video.youtubeId}/maxresdefault.jpg`;
                                 };
+                                maxresImg.onerror = () => {
+                                  // maxresdefault가 없으면 hqdefault 유지
+                                };
                                 maxresImg.src = `https://img.youtube.com/vi/${video.youtubeId}/maxresdefault.jpg`;
                               }}
                               onError={(e) => {
-                                console.error('[Resources] Failed to load YouTube thumbnail:', video.youtubeId);
+                                console.error('[Resources] Failed to load YouTube thumbnail:', video.youtubeId, video.title);
                                 const target = e.target as HTMLImageElement;
-                                // 기본 배경색만 표시
-                                target.style.display = 'none';
+                                // 여러 썸네일 옵션 시도
+                                const thumbnailOptions = [
+                                  `https://img.youtube.com/vi/${video.youtubeId}/mqdefault.jpg`,
+                                  `https://img.youtube.com/vi/${video.youtubeId}/sddefault.jpg`,
+                                  `https://img.youtube.com/vi/${video.youtubeId}/0.jpg`,
+                                ];
+                                
+                                let currentIndex = 0;
+                                const tryNextThumbnail = () => {
+                                  if (currentIndex < thumbnailOptions.length) {
+                                    target.src = thumbnailOptions[currentIndex];
+                                    currentIndex++;
+                                  } else {
+                                    // 모든 옵션 실패 시 플레이스홀더 표시
+                                    target.style.display = 'none';
+                                    target.onerror = null; // 무한 루프 방지
+                                  }
+                                };
+                                
+                                target.onerror = tryNextThumbnail;
+                                tryNextThumbnail();
                               }}
                             />
                             <div className="absolute inset-0 bg-black/30 group-hover:bg-black/40 transition-colors flex items-center justify-center z-10 pointer-events-none">
@@ -243,13 +265,35 @@ export default function ResourcesPage() {
                                 maxresImg.onload = () => {
                                   target.src = `https://img.youtube.com/vi/${video.youtubeId}/maxresdefault.jpg`;
                                 };
+                                maxresImg.onerror = () => {
+                                  // maxresdefault가 없으면 hqdefault 유지
+                                };
                                 maxresImg.src = `https://img.youtube.com/vi/${video.youtubeId}/maxresdefault.jpg`;
                               }}
                               onError={(e) => {
-                                console.error('[Resources] Failed to load YouTube thumbnail:', video.youtubeId);
+                                console.error('[Resources] Failed to load YouTube thumbnail:', video.youtubeId, video.title);
                                 const target = e.target as HTMLImageElement;
-                                // 기본 배경색만 표시
-                                target.style.display = 'none';
+                                // 여러 썸네일 옵션 시도
+                                const thumbnailOptions = [
+                                  `https://img.youtube.com/vi/${video.youtubeId}/mqdefault.jpg`,
+                                  `https://img.youtube.com/vi/${video.youtubeId}/sddefault.jpg`,
+                                  `https://img.youtube.com/vi/${video.youtubeId}/0.jpg`,
+                                ];
+                                
+                                let currentIndex = 0;
+                                const tryNextThumbnail = () => {
+                                  if (currentIndex < thumbnailOptions.length) {
+                                    target.src = thumbnailOptions[currentIndex];
+                                    currentIndex++;
+                                  } else {
+                                    // 모든 옵션 실패 시 플레이스홀더 표시
+                                    target.style.display = 'none';
+                                    target.onerror = null; // 무한 루프 방지
+                                  }
+                                };
+                                
+                                target.onerror = tryNextThumbnail;
+                                tryNextThumbnail();
                               }}
                             />
                             <div className="absolute inset-0 bg-black/30 group-hover:bg-black/40 transition-colors flex items-center justify-center z-10 pointer-events-none">

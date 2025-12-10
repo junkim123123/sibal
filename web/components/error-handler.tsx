@@ -40,8 +40,9 @@ export function ErrorHandler() {
       originalWarn.apply(console, args)
     }
 
-    // 외부 스크립트 오류 완전 차단
+    // 외부 스크립트 오류 완전 차단 (ErrorEvent만 처리, 클릭 이벤트는 자동으로 무시됨)
     const handleError = (e: ErrorEvent) => {
+      // ErrorEvent는 클릭 이벤트와 별개이므로 자동으로 구분됨
       const filename = e.filename || ''
       const message = e.message || ''
       
@@ -166,9 +167,9 @@ export function ErrorHandler() {
       })
     }
 
-    // 즉시 실행 및 주기적 체크
+    // 즉시 실행 및 주기적 체크 (빈도 감소로 성능 개선)
     removeExistingItemscoutElements()
-    const checkInterval = setInterval(removeExistingItemscoutElements, 1000)
+    const checkInterval = setInterval(removeExistingItemscoutElements, 2000) // 1초 -> 2초로 변경
 
     return () => {
       // 정리

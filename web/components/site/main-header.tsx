@@ -79,7 +79,7 @@ export function MainHeader() {
   const currentNavItems = isAppPage ? appNavItems : marketingNavItems;
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-gray-200 bg-white">
+    <header className="sticky top-0 z-[100] w-full border-b border-gray-200 bg-white">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="flex h-[72px] items-center justify-between">
           {/* Left: Logo */}
@@ -89,7 +89,7 @@ export function MainHeader() {
 
           {/* Center: Navigation Links (Based on Page Type) */}
           {!isLoading && (
-            <nav className="hidden md:flex md:items-center md:gap-8 md:absolute md:left-1/2 md:-translate-x-1/2 z-10">
+            <nav className="hidden md:flex md:items-center md:gap-8 md:absolute md:left-1/2 md:-translate-x-1/2 z-20">
               {currentNavItems.map((item) => (
                 <Link
                   key={item.href}

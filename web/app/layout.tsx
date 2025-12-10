@@ -93,8 +93,8 @@ export default function RootLayout({
                     subtree: true
                   });
                   
-                  // 주기적 체크
-                  setInterval(removeItemscoutElements, 500);
+                  // 주기적 체크 (빈도 감소로 성능 개선 및 클릭 이벤트 간섭 방지)
+                  setInterval(removeItemscoutElements, 2000); // 500ms -> 2000ms로 변경
                 }
                 
                 // 콘솔 오류 필터링
@@ -128,8 +128,9 @@ export default function RootLayout({
                   originalWarn.apply(console, arguments);
                 };
                 
-                // 전역 에러 핸들러
+                // 전역 에러 핸들러 (ErrorEvent만 처리, 클릭 이벤트는 자동으로 무시됨)
                 window.addEventListener('error', function(e) {
+                  // ErrorEvent는 클릭 이벤트와 별개이므로 자동으로 구분됨
                   const filename = e.filename || '';
                   const message = e.message || '';
                   if (

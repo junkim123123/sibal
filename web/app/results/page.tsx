@@ -1424,32 +1424,51 @@ function ResultsContent() {
         const response = await fetch(`/api/projects/${projectId}/analysis`);
         const data = await response.json();
         
+        // 🔍 [디버깅 핵심] 여기서 데이터 구조를 확인해야 합니다!
+        console.log('🔥 DB RAW DATA (loadProjectAnalysis):', data);
+        console.log('🔥 DB RAW DATA Keys:', Object.keys(data));
+        if (data.project) {
+          console.log('🔥 DB RAW DATA.project Keys:', Object.keys(data.project));
+        }
+        
         if (data.ok) {
+          // ✅ [수정됨] 데이터를 찾는 범위를 넓힘 (유연성 확보)
+          // 백엔드가 데이터를 data.ai_analysis 로 줄 수도 있고, data.project.ai_analysis 로 줄 수도 있음
+          const foundAnalysis = data.ai_analysis || data.analysis || data.project?.ai_analysis || data.project?.analysis;
+          const foundAnswers = data.answers || data.project?.answers;
+          
           console.log('[Results] Project analysis data loaded:', {
-            hasAnswers: !!data.answers,
-            hasAiAnalysis: !!data.ai_analysis,
-            answersKeys: data.answers ? Object.keys(data.answers).length : 0,
-            aiAnalysisKeys: data.ai_analysis ? Object.keys(data.ai_analysis).length : 0,
+            hasAnswers: !!foundAnswers,
+            hasAiAnalysis: !!foundAnalysis,
+            foundAnswersKeys: foundAnswers ? Object.keys(foundAnswers).length : 0,
+            foundAnalysisKeys: foundAnalysis ? Object.keys(foundAnalysis).length : 0,
+            // 디버깅: 어떤 경로로 찾았는지 확인
+            foundVia: {
+              ai_analysis: !!data.ai_analysis,
+              analysis: !!data.analysis,
+              project_ai_analysis: !!data.project?.ai_analysis,
+              project_analysis: !!data.project?.analysis,
+            },
           });
           
           // answers 복원
-          if (data.answers && Object.keys(data.answers).length > 0) {
-            console.log('[Results] Restoring answers:', Object.keys(data.answers));
-            setAnswers(data.answers);
+          if (foundAnswers && Object.keys(foundAnswers).length > 0) {
+            console.log('[Results] Restoring answers:', Object.keys(foundAnswers));
+            setAnswers(foundAnswers);
           } else {
             console.warn('[Results] No answers data found in project analysis. Using sessionStorage data if available.');
           }
           
           // ai_analysis 복원
-          if (data.ai_analysis) {
-            console.log('[Results] Restoring AI analysis');
-            setAiAnalysis(data.ai_analysis);
+          if (foundAnalysis) {
+            console.log('✅ Analysis Data Found (loadProjectAnalysis):', Object.keys(foundAnalysis));
+            setAiAnalysis(foundAnalysis);
           } else {
             console.warn('[Results] No AI analysis data found in project analysis. Will trigger new analysis if answers are available.');
             
             // ✨ 자동 재분석: answers가 있으면 자동으로 재분석 시도
-            if (data.answers && Object.keys(data.answers).length > 0) {
-              const hasRequiredFields = data.answers.project_name || data.answers.product_info;
+            if (foundAnswers && Object.keys(foundAnswers).length > 0) {
+              const hasRequiredFields = foundAnswers.project_name || foundAnswers.product_info;
               if (hasRequiredFields) {
                 console.log('[Results] Auto-regenerating analysis from saved answers...');
                 setIsLoading(true);
@@ -1459,7 +1478,7 @@ function ResultsContent() {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ 
-                      userContext: data.answers,
+                      userContext: foundAnswers,
                       project_id: projectId,
                     }),
                   });
@@ -1559,7 +1578,13 @@ function ResultsContent() {
           console.log('[Results] API response status:', response.status);
           
           const data = await response.json();
-          console.log('[Results] API response data:', data);
+          
+          // 🔍 [디버깅 핵심] 여기서 데이터 구조를 확인해야 합니다!
+          console.log('🔥 DB RAW DATA:', data);
+          console.log('🔥 DB RAW DATA Keys:', Object.keys(data));
+          if (data.project) {
+            console.log('🔥 DB RAW DATA.project Keys:', Object.keys(data.project));
+          }
           
           if (!response.ok) {
             if (response.status === 401) {
@@ -1574,20 +1599,44 @@ function ResultsContent() {
           }
           
           if (data.ok) {
+            // ✅ [수정됨] 데이터를 찾는 범위를 넓힘 (유연성 확보)
+            // 백엔드가 데이터를 data.ai_analysis 로 줄 수도 있고, data.project.ai_analysis 로 줄 수도 있음
+            const foundAnalysis = data.ai_analysis || data.analysis || data.project?.ai_analysis || data.project?.analysis;
+            const foundAnswers = data.answers || data.project?.answers;
+            
             console.log('[Results] Saved project data loaded:', {
-              hasAnswers: !!data.answers,
-              hasAiAnalysis: !!data.ai_analysis,
+              hasAnswers: !!foundAnswers,
+              hasAiAnalysis: !!foundAnalysis,
+              foundAnswersKeys: foundAnswers ? Object.keys(foundAnswers).length : 0,
+              foundAnalysisKeys: foundAnalysis ? Object.keys(foundAnalysis).length : 0,
               messagesCount: data.messages ? data.messages.length : 0,
+              // 디버깅: 어떤 경로로 찾았는지 확인
+              foundVia: {
+                ai_analysis: !!data.ai_analysis,
+                analysis: !!data.analysis,
+                project_ai_analysis: !!data.project?.ai_analysis,
+                project_analysis: !!data.project?.analysis,
+              },
             });
             
             // answers 복원
-            if (data.answers && Object.keys(data.answers).length > 0) {
-              setAnswers(data.answers);
+            if (foundAnswers && Object.keys(foundAnswers).length > 0) {
+              console.log('[Results] Restoring answers from saved project:', Object.keys(foundAnswers));
+              setAnswers(foundAnswers);
+            } else {
+              console.warn('[Results] No answers data found in saved project');
             }
             
             // ai_analysis 복원
-            if (data.ai_analysis) {
-              setAiAnalysis(data.ai_analysis);
+            if (foundAnalysis) {
+              console.log('✅ Analysis Data Found:', Object.keys(foundAnalysis));
+              setAiAnalysis(foundAnalysis);
+            } else {
+              console.warn('⚠️ Data loaded but Analysis is missing in JSON:', {
+                dataKeys: Object.keys(data),
+                projectKeys: data.project ? Object.keys(data.project) : null,
+                hasOk: data.ok,
+              });
             }
             
             setIsInitialized(true);

@@ -694,17 +694,37 @@ export async function POST(req: Request) {
                          analysis.risks?.duty?.level === 'Medium' ? 50 : 25;
         const landedCost = analysis.financials?.estimated_landed_cost || 0;
         
+        // analysis_data 구성 (answers와 ai_analysis 저장)
+        const analysisData: any = {};
+        if (userContext && Object.keys(userContext).length > 0) {
+          analysisData.answers = userContext;
+        }
+        if (analysis) {
+          analysisData.ai_analysis = analysis;
+        }
+        
+        const updateData: any = {
+          initial_risk_score: riskScore,
+          total_landed_cost: landedCost,
+          status: 'completed',
+          updated_at: new Date().toISOString(),
+        };
+        
+        // analysis_data가 있으면 포함
+        if (Object.keys(analysisData).length > 0) {
+          updateData.analysis_data = analysisData;
+        }
+        
         await adminClient
           .from('projects')
-          .update({
-            initial_risk_score: riskScore,
-            total_landed_cost: landedCost,
-            status: 'completed',
-            updated_at: new Date().toISOString(),
-          })
+          .update(updateData)
           .eq('id', project_id);
         
-        console.log('[Analyze API] Project updated:', project_id);
+        console.log('[Analyze API] Project updated:', project_id, {
+          hasAnalysisData: Object.keys(analysisData).length > 0,
+          hasAnswers: !!analysisData.answers,
+          hasAiAnalysis: !!analysisData.ai_analysis,
+        });
 
         // ============================================================================
         // 분석 완료 이메일 알림 발송

@@ -390,27 +390,21 @@ function ProjectDetailPageContent() {
             label="Chat"
             active={activeTab === 'chat'}
             onClick={() => {
-              if (activeTab !== 'chat') {
-                setActiveTab('chat')
-              }
+              setActiveTab('chat')
             }}
           />
           <TabButton
             label="Progress"
             active={activeTab === 'progress'}
             onClick={() => {
-              if (activeTab !== 'progress') {
-                setActiveTab('progress')
-              }
+              setActiveTab('progress')
             }}
           />
           <TabButton
             label="Overview"
             active={activeTab === 'overview'}
             onClick={() => {
-              if (activeTab !== 'overview') {
-                setActiveTab('overview')
-              }
+              setActiveTab('overview')
             }}
           />
         </div>

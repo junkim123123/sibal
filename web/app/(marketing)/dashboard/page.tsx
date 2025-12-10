@@ -177,13 +177,8 @@ function DashboardPageContent() {
     }
   }, [searchParams, activeTab])
 
-  // activeTab 변경 시 데이터 새로고침 (탭 클릭 시 또는 URL 변경 시)
-  useEffect(() => {
-    if (userId && isAuthenticated && activeTab && loadProjects) {
-      console.log('[Dashboard] Active tab changed, reloading projects...', activeTab)
-      loadProjects(userId)
-    }
-  }, [activeTab, userId, isAuthenticated, loadProjects])
+  // 초기 로드 시에만 데이터 로드 (탭 클릭은 직접 처리하므로 useEffect 제거)
+  // URL 파라미터 변경은 위의 useEffect에서 처리
 
   useEffect(() => {
     async function checkAuth() {
@@ -574,8 +569,11 @@ function DashboardPageContent() {
             label="My Requests"
             active={activeTab === 'requests'}
             onClick={() => {
-              if (activeTab !== 'requests') {
-                setActiveTab('requests')
+              console.log('[Dashboard] Tab clicked: requests, current:', activeTab)
+              setActiveTab('requests')
+              // 탭 클릭 시 즉시 데이터 로드
+              if (userId && isAuthenticated) {
+                loadProjects(userId)
               }
             }}
           />
@@ -583,8 +581,11 @@ function DashboardPageContent() {
             label="Production & Shipping"
             active={activeTab === 'production'}
             onClick={() => {
-              if (activeTab !== 'production') {
-                setActiveTab('production')
+              console.log('[Dashboard] Tab clicked: production, current:', activeTab)
+              setActiveTab('production')
+              // 탭 클릭 시 즉시 데이터 로드
+              if (userId && isAuthenticated) {
+                loadProjects(userId)
               }
             }}
           />

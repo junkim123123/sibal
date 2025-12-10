@@ -1409,29 +1409,28 @@ function ResultsContent() {
           console.log('[Results] Project analysis data loaded:', {
             hasAnswers: !!data.answers,
             hasAiAnalysis: !!data.ai_analysis,
+            answersKeys: data.answers ? Object.keys(data.answers).length : 0,
+            aiAnalysisKeys: data.ai_analysis ? Object.keys(data.ai_analysis).length : 0,
           });
           
           // answers 복원
           if (data.answers && Object.keys(data.answers).length > 0) {
             console.log('[Results] Restoring answers:', Object.keys(data.answers));
             setAnswers(data.answers);
+          } else {
+            console.warn('[Results] No answers data found in project analysis. Using sessionStorage data if available.');
           }
           
           // ai_analysis 복원
           if (data.ai_analysis) {
             console.log('[Results] Restoring AI analysis');
             setAiAnalysis(data.ai_analysis);
-          }
-          
-          // answers나 ai_analysis가 없으면 경고
-          if (!data.answers || Object.keys(data.answers).length === 0) {
-            console.warn('[Results] No answers data found in project analysis');
-          }
-          if (!data.ai_analysis) {
-            console.warn('[Results] No AI analysis data found in project analysis');
+          } else {
+            console.warn('[Results] No AI analysis data found in project analysis. Will trigger new analysis if answers are available.');
           }
         } else {
           console.error('[Results] Failed to load project analysis:', data.error);
+          // API 실패해도 sessionStorage 데이터가 있으면 계속 진행
         }
       } catch (error) {
         console.error('[Results] Failed to load project analysis:', error);
@@ -1928,17 +1927,17 @@ function ResultsContent() {
     return null;
   }
   
-  // 안전한 구조 분해 할당
+  // 안전한 구조 분해 할당 (기본값 제공)
   const { 
-    financials, 
-    cost_breakdown, 
-    scale_analysis, 
-    risks,
-    duty_analysis,
-    logistics_insight,
-    market_benchmark,
-    strategic_advice,
-  } = aiAnalysis;
+    financials = null, 
+    cost_breakdown = null, 
+    scale_analysis = [], 
+    risks = {},
+    duty_analysis = null,
+    logistics_insight = null,
+    market_benchmark = null,
+    strategic_advice = null,
+  } = aiAnalysis || {};
   // Extract product name from new streamlined field or legacy fields (안전한 접근)
   const productName = (answers?.product_info?.split('-')[0]?.trim()) || 
                       (answers?.product_info?.split(',')[0]?.trim()) ||
@@ -1947,8 +1946,12 @@ function ResultsContent() {
                       'Product Analysis';
   
   // 안전한 재무 데이터 접근
-  const totalLandedCost = financials?.estimated_landed_cost || 0;
-  const marginPct = financials?.estimated_margin_pct || 0;
+  const totalLandedCost = (financials && typeof financials === 'object' && 'estimated_landed_cost' in financials) 
+    ? financials.estimated_landed_cost 
+    : 0;
+  const marginPct = (financials && typeof financials === 'object' && 'estimated_margin_pct' in financials)
+    ? financials.estimated_margin_pct
+    : 0;
   const margin = {
     min: Math.max(0, Math.floor(marginPct - 5)),
     max: Math.ceil(marginPct + 5),
@@ -1956,9 +1959,11 @@ function ResultsContent() {
 
   // Check for critical risk (안전한 접근)
   const executiveSummary = aiAnalysis?.executive_summary || '';
-  const strategicAdvice = aiAnalysis?.strategic_advice?.key_action || strategic_advice?.key_action || '';
+  const strategicAdvice = (aiAnalysis?.strategic_advice?.key_action || strategic_advice?.key_action || '');
   const osintRiskScore = aiAnalysis?.osint_risk_score || 0;
-  const complianceRisk = aiAnalysis?.risks?.compliance?.level || risks?.compliance?.level || '';
+  const complianceRisk = (risks && typeof risks === 'object' && 'compliance' in risks && risks.compliance && typeof risks.compliance === 'object' && 'level' in risks.compliance)
+    ? String(risks.compliance.level || '')
+    : '';
   
   const hasCriticalRisk = 
     executiveSummary.toLowerCase().includes('immediate halt') ||

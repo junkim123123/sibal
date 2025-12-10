@@ -168,18 +168,27 @@ export default function ResourcesPage() {
                         {video.youtubeId ? (
                           <>
                             <img
-                              src={`https://img.youtube.com/vi/${video.youtubeId}/maxresdefault.jpg`}
+                              src={`https://img.youtube.com/vi/${video.youtubeId}/hqdefault.jpg`}
                               alt={video.title}
-                              className="w-full h-full object-cover"
-                              onError={(e) => {
-                                // maxresdefault가 없으면 hqdefault로 fallback
+                              className="absolute inset-0 w-full h-full object-cover"
+                              loading="lazy"
+                              onLoad={(e) => {
+                                // hqdefault 로드 성공 후 maxresdefault로 업그레이드 시도
                                 const target = e.target as HTMLImageElement;
-                                if (target.src.includes('maxresdefault')) {
-                                  target.src = `https://img.youtube.com/vi/${video.youtubeId}/hqdefault.jpg`;
-                                }
+                                const maxresImg = document.createElement('img');
+                                maxresImg.onload = () => {
+                                  target.src = `https://img.youtube.com/vi/${video.youtubeId}/maxresdefault.jpg`;
+                                };
+                                maxresImg.src = `https://img.youtube.com/vi/${video.youtubeId}/maxresdefault.jpg`;
+                              }}
+                              onError={(e) => {
+                                console.error('[Resources] Failed to load YouTube thumbnail:', video.youtubeId);
+                                const target = e.target as HTMLImageElement;
+                                // 기본 배경색만 표시
+                                target.style.display = 'none';
                               }}
                             />
-                            <div className="absolute inset-0 bg-black/30 group-hover:bg-black/40 transition-colors flex items-center justify-center">
+                            <div className="absolute inset-0 bg-black/30 group-hover:bg-black/40 transition-colors flex items-center justify-center z-10 pointer-events-none">
                               <div className="w-16 h-16 rounded-full bg-white/90 flex items-center justify-center group-hover:scale-110 transition-transform">
                                 <Play className="w-8 h-8 text-[#008080] ml-1" fill="currentColor" />
                               </div>
@@ -223,18 +232,27 @@ export default function ResourcesPage() {
                         {video.youtubeId ? (
                           <>
                             <img
-                              src={`https://img.youtube.com/vi/${video.youtubeId}/maxresdefault.jpg`}
+                              src={`https://img.youtube.com/vi/${video.youtubeId}/hqdefault.jpg`}
                               alt={video.title}
-                              className="w-full h-full object-cover"
-                              onError={(e) => {
-                                // maxresdefault가 없으면 hqdefault로 fallback
+                              className="absolute inset-0 w-full h-full object-cover"
+                              loading="lazy"
+                              onLoad={(e) => {
+                                // hqdefault 로드 성공 후 maxresdefault로 업그레이드 시도
                                 const target = e.target as HTMLImageElement;
-                                if (target.src.includes('maxresdefault')) {
-                                  target.src = `https://img.youtube.com/vi/${video.youtubeId}/hqdefault.jpg`;
-                                }
+                                const maxresImg = document.createElement('img');
+                                maxresImg.onload = () => {
+                                  target.src = `https://img.youtube.com/vi/${video.youtubeId}/maxresdefault.jpg`;
+                                };
+                                maxresImg.src = `https://img.youtube.com/vi/${video.youtubeId}/maxresdefault.jpg`;
+                              }}
+                              onError={(e) => {
+                                console.error('[Resources] Failed to load YouTube thumbnail:', video.youtubeId);
+                                const target = e.target as HTMLImageElement;
+                                // 기본 배경색만 표시
+                                target.style.display = 'none';
                               }}
                             />
-                            <div className="absolute inset-0 bg-black/30 group-hover:bg-black/40 transition-colors flex items-center justify-center">
+                            <div className="absolute inset-0 bg-black/30 group-hover:bg-black/40 transition-colors flex items-center justify-center z-10 pointer-events-none">
                               <div className="w-16 h-16 rounded-full bg-white/90 flex items-center justify-center group-hover:scale-110 transition-transform">
                                 <Play className="w-8 h-8 text-[#008080] ml-1" fill="currentColor" />
                               </div>

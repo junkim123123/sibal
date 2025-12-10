@@ -1928,6 +1928,8 @@ function ResultsContent() {
   }
   
   // 안전한 구조 분해 할당 (기본값 제공)
+  // aiAnalysis가 객체인지 확인 후 구조 분해
+  const safeAiAnalysis = (aiAnalysis && typeof aiAnalysis === 'object') ? aiAnalysis : {} as any;
   const { 
     financials = null, 
     cost_breakdown = null, 
@@ -1937,7 +1939,7 @@ function ResultsContent() {
     logistics_insight = null,
     market_benchmark = null,
     strategic_advice = null,
-  } = aiAnalysis || {};
+  } = safeAiAnalysis;
   // Extract product name from new streamlined field or legacy fields (안전한 접근)
   const productName = (answers?.product_info?.split('-')[0]?.trim()) || 
                       (answers?.product_info?.split(',')[0]?.trim()) ||

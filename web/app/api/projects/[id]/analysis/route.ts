@@ -84,18 +84,6 @@ export async function GET(
       .eq('id', projectId)
       .single();
 
-    // 권한 확인: 프로젝트 소유자 또는 할당된 매니저
-    const isOwner = project?.user_id === user.id;
-    const isManager = project?.manager_id === user.id;
-
-    if (!isOwner && !isManager) {
-      console.error('[Get Project Analysis] Access denied:', { userId: user.id, projectUserId: project?.user_id, projectManagerId: project?.manager_id });
-      return NextResponse.json(
-        { ok: false, error: 'Access denied' },
-        { status: 403 }
-      );
-    }
-
     if (projectError || !project) {
       console.error('[Get Project Analysis] Failed to fetch project:', projectError);
       return NextResponse.json(
@@ -104,10 +92,61 @@ export async function GET(
       );
     }
 
+    // 타입 안전성을 위한 타입 단언
+    const projectData = project as {
+      id: string;
+      name: string;
+      status: string;
+      user_id: string;
+      manager_id: string | null;
+      analysis_data: any;
+    };
+
+    // 권한 확인: 프로젝트 소유자 또는 할당된 매니저
+    const isOwner = projectData.user_id === user.id;
+    const isManager = projectData.manager_id === user.id;
+
+    if (!isOwner && !isManager) {
+      console.error('[Get Project Analysis] Access denied:', { userId: user.id, projectUserId: projectData.user_id, projectManagerId: projectData.manager_id });
+      return NextResponse.json(
+        { ok: false, error: 'Access denied' },
+        { status: 403 }
+      );
+    }
+
     // analysis_data에서 answers와 ai_analysis 추출
-    const analysisData = project.analysis_data || {};
-    const answers = analysisData.answers || null;
-    const aiAnalysis = analysisData.ai_analysis || null;
+    // JSONB 타입이므로 안전하게 파싱
+    let analysisData: any = {};
+    try {
+      if (projectData.analysis_data) {
+        // 이미 객체인 경우 그대로 사용, 문자열인 경우 파싱
+        if (typeof projectData.analysis_data === 'string') {
+          analysisData = JSON.parse(projectData.analysis_data);
+        } else if (typeof projectData.analysis_data === 'object') {
+          analysisData = projectData.analysis_data;
+        }
+      }
+    } catch (parseError) {
+      console.error('[Get Project Analysis] Failed to parse analysis_data:', parseError);
+      console.error('[Get Project Analysis] Raw analysis_data:', projectData.analysis_data);
+      analysisData = {};
+    }
+    
+    const answers = (analysisData && typeof analysisData === 'object' && 'answers' in analysisData) 
+      ? analysisData.answers 
+      : null;
+    const aiAnalysis = (analysisData && typeof analysisData === 'object' && 'ai_analysis' in analysisData)
+      ? analysisData.ai_analysis
+      : null;
+    
+    console.log('[Get Project Analysis] Parsed analysis_data:', {
+      analysisDataType: typeof projectData.analysis_data,
+      analysisDataKeys: analysisData ? Object.keys(analysisData) : [],
+      hasAnswers: !!answers,
+      hasAiAnalysis: !!aiAnalysis,
+      answersType: answers ? typeof answers : 'null',
+      aiAnalysisType: aiAnalysis ? typeof aiAnalysis : 'null',
+    });
 
     // 메시지도 함께 불러오기 (채팅 내역)
     let messages: any[] = [];
@@ -133,19 +172,21 @@ export async function GET(
     }
 
     console.log('[Get Project Analysis] Retrieved data:', {
-      projectId: project.id,
+      projectId: projectData.id,
       hasAnswers: !!answers,
       hasAiAnalysis: !!aiAnalysis,
       answersKeys: answers ? Object.keys(answers).length : 0,
       messagesCount: messages.length,
+      rawAnalysisDataType: typeof projectData.analysis_data,
+      rawAnalysisDataIsNull: projectData.analysis_data === null,
     });
 
     return NextResponse.json({
       ok: true,
       project: {
-        id: project.id,
-        name: project.name,
-        status: project.status,
+        id: projectData.id,
+        name: projectData.name,
+        status: projectData.status,
       },
       answers: answers,
       ai_analysis: aiAnalysis,

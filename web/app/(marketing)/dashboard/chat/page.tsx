@@ -516,26 +516,27 @@ function ClientChatContent() {
   }
 
   return (
-    <div className="h-screen bg-gray-50 flex flex-col">
+    <div className="h-screen bg-gray-50 flex flex-col overflow-hidden">
       {/* Header */}
-      <div className="bg-white border-b border-gray-200 px-6 py-4 flex-shrink-0">
+      <div className="bg-white border-b border-gray-200 px-4 sm:px-6 py-3 sm:py-4 flex-shrink-0">
         <Link
           href="/dashboard"
-          className="inline-flex items-center gap-2 text-sm text-gray-600 hover:text-gray-900 transition-colors"
+          className="inline-flex items-center gap-2 text-xs sm:text-sm text-gray-600 hover:text-gray-900 transition-colors"
         >
-          <ArrowLeft className="w-4 h-4" />
-          Back to Dashboard
+          <ArrowLeft className="w-3 h-3 sm:w-4 sm:h-4" />
+          <span className="hidden sm:inline">Back to Dashboard</span>
+          <span className="sm:hidden">Back</span>
         </Link>
       </div>
 
       {/* 3-Column Layout */}
       <div className="flex-1 grid grid-cols-12 h-[calc(100vh-64px)] overflow-hidden">
-        {/* Left: Chat List (col-span-3) */}
-        <div className="col-span-12 lg:col-span-3 bg-gray-50 border-r border-gray-200 flex flex-col overflow-hidden">
-          <div className="p-4 border-b border-gray-200 flex-shrink-0">
-            <h2 className="text-lg font-semibold text-gray-900">Active Chats</h2>
+        {/* Left: Chat List (col-span-3) - 모바일에서는 숨김 */}
+        <div className="hidden lg:flex col-span-3 bg-gray-50 border-r border-gray-200 flex flex-col overflow-hidden">
+          <div className="p-3 sm:p-4 border-b border-gray-200 flex-shrink-0">
+            <h2 className="text-base sm:text-lg font-semibold text-gray-900">Active Chats</h2>
           </div>
-          <div className="flex-1 overflow-y-auto p-4 space-y-2">
+          <div className="flex-1 overflow-y-auto p-3 sm:p-4 space-y-2">
             {chatSessions.length === 0 ? (
               <p className="text-sm text-gray-500 text-center py-4">
                 No active chats
@@ -574,14 +575,14 @@ function ClientChatContent() {
         {/* Center: Live Chat Area (col-span-6) - Main */}
         <div className="col-span-12 lg:col-span-6 bg-white flex flex-col overflow-hidden">
           {/* Chat Header */}
-          <div className="p-4 border-b border-gray-200 flex-shrink-0">
-            <h1 className="text-xl font-bold text-gray-900 mb-2">{projectName}</h1>
+          <div className="p-3 sm:p-4 border-b border-gray-200 flex-shrink-0">
+            <h1 className="text-lg sm:text-xl font-bold text-gray-900 mb-2 truncate">{projectName}</h1>
             
             {/* Project Summary Bar */}
             {projectSpecs && (projectSpecs.qty || projectSpecs.targetPrice || projectSpecs.port) && (
-              <div className="flex items-center gap-4 px-3 py-2 bg-gray-50 rounded-lg border border-gray-200 mb-2">
+              <div className="flex items-center gap-2 sm:gap-4 px-2 sm:px-3 py-1.5 sm:py-2 bg-gray-50 rounded-lg border border-gray-200 mb-2 overflow-x-auto">
                 {projectSpecs.image && (
-                  <div className="w-10 h-10 rounded bg-gray-200 flex-shrink-0 overflow-hidden">
+                  <div className="w-8 h-8 sm:w-10 sm:h-10 rounded bg-gray-200 flex-shrink-0 overflow-hidden">
                     <Image
                       src={projectSpecs.image}
                       alt={projectName}
@@ -591,20 +592,20 @@ function ClientChatContent() {
                     />
                   </div>
                 )}
-                <div className="flex items-center gap-4 text-xs text-gray-600 flex-wrap">
+                <div className="flex items-center gap-2 sm:gap-4 text-[10px] sm:text-xs text-gray-600 flex-nowrap">
                   {projectSpecs.qty && (
-                    <span className="font-medium">
+                    <span className="font-medium whitespace-nowrap">
                       <Package className="w-3 h-3 inline mr-1" />
                       Qty: {projectSpecs.qty.toLocaleString()}
                     </span>
                   )}
                   {projectSpecs.targetPrice && (
-                    <span className="font-medium">
+                    <span className="font-medium whitespace-nowrap">
                       Target: ${projectSpecs.targetPrice}
                     </span>
                   )}
                   {projectSpecs.port && (
-                    <span className="font-medium">
+                    <span className="font-medium whitespace-nowrap">
                       Port: {projectSpecs.port}
                     </span>
                   )}
@@ -612,7 +613,7 @@ function ClientChatContent() {
               </div>
             )}
             
-            <p className="text-xs text-gray-500">
+            <p className="text-[10px] sm:text-xs text-gray-500">
               {project?.manager_id 
                 ? `Chat with ${chatSessions.find(s => s.project_id === projectId)?.managerName || 'your manager'}` 
                 : 'Manager will be assigned within 24 hours. You can send messages now.'
@@ -642,16 +643,16 @@ function ClientChatContent() {
           </div>
         </div>
 
-        {/* Right: Project Context / Action Items (col-span-3) */}
-        <div className="col-span-12 lg:col-span-3 bg-gray-50 border-l border-gray-200 overflow-y-auto">
-          <div className="p-4">
+        {/* Right: Project Context / Action Items (col-span-3) - 모바일에서는 숨김 */}
+        <div className="hidden lg:block col-span-3 bg-gray-50 border-l border-gray-200 overflow-y-auto">
+          <div className="p-3 sm:p-4">
             {milestones.length > 0 ? (
               <>
                 {/* Progress Bar */}
-                <div className="mb-6">
+                <div className="mb-4 sm:mb-6">
                   <div className="flex items-center justify-between mb-2">
-                    <h2 className="text-sm font-semibold text-gray-900">Project Progress</h2>
-                    <span className="text-xs font-medium text-gray-600">
+                    <h2 className="text-xs sm:text-sm font-semibold text-gray-900">Project Progress</h2>
+                    <span className="text-[10px] sm:text-xs font-medium text-gray-600">
                       {Math.round((milestones.filter((m: any) => m.status === 'completed').length / milestones.length) * 100)}%
                     </span>
                   </div>
@@ -670,16 +671,16 @@ function ClientChatContent() {
                   {/* Timeline Line */}
                   <div className="absolute left-4 top-0 bottom-0 w-0.5 bg-gray-200"></div>
                   
-                  <div className="space-y-5">
+                  <div className="space-y-4 sm:space-y-5">
                     {milestones.map((milestone: any, index: number) => {
                       const isCompleted = milestone.status === 'completed';
                       const isInProgress = milestone.status === 'in_progress';
                       const isCurrent = index === currentMilestoneIndex && !isCompleted;
                       
                       return (
-                        <div key={milestone.index || index} className="relative flex items-start gap-4">
+                        <div key={milestone.index || index} className="relative flex items-start gap-3 sm:gap-4">
                           {/* Timeline Dot */}
-                          <div className={`relative z-10 flex items-center justify-center w-8 h-8 rounded-full border-2 transition-all ${
+                          <div className={`relative z-10 flex items-center justify-center w-6 h-6 sm:w-8 sm:h-8 rounded-full border-2 transition-all flex-shrink-0 ${
                             isCompleted
                               ? 'bg-emerald-500 border-emerald-500'
                               : isInProgress || isCurrent
@@ -698,8 +699,8 @@ function ClientChatContent() {
                           </div>
                           
                           {/* Content */}
-                          <div className="flex-1 min-w-0 pt-1">
-                            <p className={`text-sm font-medium ${
+                          <div className="flex-1 min-w-0 pt-0.5 sm:pt-1">
+                            <p className={`text-xs sm:text-sm font-medium ${
                               isCompleted 
                                 ? 'text-gray-500 line-through' 
                                 : isInProgress || isCurrent
@@ -709,7 +710,7 @@ function ClientChatContent() {
                               {milestone.title}
                             </p>
                             {milestone.date && (
-                              <p className="text-xs text-gray-500 mt-1">
+                              <p className="text-[10px] sm:text-xs text-gray-500 mt-1">
                                 {new Date(milestone.date).toLocaleDateString('en-US', { 
                                   month: 'short', 
                                   day: 'numeric',
@@ -718,17 +719,17 @@ function ClientChatContent() {
                               </p>
                             )}
                             {!milestone.date && (isInProgress || isCurrent) && (
-                              <p className="text-xs text-[#008080] mt-1 font-medium">
+                              <p className="text-[10px] sm:text-xs text-[#008080] mt-1 font-medium">
                                 In Progress
                               </p>
                             )}
                             {!milestone.date && !isCompleted && !isInProgress && !isCurrent && (
-                              <p className="text-xs text-gray-400 mt-1">
+                              <p className="text-[10px] sm:text-xs text-gray-400 mt-1">
                                 Est: {new Date(Date.now() + (index - currentMilestoneIndex) * 7 * 24 * 60 * 60 * 1000).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
                               </p>
                             )}
                             {milestone.title === 'Samples Ordered' && isCompleted && (
-                              <button className="mt-2 text-xs text-[#008080] hover:underline flex items-center gap-1">
+                              <button className="mt-2 text-[10px] sm:text-xs text-[#008080] hover:underline flex items-center gap-1">
                                 <FileText className="w-3 h-3" />
                                 View Invoice
                               </button>

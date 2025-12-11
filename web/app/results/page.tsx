@@ -128,7 +128,7 @@ function ResultHeader({
   };
 
   return (
-    <div className="col-span-2 bg-white border border-gray-200 rounded-lg p-8 shadow-sm">
+    <div className="col-span-1 md:col-span-2 bg-white border border-gray-200 rounded-lg p-4 sm:p-6 md:p-8 shadow-sm">
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-gray-900 mb-2">{formatProductName(productName)}</h1>
@@ -184,10 +184,10 @@ function CostBreakdown({ costBreakdown, totalLandedCost }: { costBreakdown: any;
   const total = chartData.reduce((sum, item) => sum + item.value, 0);
 
   return (
-    <Card className="bg-white border border-gray-200 p-6 shadow-sm h-full min-h-[400px] flex flex-col">
+    <Card className="bg-white border border-gray-200 p-4 sm:p-6 shadow-sm h-full min-h-[300px] sm:min-h-[400px] flex flex-col">
       <h2 className="text-sm font-semibold text-gray-500 uppercase mb-4 tracking-wide">Cost Breakdown</h2>
       
-      <div className="grid grid-cols-2 gap-4 flex-1">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 flex-1">
         {/* Donut Chart - Left Side (50%) */}
         <div className="flex items-center justify-center relative">
           <ResponsiveContainer width="100%" height="100%">
@@ -336,7 +336,7 @@ function ProfitabilitySimulator({ totalLandedCost, answers, costBreakdown, aiAna
   }
 
   return (
-    <Card className="bg-white border border-gray-200 p-6 shadow-sm h-full min-h-[400px] flex flex-col">
+    <Card className="bg-white border border-gray-200 p-4 sm:p-6 shadow-sm h-full min-h-[300px] sm:min-h-[400px] flex flex-col">
       <h2 className="text-sm font-semibold text-gray-500 uppercase mb-3 tracking-wide">Profitability Simulator</h2>
       
       <div className="space-y-3 flex-1 flex flex-col">
@@ -497,7 +497,7 @@ function ScaleAnalysis({ scaleAnalysis, totalLandedCost, costBreakdown }: {
   }
   
   return (
-    <Card className="bg-white border border-gray-200 p-6 shadow-sm">
+    <Card className="bg-white border border-gray-200 p-4 sm:p-6 shadow-sm">
       <h2 className="text-sm font-semibold text-gray-500 uppercase mb-4 tracking-wide">Scale Analysis</h2>
       <div className="space-y-3">
         {completeScenarios.map((scenario, index) => (
@@ -565,7 +565,7 @@ function RiskAssessment({ risks, osintRiskScore }: { risks: any; osintRiskScore?
   ].filter(item => item.data);
 
   return (
-    <Card className="bg-white border border-gray-200 p-6 shadow-sm">
+    <Card className="bg-white border border-gray-200 p-4 sm:p-6 shadow-sm">
       <h2 className="text-sm font-semibold text-gray-500 uppercase mb-4 tracking-wide">Risk Assessment</h2>
       
       {/* ✨ OSINT Risk Score 표시 (새로 추가) */}
@@ -604,12 +604,12 @@ function RiskAssessment({ risks, osintRiskScore }: { risks: any; osintRiskScore?
         </div>
       )}
       
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         {riskItems.map((item) => {
           const colors = getRiskColor(item.data?.level);
           const Icon = getRiskIcon(item.data?.level);
           return (
-            <div key={item.key} className={`bg-white border-l-4 ${colors.border} rounded-r-lg p-4 border border-gray-200 border-l-0`}>
+            <div key={item.key} className={`bg-white border-l-4 ${colors.border} rounded-r-lg p-3 sm:p-4 border border-gray-200 border-l-0`}>
               <div className="flex items-center gap-2 mb-2">
                 <div className={colors.icon}>{Icon}</div>
                 <h3 className="text-gray-900 font-medium text-sm">{item.label}</h3>
@@ -629,7 +629,7 @@ function NexSupplyInsight({ strategicAdvice, businessModel }: { strategicAdvice?
   if (!strategicAdvice) return null;
 
   return (
-    <Card className="col-span-2 bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 p-6 shadow-sm">
+    <Card className="col-span-1 md:col-span-2 bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 p-4 sm:p-6 shadow-sm">
       <div className="flex items-start gap-3">
         <Rocket className="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" />
         <div className="flex-1">
@@ -655,7 +655,7 @@ function LogisticsDutyIntelligence({
   if (!dutyAnalysis && !logisticsInsight) return null;
 
   return (
-    <Card className="bg-white border border-gray-200 p-6 shadow-sm">
+    <Card className="bg-white border border-gray-200 p-4 sm:p-6 shadow-sm">
       <h2 className="text-sm font-semibold text-gray-500 uppercase mb-4 tracking-wide">Logistics & Duty Intelligence</h2>
       
       <div className="space-y-4">
@@ -742,7 +742,7 @@ function ComplianceChecklist({ checklist, hsCode, market }: {
   if (!checklist || checklist.length === 0) return null;
 
   return (
-    <Card className="bg-white border border-gray-200 p-6 shadow-sm">
+    <Card className="bg-white border border-gray-200 p-4 sm:p-6 shadow-sm">
       <h2 className="text-sm font-semibold text-gray-500 uppercase mb-4 tracking-wide">🇺🇸 Compliance Checklist</h2>
       <p className="text-xs text-gray-500 mb-4">
         Required documents and certifications for {market || 'target market'} import
@@ -798,7 +798,7 @@ function MarketTrend({ marketTrends }: { marketTrends?: { trending_keywords: str
   if (!marketTrends || !marketTrends.trending_keywords || marketTrends.trending_keywords.length === 0) return null;
 
   return (
-    <Card className="bg-white border border-gray-200 p-6 shadow-sm">
+    <Card className="bg-white border border-gray-200 p-4 sm:p-6 shadow-sm">
       <h2 className="text-sm font-semibold text-gray-500 uppercase mb-4 tracking-wide">📈 Real-Time Market Trends</h2>
       
       <div className="space-y-4">
@@ -839,7 +839,7 @@ function ShadowSourcing({ shadowSourcing }: {
   if (!shadowSourcing || !shadowSourcing.recommended_suppliers || shadowSourcing.recommended_suppliers.length === 0) return null;
 
   return (
-    <Card className="bg-white border border-gray-200 p-6 shadow-sm">
+    <Card className="bg-white border border-gray-200 p-4 sm:p-6 shadow-sm">
       <h2 className="text-xs font-semibold text-gray-500 uppercase mb-2 tracking-wide">🔍 Deep-Tier Supply Chain Intelligence</h2>
       <p className="text-xs text-gray-400 mb-4 leading-relaxed">
         Recommended suppliers based on actual export history and OEM relationships
@@ -871,7 +871,7 @@ function CompetitorBenchmark({ marketBenchmark, refLink }: { marketBenchmark?: a
   if (!marketBenchmark) return null;
 
   return (
-    <Card className="col-span-2 bg-white border border-gray-200 p-6 shadow-sm">
+    <Card className="col-span-1 md:col-span-2 bg-white border border-gray-200 p-4 sm:p-6 shadow-sm">
       <h2 className="text-sm font-semibold text-gray-500 uppercase mb-4 tracking-wide">Competitor Benchmark</h2>
       
       <div className="space-y-4">
@@ -974,7 +974,7 @@ function ActionRoadmap({ answers, aiAnalysis }: { answers: Answers; aiAnalysis?:
   const roadmapSteps = hasImmediateHalt ? criticalRoadmapSteps : normalRoadmapSteps;
 
   return (
-    <div id="action-roadmap" className={`col-span-2 bg-white border ${hasImmediateHalt ? 'border-red-200' : 'border-gray-200'} rounded-lg p-6 shadow-sm`}>
+    <div id="action-roadmap" className={`col-span-1 md:col-span-2 bg-white border ${hasImmediateHalt ? 'border-red-200' : 'border-gray-200'} rounded-lg p-4 sm:p-6 shadow-sm`}>
       <div className="flex items-center gap-2 mb-4">
         <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wide">Action Roadmap</h2>
         {hasImmediateHalt && (
@@ -2246,7 +2246,7 @@ function ResultsContent() {
         {/* Report Card Container */}
         <div className="bg-white border border-gray-200 rounded-xl shadow-sm p-4 sm:p-6 md:p-8 lg:p-12">
           {/* Grid Layout */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-stretch">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 md:gap-8 items-stretch">
           {/* Header - Full Width */}
           <ResultHeader 
             productName={productName}

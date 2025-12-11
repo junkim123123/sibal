@@ -68,10 +68,44 @@ function SourcingBriefPageContent() {
     }
   }, [searchParams]);
 
-  // Auto-scroll to bottom when messages change
+  // Auto-scroll to bottom when messages change (모바일에서는 조건부로만)
   useEffect(() => {
+    // 모바일 감지
+    const isMobile = window.innerWidth < 768;
+    
+    // 모바일에서는 입력 필드가 포커스되어 있지 않을 때만 스크롤
+    if (isMobile) {
+      const activeElement = document.activeElement;
+      const isInputFocused = activeElement?.tagName === 'INPUT' || 
+                            activeElement?.tagName === 'TEXTAREA' ||
+                            activeElement?.getAttribute('contenteditable') === 'true';
+      
+      // 입력 필드가 포커스되어 있으면 스크롤하지 않음
+      if (isInputFocused) {
+        return;
+      }
+      
+      // 사용자가 이미 하단 근처에 있는지 확인
+      const container = messagesEndRef.current?.parentElement?.parentElement;
+      if (container) {
+        const isNearBottom = container.scrollHeight - container.scrollTop - container.clientHeight < 200;
+        if (!isNearBottom) {
+          // 사용자가 위쪽을 보고 있으면 자동 스크롤하지 않음
+          return;
+        }
+      }
+    }
+    
     const timeoutId = setTimeout(() => {
-      messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+      // 모바일에서는 scrollIntoView 대신 scrollTop 사용 (더 부드럽게)
+      if (isMobile) {
+        const container = messagesEndRef.current?.parentElement?.parentElement;
+        if (container) {
+          container.scrollTop = container.scrollHeight;
+        }
+      } else {
+        messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+      }
     }, 100);
     return () => clearTimeout(timeoutId);
   }, [messages, currentStepId]);

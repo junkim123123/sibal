@@ -77,7 +77,7 @@ export default async function HowItWorksPage() {
               </div>
 
               {/* Bottom Left Card - DDP Snapshot (overlapping) */}
-              <div className="absolute -bottom-4 -left-4 z-20 bg-white rounded-2xl p-4 shadow-md border border-neutral-200 w-[200px]">
+              <div className="hidden md:block absolute -bottom-4 -left-4 z-20 bg-white rounded-2xl p-4 shadow-md border border-neutral-200 w-[200px]">
                 <div className="flex items-center gap-2 mb-2">
                   <FileText className="h-4 w-4 text-neutral-600" />
                   <span className="text-xs font-semibold text-neutral-700">
@@ -91,7 +91,7 @@ export default async function HowItWorksPage() {
               </div>
 
               {/* Bottom Right Card - Pilot Order (overlapping) */}
-              <div className="absolute -bottom-4 right-4 z-20 bg-white rounded-2xl p-4 shadow-md border border-neutral-200 w-[200px]">
+              <div className="hidden md:block absolute -bottom-4 right-4 z-20 bg-white rounded-2xl p-4 shadow-md border border-neutral-200 w-[200px]">
                 <div className="flex items-center gap-2 mb-2">
                   <Package className="h-4 w-4 text-neutral-600" />
                   <span className="text-xs font-semibold text-neutral-700">

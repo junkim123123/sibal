@@ -85,7 +85,7 @@ export function ReviewsSection({ section }: { section: HomeReviewsSection }) {
           <button
             onClick={() => scroll('left')}
             disabled={!canScrollLeft}
-            className={`absolute left-0 top-1/2 -translate-y-1/2 z-10 bg-white border border-neutral-200 rounded-full p-2 shadow-lg hover:bg-neutral-50 transition-all ${
+            className={`absolute left-2 sm:left-0 top-1/2 -translate-y-1/2 z-10 bg-white border border-neutral-200 rounded-full p-2 shadow-lg hover:bg-neutral-50 transition-all ${
               canScrollLeft ? 'opacity-100 cursor-pointer' : 'opacity-30 cursor-not-allowed'
             }`}
             aria-label="Scroll left"
@@ -97,7 +97,7 @@ export function ReviewsSection({ section }: { section: HomeReviewsSection }) {
           <button
             onClick={() => scroll('right')}
             disabled={!canScrollRight}
-            className={`absolute right-0 top-1/2 -translate-y-1/2 z-10 bg-white border border-neutral-200 rounded-full p-2 shadow-lg hover:bg-neutral-50 transition-all ${
+            className={`absolute right-2 sm:right-0 top-1/2 -translate-y-1/2 z-10 bg-white border border-neutral-200 rounded-full p-2 shadow-lg hover:bg-neutral-50 transition-all ${
               canScrollRight ? 'opacity-100 cursor-pointer' : 'opacity-30 cursor-not-allowed'
             }`}
             aria-label="Scroll right"

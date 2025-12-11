@@ -2242,9 +2242,9 @@ function ResultsContent() {
       </div>
 
       {/* Main Content - Report Style */}
-      <div className="max-w-7xl mx-auto px-6 md:px-8 py-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-8 py-8">
         {/* Report Card Container */}
-        <div className="bg-white border border-gray-200 rounded-xl shadow-sm p-8 md:p-12">
+        <div className="bg-white border border-gray-200 rounded-xl shadow-sm p-4 sm:p-6 md:p-8 lg:p-12">
           {/* Grid Layout */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-stretch">
           {/* Header - Full Width */}

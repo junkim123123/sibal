@@ -578,22 +578,23 @@ function DashboardPageContent() {
         {/* Header - Clean Command Center Style */}
         <div className="mb-12">
           {/* Top Row: Greeting (Left) + Action Button (Right) */}
-          <div className="flex items-center justify-between gap-6 mb-3">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 sm:gap-6 mb-3">
             {/* Left: Greeting */}
             <div className="flex-1 min-w-0">
-              <h1 className="text-4xl md:text-5xl font-bold text-black tracking-tight">
+              <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold text-black tracking-tight">
                 {userName ? `Welcome back, ${userName}.` : 'Welcome back.'}
               </h1>
             </div>
             
             {/* Right: Primary Action Button */}
             <div className="flex-shrink-0">
-              <Link href="/chat">
+              <Link href="/chat" className="block w-full sm:w-auto">
                 <Button
                   size="lg"
-                  className="bg-[#008080] hover:bg-[#006666] text-white rounded-lg px-6 py-3 font-semibold"
+                  className="w-full sm:w-auto bg-[#008080] hover:bg-[#006666] text-white rounded-lg px-3 sm:px-6 py-2 sm:py-3 text-xs sm:text-sm font-semibold whitespace-nowrap"
                 >
-                  + New Analysis Request
+                  <span className="hidden sm:inline">+ New Analysis Request</span>
+                  <span className="sm:hidden">+ New</span>
                 </Button>
               </Link>
             </div>
@@ -855,7 +856,7 @@ function OverviewTab({
             <Link href="/chat">
               <Button
                 size="lg"
-                className="w-full bg-[#008080] hover:bg-[#006666] text-white rounded-lg py-6 font-semibold text-base"
+                className="w-full bg-[#008080] hover:bg-[#006666] text-white rounded-lg py-3 sm:py-6 font-semibold text-sm sm:text-base"
               >
                 + New Analysis Request
               </Button>
@@ -1074,14 +1075,14 @@ function EstimatesList({ estimates }: { estimates: any[] }) {
   return (
     <div className="bg-white border border-gray-200 rounded-xl overflow-hidden">
       <div className="overflow-x-auto">
-        <table className="w-full">
+        <table className="w-full min-w-[640px]">
           <thead className="bg-gray-50 border-b border-gray-200">
             <tr>
-              <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Product Info</th>
-              <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Date</th>
-              <th className="px-6 py-3 text-right text-xs font-semibold text-gray-600 uppercase tracking-wider">Est. Unit Cost</th>
-              <th className="px-6 py-3 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">Status</th>
-              <th className="px-6 py-3 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">Action</th>
+              <th className="px-3 sm:px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Product Info</th>
+              <th className="px-3 sm:px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Date</th>
+              <th className="px-3 sm:px-6 py-3 text-right text-xs font-semibold text-gray-600 uppercase tracking-wider">Est. Unit Cost</th>
+              <th className="px-3 sm:px-6 py-3 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">Status</th>
+              <th className="px-3 sm:px-6 py-3 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">Action</th>
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
@@ -1091,47 +1092,50 @@ function EstimatesList({ estimates }: { estimates: any[] }) {
               
               return (
                 <tr key={estimate.id} className="hover:bg-gray-50 transition-colors">
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center flex-shrink-0">
-                        <Package className="h-5 w-5 text-gray-600" />
+                  <td className="px-3 sm:px-6 py-4 whitespace-nowrap">
+                    <div className="flex items-center gap-2 sm:gap-3">
+                      <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gray-100 rounded-full flex items-center justify-center flex-shrink-0">
+                        <Package className="h-4 w-4 sm:h-5 sm:w-5 text-gray-600" />
                       </div>
-                      <div>
+                      <div className="min-w-0">
                         <Link 
                           href={`/results?project_id=${estimate.id}`}
-                          className="text-sm font-medium text-gray-900 hover:text-blue-600"
+                          className="text-xs sm:text-sm font-medium text-gray-900 hover:text-blue-600 truncate block max-w-[120px] sm:max-w-none"
                         >
                           {estimate.productName}
                         </Link>
                       </div>
                     </div>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                  <td className="px-3 sm:px-6 py-4 whitespace-nowrap text-xs sm:text-sm text-gray-600">
                     {estimate.date}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-right">
-                    <span className="text-sm font-bold text-gray-900">{estimate.landedCost}</span>
+                  <td className="px-3 sm:px-6 py-4 whitespace-nowrap text-right">
+                    <span className="text-xs sm:text-sm font-bold text-gray-900">{estimate.landedCost}</span>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-center">
+                  <td className="px-3 sm:px-6 py-4 whitespace-nowrap text-center">
                     <StatusBadge 
                       status={isComplete ? 'Analysis Complete' : isPending ? 'Pending' : formatStatus(estimate.status)} 
                     />
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-center">
+                  <td className="px-3 sm:px-6 py-4 whitespace-nowrap text-center">
                     {isComplete ? (
                       <button
                         onClick={(e) => handleConnectAgent(e, estimate.id)}
-                        className="px-4 py-2 text-sm font-semibold bg-[#008080] hover:bg-teal-700 text-white rounded-lg transition-colors"
+                        className="px-2 sm:px-3 md:px-4 py-1.5 sm:py-2 text-[10px] sm:text-xs md:text-sm font-semibold bg-[#008080] hover:bg-teal-700 text-white rounded-lg transition-colors whitespace-nowrap"
                       >
-                        Connect Agent
+                        <span className="hidden sm:inline">Connect Agent</span>
+                        <span className="sm:hidden">Connect</span>
                       </button>
                     ) : (
                       <Link href={`/results?project_id=${estimate.id}`}>
                         <Button
                           variant="outline"
                           size="sm"
+                          className="text-[10px] sm:text-xs"
                         >
-                          View Report
+                          <span className="hidden sm:inline">View Report</span>
+                          <span className="sm:hidden">View</span>
                         </Button>
                       </Link>
                     )}
@@ -1431,13 +1435,13 @@ function ShipmentsList({ shipments }: { shipments: any[] }) {
                   )}
                 </div>
               </div>
-              <div className="flex items-center gap-3">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-3">
                 <StatusBadge status={shipment.status} />
-                <Link href={`/dashboard/chat?project_id=${shipment.id}`}>
+                <Link href={`/dashboard/chat?project_id=${shipment.id}`} className="w-full sm:w-auto">
                   <Button
                     variant="outline"
                     size="sm"
-                    className="text-xs text-gray-600 border-gray-300 hover:bg-gray-50"
+                    className="w-full sm:w-auto text-xs text-gray-600 border-gray-300 hover:bg-gray-50"
                   >
                     Message Agent
                   </Button>
@@ -1455,7 +1459,7 @@ function ShipmentsList({ shipments }: { shipments: any[] }) {
               <div className="pt-4 border-t border-gray-200">
                 <Link href={action.href}>
                   <button
-                    className="px-4 py-2 text-sm font-semibold bg-[#008080] hover:bg-teal-700 text-white rounded-lg transition-colors"
+                    className="w-full sm:w-auto px-3 sm:px-4 py-2 text-xs sm:text-sm font-semibold bg-[#008080] hover:bg-teal-700 text-white rounded-lg transition-colors"
                   >
                     {action.label}
                   </button>
@@ -1531,10 +1535,10 @@ function EmptyState({
       </p>
       <Link
         href={actionHref}
-        className="inline-flex items-center gap-2 px-6 py-3 bg-[#008080] text-white rounded-lg font-medium hover:bg-[#006666] transition-colors"
+        className="inline-flex items-center gap-2 px-4 sm:px-6 py-2 sm:py-3 text-sm sm:text-base bg-[#008080] text-white rounded-lg font-medium hover:bg-[#006666] transition-colors"
       >
         {actionLabel}
-        <ChevronRight className="h-5 w-5" />
+        <ChevronRight className="h-4 w-4 sm:h-5 sm:w-5" />
       </Link>
     </div>
   )

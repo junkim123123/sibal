@@ -32,7 +32,8 @@ export function LanguageSelector() {
     };
   }, [isOpen]);
 
-  const currentLanguage = languages.find((lang) => lang.code === language);
+  // 현재 언어가 아닌 다른 언어를 찾아서 버튼에 표시 (전환할 언어)
+  const otherLanguage = languages.find((lang) => lang.code !== language);
 
   return (
     <div className="relative" ref={dropdownRef}>
@@ -44,7 +45,7 @@ export function LanguageSelector() {
       >
         <Globe className="h-4 w-4 text-gray-600 dark:text-gray-400" />
         <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
-          {currentLanguage?.nativeName || 'English'}
+          {otherLanguage?.nativeName || '한국어'}
         </span>
       </button>
 

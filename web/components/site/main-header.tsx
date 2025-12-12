@@ -20,12 +20,6 @@ export function MainHeader() {
   const userMenuRef = useRef<HTMLDivElement>(null);
   const { t } = useLanguage();
 
-  // 페이지 로드 시 목적지 미리 로드 (클릭 반응 속도 향상)
-  useEffect(() => {
-    router.prefetch('/chat');
-    router.prefetch('/login');
-  }, [router]);
-
   // Check authentication status
   useEffect(() => {
     async function checkAuth() {
@@ -67,14 +61,12 @@ export function MainHeader() {
   };
 
   // UX 개선: Get Started 버튼 클릭 핸들러 통합
-  // ✅ 수정됨: preventDefault/stopPropagation 제거
-  const handleGetStarted = () => {
+  const handleGetStarted = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
     if (isLoading) return;
-    
-    // 버튼을 누르자마자 로딩 상태로 변경해 '눌렸다'는 피드백을 줌
-    // (페이지 이동이 시작되면 어차피 현재 페이지는 멈추므로 로딩 보여주는 게 UX상 좋음)
-    setIsLoading(true);
 
+    setIsLoading(true); // 페이지 이동 직전에 로딩 상태 표시
     if (isAuthenticated) {
       router.push('/chat');
     } else {
@@ -116,32 +108,30 @@ export function MainHeader() {
           </Link>
 
           {/* Center: Navigation Links (Based on Page Type) */}
-          {/* 로딩 중에도 메뉴 위치를 유지하여 Layout Shift 방지 */}
-          <nav className={`hidden md:flex md:items-center md:gap-8 md:absolute md:left-1/2 md:-translate-x-1/2 z-20 ${isLoading ? 'opacity-50' : ''}`}>
-            {currentNavItems.map((item) => {
-              const isActive = pathname === item.href;
-              if (isActive) {
-                // 활성화된 링크는 span으로 렌더링 (클릭 방지)
-                return (
-                  <span
-                    key={item.href}
-                    className="text-sm font-normal transition-colors relative text-black dark:text-white after:absolute after:bottom-0 after:left-0 after:right-0 after:h-0.5 after:bg-black dark:after:bg-white cursor-default"
-                  >
-                    {item.label}
-                  </span>
-                );
-              }
-              return (
+          {!isLoading && (
+            <nav className="hidden md:flex md:items-center md:gap-8 md:absolute md:left-1/2 md:-translate-x-1/2 z-20">
+              {currentNavItems.map((item) => (
                 <Link
                   key={item.href}
                   href={item.href}
-                  className="text-sm font-normal transition-colors relative text-zinc-700 dark:text-gray-300 hover:text-black dark:hover:text-white"
+                  onClick={(e) => {
+                    // 중복 클릭 방지
+                    if (pathname === item.href) {
+                      e.preventDefault();
+                      return;
+                    }
+                  }}
+                  className={`text-sm font-normal transition-colors relative ${
+                    pathname === item.href
+                      ? 'text-black dark:text-white after:absolute after:bottom-0 after:left-0 after:right-0 after:h-0.5 after:bg-black dark:after:bg-white'
+                      : 'text-zinc-700 dark:text-gray-300 hover:text-black dark:hover:text-white'
+                  }`}
                 >
                   {item.label}
                 </Link>
-              );
-            })}
-          </nav>
+              ))}
+            </nav>
+          )}
 
           {/* Right: Action Buttons Group */}
           {isLoading ? (
@@ -176,12 +166,17 @@ export function MainHeader() {
                 <button
                   type="button"
                   onClick={(e) => {
-                    // 메뉴 토글 등 '부모에게 클릭 사실을 숨겨야 할 때'만 stopPropagation 사용
+                    e.preventDefault();
                     e.stopPropagation();
+                    // 로딩 중이면 아무것도 하지 않음
+                    if (isLoading) return;
+                    
                     if (isAuthenticated) {
                       setUserMenuOpen(!userMenuOpen);
                     } else {
-                      router.push('/login');
+                      // 로그인 안 된 경우 로그인 페이지로 리다이렉트
+                      setIsLoading(true); // 로딩 표시 추가
+                      window.location.href = '/login';
                     }
                   }}
                   disabled={isLoading}
@@ -269,9 +264,8 @@ export function MainHeader() {
                     <button
                       type="button"
                       onClick={(e) => {
-                        // ✅ 수정됨: 여기서도 preventDefault 제거
+                        handleGetStarted(e);
                         setMobileMenuOpen(false);
-                        handleGetStarted();
                       }}
                       disabled={isLoading}
                       className="block w-full rounded-full bg-[#008080] px-6 py-2 text-center text-sm font-medium text-white hover:bg-[#006666] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"

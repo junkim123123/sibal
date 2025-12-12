@@ -611,37 +611,52 @@ function DashboardPageContent() {
           <TabButton
             label="Overview"
             active={activeTab === 'overview'}
-            onClick={() => {
-              if (activeTab !== 'overview') {
-                setActiveTab('overview')
-                if (userId && isAuthenticated) {
-                  loadProjects(userId)
+            onClick={(e) => {
+              e.preventDefault()
+              e.stopPropagation()
+              setActiveTab((currentTab) => {
+                if (currentTab !== 'overview') {
+                  if (userId && isAuthenticated) {
+                    loadProjects(userId)
+                  }
+                  return 'overview'
                 }
-              }
+                return currentTab
+              })
             }}
           />
           <TabButton
             label="Sourcing Estimates"
             active={activeTab === 'requests'}
-            onClick={() => {
-              if (activeTab !== 'requests') {
-                setActiveTab('requests')
-                if (userId && isAuthenticated) {
-                  loadProjects(userId)
+            onClick={(e) => {
+              e.preventDefault()
+              e.stopPropagation()
+              setActiveTab((currentTab) => {
+                if (currentTab !== 'requests') {
+                  if (userId && isAuthenticated) {
+                    loadProjects(userId)
+                  }
+                  return 'requests'
                 }
-              }
+                return currentTab
+              })
             }}
           />
           <TabButton
             label="Active Orders"
             active={activeTab === 'production'}
-            onClick={() => {
-              if (activeTab !== 'production') {
-                setActiveTab('production')
-                if (userId && isAuthenticated) {
-                  loadProjects(userId)
+            onClick={(e) => {
+              e.preventDefault()
+              e.stopPropagation()
+              setActiveTab((currentTab) => {
+                if (currentTab !== 'production') {
+                  if (userId && isAuthenticated) {
+                    loadProjects(userId)
+                  }
+                  return 'production'
                 }
-              }
+                return currentTab
+              })
             }}
           />
         </div>
@@ -683,18 +698,12 @@ function TabButton({
 }: {
   label: string
   active: boolean
-  onClick: () => void
+  onClick: (e: React.MouseEvent<HTMLButtonElement>) => void
 }) {
-  const handleClick = (e: React.MouseEvent<HTMLButtonElement>) => {
-    e.preventDefault()
-    e.stopPropagation()
-    onClick()
-  }
-
   return (
     <button
       type="button"
-      onClick={handleClick}
+      onClick={onClick}
       className={`pb-4 px-1 text-sm font-medium transition-colors relative ${
         active
           ? 'text-black font-semibold'
@@ -1051,10 +1060,6 @@ function EstimatesList({ estimates }: { estimates: any[] }) {
   const handleConnectAgent = (e: React.MouseEvent, projectId: string) => {
     e.preventDefault()
     e.stopPropagation()
-    // 이미 모달이 열려있거나 처리 중이면 무시
-    if (showPaymentModal || isProcessingPayment) {
-      return
-    }
     setSelectedProjectId(projectId)
     setShowPaymentModal(true)
   }
@@ -1126,8 +1131,7 @@ function EstimatesList({ estimates }: { estimates: any[] }) {
                     {isComplete ? (
                       <button
                         onClick={(e) => handleConnectAgent(e, estimate.id)}
-                        disabled={showPaymentModal || isProcessingPayment}
-                        className="px-2 sm:px-3 md:px-4 py-1.5 sm:py-2 text-[10px] sm:text-xs md:text-sm font-semibold bg-[#008080] hover:bg-teal-700 text-white rounded-lg transition-colors whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="px-2 sm:px-3 md:px-4 py-1.5 sm:py-2 text-[10px] sm:text-xs md:text-sm font-semibold bg-[#008080] hover:bg-teal-700 text-white rounded-lg transition-colors whitespace-nowrap"
                       >
                         <span className="hidden sm:inline">Connect Agent</span>
                         <span className="sm:hidden">Connect</span>

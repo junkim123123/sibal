@@ -137,18 +137,17 @@ function ProjectDetailPageContent() {
   const dropZoneRef = useRef<HTMLDivElement>(null)
   const [isPending, startTransition] = useTransition()
 
-  // 탭 변경 핸들러를 useCallback으로 메모이제이션
+  // 탭 변경 핸들러 - 함수형 업데이트 사용하여 최신 상태 보장
   const handleTabChange = useCallback((tab: ProjectTabType) => {
-    // 이미 같은 탭이 활성화되어 있으면 무시
-    if (activeTab === tab) {
-      return
-    }
-    
-    console.log('👆 Tab change requested:', tab, 'current:', activeTab)
-    // 즉시 상태 업데이트
-    setActiveTab(tab)
-    console.log('✅ Tab state updated to:', tab)
-  }, [activeTab])
+    setActiveTab((currentTab) => {
+      if (currentTab !== tab) {
+        console.log('👆 Tab changing from:', currentTab, 'to:', tab)
+        return tab
+      }
+      console.log('⚠️ Tab already active:', tab)
+      return currentTab
+    })
+  }, [])
 
   useEffect(() => {
     async function checkAuth() {

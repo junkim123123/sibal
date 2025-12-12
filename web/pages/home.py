@@ -6,15 +6,112 @@ Clean, unified input area with polished Quick Start cards
 import streamlit as st
 import time
 import traceback
-import logging
 
 from services.gemini_service import GeminiService
 from state.session_state import get_sourcing_state
 from utils.i18n import t, render_language_selector_minimal
-from utils.data_converter import convert_api_response
 
-# Set up logger
-logger = logging.getLogger(__name__)
+
+# =============================================================================
+# DATA CONVERSION
+# =============================================================================
+
+def convert_api_response(data: dict) -> dict:
+    """Convert GeminiService response to UI format."""
+    market = data.get("market_snapshot", {})
+    cost = data.get("landed_cost_breakdown", {})
+    suppliers_raw = data.get("verified_suppliers", [])
+    lead_time = data.get("lead_time_analysis", {})
+    
+    market_snapshot = {
+        "demand": market.get("demand", "Medium"),
+        "demand_change": market.get("demand_trend", "+0%"),
+        "demand_evidence": market.get("demand_evidence", "Based on marketplace data"),
+        "margin": market.get("margin_estimate", "25%"),
+        "margin_note": market.get("margin_note", "After platform fees"),
+        "margin_change": market.get("margin_trend", "+0%"),
+        "competition": market.get("competition_level", "Medium"),
+        "competition_change": market.get("competition_trend", "+0%"),
+        "market_size": market.get("market_size_usd", "$10M")
+    }
+    
+    cost_components = cost.get("cost_components", {})
+    # Default percentages (will be recalculated if cost_components exist)
+    landed_cost = {
+        "product": 45,  # Default: will be recalculated from actual cost data
+        "shipping": 25,  # Default: will be recalculated from actual cost data
+        "customs": 18,  # Default: will be recalculated from actual cost data
+        "handling": 12,  # Default: will be recalculated from actual cost data
+        "total_landed_cost_usd": cost.get("total_landed_cost_usd", 0),
+        "cost_per_unit_usd": cost.get("cost_per_unit_usd", 0),
+        "quantity_basis": cost.get("quantity_basis", 1000),
+        "components": cost_components,
+        "hidden_cost_warnings": cost.get("hidden_cost_warnings", []),
+    }
+    
+    # Recalculate percentages from actual cost components if available
+    if cost_components:
+        fob = cost_components.get("fob_price_usd", 0)
+        freight = cost_components.get("ocean_freight_usd", 0) + cost_components.get("inland_freight_usd", 0)
+        customs = cost_components.get("customs_duty_usd", 0) + cost_components.get("customs_broker_fee_usd", 0)
+        handling = cost_components.get("terminal_handling_charge_usd", 0) + cost_components.get("insurance_usd", 0)
+        
+        calc_total = fob + freight + customs + handling
+        if calc_total > 0:
+            landed_cost["product"] = round((fob / calc_total) * 100)
+            landed_cost["shipping"] = round((freight / calc_total) * 100)
+            landed_cost["customs"] = round((customs / calc_total) * 100)
+            landed_cost["handling"] = round((handling / calc_total) * 100)
+    
+    lead_time_analysis = {
+        "production_days": lead_time.get("production_lead_time_days", 21),
+        "shipping_days": lead_time.get("sea_freight_lead_time_days", 30),
+        "port_congestion_days": lead_time.get("port_congestion_buffer_days", 5),
+        "customs_days": lead_time.get("customs_clearance_days", 5),
+        "delivery_days": lead_time.get("inland_delivery_days", 3),
+        "total_days": lead_time.get("total_lead_time_days", 61),
+        "safety_stock_days": lead_time.get("safety_stock_days", 14),
+        "current_conditions": lead_time.get("current_conditions", ""),
+        "order_advance_days": lead_time.get("recommended_order_advance_days", 75)
+    }
+    
+    suppliers = []
+    for s in suppliers_raw:
+        suppliers.append({
+            "name": s.get("name", "Unknown Supplier"),
+            "location": s.get("location", "Unknown"),
+            "region": s.get("region", ""),
+            "rating": s.get("rating", 4.5),
+            "min_order": s.get("min_order_qty", "MOQ varies"),
+            "price_range": s.get("price_range_usd", "Contact for pricing"),
+            "verified": s.get("verified", True),
+            "response_time": s.get("response_time", "< 48h"),
+            "certifications": s.get("certifications", []),
+            "years_in_business": s.get("years_in_business", 3),
+            "factory_grade": s.get("estimated_factory_grade", "Tier-2 Factory"),
+            "trade_assurance": s.get("trade_assurance", False),
+            "quality_tier": s.get("estimated_quality_tier", "Medium"),
+            "risk_notes": s.get("risk_notes", "No specific risks identified"),
+            "green_flags": s.get("green_flags", []),
+        })
+    
+    risk_analysis_raw = data.get("risk_analysis", {})
+    
+    return {
+        "market_snapshot": market_snapshot,
+        "landed_cost": landed_cost,
+        "lead_time": lead_time_analysis,
+        "suppliers": suppliers,
+        "trends": data.get("trends_with_evidence", data.get("market_trends", [])),
+        "product_info": data.get("product_info", {}),
+        "risk_assessment": data.get("risk_assessment", {}),
+        "risk_analysis": risk_analysis_raw,
+        "action_items": data.get("action_items", []),
+        "honest_assessment": data.get("honest_assessment", {}),
+        "data_transparency": data.get("data_transparency", {}),
+        "analysis_confidence": data.get("analysis_confidence", 0.75),
+        "raw_data": data
+    }
 
 
 # =============================================================================
@@ -381,7 +478,7 @@ def render_home_page():
                             project_id = create_new_project(user_id, project_name)
                         except Exception as e:
                             # 프로젝트 생성 실패해도 분석은 계속 진행
-                            logger.warning(f"Project creation failed: {e}", exc_info=True)
+                            print(f"[Project Creation Error] {e}")
                 
                 # === STEP-BY-STEP PROGRESS (Security-Aware Messages) ===
                 with st.status("🔎 AI is building your Sourcing Blueprint...", expanded=True) as status:
@@ -452,7 +549,7 @@ def render_home_page():
                                     )
                                 except Exception as e:
                                     # DB 저장 실패해도 결과는 표시
-                                    logger.error(f"Failed to save analysis to DB: {e}", exc_info=True)
+                                    print(f"[DB Save Error] Failed to save analysis: {e}")
                             
                             state.set_result(converted)
                             st.session_state.analysis_mode = result.get("mode", "general")
@@ -471,16 +568,15 @@ def render_home_page():
                             # Display error with traceback
                             st.error(f"⚠️ **Analysis Failed. (Error Code: {error_code})**\n\nWe apologize for the issue. Please **refresh the page** or email us the details directly at **{contact_email}**")
                             
-                            # Log error details
-                            logger.error(
-                                f"Analysis failed (code {error_code}): {error_msg}",
-                                extra={
-                                    "error_code": error_code,
-                                    "error_details": error_details,
-                                    "result": result
-                                },
-                                exc_info=True
-                            )
+                            # Print full traceback to terminal
+                            print(f"\n{'='*80}")
+                            print(f"ERROR CODE: {error_code}")
+                            print(f"{'='*80}")
+                            print(f"Error Message: {error_msg}")
+                            if error_details:
+                                print(f"Error Details: {error_details}")
+                            print(f"Full Result: {result}")
+                            print(f"{'='*80}\n")
                             
                             st.session_state.last_error = error_code
                     
@@ -492,7 +588,16 @@ def render_home_page():
                         st.error(f"⚠️ **Analysis Failed. (Error Code: {error_code})**\n\nWe apologize for the issue. Please **refresh the page** or email us the details directly at **{contact_email}**")
                         st.session_state.last_error = error_code
                         
-                        # Log error internally with full traceback
+                        # Print full traceback to terminal
+                        print(f"\n{'='*80}")
+                        print(f"ERROR CODE: {error_code}")
+                        print(f"{'='*80}")
+                        traceback.print_exc()
+                        print(f"{'='*80}\n")
+                        
+                        # Log error internally (not shown to user)
+                        import logging
+                        logger = logging.getLogger(__name__)
                         logger.error(f"Analysis error (code {error_code}): {str(e)}", exc_info=True)
         
         # Demo button (shown separately if there was an error)
@@ -592,15 +697,10 @@ def render_home_page():
             ):
                 template = t(opt["template_key"])
                 # Template goes into Context area, not Product keyword
-                # Clear previous input and show notification
-                had_existing_input = bool(st.session_state.get("search_query") or st.session_state.get("context_query"))
                 st.session_state.search_query = ""  # Clear product field
                 st.session_state.context_query = template  # Put template in context
                 st.session_state.analysis_mode = opt["mode"]
                 st.session_state.template_just_filled = True
-                # Show info if user had existing input
-                if had_existing_input:
-                    st.session_state.show_input_cleared_notice = True
                 
                 # Log mode card usage for analytics
                 try:
@@ -615,13 +715,9 @@ def render_home_page():
                 
                 st.rerun()
     
-    # Toast notifications
+    # Toast notification
     if st.session_state.get("template_just_filled"):
-        message = t("template_loaded")
-        if st.session_state.get("show_input_cleared_notice"):
-            message = "Template loaded. Your previous input has been cleared."
-            st.session_state.show_input_cleared_notice = False
-        st.toast(message, icon="📝")
+        st.toast(t("template_loaded"), icon="📝")
         st.session_state.template_just_filled = False
     
     # === FOOTER ===

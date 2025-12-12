@@ -153,10 +153,13 @@ export default function ResourcesPage() {
           {/* Operations Section */}
           <div className="mb-12">
             <h3 className="text-xl font-semibold text-neutral-900 mb-6">Operations & Infrastructure</h3>
-            <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
-              {knowledgeHub.videos
-                .filter(video => !video.category || video.category === 'operations')
-                .map((video) => (
+            {knowledgeHub.videos.filter(video => video.category === 'operations').length === 0 ? (
+              <p className="text-sm text-neutral-500">No videos available at the moment.</p>
+            ) : (
+              <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+                {knowledgeHub.videos
+                  .filter(video => video.category === 'operations')
+                  .map((video) => (
                   <Card key={video.id} className="overflow-hidden bg-white border-neutral-200 shadow-sm rounded-2xl group cursor-pointer">
                     <a
                       href={video.youtubeId ? `https://www.youtube.com/watch?v=${video.youtubeId}` : '#'}
@@ -232,8 +235,9 @@ export default function ResourcesPage() {
                       </p>
                     </div>
                   </Card>
-                ))}
-            </div>
+                  ))}
+              </div>
+            )}
           </div>
 
           {/* Trends Section */}

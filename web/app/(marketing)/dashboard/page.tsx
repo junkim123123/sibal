@@ -1068,11 +1068,30 @@ function PaymentModal({
               }
               data-gumroad-single-product="true"
               onClick={(e) => {
-                // Gumroad 스크립트가 링크를 가로채서 오버레이를 열도록 허용
-                // 기본 동작은 막지 않지만, 모달은 닫기
+                // Gumroad 스크립트가 로드되었는지 확인
+                if (typeof window !== 'undefined' && !(window as any).gumroad) {
+                  // Gumroad 스크립트가 아직 로드되지 않은 경우, 직접 로드 시도
+                  const script = document.createElement('script')
+                  script.src = 'https://gumroad.com/js/gumroad.js'
+                  script.async = true
+                  document.head.appendChild(script)
+                  
+                  // 스크립트 로드 후 링크 클릭 다시 시도
+                  script.onload = () => {
+                    // 약간의 지연 후 링크 다시 클릭 (프로그래밍 방식)
+                    const link = e.currentTarget as HTMLAnchorElement
+                    link.click()
+                  }
+                  
+                  e.preventDefault()
+                  return false
+                }
+                
+                // Gumroad 스크립트가 이미 로드된 경우, 정상 진행
+                // 모달은 Gumroad 오버레이가 열린 후 닫기
                 setTimeout(() => {
                   onClose()
-                }, 100)
+                }, 300)
               }}
               className="w-full inline-flex items-center justify-center font-semibold py-3 rounded-lg transition-all duration-200 bg-[#008080] hover:bg-teal-800 hover:-translate-y-0.5 text-white cursor-pointer shadow-md hover:shadow-lg"
             >

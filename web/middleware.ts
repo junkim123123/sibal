@@ -11,14 +11,14 @@ export async function middleware(request: NextRequest) {
   // Content Security Policy 헤더 설정 (Gumroad 오버레이 정상 작동을 위해 필수)
   const cspHeader = [
     "default-src 'self'",
-    "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://vercel.live https://gumroad.com https://www.gumroad.com https://assets.gumroad.com https://www.googletagmanager.com https://www.google-analytics.com https://clarity.ms https://connect.facebook.net",
-    "script-src-elem 'self' 'unsafe-inline' 'unsafe-eval' https://vercel.live https://gumroad.com https://www.gumroad.com https://assets.gumroad.com https://www.googletagmanager.com https://www.google-analytics.com https://clarity.ms https://connect.facebook.net",
+    "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://vercel.live https://gumroad.com https://www.gumroad.com https://*.gumroad.com https://assets.gumroad.com https://www.googletagmanager.com https://www.google-analytics.com https://clarity.ms https://connect.facebook.net",
+    "script-src-elem 'self' 'unsafe-inline' 'unsafe-eval' https://vercel.live https://gumroad.com https://www.gumroad.com https://*.gumroad.com https://assets.gumroad.com https://www.googletagmanager.com https://www.google-analytics.com https://clarity.ms https://connect.facebook.net",
     "style-src 'self' 'unsafe-inline' https://assets.gumroad.com",
     "style-src-elem 'self' 'unsafe-inline' https://assets.gumroad.com",
     "img-src 'self' data: https:",
     "font-src 'self' data: https://assets.gumroad.com",
-    "connect-src 'self' https: https://gumroad.com https://www.gumroad.com https://api.gumroad.com https://assets.gumroad.com https://www.google-analytics.com https://clarity.ms https://www.facebook.com",
-    "frame-src 'self' https://www.youtube.com https://youtube.com https://gumroad.com https://www.gumroad.com",
+    "connect-src 'self' https: https://gumroad.com https://www.gumroad.com https://*.gumroad.com https://api.gumroad.com https://assets.gumroad.com https://www.google-analytics.com https://clarity.ms https://www.facebook.com",
+    "frame-src 'self' https://www.youtube.com https://youtube.com https://gumroad.com https://www.gumroad.com https://*.gumroad.com https://assets.gumroad.com",
   ].join('; ')
 
   response.headers.set('Content-Security-Policy', cspHeader)

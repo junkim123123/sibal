@@ -1193,11 +1193,46 @@ function EstimatesList({
   const [selectedProjectId, setSelectedProjectId] = useState<string | null>(null)
   const [isProcessingPayment, setIsProcessingPayment] = useState(false)
 
-  const handleConnectAgent = (e: React.MouseEvent, projectId: string) => {
+  const handleConnectAgent = async (e: React.MouseEvent, projectId: string) => {
     e.preventDefault()
     e.stopPropagation()
-    setSelectedProjectId(projectId)
-    setShowPaymentModal(true)
+    
+    setIsProcessingPayment(true)
+    
+    try {
+      // 프로젝트 결제 상태 확인 및 자동 매니저 매칭
+      const response = await fetch(`/api/projects/${projectId}/assign-manager`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      })
+      
+      const data = await response.json()
+      
+      if (data.ok) {
+        // 매니저 배정 성공 → UI 업데이트
+        if (onPaymentComplete) {
+          onPaymentComplete()
+        }
+        
+        // 결제가 완료되어 있고 매니저가 배정되었으면 채팅 페이지로 리다이렉트
+        // (결제 안되어 있으면 채팅 안 열림 - requiresPayment 케이스에서 결제 모달만 오픈)
+        window.location.href = `/dashboard/chat?project_id=${projectId}`
+      } else if (data.requiresPayment) {
+        // 결제가 필요함 → 결제 모달 오픈
+        setSelectedProjectId(projectId)
+        setShowPaymentModal(true)
+      } else {
+        // 다른 오류
+        alert(data.error || 'Failed to connect agent. Please try again.')
+      }
+    } catch (error) {
+      console.error('[Connect Agent] Error:', error)
+      alert('Failed to connect agent. Please try again.')
+    } finally {
+      setIsProcessingPayment(false)
+    }
   }
 
   const handleProceedToPayment = (e: React.MouseEvent<HTMLAnchorElement>) => {
@@ -1317,13 +1352,24 @@ function EstimatesList({
                   </td>
                   <td className="px-3 sm:px-6 py-4 whitespace-nowrap text-center">
                     {showConnectAgent ? (
-                      // Case A: Connect Agent 버튼 (결제 모달 오픈)
+                      // Case A: Connect Agent 버튼 (결제 여부 확인 후 자동 매니저 매칭 또는 결제 모달)
                       <button
                         onClick={(e) => handleConnectAgent(e, estimate.id)}
-                        className="px-2 sm:px-3 md:px-4 py-1.5 sm:py-2 text-[10px] sm:text-xs md:text-sm font-semibold bg-[#008080] hover:bg-teal-700 text-white rounded-lg transition-colors whitespace-nowrap"
+                        disabled={isProcessingPayment}
+                        className="px-2 sm:px-3 md:px-4 py-1.5 sm:py-2 text-[10px] sm:text-xs md:text-sm font-semibold bg-[#008080] hover:bg-teal-700 text-white rounded-lg transition-colors whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1.5 mx-auto"
                       >
-                        <span className="hidden sm:inline">Connect Agent</span>
-                        <span className="sm:hidden">Connect</span>
+                        {isProcessingPayment ? (
+                          <>
+                            <Loader2 className="h-3 w-3 animate-spin" />
+                            <span className="hidden sm:inline">Connecting...</span>
+                            <span className="sm:hidden">...</span>
+                          </>
+                        ) : (
+                          <>
+                            <span className="hidden sm:inline">Connect Agent</span>
+                            <span className="sm:hidden">Connect</span>
+                          </>
+                        )}
                       </button>
                     ) : showAwaitingAgent ? (
                       // Case B: Awaiting Agent 버튼 (비활성)

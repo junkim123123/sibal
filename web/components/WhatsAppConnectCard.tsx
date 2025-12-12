@@ -17,6 +17,7 @@ interface WhatsAppConnectCardProps {
   projectName?: string;
   managerId?: string | null;
   clientName?: string;
+  userEmail?: string;
 }
 
 export function WhatsAppConnectCard({
@@ -24,6 +25,7 @@ export function WhatsAppConnectCard({
   projectName = 'your project',
   managerId,
   clientName,
+  userEmail,
 }: WhatsAppConnectCardProps) {
   const [managerPhone, setManagerPhone] = useState<string | null>(null);
   const [managerName, setManagerName] = useState<string | null>(null);
@@ -103,7 +105,17 @@ export function WhatsAppConnectCard({
     // Use manager phone if available, otherwise use default
     const phoneToUse = managerPhone ? formatPhoneForWhatsApp(managerPhone) : DEFAULT_PHONE;
     
-    const projectContext = `Hello Myungjun, I have a question about the project: ${projectName}`;
+    // Pre-filled message with customer info for matching
+    const email = userEmail || 'Not provided';
+    const projectContext = `Hello, I'd like to discuss my sourcing project.
+
+📋 *Project Info* (Please do not edit):
+- Email: ${email}
+- Product: ${projectName}
+- Project ID: ${projectId}
+
+My question is:`;
+    
     const encodedMessage = encodeURIComponent(projectContext);
     
     return `https://wa.me/${phoneToUse}?text=${encodedMessage}`;

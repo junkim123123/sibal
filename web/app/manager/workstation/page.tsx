@@ -152,11 +152,12 @@ function WorkstationPageContent() {
             <>
               {/* Top Section: WhatsApp Connect Card */}
               <div className="flex-shrink-0 border-b border-gray-200">
-                <WhatsAppConnectCard
-                  projectId={selectedProjectId}
-                  projectName={project.name || 'this project'}
-                  managerId={project.manager_id || managerId}
-                />
+              <WhatsAppConnectCard
+                projectId={selectedProjectId}
+                projectName={project.name || 'this project'}
+                managerId={project.manager_id || managerId}
+                userEmail={project.profiles?.email || undefined}
+              />
               </div>
               
               {/* Bottom Section: Consultation Log */}

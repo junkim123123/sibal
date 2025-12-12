@@ -709,7 +709,7 @@ function DashboardPageContent() {
                 />
               )}
               {activeTab === 'production' && (
-                <ShipmentsList shipments={shipments} />
+                <ShipmentsList shipments={shipments} onPaymentComplete={() => userId && loadProjects(userId)} />
               )}
             </>
           )}
@@ -1576,7 +1576,11 @@ function OrderStepper({
 }
 
 // Active Orders List Component with Stepper
-function ShipmentsList({ shipments }: { shipments: any[] }) {
+function ShipmentsList({ shipments, onPaymentComplete }: { shipments: any[], onPaymentComplete?: () => void }) {
+  const [showPaymentModal, setShowPaymentModal] = useState(false)
+  const [selectedProjectId, setSelectedProjectId] = useState<string | null>(null)
+  const [isProcessingPayment, setIsProcessingPayment] = useState(false)
+
   if (shipments.length === 0) {
     return (
       <EmptyState
@@ -1637,6 +1641,16 @@ function ShipmentsList({ shipments }: { shipments: any[] }) {
 
   // 현재 단계에서 필요한 액션 결정
   const getActionForStep = (step: number, shipment: any, quoteStatus: 'preparing' | 'ready' | 'approved') => {
+    // Pay-to-Unlock: payment_pending 상태일 때 결제 버튼 표시
+    if (shipment.payment_status === 'pending' || shipment.status === 'payment_pending') {
+      return { 
+        label: 'Unlock Quote - $49', 
+        href: null, // href가 null이면 결제 모달 표시
+        type: 'payment' as const,
+        projectId: shipment.id 
+      }
+    }
+    
     // Step 1: 견적 상태에 따라 다른 액션
     if (step === 0) {
       if (quoteStatus === 'ready') {
@@ -1727,13 +1741,60 @@ function ShipmentsList({ shipments }: { shipments: any[] }) {
             {/* Action Area */}
             {action && (
               <div className="pt-4 border-t border-gray-200">
-                <Link href={action.href}>
-                  <button
-                    className="w-full sm:w-auto px-3 sm:px-4 py-2 text-xs sm:text-sm font-semibold bg-[#008080] hover:bg-teal-700 text-white rounded-lg transition-colors"
-                  >
-                    {action.label}
-                  </button>
-                </Link>
+                {action.type === 'payment' && action.projectId ? (
+                  <>
+                    <button
+                      onClick={() => {
+                        setSelectedProjectId(action.projectId || null)
+                        setShowPaymentModal(true)
+                      }}
+                      className="w-full sm:w-auto px-3 sm:px-4 py-2 text-xs sm:text-sm font-semibold bg-orange-600 hover:bg-orange-700 text-white rounded-lg transition-colors"
+                    >
+                      {action.label}
+                    </button>
+                    <PaymentModal
+                      isOpen={showPaymentModal}
+                      onClose={() => {
+                        setShowPaymentModal(false)
+                        if (onPaymentComplete) onPaymentComplete()
+                      }}
+                      onProceed={async (e) => {
+                        e.preventDefault()
+                        if (!selectedProjectId) return
+                        setIsProcessingPayment(true)
+                        try {
+                          // 결제 처리 (기존 로직 재사용)
+                          const response = await fetch(`/api/projects/${selectedProjectId}/assign-manager`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                          })
+                          const data = await response.json()
+                          if (response.ok && data.ok) {
+                            setShowPaymentModal(false)
+                            if (onPaymentComplete) onPaymentComplete()
+                          } else {
+                            alert(data.error || 'Payment failed. Please try again.')
+                          }
+                        } catch (error) {
+                          console.error('[Payment] Error:', error)
+                          alert('Payment failed. Please try again.')
+                        } finally {
+                          setIsProcessingPayment(false)
+                        }
+                      }}
+                      isProcessing={isProcessingPayment}
+                      projectId={selectedProjectId}
+                    />
+                  </>
+                ) : action.href ? (
+                  <Link href={action.href}>
+                    <button
+                      className="w-full sm:w-auto px-3 sm:px-4 py-2 text-xs sm:text-sm font-semibold bg-[#008080] hover:bg-teal-700 text-white rounded-lg transition-colors"
+                    >
+                      {action.label}
+                    </button>
+                  </Link>
+                ) : null}
               </div>
             )}
           </div>

@@ -32,6 +32,7 @@ interface ProjectFile {
   file_type: string;
   created_at: string;
   sender_name: string;
+  is_chat_log?: boolean; // 채팅 아카이빙 파일 여부
 }
 
 const DEFAULT_MILESTONES: Milestone[] = [
@@ -57,6 +58,7 @@ export function CommandCenter({ project, projectId, sessionId, managerId }: Comm
   const [copiedEmail, setCopiedEmail] = useState(false);
   const [activeTab, setActiveTab] = useState<TabType>('info');
   const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const chatLogInputRef = useRef<HTMLInputElement | null>(null);
   const notesTextareaRef = useRef<HTMLTextAreaElement | null>(null);
 
   useEffect(() => {
@@ -154,6 +156,39 @@ export function CommandCenter({ project, projectId, sessionId, managerId }: Comm
     }
   };
 
+  const requestPayment = async (milestoneIndex: number) => {
+    if (isUpdating) return;
+    
+    setIsUpdating(true);
+    try {
+      const response = await fetch('/api/manager/request-payment', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          project_id: projectId,
+          milestone_index: milestoneIndex,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (data.ok) {
+        // Refresh milestones and project data
+        await loadMilestones();
+        // Show success message
+        alert('Payment request sent! The client will be notified.');
+      } else {
+        console.error('[Request Payment] Failed:', data.error);
+        alert('Failed to send payment request. Please try again.');
+      }
+    } catch (error) {
+      console.error('[Request Payment] Error:', error);
+      alert('An error occurred. Please try again.');
+    } finally {
+      setIsUpdating(false);
+    }
+  };
+
   const markMilestoneComplete = async (index: number) => {
     if (isUpdating) return;
 
@@ -184,6 +219,56 @@ export function CommandCenter({ project, projectId, sessionId, managerId }: Comm
       await navigator.clipboard.writeText(project.client_email);
       setCopiedEmail(true);
       setTimeout(() => setCopiedEmail(false), 2000);
+    }
+  };
+
+  const handleChatLogUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file || !sessionId) return;
+
+    // Only allow .txt and .zip files
+    const allowedExtensions = ['.txt', '.zip'];
+    const fileName = file.name.toLowerCase();
+    const hasValidExtension = allowedExtensions.some(ext => fileName.endsWith(ext));
+
+    if (!hasValidExtension) {
+      alert('Please upload a .txt or .zip file exported from WhatsApp.');
+      return;
+    }
+
+    try {
+      setIsUploading(true);
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('project_id', projectId);
+      formData.append('session_id', sessionId);
+      formData.append('is_chat_log', 'true'); // Mark as chat log
+
+      const response = await fetch('/api/manager/files/upload', {
+        method: 'POST',
+        credentials: 'include',
+        body: formData,
+      });
+
+      const data = await response.json();
+
+      if (data.ok && data.file) {
+        // Reload files
+        await loadFiles();
+        alert('Chat log uploaded successfully! This is a permanent legal record.');
+      } else {
+        console.error('[Chat Log Upload] Failed:', data.error);
+        alert('Failed to upload chat log. Please try again.');
+      }
+    } catch (error) {
+      console.error('[Chat Log Upload] Error:', error);
+      alert('An error occurred while uploading the chat log.');
+    } finally {
+      setIsUploading(false);
+      // Reset input
+      if (chatLogInputRef.current) {
+        chatLogInputRef.current.value = '';
+      }
     }
   };
 
@@ -437,15 +522,27 @@ export function CommandCenter({ project, projectId, sessionId, managerId }: Comm
                             </div>
                           </div>
 
-                          {/* Mark as Complete Button */}
+                          {/* Mark as Complete Button / Request Payment Button */}
                           {isCurrent && (
-                            <button
-                              onClick={() => markMilestoneComplete(idx)}
-                              disabled={isUpdating}
-                              className="mt-2 px-3 py-1 text-xs font-medium bg-teal-600 hover:bg-teal-700 text-white rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                            >
-                              {isUpdating ? 'Updating...' : 'Mark as Complete'}
-                            </button>
+                            <div className="mt-2 flex flex-col gap-2">
+                              {milestone.title === 'Final Quote' && milestone.status === 'in_progress' ? (
+                                <button
+                                  onClick={() => requestPayment(idx)}
+                                  disabled={isUpdating}
+                                  className="px-3 py-1 text-xs font-medium bg-orange-600 hover:bg-orange-700 text-white rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                                >
+                                  {isUpdating ? 'Sending...' : 'Request Payment'}
+                                </button>
+                              ) : (
+                                <button
+                                  onClick={() => markMilestoneComplete(idx)}
+                                  disabled={isUpdating}
+                                  className="px-3 py-1 text-xs font-medium bg-teal-600 hover:bg-teal-700 text-white rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                                >
+                                  {isUpdating ? 'Updating...' : 'Mark as Complete'}
+                                </button>
+                              )}
+                            </div>
                           )}
                         </div>
                       </div>
@@ -460,27 +557,55 @@ export function CommandCenter({ project, projectId, sessionId, managerId }: Comm
               <div className="flex items-center justify-between mb-3">
                 <h3 className="text-xs font-semibold text-gray-900 uppercase tracking-wide">Files & Docs</h3>
                 {sessionId && (
-                  <Button
-                    size="sm"
-                    variant="primary"
-                    onClick={() => fileInputRef.current?.click()}
-                    disabled={isUploading}
-                    className="h-6 text-[10px] px-2"
-                  >
-                    {isUploading ? (
-                      <Loader2 className="w-3 h-3 animate-spin mr-1" />
-                    ) : (
-                      <Upload className="w-3 h-3 mr-1" />
-                    )}
-                    Upload
-                  </Button>
+                  <div className="flex gap-1">
+                    <Button
+                      size="sm"
+                      variant="primary"
+                      onClick={() => fileInputRef.current?.click()}
+                      disabled={isUploading}
+                      className="h-6 text-[10px] px-2"
+                    >
+                      {isUploading ? (
+                        <Loader2 className="w-3 h-3 animate-spin mr-1" />
+                      ) : (
+                        <Upload className="w-3 h-3 mr-1" />
+                      )}
+                      Upload
+                    </Button>
+                  </div>
                 )}
               </div>
+
+              {/* Chat Log Upload Button */}
+              {sessionId && (
+                <div className="mb-3">
+                  <button
+                    onClick={() => chatLogInputRef.current?.click()}
+                    disabled={isUploading}
+                    className="w-full px-2 py-1.5 text-[10px] font-medium text-orange-700 bg-orange-50 border border-orange-200 rounded hover:bg-orange-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-1.5"
+                  >
+                    <FileText className="w-3 h-3" />
+                    Upload Chat Log (Raw)
+                  </button>
+                  <p className="text-[9px] text-gray-500 mt-1 text-center">
+                    Export from WhatsApp and upload .txt/.zip
+                  </p>
+                </div>
+              )}
 
               <input
                 ref={fileInputRef}
                 type="file"
                 onChange={handleFileUpload}
+                className="hidden"
+                disabled={isUploading || !sessionId}
+              />
+
+              <input
+                ref={chatLogInputRef}
+                type="file"
+                accept=".txt,.zip"
+                onChange={handleChatLogUpload}
                 className="hidden"
                 disabled={isUploading || !sessionId}
               />

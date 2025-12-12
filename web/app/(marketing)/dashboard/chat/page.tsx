@@ -22,6 +22,7 @@ function ClientChatContent() {
   
   const [sessionId, setSessionId] = useState<string | null>(sessionIdParam);
   const [userId, setUserId] = useState<string | null>(null);
+  const [userEmail, setUserEmail] = useState<string | null>(null);
   const [projectName, setProjectName] = useState<string>('');
   const [project, setProject] = useState<any>(null);
   const [projectSpecs, setProjectSpecs] = useState<{ qty?: number | string; targetPrice?: number; port?: string; image?: string } | null>(null);
@@ -42,6 +43,7 @@ function ClientChatContent() {
       }
       
       setUserId(user.id);
+      setUserEmail(user.email || null);
       
       // 데스크탑 알림 권한 요청 (채팅 페이지 진입 시)
       if ('Notification' in window && Notification.permission === 'default') {
@@ -677,6 +679,7 @@ function ClientChatContent() {
                 projectName={projectName}
                 managerId={project?.manager_id || null}
                 clientName={userId ? undefined : undefined}
+                userEmail={userEmail || undefined}
               />
             ) : (
               <div className="flex items-center justify-center h-full p-8">

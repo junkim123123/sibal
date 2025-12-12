@@ -109,23 +109,23 @@ export default async function UseCasesPage() {
             {commonProjects.items.map((project) => (
               <div
                 key={project.id}
-                className="bg-white border border-neutral-200 rounded-2xl p-6 shadow-sm hover:shadow-md transition-shadow"
+                className="bg-white border border-neutral-200 rounded-2xl p-5 sm:p-6 shadow-sm hover:shadow-md transition-shadow md:scale-100 scale-[0.9] origin-top"
               >
                 <div className="flex items-start justify-between mb-3">
-                  <h3 className="text-lg font-semibold text-neutral-900">
+                  <h3 className="text-base sm:text-lg font-semibold text-neutral-900">
                     {project.title}
                   </h3>
                   {project.badge && (
-                    <span className="inline-flex items-center rounded-full bg-neutral-100 px-3 py-1 text-xs font-medium text-neutral-700 whitespace-nowrap ml-2">
+                    <span className="inline-flex items-center rounded-full bg-neutral-100 px-2.5 sm:px-3 py-1 text-[10px] sm:text-xs font-medium text-neutral-700 whitespace-nowrap ml-2">
                       {project.badge}
                     </span>
                   )}
                 </div>
-                <p className="mt-3 text-sm text-neutral-600 leading-relaxed">
+                <p className="mt-3 text-xs sm:text-sm text-neutral-600 leading-relaxed">
                   {project.summary}
                 </p>
                 <div className="mt-4 pt-3 border-t border-neutral-100">
-                  <div className="text-xs text-neutral-500 flex flex-wrap gap-x-4 gap-y-1">
+                  <div className="text-[10px] sm:text-xs text-neutral-500 flex flex-wrap gap-x-4 gap-y-1">
                     <span>
                       <span className="font-medium">Scope:</span> {project.scope}
                     </span>

@@ -948,7 +948,7 @@ function PaymentModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-lg max-h-[90vh] flex flex-col p-0 gap-0">
+      <DialogContent className="sm:max-w-lg max-h-[85vh] flex flex-col p-0 gap-0 !top-[52%]">
         <DialogHeader className="px-6 pt-6 pb-4 flex-shrink-0">
           <DialogTitle className="text-2xl font-bold text-gray-900">
             Connect with a Dedicated Agent
@@ -1060,7 +1060,7 @@ function PaymentModal({
                 <span>Processing...</span>
               </span>
             </Button>
-          ) : (
+          ) : ndaAccepted ? (
             <a
               href={projectId 
                 ? `https://junkim82.gumroad.com/l/wmtnuv?custom_field1=${projectId}`
@@ -1068,21 +1068,27 @@ function PaymentModal({
               }
               data-gumroad-single-product="true"
               onClick={(e) => {
-                if (!ndaAccepted) {
-                  e.preventDefault()
-                  alert('Please accept the NDA agreement to proceed with payment.')
-                  return
-                }
-                onProceed(e)
+                // Gumroad 스크립트가 링크를 가로채서 오버레이를 열도록 허용
+                // 기본 동작은 막지 않지만, 모달은 닫기
+                setTimeout(() => {
+                  onClose()
+                }, 100)
               }}
-              className={`w-full inline-flex items-center justify-center font-semibold py-3 rounded-lg transition-all duration-200 ${
-                ndaAccepted
-                  ? 'bg-[#008080] hover:bg-teal-800 hover:-translate-y-0.5 text-white cursor-pointer shadow-md hover:shadow-lg'
-                  : 'bg-gray-300 text-gray-500 cursor-not-allowed'
-              }`}
+              className="w-full inline-flex items-center justify-center font-semibold py-3 rounded-lg transition-all duration-200 bg-[#008080] hover:bg-teal-800 hover:-translate-y-0.5 text-white cursor-pointer shadow-md hover:shadow-lg"
             >
               Proceed to Payment
             </a>
+          ) : (
+            <button
+              onClick={(e) => {
+                e.preventDefault()
+                alert('Please accept the NDA agreement to proceed with payment.')
+              }}
+              className="w-full inline-flex items-center justify-center font-semibold py-3 rounded-lg transition-all duration-200 bg-gray-300 text-gray-500 cursor-not-allowed"
+              disabled
+            >
+              Proceed to Payment
+            </button>
           )}
           <button
             onClick={onClose}

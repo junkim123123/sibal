@@ -66,7 +66,7 @@ export function MainHeader() {
     e.stopPropagation();
     if (isLoading) return;
 
-    setIsLoading(true); // 페이지 이동 직전에 로딩 상태 표시
+    // 바로 네비게이션 (setIsLoading 제거로 즉시 이동)
     if (isAuthenticated) {
       router.push('/chat');
     } else {
@@ -110,26 +110,29 @@ export function MainHeader() {
           {/* Center: Navigation Links (Based on Page Type) */}
           {/* 로딩 중에도 메뉴 위치를 유지하여 Layout Shift 방지 */}
           <nav className={`hidden md:flex md:items-center md:gap-8 md:absolute md:left-1/2 md:-translate-x-1/2 z-20 ${isLoading ? 'opacity-50' : ''}`}>
-            {currentNavItems.map((item) => (
-              <Link
-                key={item.href}
-                href={item.href}
-                onClick={(e) => {
-                  // 중복 클릭 방지
-                  if (pathname === item.href) {
-                    e.preventDefault();
-                    return;
-                  }
-                }}
-                className={`text-sm font-normal transition-colors relative ${
-                  pathname === item.href
-                    ? 'text-black dark:text-white after:absolute after:bottom-0 after:left-0 after:right-0 after:h-0.5 after:bg-black dark:after:bg-white'
-                    : 'text-zinc-700 dark:text-gray-300 hover:text-black dark:hover:text-white'
-                }`}
-              >
-                {item.label}
-              </Link>
-            ))}
+            {currentNavItems.map((item) => {
+              const isActive = pathname === item.href;
+              if (isActive) {
+                // 활성화된 링크는 span으로 렌더링 (클릭 방지)
+                return (
+                  <span
+                    key={item.href}
+                    className="text-sm font-normal transition-colors relative text-black dark:text-white after:absolute after:bottom-0 after:left-0 after:right-0 after:h-0.5 after:bg-black dark:after:bg-white cursor-default"
+                  >
+                    {item.label}
+                  </span>
+                );
+              }
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className="text-sm font-normal transition-colors relative text-zinc-700 dark:text-gray-300 hover:text-black dark:hover:text-white"
+                >
+                  {item.label}
+                </Link>
+              );
+            })}
           </nav>
 
           {/* Right: Action Buttons Group */}

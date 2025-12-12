@@ -76,7 +76,7 @@ export default function AccountPage() {
           <button
             type="submit"
             form={activeTab === 'profile' ? 'profile-form' : activeTab === 'company' ? 'company-form' : 'shipping-form'}
-            className="hidden md:block px-6 py-2 bg-[#008080] text-white rounded-lg font-medium hover:bg-[#006666] transition-colors text-sm"
+            className="hidden md:block px-6 py-2 bg-[#008080] text-white rounded-lg font-medium hover:bg-[#006666] transition-colors text-sm disabled:opacity-50 disabled:cursor-not-allowed"
           >
             Save Changes
           </button>
@@ -140,14 +140,121 @@ function TabButton({
 
 // Profile Tab
 function ProfileTab({ userEmail }: { userEmail: string }) {
+  const [name, setName] = useState('')
+  const [jobTitle, setJobTitle] = useState('')
+  const [phone, setPhone] = useState('')
+  const [isLoading, setIsLoading] = useState(true)
+  const [isSaving, setIsSaving] = useState(false)
+  const [success, setSuccess] = useState<string | null>(null)
+  const [error, setError] = useState<string | null>(null)
+  const supabase = createClient()
+
+  // 프로필 데이터 로드
+  useEffect(() => {
+    async function loadProfile() {
+      try {
+        setIsLoading(true)
+        const { data: { user } } = await supabase.auth.getUser()
+        if (!user) return
+
+        // profiles 테이블에서 데이터 가져오기
+        const { data: profile, error: profileError } = await supabase
+          .from('profiles')
+          .select('name, phone, job_title')
+          .eq('id', user.id)
+          .single()
+
+        if (profileError) {
+          console.error('[ProfileTab] Failed to load profile:', profileError)
+          // 에러가 있어도 계속 진행 (새 프로필일 수 있음)
+        }
+
+        if (profile) {
+          setName(profile.name || '')
+          setJobTitle(profile.job_title || '')
+          setPhone(profile.phone || '')
+        }
+      } catch (err) {
+        console.error('[ProfileTab] Load error:', err)
+      } finally {
+        setIsLoading(false)
+      }
+    }
+    loadProfile()
+  }, [supabase])
+
+  // 폼 제출 핸들러
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault()
+    
+    try {
+      setIsSaving(true)
+      setError(null)
+      setSuccess(null)
+
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) {
+        setError('로그인이 필요합니다.')
+        return
+      }
+
+      // profiles 테이블 업데이트
+      const { error: updateError } = await supabase
+        .from('profiles')
+        .update({
+          name: name.trim() || null,
+          job_title: jobTitle.trim() || null,
+          phone: phone.trim() || null,
+        })
+        .eq('id', user.id)
+
+      if (updateError) {
+        console.error('[ProfileTab] Failed to update profile:', updateError)
+        setError('프로필 저장에 실패했습니다. 다시 시도해주세요.')
+        return
+      }
+
+      setSuccess('프로필이 성공적으로 저장되었습니다.')
+      // 성공 메시지 3초 후 제거
+      setTimeout(() => setSuccess(null), 3000)
+    } catch (err) {
+      console.error('[ProfileTab] Save error:', err)
+      setError('프로필 저장 중 오류가 발생했습니다.')
+    } finally {
+      setIsSaving(false)
+    }
+  }
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center py-12">
+        <div className="text-zinc-600">Loading...</div>
+      </div>
+    )
+  }
+
   return (
-    <form className="space-y-6" id="profile-form">
+    <form className="space-y-6" id="profile-form" onSubmit={handleSubmit}>
+      {success && (
+        <div className="p-4 bg-green-50 border border-green-200 rounded-lg text-green-700 text-sm">
+          {success}
+        </div>
+      )}
+      {error && (
+        <div className="p-4 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
+          {error}
+        </div>
+      )}
+
       <div>
         <label className="block text-xs uppercase tracking-wide text-zinc-500 mb-2 font-semibold">
           Full Name
         </label>
         <input
           type="text"
+          name="name"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
           className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-lg text-black placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-[#008080] focus:border-[#008080] transition-all"
           placeholder="John Doe"
         />
@@ -159,6 +266,9 @@ function ProfileTab({ userEmail }: { userEmail: string }) {
         </label>
         <input
           type="text"
+          name="jobTitle"
+          value={jobTitle}
+          onChange={(e) => setJobTitle(e.target.value)}
           className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-lg text-black placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-[#008080] focus:border-[#008080] transition-all"
           placeholder="e.g. CEO, Purchasing Manager, Operations Lead"
         />
@@ -185,6 +295,9 @@ function ProfileTab({ userEmail }: { userEmail: string }) {
         </label>
         <input
           type="tel"
+          name="phone"
+          value={phone}
+          onChange={(e) => setPhone(e.target.value)}
           className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-lg text-black placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-[#008080] focus:border-[#008080] transition-all"
           placeholder="+1 (555) 123-4567"
         />
@@ -202,10 +315,10 @@ function ProfileTab({ userEmail }: { userEmail: string }) {
       <div className="flex justify-end pt-6 border-t border-gray-200 md:hidden">
         <button
           type="submit"
-          form="profile-form"
-          className="px-6 py-3 bg-[#008080] text-white rounded-lg font-medium hover:bg-[#006666] transition-colors"
+          disabled={isSaving}
+          className="px-6 py-3 bg-[#008080] text-white rounded-lg font-medium hover:bg-[#006666] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          Save Changes
+          {isSaving ? 'Saving...' : 'Save Changes'}
         </button>
       </div>
     </form>

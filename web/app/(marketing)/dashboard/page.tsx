@@ -58,7 +58,7 @@ function DashboardPageContent() {
   const loadProjects = useCallback(async (userId: string) => {
     try {
       setIsLoading(true)
-      console.log('[Dashboard] Loading projects for user:', userId)
+      // console.log('[Dashboard] Loading projects for user:', userId)
       
       const response = await fetch('/api/projects', {
         cache: 'no-store', // 항상 최신 데이터 가져오기
@@ -71,13 +71,13 @@ function DashboardPageContent() {
       
       const data = await response.json()
 
-      console.log('[Dashboard] API response:', {
-        ok: data.ok,
-        projectsCount: data.projects?.length || 0,
-        debug: data.debug,
-      })
+      // console.log('[Dashboard] API response:', {
+      //   ok: data.ok,
+      //   projectsCount: data.projects?.length || 0,
+      //   debug: data.debug,
+      // })
       
-      console.log('[Dashboard] Loaded projects:', data.projects?.length || 0, 'projects')
+      // console.log('[Dashboard] Loaded projects:', data.projects?.length || 0, 'projects')
       
       // 모든 프로젝트 상태 확인
       if (data.projects && data.projects.length > 0) {
@@ -85,20 +85,20 @@ function DashboardPageContent() {
           acc[p.status] = (acc[p.status] || 0) + 1;
           return acc;
         }, {});
-        console.log('[Dashboard] Projects by status:', statusCounts);
-        console.log('[Dashboard] All project statuses:', data.projects.map((p: any) => ({
-          id: p.id,
-          name: p.name,
-          status: p.status,
-          user_id: p.user_id,
-          created_at: p.created_at,
-        })));
+        // console.log('[Dashboard] Projects by status:', statusCounts);
+        // console.log('[Dashboard] All project statuses:', data.projects.map((p: any) => ({
+        //   id: p.id,
+        //   name: p.name,
+        //   status: p.status,
+        //   user_id: p.user_id,
+        //   created_at: p.created_at,
+        // })));
       } else {
         console.warn('[Dashboard] No projects returned from API');
       }
       
       const savedCount = data.projects?.filter((p: any) => p.status === 'saved').length || 0;
-      console.log('[Dashboard] Projects with saved status:', savedCount);
+      // console.log('[Dashboard] Projects with saved status:', savedCount);
 
       if (data.ok && data.projects) {
         // My Requests (Sourcing Estimates): 
@@ -195,19 +195,36 @@ function DashboardPageContent() {
   useEffect(() => {
     if (!userId || activeTab !== 'requests') return
     
-    // Sourcing Estimates 탭일 때만 주기적으로 체크
+    let lastCheckTime = 0
+    const MIN_CHECK_INTERVAL = 3000 // 최소 3초 간격으로만 체크
+    
+    // Sourcing Estimates 탭일 때만 주기적으로 체크 (간격을 늘림)
     const checkInterval = setInterval(() => {
-      loadProjects(userId)
-    }, 10000) // 10초마다 체크
+      const now = Date.now()
+      if (now - lastCheckTime >= MIN_CHECK_INTERVAL) {
+        lastCheckTime = now
+        loadProjects(userId)
+      }
+    }, 30000) // 30초마다 체크 (10초 → 30초로 증가)
     
     // 윈도우가 다시 포커스될 때도 체크 (Gumroad 결제 후 돌아올 때)
+    // debounce 적용: 연속 포커스 이벤트 방지
+    let focusTimeout: NodeJS.Timeout | null = null
     const handleFocus = () => {
-      loadProjects(userId)
+      if (focusTimeout) clearTimeout(focusTimeout)
+      focusTimeout = setTimeout(() => {
+        const now = Date.now()
+        if (now - lastCheckTime >= MIN_CHECK_INTERVAL) {
+          lastCheckTime = now
+          loadProjects(userId)
+        }
+      }, 1000) // 1초 후에만 체크 (debounce)
     }
     window.addEventListener('focus', handleFocus)
     
     return () => {
       clearInterval(checkInterval)
+      if (focusTimeout) clearTimeout(focusTimeout)
       window.removeEventListener('focus', handleFocus)
     }
   }, [userId, activeTab, loadProjects])
@@ -260,7 +277,7 @@ function DashboardPageContent() {
     if (!userId || !isAuthenticated || !loadProjects) return
 
     const handleFocus = () => {
-      console.log('[Dashboard] Page focused, reloading data...')
+      // console.log('[Dashboard] Page focused, reloading data...')
       loadProjects(userId)
       loadUsageData(userId) // 사용량 데이터도 새로고침
     }
@@ -268,7 +285,7 @@ function DashboardPageContent() {
     const handleVisibilityChange = () => {
       // 페이지가 보이게 되었을 때 (다른 탭에서 돌아왔을 때) 데이터 새로고침
       if (!document.hidden) {
-        console.log('[Dashboard] Page visible, reloading data...')
+        // console.log('[Dashboard] Page visible, reloading data...')
         loadProjects(userId)
         loadUsageData(userId)
       }
@@ -385,9 +402,13 @@ function DashboardPageContent() {
         console.error('[Dashboard] Failed to load quotes:', quotesError)
       }
 
-      // 1. status='active' 또는 'in_progress'인 프로젝트들 (새로 생성된 소싱 요청 또는 매니저가 할당된 프로젝트)
+      // 1. status='active' 또는 'in_progress'인 프로젝트들, 또는 manager_id가 있는 프로젝트들
       const activeProjects = projects
-        .filter((p: any) => p.status === 'active' || p.status === 'in_progress')
+        .filter((p: any) => 
+          p.status === 'active' || 
+          p.status === 'in_progress' || 
+          (p.manager_id !== null && p.manager_id !== undefined)
+        )
         .map((p: any) => {
           // 이 프로젝트에 선택된 견적이 있는지 확인
           const hasSelectedQuote = selectedQuotes?.some((q: any) => q.project_id === p.id) || false
@@ -401,11 +422,11 @@ function DashboardPageContent() {
               day: 'numeric', 
               year: 'numeric' 
             }),
-            status: p.status === 'in_progress' ? 'In Progress' : 'Processing', // 매니저가 할당되면 In Progress, 아니면 Processing
+            status: (p.manager_id || p.status === 'in_progress') ? 'In Progress' : 'Processing', // 매니저가 할당되면 In Progress, 아니면 Processing
             projectName: p.name,
             href: `/dashboard/chat?project_id=${p.id}`, // 매니저 채팅 페이지로 이동
-            isNewRequest: p.status === 'active', // active 상태면 새 소싱 요청
-            hasManager: p.status === 'in_progress', // in_progress 상태면 매니저가 할당됨
+            isNewRequest: p.status === 'active' && !p.manager_id, // active 상태이고 매니저가 없으면 새 소싱 요청
+            hasManager: !!(p.manager_id || p.status === 'in_progress'), // manager_id가 있거나 in_progress 상태면 매니저가 할당됨
             hasSelectedQuote: hasSelectedQuote, // 견적이 선택되었는지 여부
             milestones: milestonesMap.get(p.id) || [],
           }
@@ -577,11 +598,11 @@ function DashboardPageContent() {
           return new Date(projectB.created_at).getTime() - new Date(projectA.created_at).getTime()
         })
 
-      console.log('[Dashboard] Active Orders loaded:', {
-        newRequests: newRequestsOnly.length,
-        inProgress: ordersInProgress.length,
-        total: allOrders.length,
-      })
+      // console.log('[Dashboard] Active Orders loaded:', {
+      //   newRequests: newRequestsOnly.length,
+      //   inProgress: ordersInProgress.length,
+      //   total: allOrders.length,
+      // })
 
       setShipments(allOrders)
     } catch (error) {
@@ -1210,26 +1231,33 @@ function EstimatesList({
       
       const data = await response.json()
       
-      if (data.ok) {
+      if (response.ok && data.ok) {
         // 매니저 배정 성공 → UI 업데이트
         if (onPaymentComplete) {
+          // 즉시 데이터 새로고침
           onPaymentComplete()
+          // 추가로 잠시 후 다시 한 번 새로고침 (DB 업데이트 반영 시간 확보)
+          setTimeout(() => {
+            onPaymentComplete()
+          }, 1000)
         }
         
-        // 결제가 완료되어 있고 매니저가 배정되었으면 채팅 페이지로 리다이렉트
-        // (결제 안되어 있으면 채팅 안 열림 - requiresPayment 케이스에서 결제 모달만 오픈)
-        window.location.href = `/dashboard/chat?project_id=${projectId}`
-      } else if (data.requiresPayment) {
-        // 결제가 필요함 → 결제 모달 오픈
-        setSelectedProjectId(projectId)
-        setShowPaymentModal(true)
+        // 성공 메시지 표시
+        alert('Manager assigned successfully! Updating your dashboard...')
+        
+        // UI 업데이트를 볼 수 있도록 잠시 대기 후 리다이렉트
+        setTimeout(() => {
+          window.location.href = `/dashboard?tab=orders`
+        }, 1500)
       } else {
-        // 다른 오류
+        // 오류 발생 시 알림 표시
+        console.error('[Connect Agent] Error:', data.error)
         alert(data.error || 'Failed to connect agent. Please try again.')
       }
     } catch (error) {
-      console.error('[Connect Agent] Error:', error)
-      alert('Failed to connect agent. Please try again.')
+      // 네트워크 에러 등 실제 에러만 콘솔에 표시
+      console.error('[Connect Agent] Network error:', error)
+      alert('Failed to connect agent. Please check your connection and try again.')
     } finally {
       setIsProcessingPayment(false)
     }

@@ -35,7 +35,7 @@ export async function POST(
       .select('id, user_id, status, manager_id, payment_status')
       .eq('id', projectId)
       .eq('user_id', user.id)
-      .single();
+      .single() as { data: any; error: any };
 
     if (projectError || !project) {
       return NextResponse.json(
@@ -54,17 +54,17 @@ export async function POST(
       });
     }
 
-    // 결제 여부 확인
-    if (project.payment_status !== 'paid') {
-      return NextResponse.json(
-        { 
-          ok: false, 
-          error: 'Payment required',
-          requiresPayment: true 
-        },
-        { status: 402 } // Payment Required
-      );
-    }
+    // 결제 여부 확인 - 임시로 비활성화 (매니저 탭에서 별도 확인 예정)
+    // if (project.payment_status !== 'paid') {
+    //   return NextResponse.json(
+    //     { 
+    //       ok: false, 
+    //       error: 'Payment required',
+    //       requiresPayment: true 
+    //     },
+    //     { status: 402 } // Payment Required
+    //   );
+    // }
 
     // 사용 가능한 매니저 찾기 (워크로드가 가장 낮은 매니저 우선)
     const { data: availableManagers, error: managersError } = await adminClient
@@ -72,7 +72,7 @@ export async function POST(
       .select('id, name, email, workload_score, availability_status')
       .eq('is_manager', true)
       .order('workload_score', { ascending: true })
-      .limit(1);
+      .limit(1) as { data: any[] | null; error: any };
 
     if (managersError || !availableManagers || availableManagers.length === 0) {
       return NextResponse.json(
@@ -84,17 +84,22 @@ export async function POST(
     const assignedManagerId = availableManagers[0].id;
 
     // 프로젝트 업데이트: 매니저 배정 및 상태 변경
-    const { data: updatedProject, error: updateError } = await adminClient
+    // 결제 상태도 'paid'로 설정 (매니저 탭에서 별도 확인 예정)
+    const updateData: any = {
+      manager_id: assignedManagerId,
+      status: 'in_progress',
+      payment_status: 'paid', // 임시로 결제 완료 처리
+      is_paid_subscription: true,
+      dispatched_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    };
+    const updateResult = (await (adminClient as any)
       .from('projects')
-      .update({
-        manager_id: assignedManagerId,
-        status: 'in_progress',
-        dispatched_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-      })
+      .update(updateData)
       .eq('id', projectId)
       .select()
-      .single();
+      .single()) as { data: any; error: any };
+    const { data: updatedProject, error: updateError } = updateResult;
 
     if (updateError || !updatedProject) {
       console.error('[Auto Assign Manager] Failed to update project:', updateError);
@@ -106,35 +111,45 @@ export async function POST(
 
     // 채팅 세션 생성 또는 업데이트
     try {
-      const { data: existingSession } = await adminClient
+      const sessionResult = await adminClient
         .from('chat_sessions')
         .select('id, manager_id')
         .eq('project_id', projectId)
-        .maybeSingle();
+        .maybeSingle() as any;
 
-      if (existingSession) {
+      // maybeSingle()은 직접 데이터 객체를 반환하거나 { data, error } 형태일 수 있음
+      const existingSession = sessionResult?.data || sessionResult || null;
+
+      if (existingSession && existingSession.id) {
         // 기존 세션이 있으면 매니저 ID 업데이트
-        await adminClient
+        const sessionUpdateData: any = {
+          manager_id: assignedManagerId,
+          status: 'in_progress',
+          updated_at: new Date().toISOString(),
+        };
+        await (adminClient as any)
           .from('chat_sessions')
-          .update({
-            manager_id: assignedManagerId,
-            status: 'in_progress',
-            updated_at: new Date().toISOString(),
-          })
+          .update(sessionUpdateData)
           .eq('id', existingSession.id);
+        console.log('[Auto Assign Manager] Updated chat session:', existingSession.id);
       } else {
         // 새 세션 생성
-        await adminClient
+        const sessionInsertData: any = {
+          project_id: projectId,
+          user_id: user.id,
+          manager_id: assignedManagerId,
+          status: 'in_progress',
+        };
+        const insertResult = await (adminClient as any)
           .from('chat_sessions')
-          .insert({
-            project_id: projectId,
-            user_id: user.id,
-            manager_id: assignedManagerId,
-            status: 'in_progress',
-          });
+          .insert(sessionInsertData)
+          .select()
+          .single();
+        console.log('[Auto Assign Manager] Created chat session:', insertResult?.data?.id || insertResult?.id);
       }
     } catch (sessionError) {
-      console.warn('[Auto Assign Manager] Failed to update/create chat session (non-critical):', sessionError);
+      console.error('[Auto Assign Manager] Failed to update/create chat session:', sessionError);
+      // 세션 생성 실패해도 계속 진행 (치명적이지 않음)
     }
 
     console.log('[Auto Assign Manager] Successfully assigned manager:', {

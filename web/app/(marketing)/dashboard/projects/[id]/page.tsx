@@ -139,15 +139,15 @@ function ProjectDetailPageContent() {
 
   // 탭 변경 핸들러를 useCallback으로 메모이제이션
   const handleTabChange = useCallback((tab: ProjectTabType) => {
-    console.log('👆 Tab change requested:', tab, 'current:', activeTab)
-    
-    // 즉시 상태 업데이트 (startTransition으로 감싸지 않음 - 즉시 반영 필요)
-    if (activeTab !== tab) {
-      setActiveTab(tab)
-      console.log('✅ Tab state updated to:', tab)
-    } else {
-      console.log('⚠️ Tab already active, skipping update')
+    // 이미 같은 탭이 활성화되어 있으면 무시
+    if (activeTab === tab) {
+      return
     }
+    
+    console.log('👆 Tab change requested:', tab, 'current:', activeTab)
+    // 즉시 상태 업데이트
+    setActiveTab(tab)
+    console.log('✅ Tab state updated to:', tab)
   }, [activeTab])
 
   useEffect(() => {

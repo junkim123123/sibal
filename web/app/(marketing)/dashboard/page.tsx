@@ -611,9 +611,7 @@ function DashboardPageContent() {
           <TabButton
             label="Overview"
             active={activeTab === 'overview'}
-            onClick={(e) => {
-              e.preventDefault()
-              e.stopPropagation()
+            onClick={() => {
               if (activeTab !== 'overview') {
                 setActiveTab('overview')
                 if (userId && isAuthenticated) {
@@ -625,9 +623,7 @@ function DashboardPageContent() {
           <TabButton
             label="Sourcing Estimates"
             active={activeTab === 'requests'}
-            onClick={(e) => {
-              e.preventDefault()
-              e.stopPropagation()
+            onClick={() => {
               if (activeTab !== 'requests') {
                 setActiveTab('requests')
                 if (userId && isAuthenticated) {
@@ -639,9 +635,7 @@ function DashboardPageContent() {
           <TabButton
             label="Active Orders"
             active={activeTab === 'production'}
-            onClick={(e) => {
-              e.preventDefault()
-              e.stopPropagation()
+            onClick={() => {
               if (activeTab !== 'production') {
                 setActiveTab('production')
                 if (userId && isAuthenticated) {
@@ -689,12 +683,18 @@ function TabButton({
 }: {
   label: string
   active: boolean
-  onClick: (e: React.MouseEvent<HTMLButtonElement>) => void
+  onClick: () => void
 }) {
+  const handleClick = (e: React.MouseEvent<HTMLButtonElement>) => {
+    e.preventDefault()
+    e.stopPropagation()
+    onClick()
+  }
+
   return (
     <button
       type="button"
-      onClick={onClick}
+      onClick={handleClick}
       className={`pb-4 px-1 text-sm font-medium transition-colors relative ${
         active
           ? 'text-black font-semibold'
@@ -1051,6 +1051,10 @@ function EstimatesList({ estimates }: { estimates: any[] }) {
   const handleConnectAgent = (e: React.MouseEvent, projectId: string) => {
     e.preventDefault()
     e.stopPropagation()
+    // 이미 모달이 열려있거나 처리 중이면 무시
+    if (showPaymentModal || isProcessingPayment) {
+      return
+    }
     setSelectedProjectId(projectId)
     setShowPaymentModal(true)
   }
@@ -1122,7 +1126,8 @@ function EstimatesList({ estimates }: { estimates: any[] }) {
                     {isComplete ? (
                       <button
                         onClick={(e) => handleConnectAgent(e, estimate.id)}
-                        className="px-2 sm:px-3 md:px-4 py-1.5 sm:py-2 text-[10px] sm:text-xs md:text-sm font-semibold bg-[#008080] hover:bg-teal-700 text-white rounded-lg transition-colors whitespace-nowrap"
+                        disabled={showPaymentModal || isProcessingPayment}
+                        className="px-2 sm:px-3 md:px-4 py-1.5 sm:py-2 text-[10px] sm:text-xs md:text-sm font-semibold bg-[#008080] hover:bg-teal-700 text-white rounded-lg transition-colors whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed"
                       >
                         <span className="hidden sm:inline">Connect Agent</span>
                         <span className="sm:hidden">Connect</span>

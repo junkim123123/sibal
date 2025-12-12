@@ -205,6 +205,22 @@ export function ManagerChat({
               return prev;
             }
             console.log('[ManagerChat] Adding new message to state');
+            
+            // 새 메시지가 도착했고, 사용자가 현재 탭에 있지 않거나 매니저 메시지인 경우 알림 표시
+            if (!isManager && newMessage.role === 'manager' && 'Notification' in window && Notification.permission === 'granted') {
+              // 사용자가 다른 탭에 있거나 페이지가 포커스되지 않은 경우에만 알림 표시
+              if (document.hidden || !document.hasFocus()) {
+                new Notification('New message from your Dedicated Expert', {
+                  body: newMessage.content.length > 100 
+                    ? newMessage.content.substring(0, 100) + '...' 
+                    : newMessage.content,
+                  icon: '/favicon.ico',
+                  tag: `chat-${sessionId}`,
+                  requireInteraction: false,
+                });
+              }
+            }
+            
             return [...prev, newMessage];
           });
         }
@@ -532,11 +548,11 @@ export function ManagerChat({
                 }
               </p>
               
-              {/* 클라이언트용 초기 메시지 제안 */}
+              {/* 클라이언트용 초기 메시지 제안 - 가로 스크롤 칩 형태 */}
               {!isManager && projectId && sessionId && (
-                <div className="mt-6 space-y-2">
-                  <p className="text-xs font-medium text-gray-600 mb-3">Suggested messages:</p>
-                  <div className="flex flex-col gap-2 max-w-md mx-auto">
+                <div className="mt-6">
+                  <p className="text-xs font-medium text-gray-600 mb-3 text-center">Suggested messages:</p>
+                  <div className="flex gap-2 overflow-x-auto pb-2 px-2 max-w-md mx-auto scrollbar-hide">
                     {CLIENT_START_MESSAGES.map((message, idx) => (
                       <button
                         key={idx}
@@ -548,7 +564,7 @@ export function ManagerChat({
                             input?.focus();
                           }, 100);
                         }}
-                        className="px-4 py-2.5 text-left text-sm bg-gray-50 hover:bg-gray-100 border border-gray-200 rounded-lg transition-colors text-gray-700"
+                        className="px-4 py-2 text-xs sm:text-sm bg-white hover:bg-gray-50 border border-gray-200 rounded-full transition-colors text-gray-700 whitespace-nowrap flex-shrink-0"
                       >
                         {message}
                       </button>

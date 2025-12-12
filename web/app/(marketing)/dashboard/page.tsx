@@ -191,43 +191,13 @@ function DashboardPageContent() {
     }
   }, [searchParams, activeTab])
 
-  // 주기적으로 결제 상태 체크 (결제 완료 후 상태 업데이트 확인)
-  useEffect(() => {
-    if (!userId || activeTab !== 'requests') return
-    
-    let lastCheckTime = 0
-    const MIN_CHECK_INTERVAL = 3000 // 최소 3초 간격으로만 체크
-    
-    // Sourcing Estimates 탭일 때만 주기적으로 체크 (간격을 늘림)
-    const checkInterval = setInterval(() => {
-      const now = Date.now()
-      if (now - lastCheckTime >= MIN_CHECK_INTERVAL) {
-        lastCheckTime = now
-        loadProjects(userId)
-      }
-    }, 30000) // 30초마다 체크 (10초 → 30초로 증가)
-    
-    // 윈도우가 다시 포커스될 때도 체크 (Gumroad 결제 후 돌아올 때)
-    // debounce 적용: 연속 포커스 이벤트 방지
-    let focusTimeout: NodeJS.Timeout | null = null
-    const handleFocus = () => {
-      if (focusTimeout) clearTimeout(focusTimeout)
-      focusTimeout = setTimeout(() => {
-        const now = Date.now()
-        if (now - lastCheckTime >= MIN_CHECK_INTERVAL) {
-          lastCheckTime = now
-          loadProjects(userId)
-        }
-      }, 1000) // 1초 후에만 체크 (debounce)
-    }
-    window.addEventListener('focus', handleFocus)
-    
-    return () => {
-      clearInterval(checkInterval)
-      if (focusTimeout) clearTimeout(focusTimeout)
-      window.removeEventListener('focus', handleFocus)
-    }
-  }, [userId, activeTab, loadProjects])
+  // 주기적으로 결제 상태 체크 - 완전히 비활성화 (사용자가 직접 새로고침하도록)
+  // useEffect(() => {
+  //   if (!userId || activeTab !== 'requests') return
+  //   
+  //   // 자동 새로고침 비활성화 - 사용자가 불편하다고 함
+  //   // 필요시 수동 새로고침 버튼 추가 가능
+  // }, [userId, activeTab, loadProjects])
 
   useEffect(() => {
     async function checkAuth() {
@@ -981,7 +951,7 @@ function PaymentModal({
 }: { 
   isOpen: boolean
   onClose: () => void
-  onProceed: (e: React.MouseEvent<HTMLAnchorElement>) => void
+  onProceed: (e: React.MouseEvent<HTMLButtonElement | HTMLAnchorElement>) => void
   isProcessing: boolean
   projectId?: string | null
 }) {
@@ -1109,39 +1079,13 @@ function PaymentModal({
               </span>
             </Button>
           ) : ndaAccepted ? (
-            <a
-              href={projectId 
-                ? `https://junkim82.gumroad.com/l/wmtnuv?custom_field1=${projectId}`
-                : 'https://junkim82.gumroad.com/l/wmtnuv'
-              }
-              data-gumroad-single-product="true"
-              onClick={(e) => {
-                // Gumroad 스크립트가 로드되었는지 확인
-                if (typeof window !== 'undefined' && !(window as any).gumroad) {
-                  // 스크립트가 없으면 로드하고 기본 동작 막기
-                  e.preventDefault()
-                  const script = document.createElement('script')
-                  script.src = 'https://gumroad.com/js/gumroad.js'
-                  script.async = true
-                  script.onload = () => {
-                    // 스크립트 로드 후 링크 다시 클릭
-                    const link = e.currentTarget as HTMLAnchorElement
-                    link.click()
-                  }
-                  document.head.appendChild(script)
-                  return false
-                }
-                
-                // Gumroad 스크립트가 있으면 기본 동작 허용 (오버레이 자동 처리)
-                // 모달은 Gumroad 오버레이가 열린 후 닫기
-                setTimeout(() => {
-                  onClose()
-                }, 500)
-              }}
-              className="w-full inline-flex items-center justify-center font-semibold py-3 rounded-lg transition-all duration-200 bg-[#008080] hover:bg-teal-800 hover:-translate-y-0.5 text-white cursor-pointer shadow-md hover:shadow-lg"
+            <button
+              type="button"
+              onClick={onProceed}
+              className="w-full inline-flex items-center justify-center font-semibold py-3 rounded-lg transition-all duration-200 bg-[#008080] hover:bg-teal-800 hover:-translate-y-0.5 text-white cursor-pointer shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
             >
               Proceed to Payment
-            </a>
+            </button>
           ) : (
             <button
               onClick={(e) => {
@@ -1263,31 +1207,61 @@ function EstimatesList({
     }
   }
 
-  const handleProceedToPayment = (e: React.MouseEvent<HTMLAnchorElement>) => {
-    // 모달 닫기
-    setShowPaymentModal(false)
+  const handleProceedToPayment = async (e: React.MouseEvent<HTMLButtonElement | HTMLAnchorElement>) => {
+    e.preventDefault()
     
-    // 결제 완료 후 데이터 새로고침
-    // Gumroad 오버레이가 열리면 잠시 후 체크 시작
-    const checkPaymentStatus = setInterval(() => {
-      if (onPaymentComplete) {
-        onPaymentComplete()
+    if (!selectedProjectId) return
+    
+    setIsProcessingPayment(true)
+    
+    try {
+      // 2초간 로딩 시뮬레이션
+      await new Promise(resolve => setTimeout(resolve, 2000))
+      
+      // 결제 완료 API 호출 (프로젝트 상태 업데이트)
+      const response = await fetch(`/api/projects/${selectedProjectId}/mark-paid`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      })
+      
+      const data = await response.json()
+      
+      if (response.ok && data.ok) {
+        // 결제 성공 토스트 알림
+        const toast = document.createElement('div')
+        toast.className = 'fixed top-4 right-4 bg-teal-600 text-white px-6 py-3 rounded-lg shadow-lg z-50 flex items-center gap-2 animate-in slide-in-from-top-5'
+        toast.innerHTML = `
+          <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+          </svg>
+          <span>Payment Successful! An agent will be assigned shortly.</span>
+        `
+        document.body.appendChild(toast)
+        
+        // 4초 후 토스트 제거
+        setTimeout(() => {
+          toast.classList.add('animate-out', 'slide-out-to-top-5')
+          setTimeout(() => toast.remove(), 300)
+        }, 4000)
+        
+        // 모달 닫기
+        setShowPaymentModal(false)
+        
+        // UI 업데이트 (데이터 새로고침)
+        if (onPaymentComplete) {
+          onPaymentComplete()
+        }
+      } else {
+        alert(data.error || 'Payment failed. Please try again.')
       }
-    }, 5000) // 5초마다 체크
-    
-    // 60초 후 자동 체크 중단
-    setTimeout(() => {
-      clearInterval(checkPaymentStatus)
-    }, 60000)
-    
-    // 윈도우 포커스 이벤트로도 체크 (Gumroad 결제 후 돌아올 때)
-    const handleWindowFocus = () => {
-      if (onPaymentComplete) {
-        onPaymentComplete()
-      }
-      window.removeEventListener('focus', handleWindowFocus)
+    } catch (error) {
+      console.error('[Payment] Error:', error)
+      alert('Payment failed. Please try again.')
+    } finally {
+      setIsProcessingPayment(false)
     }
-    window.addEventListener('focus', handleWindowFocus)
   }
   
   // 모달이 닫힐 때도 체크

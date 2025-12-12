@@ -42,6 +42,16 @@ function ClientChatContent() {
       }
       
       setUserId(user.id);
+      
+      // 데스크탑 알림 권한 요청 (채팅 페이지 진입 시)
+      if ('Notification' in window && Notification.permission === 'default') {
+        Notification.requestPermission().then((permission) => {
+          if (permission === 'granted') {
+            console.log('[ClientChatPage] Notification permission granted');
+          }
+        });
+      }
+      
       await loadChatSessions();
       
       if (projectId) {
@@ -469,7 +479,7 @@ function ClientChatContent() {
                         {session.projectName}
                       </h3>
                       <p className="text-sm text-gray-500">
-                        {session.managerName}
+                        Dedicated Expert
                       </p>
                     </div>
                     <span className={`px-2 py-1 text-xs font-medium rounded ${
@@ -559,7 +569,7 @@ function ClientChatContent() {
                     </h3>
                   </div>
                   <p className="text-xs text-gray-500 truncate mb-1">
-                    {session.managerName}
+                    Dedicated Expert
                   </p>
                   {session.lastMessage && (
                     <p className="text-xs text-gray-600 truncate">
@@ -578,11 +588,11 @@ function ClientChatContent() {
           <div className="p-3 sm:p-4 border-b border-gray-200 flex-shrink-0">
             <h1 className="text-lg sm:text-xl font-bold text-gray-900 mb-2 truncate">{projectName}</h1>
             
-            {/* Project Summary Bar */}
+            {/* Project Summary Bar - Pill Badges */}
             {projectSpecs && (projectSpecs.qty || projectSpecs.targetPrice || projectSpecs.port) && (
-              <div className="flex items-center gap-2 sm:gap-4 px-2 sm:px-3 py-1.5 sm:py-2 bg-gray-50 rounded-lg border border-gray-200 mb-2 overflow-x-auto">
+              <div className="flex items-center gap-2 sm:gap-3 mb-2 overflow-x-auto flex-wrap">
                 {projectSpecs.image && (
-                  <div className="w-8 h-8 sm:w-10 sm:h-10 rounded bg-gray-200 flex-shrink-0 overflow-hidden">
+                  <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg bg-gray-200 flex-shrink-0 overflow-hidden">
                     <Image
                       src={projectSpecs.image}
                       alt={projectName}
@@ -592,31 +602,32 @@ function ClientChatContent() {
                     />
                   </div>
                 )}
-                <div className="flex items-center gap-2 sm:gap-4 text-[10px] sm:text-xs text-gray-600 flex-nowrap">
-                  {projectSpecs.qty && (
-                    <span className="font-medium whitespace-nowrap">
-                      <Package className="w-3 h-3 inline mr-1" />
-                      Qty: {projectSpecs.qty.toLocaleString()}
-                    </span>
-                  )}
-                  {projectSpecs.targetPrice && (
-                    <span className="font-medium whitespace-nowrap">
-                      Target: ${projectSpecs.targetPrice}
-                    </span>
-                  )}
-                  {projectSpecs.port && (
-                    <span className="font-medium whitespace-nowrap">
-                      Port: {projectSpecs.port}
-                    </span>
-                  )}
-                </div>
+                {projectSpecs.qty && (
+                  <span className="inline-flex items-center gap-1.5 px-3 sm:px-4 py-1 sm:py-1.5 bg-teal-50 text-teal-700 border border-teal-200 rounded-full text-[10px] sm:text-xs font-semibold whitespace-nowrap">
+                    <Package className="w-3 h-3 flex-shrink-0" />
+                    <span className="font-medium">Qty:</span>
+                    <span>{projectSpecs.qty.toLocaleString()}</span>
+                  </span>
+                )}
+                {projectSpecs.targetPrice && (
+                  <span className="inline-flex items-center gap-1.5 px-3 sm:px-4 py-1 sm:py-1.5 bg-teal-50 text-teal-700 border border-teal-200 rounded-full text-[10px] sm:text-xs font-semibold whitespace-nowrap">
+                    <span className="font-medium">Target:</span>
+                    <span>${projectSpecs.targetPrice}</span>
+                  </span>
+                )}
+                {projectSpecs.port && (
+                  <span className="inline-flex items-center gap-1.5 px-3 sm:px-4 py-1 sm:py-1.5 bg-teal-50 text-teal-700 border border-teal-200 rounded-full text-[10px] sm:text-xs font-semibold whitespace-nowrap">
+                    <span className="font-medium">Port:</span>
+                    <span>{projectSpecs.port}</span>
+                  </span>
+                )}
               </div>
             )}
             
             <p className="text-[10px] sm:text-xs text-gray-500">
               {project?.manager_id 
-                ? `Chat with ${chatSessions.find(s => s.project_id === projectId)?.managerName || 'your manager'}` 
-                : 'Manager will be assigned within 24 hours. You can send messages now.'
+                ? `Chat with your Dedicated Expert` 
+                : 'Your Dedicated Expert will be assigned within 24 hours. You can send messages now.'
               }
             </p>
           </div>
@@ -668,8 +679,31 @@ function ClientChatContent() {
 
                 {/* Timeline */}
                 <div className="relative">
-                  {/* Timeline Line */}
-                  <div className="absolute left-4 top-0 bottom-0 w-0.5 bg-gray-200"></div>
+                  {/* Timeline Line - Dynamic color based on completed milestones */}
+                  <div className="absolute left-4 top-0 bottom-0 w-0.5">
+                    {/* Calculate how many milestones are completed */}
+                    {(() => {
+                      const completedCount = milestones.filter((m: any) => m.status === 'completed').length;
+                      const totalMilestones = milestones.length;
+                      const completedPercentage = totalMilestones > 0 ? (completedCount / totalMilestones) * 100 : 0;
+                      const completedHeight = completedPercentage > 0 ? `${completedPercentage}%` : '0%';
+                      
+                      return (
+                        <>
+                          {/* Green line for completed milestones */}
+                          <div 
+                            className="absolute top-0 w-full bg-teal-500 transition-all duration-300"
+                            style={{ height: completedHeight }}
+                          />
+                          {/* Gray line for remaining milestones */}
+                          <div 
+                            className="absolute w-full bg-gray-200 transition-all duration-300"
+                            style={{ top: completedHeight, bottom: 0 }}
+                          />
+                        </>
+                      );
+                    })()}
+                  </div>
                   
                   <div className="space-y-4 sm:space-y-5">
                     {milestones.map((milestone: any, index: number) => {
@@ -682,7 +716,7 @@ function ClientChatContent() {
                           {/* Timeline Dot */}
                           <div className={`relative z-10 flex items-center justify-center w-6 h-6 sm:w-8 sm:h-8 rounded-full border-2 transition-all flex-shrink-0 ${
                             isCompleted
-                              ? 'bg-emerald-500 border-emerald-500'
+                              ? 'bg-teal-500 border-teal-500'
                               : isInProgress || isCurrent
                               ? 'bg-[#008080] border-[#008080] animate-pulse'
                               : 'bg-white border-gray-300'

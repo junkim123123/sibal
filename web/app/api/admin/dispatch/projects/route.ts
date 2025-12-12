@@ -36,7 +36,8 @@ export async function GET(req: Request) {
       );
     }
 
-    // Unassigned Projects (status = 'active' AND manager_id IS NULL)
+    // Unassigned Projects: 결제 완료(payment_status = 'paid')이고 매니저 미배정(manager_id IS NULL)인 프로젝트
+    // Connect Agent 버튼을 누른 후 결제 완료된 모든 프로젝트를 super admin이 배정할 수 있도록 함
     const { data: projects, error: projectsError } = await adminClient
       .from('projects')
       .select(`
@@ -44,6 +45,7 @@ export async function GET(req: Request) {
         name,
         user_id,
         status,
+        payment_status,
         payment_date,
         created_at,
         profiles!projects_user_id_fkey(
@@ -51,9 +53,9 @@ export async function GET(req: Request) {
           email
         )
       `)
-      .eq('status', 'active')
-      .is('manager_id', null)
-      .order('created_at', { ascending: false });
+      .eq('payment_status', 'paid')  // 결제 완료된 프로젝트만
+      .is('manager_id', null)  // 매니저 미배정
+      .order('payment_date', { ascending: false, nullsFirst: false });  // 최근 결제일순
 
     if (projectsError) {
       console.error('[Dispatch Projects API] Error loading projects:', projectsError);
@@ -69,7 +71,9 @@ export async function GET(req: Request) {
       user_id: p.user_id,
       user_name: p.profiles?.name || p.profiles?.email?.split('@')[0] || 'Unknown',
       user_email: p.profiles?.email || '',
-      payment_date: p.payment_date,
+      status: p.status,  // 프로젝트 상태 (saved, completed, in_progress 등)
+      payment_status: p.payment_status,  // 결제 상태
+      payment_date: p.payment_date,  // 결제 완료일
       created_at: p.created_at,
     }));
 

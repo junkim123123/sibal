@@ -4,7 +4,7 @@ import { useState, useEffect, Suspense, useCallback, useMemo } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
-import { ChevronRight, Package, Truck, Folder, MessageSquare, FileText, BarChart3, Clock, CheckCircle2, Shield, Loader2 } from 'lucide-react'
+import { ChevronRight, Package, Truck, Folder, MessageSquare, FileText, BarChart3, Clock, CheckCircle2, Shield, Loader2, Settings, List } from 'lucide-react'
 import { AssetLibrary } from '@/components/AssetLibrary'
 import { ClientMessagesList } from '@/components/ClientMessagesList'
 import { Button } from '@/components/ui/button'
@@ -101,10 +101,19 @@ function DashboardPageContent() {
       console.log('[Dashboard] Projects with saved status:', savedCount);
 
       if (data.ok && data.projects) {
-        // My Requests: 모든 프로젝트 (active, in_progress, saved, completed 모두 포함)
-        // ✨ completed 상태도 포함하여 분석 완료된 프로젝트도 표시
+        // My Requests (Sourcing Estimates): 
+        // - manager_id가 없는 프로젝트만 표시 (매니저 배정되면 Active Orders로 이동)
+        // - saved, completed 상태 + payment가 완료되지 않았거나 manager가 없는 경우
         const allRequests = data.projects
-          .filter((p: any) => p.status === 'active' || p.status === 'in_progress' || p.status === 'saved' || p.status === 'completed')
+          .filter((p: any) => {
+            // manager_id가 있으면 Estimates 리스트에서 제외 (Active Orders로 이동)
+            if (p.manager_id) return false
+            
+            // saved, completed 상태인 프로젝트만 Estimates에 표시
+            return p.status === 'saved' || p.status === 'completed' || 
+                   (p.status === 'active' && !p.manager_id) || 
+                   (p.status === 'in_progress' && !p.manager_id)
+          })
           .map((p: any) => ({
             id: p.id,
             productName: p.name,
@@ -114,7 +123,9 @@ function DashboardPageContent() {
               day: 'numeric', 
               year: 'numeric' 
             }),
-            status: p.status, // StatusBadge에서 포맷팅됨
+            status: p.status,
+            payment_status: p.payment_status || 'pending', // 결제 상태
+            manager_id: p.manager_id, // 매니저 ID
             href: `/results?project_id=${p.id}`,
             isSaved: p.status === 'saved',
           }))
@@ -879,24 +890,30 @@ function OverviewTab({
         <div className="lg:col-span-1">
           <div className="bg-white border border-gray-200 rounded-xl p-6 hover:border-gray-300 hover:shadow-md hover:-translate-y-0.5 transition-all">
             <h2 className="text-lg font-semibold text-gray-900 mb-4">Quick Actions</h2>
-            <div className="space-y-3">
-              <Link href="/account">
-                <Button
-                  variant="outline"
-                  size="lg"
-                  className="w-full border-gray-300 hover:bg-gray-50 text-gray-700 rounded-lg py-3 font-medium text-sm"
+            <div className="grid grid-cols-2 gap-3">
+              <Link 
+                href="/account"
+                className="block"
+              >
+                <button
+                  type="button"
+                  className="w-full flex flex-col items-center justify-center gap-2 px-3 py-4 bg-gray-50 rounded-lg text-gray-700 font-medium text-xs hover:bg-gray-100 transition-all"
                 >
-                  View Account Settings
-                </Button>
+                  <Settings className="h-5 w-5" />
+                  <span className="text-center leading-tight">Settings</span>
+                </button>
               </Link>
-              <Link href="/dashboard?tab=requests">
-                <Button
-                  variant="outline"
-                  size="lg"
-                  className="w-full border-gray-300 hover:bg-gray-50 text-gray-700 rounded-lg py-3 font-medium text-sm"
+              <Link 
+                href="/dashboard?tab=requests"
+                className="block"
+              >
+                <button
+                  type="button"
+                  className="w-full flex flex-col items-center justify-center gap-2 px-3 py-4 bg-gray-50 rounded-lg text-gray-700 font-medium text-xs hover:bg-gray-100 transition-all"
                 >
-                  View All Estimates
-                </Button>
+                  <List className="h-5 w-5" />
+                  <span className="text-center leading-tight">All Estimates</span>
+                </button>
               </Link>
             </div>
           </div>
@@ -1160,8 +1177,15 @@ function EstimatesList({ estimates }: { estimates: any[] }) {
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
             {estimates.map((estimate) => {
-              const isComplete = estimate.status === 'completed'
+              const isComplete = estimate.status === 'completed' || estimate.status === 'saved'
               const isPending = estimate.status === 'active' || estimate.status === 'in_progress'
+              
+              // 상태별 버튼 로직
+              // Case A: saved 또는 completed 상태 → Connect Agent 버튼
+              // Case B: payment_status === 'paid' && manager_id === null → Awaiting Agent 버튼
+              const isPaidWaiting = estimate.payment_status === 'paid' && !estimate.manager_id
+              const showConnectAgent = isComplete && !isPaidWaiting
+              const showAwaitingAgent = isPaidWaiting
               
               return (
                 <tr key={estimate.id} className="hover:bg-gray-50 transition-colors">
@@ -1172,6 +1196,10 @@ function EstimatesList({ estimates }: { estimates: any[] }) {
                         <Link 
                           href={`/results?project_id=${estimate.id}`}
                           className="text-xs sm:text-sm font-medium text-gray-900 hover:text-blue-600 truncate block max-w-[120px] sm:max-w-none"
+                          onClick={(e) => {
+                            // 제품명 클릭 시 리포트 상세 페이지로 이동
+                            e.stopPropagation()
+                          }}
                         >
                           {estimate.productName}
                         </Link>
@@ -1186,11 +1214,20 @@ function EstimatesList({ estimates }: { estimates: any[] }) {
                   </td>
                   <td className="px-3 sm:px-6 py-4 whitespace-nowrap text-center">
                     <StatusBadge 
-                      status={isComplete ? 'Analysis Complete' : isPending ? 'Pending' : formatStatus(estimate.status)} 
+                      status={
+                        isPaidWaiting 
+                          ? 'Awaiting Agent' 
+                          : isComplete 
+                            ? 'Analysis Complete' 
+                            : isPending 
+                              ? 'Pending' 
+                              : formatStatus(estimate.status)
+                      } 
                     />
                   </td>
                   <td className="px-3 sm:px-6 py-4 whitespace-nowrap text-center">
-                    {isComplete ? (
+                    {showConnectAgent ? (
+                      // Case A: Connect Agent 버튼 (결제 모달 오픈)
                       <button
                         onClick={(e) => handleConnectAgent(e, estimate.id)}
                         className="px-2 sm:px-3 md:px-4 py-1.5 sm:py-2 text-[10px] sm:text-xs md:text-sm font-semibold bg-[#008080] hover:bg-teal-700 text-white rounded-lg transition-colors whitespace-nowrap"
@@ -1198,7 +1235,18 @@ function EstimatesList({ estimates }: { estimates: any[] }) {
                         <span className="hidden sm:inline">Connect Agent</span>
                         <span className="sm:hidden">Connect</span>
                       </button>
+                    ) : showAwaitingAgent ? (
+                      // Case B: Awaiting Agent 버튼 (비활성)
+                      <button
+                        disabled
+                        className="px-2 sm:px-3 md:px-4 py-1.5 sm:py-2 text-[10px] sm:text-xs md:text-sm font-semibold bg-gray-100 text-gray-500 rounded-lg cursor-not-allowed whitespace-nowrap flex items-center gap-1.5 mx-auto"
+                      >
+                        <Loader2 className="h-3 w-3 animate-spin" />
+                        <span className="hidden sm:inline">Awaiting Agent...</span>
+                        <span className="sm:hidden">Awaiting...</span>
+                      </button>
                     ) : (
+                      // Case C: View Report 버튼 (분석 중이거나 완료되지 않은 경우)
                       <Link href={`/results?project_id=${estimate.id}`}>
                         <Button
                           variant="outline"
@@ -1631,6 +1679,7 @@ function StatusBadge({ status }: { status: string }) {
     'Customs Clearance': 'bg-orange-50 text-orange-700 border-orange-200',
     'Saved': 'bg-gray-50 text-gray-700 border-gray-200',
     'Awaiting Manager': 'bg-purple-50 text-purple-700 border-purple-200',
+    'Awaiting Agent': 'bg-gray-100 text-gray-600 border-gray-300',
   }
 
   const colorClass = statusColors[formattedStatus] || 

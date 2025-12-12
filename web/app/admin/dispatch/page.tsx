@@ -16,6 +16,8 @@ interface UnassignedProject {
   user_id: string;
   user_name: string;
   user_email: string;
+  status: string;  // 프로젝트 상태
+  payment_status: string;  // 결제 상태
   payment_date: string | null;
   created_at: string;
 }
@@ -199,13 +201,38 @@ export default function DispatchCenterPage() {
                       )}
                     </div>
                     <p className="text-sm text-gray-600 mb-1">{project.user_name}</p>
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className={`px-2 py-0.5 rounded text-xs font-medium ${
+                        project.payment_status === 'paid' 
+                          ? 'bg-green-100 text-green-700' 
+                          : 'bg-gray-100 text-gray-600'
+                      }`}>
+                        {project.payment_status === 'paid' ? '✓ Paid' : project.payment_status}
+                      </span>
+                      <span className={`px-2 py-0.5 rounded text-xs font-medium ${
+                        project.status === 'saved' || project.status === 'completed'
+                          ? 'bg-blue-100 text-blue-700'
+                          : project.status === 'in_progress'
+                          ? 'bg-orange-100 text-orange-700'
+                          : 'bg-gray-100 text-gray-600'
+                      }`}>
+                        {project.status}
+                      </span>
+                    </div>
+                    {project.payment_date && (
+                      <p className="text-xs text-gray-500 mb-1">
+                        Paid: {new Date(project.payment_date).toLocaleDateString('en-US', {
+                          month: 'short',
+                          day: 'numeric',
+                          year: 'numeric',
+                        })}
+                      </p>
+                    )}
                     <p className="text-xs text-gray-500">
                       Created: {new Date(project.created_at).toLocaleDateString('en-US', {
                         month: 'short',
                         day: 'numeric',
                         year: 'numeric',
-                        hour: '2-digit',
-                        minute: '2-digit',
                       })}
                     </p>
                   </button>

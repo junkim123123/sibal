@@ -337,8 +337,8 @@ export async function POST(req: Request) {
         .single();
 
       if (currentProject) {
-        // 프로젝트 상태 업데이트: 'saved' 또는 'completed' → 'in_progress'
-        // manager_id가 없으면 자동 할당을 위해 'in_progress'로만 변경 (관리자가 나중에 할당)
+        // 프로젝트 상태 업데이트: 결제 완료 후 super admin이 매니저를 배정할 수 있도록 설정
+        // payment_status를 'paid'로 설정하고, 상태는 유지 (super admin이 확인 후 배정)
         const updateData: any = {
           is_paid_subscription: true,
           lemon_squeezy_subscription_id: subscriptionId,
@@ -347,10 +347,12 @@ export async function POST(req: Request) {
           updated_at: new Date().toISOString(),
         };
 
-        // 상태가 'saved' 또는 'completed'이고 manager_id가 없으면 'in_progress'로 변경
+        // 상태가 'saved' 또는 'completed'이고 manager_id가 없으면 상태 유지
+        // (super admin이 Dispatch Center에서 결제 여부를 확인하고 매니저를 배정)
+        // 필요시 'in_progress'로 변경할 수 있지만, 우선 상태를 유지하여 super admin이 확인할 수 있도록 함
         if ((currentProject.status === 'saved' || currentProject.status === 'completed') && !currentProject.manager_id) {
-          updateData.status = 'in_progress';
-          updateData.dispatched_at = new Date().toISOString();
+          // 상태는 그대로 유지 (saved 또는 completed)
+          // super admin이 Dispatch Center에서 결제 완료된 프로젝트를 확인하고 매니저 배정
         }
 
         const { error: projectUpdateError } = await adminClient

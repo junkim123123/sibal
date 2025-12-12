@@ -124,8 +124,15 @@ export function MainHeader() {
           <nav className={`hidden md:flex md:items-center md:gap-8 md:absolute md:left-1/2 md:-translate-x-1/2 z-20 ${isLoading ? 'opacity-50 pointer-events-none' : ''}`}>
             {currentNavItems.map((item) => {
               const handleNavClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
+                // 즉시 기본 동작과 전파 차단
                 e.preventDefault();
                 e.stopPropagation();
+                
+                // 네이티브 이벤트에서도 전파 차단
+                const nativeEvent = e.nativeEvent;
+                if (nativeEvent.stopImmediatePropagation) {
+                  nativeEvent.stopImmediatePropagation();
+                }
                 
                 // 로딩 중이면 무시
                 if (isLoading) return;
@@ -133,8 +140,13 @@ export function MainHeader() {
                 // 같은 페이지면 무시
                 if (pathname === item.href) return;
                 
-                // 즉시 네비게이션 (SPA 방식)
-                router.push(item.href);
+                // 즉시 네비게이션 (SPA 방식) - 동기적으로 처리
+                try {
+                  router.push(item.href);
+                } catch (error) {
+                  // 폴백: 일반 네비게이션
+                  window.location.href = item.href;
+                }
               };
               
               return (
@@ -142,6 +154,12 @@ export function MainHeader() {
                   key={item.href}
                   href={item.href}
                   onClick={handleNavClick}
+                  onMouseDown={(e) => {
+                    // mousedown 단계에서도 처리하여 더 빠른 반응
+                    if (isLoading || pathname === item.href) {
+                      e.preventDefault();
+                    }
+                  }}
                   className={`text-sm font-normal transition-colors relative ${
                     pathname === item.href
                       ? 'text-black dark:text-white after:absolute after:bottom-0 after:left-0 after:right-0 after:h-0.5 after:bg-black dark:after:bg-white'

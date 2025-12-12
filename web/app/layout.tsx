@@ -130,22 +130,35 @@ export default function RootLayout({
                   removeItemscoutElements();
                 }
                 
-                // MutationObserver로 실시간 감시
+                // MutationObserver로 실시간 감시 (클릭 이벤트와 충돌 방지)
                 if (typeof MutationObserver !== 'undefined') {
+                  let isProcessing = false; // 중복 처리 방지 플래그
+                  
                   const observer = new MutationObserver(function(mutations) {
-                    mutations.forEach(function(mutation) {
-                      mutation.addedNodes.forEach(function(node) {
-                        if (node.nodeType === 1) { // ELEMENT_NODE
-                          var element = node;
-                          if (element.tagName === 'SCRIPT' || element.tagName === 'IFRAME') {
-                            var src = element.src || element.getAttribute('src') || '';
-                            if (src.indexOf('itemscout.io') !== -1) {
-                              element.remove();
+                    // 이미 처리 중이면 스킵 (클릭 이벤트 방해 방지)
+                    if (isProcessing) return;
+                    
+                    // 비동기로 처리하여 클릭 이벤트와 충돌 방지
+                    setTimeout(function() {
+                      isProcessing = true;
+                      try {
+                        mutations.forEach(function(mutation) {
+                          mutation.addedNodes.forEach(function(node) {
+                            if (node.nodeType === 1) { // ELEMENT_NODE
+                              var element = node;
+                              if (element.tagName === 'SCRIPT' || element.tagName === 'IFRAME') {
+                                var src = element.src || element.getAttribute('src') || '';
+                                if (src.indexOf('itemscout.io') !== -1) {
+                                  element.remove();
+                                }
+                              }
                             }
-                          }
-                        }
-                      });
-                    });
+                          });
+                        });
+                      } finally {
+                        isProcessing = false;
+                      }
+                    }, 0);
                   });
                   
                   observer.observe(document.documentElement, {
@@ -154,7 +167,11 @@ export default function RootLayout({
                   });
                   
                   // 주기적 체크 (빈도 감소로 성능 개선 및 클릭 이벤트 간섭 방지)
-                  setInterval(removeItemscoutElements, 2000); // 500ms -> 2000ms로 변경
+                  setInterval(function() {
+                    if (!isProcessing) {
+                      removeItemscoutElements();
+                    }
+                  }, 3000); // 2초 -> 3초로 변경 (더 여유롭게)
                 }
                 
                 // 콘솔 오류 필터링

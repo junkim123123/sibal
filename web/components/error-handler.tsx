@@ -117,49 +117,63 @@ export function ErrorHandler() {
       }
     }
 
-    // MutationObserver로 외부 스크립트/iframe 감지 및 제거
+    // MutationObserver로 외부 스크립트/iframe 감지 및 제거 (클릭 이벤트와 충돌 방지)
+    let isProcessingMutation = false
     const observer = new MutationObserver((mutations) => {
-      mutations.forEach((mutation) => {
-        mutation.addedNodes.forEach((node) => {
-          if (node.nodeType === Node.ELEMENT_NODE) {
-            const element = node as HTMLElement
-            
-            // itemscout.io 관련 스크립트 태그 제거 (조용히 처리)
-            if (element.tagName === 'SCRIPT') {
-              const script = element as HTMLScriptElement
-              if (
-                script.src?.includes('itemscout.io') ||
-                script.src?.includes('4bd1b696-182b6b13bdad92e3.js')
-              ) {
-                // 콘솔 로그 제거 - 조용히 차단
-                script.remove()
-                return
+      // 이미 처리 중이면 스킵 (클릭 이벤트 방해 방지)
+      if (isProcessingMutation) return
+      
+      // 비동기로 처리하여 클릭 이벤트와 충돌 방지
+      requestAnimationFrame(() => {
+        if (isProcessingMutation) return
+        isProcessingMutation = true
+        
+        try {
+          mutations.forEach((mutation) => {
+            mutation.addedNodes.forEach((node) => {
+              if (node.nodeType === Node.ELEMENT_NODE) {
+                const element = node as HTMLElement
+                
+                // itemscout.io 관련 스크립트 태그 제거 (조용히 처리)
+                if (element.tagName === 'SCRIPT') {
+                  const script = element as HTMLScriptElement
+                  if (
+                    script.src?.includes('itemscout.io') ||
+                    script.src?.includes('4bd1b696-182b6b13bdad92e3.js')
+                  ) {
+                    // 콘솔 로그 제거 - 조용히 차단
+                    script.remove()
+                    return
+                  }
+                }
+                
+                // itemscout.io 관련 iframe 제거 (조용히 처리)
+                if (element.tagName === 'IFRAME') {
+                  const iframe = element as HTMLIFrameElement
+                  if (
+                    iframe.src?.includes('itemscout.io') ||
+                    iframe.src?.includes('pixel.itemscout.io')
+                  ) {
+                    // 콘솔 로그 제거 - 조용히 차단
+                    iframe.remove()
+                    return
+                  }
+                }
+                
+                // 내부에 itemscout.io 관련 요소가 있는지 확인 (조용히 처리)
+                const itemscoutElements = element.querySelectorAll?.(
+                  'script[src*="itemscout.io"], iframe[src*="itemscout.io"]'
+                )
+                itemscoutElements?.forEach((el) => {
+                  // 콘솔 로그 제거 - 조용히 차단
+                  el.remove()
+                })
               }
-            }
-            
-            // itemscout.io 관련 iframe 제거 (조용히 처리)
-            if (element.tagName === 'IFRAME') {
-              const iframe = element as HTMLIFrameElement
-              if (
-                iframe.src?.includes('itemscout.io') ||
-                iframe.src?.includes('pixel.itemscout.io')
-              ) {
-                // 콘솔 로그 제거 - 조용히 차단
-                iframe.remove()
-                return
-              }
-            }
-            
-            // 내부에 itemscout.io 관련 요소가 있는지 확인 (조용히 처리)
-            const itemscoutElements = element.querySelectorAll?.(
-              'script[src*="itemscout.io"], iframe[src*="itemscout.io"]'
-            )
-            itemscoutElements?.forEach((el) => {
-              // 콘솔 로그 제거 - 조용히 차단
-              el.remove()
             })
-          }
-        })
+          })
+        } finally {
+          isProcessingMutation = false
+        }
       })
     })
 
@@ -184,9 +198,13 @@ export function ErrorHandler() {
       })
     }
 
-    // 즉시 실행 및 주기적 체크 (빈도 감소로 성능 개선)
+    // 즉시 실행 및 주기적 체크 (빈도 감소로 성능 개선 및 클릭 이벤트 간섭 방지)
     removeExistingItemscoutElements()
-    const checkInterval = setInterval(removeExistingItemscoutElements, 2000) // 1초 -> 2초로 변경
+    const checkInterval = setInterval(() => {
+      if (!isProcessingMutation) {
+        removeExistingItemscoutElements()
+      }
+    }, 3000) // 2초 -> 3초로 변경 (더 여유롭게)
 
     return () => {
       // 정리

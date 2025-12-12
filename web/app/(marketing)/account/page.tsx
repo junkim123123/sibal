@@ -5,6 +5,7 @@ import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import { useEffect } from 'react'
+import { Camera, ChevronDown, ChevronUp, Loader2, MapPin, Package } from 'lucide-react'
 
 type TabType = 'profile' | 'company' | 'shipping'
 
@@ -53,7 +54,7 @@ export default function AccountPage() {
           </p>
         </div>
 
-        {/* Tabs Navigation with Save Button */}
+        {/* Tabs Navigation */}
         <div className="flex items-center justify-between mb-8 border-b border-gray-200">
           <div className="flex gap-8">
             <TabButton
@@ -72,18 +73,10 @@ export default function AccountPage() {
               onClick={() => setActiveTab('shipping')}
             />
           </div>
-          {/* Desktop Save Button */}
-          <button
-            type="submit"
-            form={activeTab === 'profile' ? 'profile-form' : activeTab === 'company' ? 'company-form' : 'shipping-form'}
-            className="hidden md:block px-6 py-2 bg-[#008080] text-white rounded-lg font-medium hover:bg-[#006666] transition-colors text-sm disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            Save Changes
-          </button>
         </div>
 
         {/* Tab Content */}
-        <div className="bg-white border border-gray-200 rounded-xl shadow-sm p-8 mb-20 md:mb-0">
+        <div className="bg-white border border-gray-200 rounded-xl shadow-sm p-8 mb-20 md:mb-0 max-w-3xl">
           {activeTab === 'profile' && <ProfileTab userEmail={userEmail} />}
           {activeTab === 'company' && <CompanyTab />}
           {activeTab === 'shipping' && <ShippingTab />}
@@ -138,6 +131,79 @@ function TabButton({
   )
 }
 
+// Profile Avatar Component
+function ProfileAvatar({ name, onImageChange }: { name: string; onImageChange?: (file: File) => void }) {
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null)
+
+  // 이름에서 이니셜 추출
+  const getInitials = (fullName: string): string => {
+    if (!fullName || fullName.trim().length === 0) return '?'
+    const words = fullName.trim().split(/\s+/).filter(word => word.length > 0)
+    if (words.length === 0) return '?'
+    const firstLetter = words[0].charAt(0).toUpperCase()
+    const secondLetter = words.length > 1 
+      ? words[1].charAt(0).toUpperCase()
+      : words[0].length > 1 
+        ? words[0].charAt(1).toUpperCase()
+        : firstLetter
+    return `${firstLetter}${secondLetter}`
+  }
+
+  const initials = getInitials(name)
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (file && onImageChange) {
+      onImageChange(file)
+      // 미리보기 생성
+      const reader = new FileReader()
+      reader.onloadend = () => {
+        setAvatarUrl(reader.result as string)
+      }
+      reader.readAsDataURL(file)
+    }
+  }
+
+  return (
+    <div className="flex items-center gap-4 mb-6">
+      <div className="relative">
+        {avatarUrl ? (
+          <div className="w-20 h-20 rounded-full overflow-hidden bg-gray-100 border-2 border-gray-200">
+            <img src={avatarUrl} alt="Profile" className="w-full h-full object-cover" />
+          </div>
+        ) : (
+          <div className="w-20 h-20 rounded-full bg-teal-50 border-2 border-teal-200 flex items-center justify-center">
+            <span className="text-teal-700 font-bold text-2xl">{initials}</span>
+          </div>
+        )}
+        <label
+          htmlFor="avatar-upload"
+          className="absolute bottom-0 right-0 w-7 h-7 bg-[#008080] rounded-full flex items-center justify-center cursor-pointer hover:bg-teal-700 transition-colors border-2 border-white"
+        >
+          <Camera className="h-4 w-4 text-white" />
+          <input
+            id="avatar-upload"
+            type="file"
+            accept="image/*"
+            className="hidden"
+            onChange={handleFileChange}
+          />
+        </label>
+      </div>
+      <div>
+        <button
+          type="button"
+          onClick={() => document.getElementById('avatar-upload')?.click()}
+          className="text-sm font-medium text-zinc-600 hover:text-[#008080] transition-colors"
+        >
+          Change Photo
+        </button>
+        <p className="text-xs text-zinc-500 mt-1">JPG, PNG or GIF. Max size 2MB</p>
+      </div>
+    </div>
+  )
+}
+
 // Profile Tab
 function ProfileTab({ userEmail }: { userEmail: string }) {
   const [name, setName] = useState('')
@@ -147,6 +213,11 @@ function ProfileTab({ userEmail }: { userEmail: string }) {
   const [isSaving, setIsSaving] = useState(false)
   const [success, setSuccess] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
+  const [showPasswordForm, setShowPasswordForm] = useState(false)
+  const [currentPassword, setCurrentPassword] = useState('')
+  const [newPassword, setNewPassword] = useState('')
+  const [confirmPassword, setConfirmPassword] = useState('')
+  const [isChangingPassword, setIsChangingPassword] = useState(false)
   const supabase = createClient()
 
   // 프로필 데이터 로드
@@ -233,6 +304,57 @@ function ProfileTab({ userEmail }: { userEmail: string }) {
     )
   }
 
+  // 비밀번호 변경 핸들러
+  const handleChangePassword = async () => {
+    if (!newPassword || !confirmPassword) {
+      setError('Please fill in all password fields.')
+      return
+    }
+
+    if (newPassword !== confirmPassword) {
+      setError('New passwords do not match.')
+      return
+    }
+
+    if (newPassword.length < 6) {
+      setError('Password must be at least 6 characters long.')
+      return
+    }
+
+    try {
+      setIsChangingPassword(true)
+      setError(null)
+
+      const { error: updateError } = await supabase.auth.updateUser({
+        password: newPassword
+      })
+
+      if (updateError) {
+        console.error('[ProfileTab] Failed to update password:', updateError)
+        setError('Failed to update password. Please try again.')
+        return
+      }
+
+      setSuccess('Password updated successfully.')
+      setShowPasswordForm(false)
+      setCurrentPassword('')
+      setNewPassword('')
+      setConfirmPassword('')
+      setTimeout(() => setSuccess(null), 3000)
+    } catch (err) {
+      console.error('[ProfileTab] Password change error:', err)
+      setError('An error occurred while changing password.')
+    } finally {
+      setIsChangingPassword(false)
+    }
+  }
+
+  // 프로필 사진 업로드 핸들러
+  const handleAvatarChange = async (file: File) => {
+    // TODO: 실제 업로드 로직 구현 (Supabase Storage 사용)
+    console.log('Avatar file selected:', file)
+  }
+
   return (
     <form className="space-y-6" id="profile-form" onSubmit={handleSubmit}>
       {success && (
@@ -246,79 +368,161 @@ function ProfileTab({ userEmail }: { userEmail: string }) {
         </div>
       )}
 
-      <div>
-        <label className="block text-xs uppercase tracking-wide text-zinc-500 mb-2 font-semibold">
-          Full Name
-        </label>
-        <input
-          type="text"
-          name="name"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-lg text-black placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-[#008080] focus:border-[#008080] transition-all"
-          placeholder="John Doe"
-        />
+      {/* Profile Avatar */}
+      <ProfileAvatar name={name} onImageChange={handleAvatarChange} />
+
+      {/* 2-Column Grid: Full Name + Job Title */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div>
+          <label className="block text-xs uppercase tracking-wide text-zinc-500 mb-2 font-semibold">
+            Full Name
+          </label>
+          <input
+            type="text"
+            name="name"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-lg text-black placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-[#008080] focus:border-[#008080] transition-all"
+            placeholder="John Doe"
+          />
+        </div>
+
+        <div>
+          <label className="block text-xs uppercase tracking-wide text-zinc-500 mb-2 font-semibold">
+            Job Title
+          </label>
+          <input
+            type="text"
+            name="jobTitle"
+            value={jobTitle}
+            onChange={(e) => setJobTitle(e.target.value)}
+            className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-lg text-black placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-[#008080] focus:border-[#008080] transition-all"
+            placeholder="e.g. CEO, Purchasing Manager"
+          />
+        </div>
       </div>
 
-      <div>
-        <label className="block text-xs uppercase tracking-wide text-zinc-500 mb-2 font-semibold">
-          Job Title
-        </label>
-        <input
-          type="text"
-          name="jobTitle"
-          value={jobTitle}
-          onChange={(e) => setJobTitle(e.target.value)}
-          className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-lg text-black placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-[#008080] focus:border-[#008080] transition-all"
-          placeholder="e.g. CEO, Purchasing Manager, Operations Lead"
-        />
+      {/* 2-Column Grid: Email + Phone Number */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div>
+          <label className="block text-xs uppercase tracking-wide text-zinc-500 mb-2 font-semibold">
+            Email
+          </label>
+          <input
+            type="email"
+            value={userEmail}
+            disabled
+            className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-lg text-zinc-500 cursor-not-allowed focus:outline-none"
+          />
+          <p className="mt-2 text-xs text-zinc-500">
+            Email cannot be changed. Contact support if you need to update it.
+          </p>
+        </div>
+
+        <div>
+          <label className="block text-xs uppercase tracking-wide text-zinc-500 mb-2 font-semibold">
+            Phone Number
+          </label>
+          <input
+            type="tel"
+            name="phone"
+            value={phone}
+            onChange={(e) => setPhone(e.target.value)}
+            className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-lg text-black placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-[#008080] focus:border-[#008080] transition-all"
+            placeholder="+1 (555) 123-4567"
+          />
+        </div>
       </div>
 
-      <div>
-        <label className="block text-xs uppercase tracking-wide text-zinc-500 mb-2 font-semibold">
-          Email
-        </label>
-        <input
-          type="email"
-          value={userEmail}
-          disabled
-          className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-lg text-zinc-500 cursor-not-allowed focus:outline-none"
-        />
-        <p className="mt-2 text-xs text-zinc-500">
-          Email cannot be changed. Contact support if you need to update it.
-        </p>
-      </div>
-
-      <div>
-        <label className="block text-xs uppercase tracking-wide text-zinc-500 mb-2 font-semibold">
-          Phone Number
-        </label>
-        <input
-          type="tel"
-          name="phone"
-          value={phone}
-          onChange={(e) => setPhone(e.target.value)}
-          className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-lg text-black placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-[#008080] focus:border-[#008080] transition-all"
-          placeholder="+1 (555) 123-4567"
-        />
-      </div>
-
-      <div className="pt-4 border-t border-gray-200">
+      {/* Password Change Accordion */}
+      <div className="pt-6 border-t border-gray-200">
         <button
           type="button"
-          className="px-6 py-2 text-sm font-medium text-zinc-600 hover:text-black transition-colors"
+          onClick={() => setShowPasswordForm(!showPasswordForm)}
+          className="flex items-center justify-between w-full px-6 py-3 text-left border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
         >
-          Change Password
+          <span className="text-sm font-medium text-zinc-700">Update Password</span>
+          {showPasswordForm ? (
+            <ChevronUp className="h-5 w-5 text-zinc-500" />
+          ) : (
+            <ChevronDown className="h-5 w-5 text-zinc-500" />
+          )}
         </button>
+
+        {showPasswordForm && (
+          <div className="mt-4 p-6 bg-gray-50 border border-gray-200 rounded-lg space-y-4">
+            <div>
+              <label className="block text-xs uppercase tracking-wide text-zinc-500 mb-2 font-semibold">
+                Current Password
+              </label>
+              <input
+                type="password"
+                value={currentPassword}
+                onChange={(e) => setCurrentPassword(e.target.value)}
+                className="w-full px-4 py-3 bg-white border border-gray-200 rounded-lg text-black focus:outline-none focus:ring-2 focus:ring-[#008080] focus:border-[#008080] transition-all"
+                placeholder="Enter current password"
+              />
+            </div>
+            <div>
+              <label className="block text-xs uppercase tracking-wide text-zinc-500 mb-2 font-semibold">
+                New Password
+              </label>
+              <input
+                type="password"
+                value={newPassword}
+                onChange={(e) => setNewPassword(e.target.value)}
+                className="w-full px-4 py-3 bg-white border border-gray-200 rounded-lg text-black focus:outline-none focus:ring-2 focus:ring-[#008080] focus:border-[#008080] transition-all"
+                placeholder="Enter new password"
+              />
+            </div>
+            <div>
+              <label className="block text-xs uppercase tracking-wide text-zinc-500 mb-2 font-semibold">
+                Confirm New Password
+              </label>
+              <input
+                type="password"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                className="w-full px-4 py-3 bg-white border border-gray-200 rounded-lg text-black focus:outline-none focus:ring-2 focus:ring-[#008080] focus:border-[#008080] transition-all"
+                placeholder="Confirm new password"
+              />
+            </div>
+            <div className="flex justify-end">
+              <button
+                type="button"
+                onClick={handleChangePassword}
+                disabled={isChangingPassword}
+                className="px-6 py-2 bg-[#008080] text-white rounded-lg font-medium hover:bg-[#006666] transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm"
+              >
+                {isChangingPassword ? (
+                  <span className="flex items-center gap-2">
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    Updating...
+                  </span>
+                ) : (
+                  'Update Password'
+                )}
+              </button>
+            </div>
+          </div>
+        )}
       </div>
 
-      <div className="flex justify-end pt-6 border-t border-gray-200 md:hidden">
+      {/* Save Button - Desktop (폼 하단) */}
+      <div className="flex justify-end pt-6 border-t border-gray-200">
         <button
           type="submit"
           disabled={isSaving}
           className="px-6 py-3 bg-[#008080] text-white rounded-lg font-medium hover:bg-[#006666] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          {isSaving ? 'Saving...' : 'Save Changes'}
+          {isSaving ? (
+            <span className="flex items-center gap-2">
+              <Loader2 className="h-4 w-4 animate-spin" />
+              Saving...
+            </span>
+          ) : (
+            'Save Changes'
+          )}
         </button>
       </div>
     </form>
@@ -329,17 +533,35 @@ function ProfileTab({ userEmail }: { userEmail: string }) {
 function CompanyTab() {
   return (
     <form className="space-y-6" id="company-form">
-      <div>
-        <label className="block text-xs uppercase tracking-wide text-zinc-500 mb-2 font-semibold">
-          Company Name
-        </label>
-        <input
-          type="text"
-          className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-lg text-black placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-[#008080] focus:border-[#008080] transition-all"
-          placeholder="Acme Corporation"
-        />
+      {/* 2-Column Grid: Company Name + Tax ID */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div>
+          <label className="block text-xs uppercase tracking-wide text-zinc-500 mb-2 font-semibold">
+            Company Name
+          </label>
+          <input
+            type="text"
+            className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-lg text-black placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-[#008080] focus:border-[#008080] transition-all"
+            placeholder="Acme Corporation"
+          />
+        </div>
+
+        <div>
+          <label className="block text-xs uppercase tracking-wide text-zinc-500 mb-2 font-semibold">
+            Tax ID / EIN <span className="text-zinc-400 font-normal">(Optional)</span>
+          </label>
+          <input
+            type="text"
+            className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-lg text-black placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-[#008080] focus:border-[#008080] transition-all"
+            placeholder="e.g. EIN, VAT Number, or Business Reg. ID"
+          />
+          <p className="mt-2 text-xs text-zinc-500">
+            Required for invoicing and tax documentation
+          </p>
+        </div>
       </div>
 
+      {/* Storefront URL - Full Width */}
       <div>
         <label className="block text-xs uppercase tracking-wide text-zinc-500 mb-2 font-semibold">
           Storefront / Sales Channel URL
@@ -354,26 +576,14 @@ function CompanyTab() {
         </p>
       </div>
 
-      <div>
-        <label className="block text-xs uppercase tracking-wide text-zinc-500 mb-2 font-semibold">
-          Tax ID / EIN <span className="text-zinc-400 font-normal">(Optional)</span>
-        </label>
-        <input
-          type="text"
-          className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-lg text-black placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-[#008080] focus:border-[#008080] transition-all"
-          placeholder="12-3456789"
-        />
-        <p className="mt-2 text-xs text-zinc-500">
-          Required for invoicing and tax documentation
-        </p>
-      </div>
-
+      {/* Expected Import Volume */}
       <div>
         <label className="block text-xs uppercase tracking-wide text-zinc-500 mb-2 font-semibold">
           Expected Import Volume
         </label>
         <select className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-lg text-black focus:outline-none focus:ring-2 focus:ring-[#008080] focus:border-[#008080] transition-all">
           <option value="">Select volume...</option>
+          <option value="lcl">Less than 1 container (LCL / Air Freight)</option>
           <option value="small">1-5 containers/year</option>
           <option value="medium">6-20 containers/year</option>
           <option value="large">21-50 containers/year</option>
@@ -381,7 +591,8 @@ function CompanyTab() {
         </select>
       </div>
 
-      <div className="flex justify-end pt-6 border-t border-gray-200 md:hidden">
+      {/* Save Button - Desktop (폼 하단) */}
+      <div className="flex justify-end pt-6 border-t border-gray-200">
         <button
           type="submit"
           form="company-form"
@@ -394,108 +605,226 @@ function CompanyTab() {
   )
 }
 
+// US States for dropdown
+const US_STATES = [
+  { value: '', label: 'Select State' },
+  { value: 'AL', label: 'Alabama' },
+  { value: 'AK', label: 'Alaska' },
+  { value: 'AZ', label: 'Arizona' },
+  { value: 'AR', label: 'Arkansas' },
+  { value: 'CA', label: 'California' },
+  { value: 'CO', label: 'Colorado' },
+  { value: 'CT', label: 'Connecticut' },
+  { value: 'DE', label: 'Delaware' },
+  { value: 'FL', label: 'Florida' },
+  { value: 'GA', label: 'Georgia' },
+  { value: 'HI', label: 'Hawaii' },
+  { value: 'ID', label: 'Idaho' },
+  { value: 'IL', label: 'Illinois' },
+  { value: 'IN', label: 'Indiana' },
+  { value: 'IA', label: 'Iowa' },
+  { value: 'KS', label: 'Kansas' },
+  { value: 'KY', label: 'Kentucky' },
+  { value: 'LA', label: 'Louisiana' },
+  { value: 'ME', label: 'Maine' },
+  { value: 'MD', label: 'Maryland' },
+  { value: 'MA', label: 'Massachusetts' },
+  { value: 'MI', label: 'Michigan' },
+  { value: 'MN', label: 'Minnesota' },
+  { value: 'MS', label: 'Mississippi' },
+  { value: 'MO', label: 'Missouri' },
+  { value: 'MT', label: 'Montana' },
+  { value: 'NE', label: 'Nebraska' },
+  { value: 'NV', label: 'Nevada' },
+  { value: 'NH', label: 'New Hampshire' },
+  { value: 'NJ', label: 'New Jersey' },
+  { value: 'NM', label: 'New Mexico' },
+  { value: 'NY', label: 'New York' },
+  { value: 'NC', label: 'North Carolina' },
+  { value: 'ND', label: 'North Dakota' },
+  { value: 'OH', label: 'Ohio' },
+  { value: 'OK', label: 'Oklahoma' },
+  { value: 'OR', label: 'Oregon' },
+  { value: 'PA', label: 'Pennsylvania' },
+  { value: 'RI', label: 'Rhode Island' },
+  { value: 'SC', label: 'South Carolina' },
+  { value: 'SD', label: 'South Dakota' },
+  { value: 'TN', label: 'Tennessee' },
+  { value: 'TX', label: 'Texas' },
+  { value: 'UT', label: 'Utah' },
+  { value: 'VT', label: 'Vermont' },
+  { value: 'VA', label: 'Virginia' },
+  { value: 'WA', label: 'Washington' },
+  { value: 'WV', label: 'West Virginia' },
+  { value: 'WI', label: 'Wisconsin' },
+  { value: 'WY', label: 'Wyoming' },
+]
+
 // Shipping Tab
 function ShippingTab() {
   const [isFBAWarehouse, setIsFBAWarehouse] = useState(false)
+  const [country, setCountry] = useState('US')
 
   return (
-    <>
-      <form className="space-y-6" id="shipping-form">
-        <div className="flex items-start gap-3 p-4 bg-neutral-50 border border-neutral-200 rounded-lg">
-          <input
-            type="checkbox"
-            id="fba-warehouse"
-            checked={isFBAWarehouse}
-            onChange={(e) => setIsFBAWarehouse(e.target.checked)}
-            className="mt-1 w-4 h-4 text-[#008080] border-gray-300 rounded focus:ring-[#008080] focus:ring-2"
-          />
-          <label htmlFor="fba-warehouse" className="text-sm text-zinc-700 cursor-pointer">
-            <span className="font-medium">This is an Amazon FBA Warehouse</span>
-            <p className="text-xs text-zinc-500 mt-1">
-              Check this if you're shipping directly to an Amazon fulfillment center
-            </p>
-          </label>
+    <form className="space-y-6" id="shipping-form">
+      {/* Amazon FBA Warehouse Checkbox - Enhanced Styling */}
+      <div className={`flex items-start gap-3 p-4 rounded-lg border transition-all duration-200 ${
+        isFBAWarehouse 
+          ? 'bg-orange-50 border-orange-300' 
+          : 'bg-gray-50 border-gray-200'
+      }`}>
+        <div className="mt-0.5">
+          <Package className={`h-5 w-5 ${isFBAWarehouse ? 'text-orange-600' : 'text-gray-400'}`} />
         </div>
-
-        {/* FBA-specific fields - conditionally shown */}
-        {isFBAWarehouse && (
-          <div className="space-y-4 p-4 bg-amber-50 border border-amber-200 rounded-lg transition-all duration-300">
-            <div>
-              <label className="block text-xs uppercase tracking-wide text-zinc-500 mb-2 font-semibold">
-                FBA Shipment ID / Reference Code
-              </label>
-              <input
-                type="text"
-                className="w-full px-4 py-3 bg-white border border-amber-300 rounded-lg text-black placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-[#008080] focus:border-[#008080] transition-all"
-                placeholder="e.g. FBA123456789 or Shipment Reference"
-              />
-              <p className="mt-2 text-xs text-zinc-500">
-                Optional: Your Amazon shipment reference for labeling
+        <div className="flex-1">
+          <div className="flex items-start gap-3">
+            <input
+              type="checkbox"
+              id="fba-warehouse"
+              checked={isFBAWarehouse}
+              onChange={(e) => setIsFBAWarehouse(e.target.checked)}
+              className="mt-1 w-4 h-4 text-orange-600 border-gray-300 rounded focus:ring-orange-500 focus:ring-2"
+            />
+            <label htmlFor="fba-warehouse" className="flex-1 cursor-pointer">
+              <span className={`text-sm font-medium ${isFBAWarehouse ? 'text-orange-900' : 'text-zinc-700'}`}>
+                This is an Amazon FBA Warehouse
+              </span>
+              <p className="text-xs text-zinc-500 mt-1">
+                Check this if you're shipping directly to an Amazon fulfillment center
               </p>
-            </div>
-            <div>
-              <label className="block text-xs uppercase tracking-wide text-zinc-500 mb-2 font-semibold">
-                Store Name (for Labeling)
-              </label>
-              <input
-                type="text"
-                className="w-full px-4 py-3 bg-white border border-amber-300 rounded-lg text-black placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-[#008080] focus:border-[#008080] transition-all"
-                placeholder="e.g. My Amazon Store"
-              />
-              <p className="mt-2 text-xs text-zinc-500">
-                Optional: Store name for FBA shipment labeling
-              </p>
-            </div>
+            </label>
           </div>
-        )}
+          {isFBAWarehouse && (
+            <div className="mt-3 pt-3 border-t border-orange-200">
+              <p className="text-xs font-medium text-orange-800">
+                ⚠️ Amazon FBA Labeling Required
+              </p>
+              <p className="text-xs text-orange-700 mt-1">
+                Make sure you have your FBA Shipment ID ready for proper labeling
+              </p>
+            </div>
+          )}
+        </div>
+      </div>
 
-        <div>
-          <label className="block text-xs uppercase tracking-wide text-zinc-500 mb-2 font-semibold">
-            Address
-          </label>
+      {/* FBA-specific fields - conditionally shown */}
+      {isFBAWarehouse && (
+        <div className="space-y-4 p-4 bg-orange-50 border border-orange-200 rounded-lg transition-all duration-300">
+          <div>
+            <label className="block text-xs uppercase tracking-wide text-zinc-500 mb-2 font-semibold">
+              FBA Shipment ID / Reference Code
+            </label>
+            <input
+              type="text"
+              className="w-full px-4 py-3 bg-white border border-orange-300 rounded-lg text-black placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all"
+              placeholder="e.g. FBA123456789 or Shipment Reference"
+            />
+            <p className="mt-2 text-xs text-zinc-500">
+              Optional: Your Amazon shipment reference for labeling
+            </p>
+          </div>
+          <div>
+            <label className="block text-xs uppercase tracking-wide text-zinc-500 mb-2 font-semibold">
+              Store Name (for Labeling)
+            </label>
+            <input
+              type="text"
+              className="w-full px-4 py-3 bg-white border border-orange-300 rounded-lg text-black placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all"
+              placeholder="e.g. My Amazon Store"
+            />
+            <p className="mt-2 text-xs text-zinc-500">
+              Optional: Store name for FBA shipment labeling
+            </p>
+          </div>
+        </div>
+      )}
+
+      {/* Country Selection */}
+      <div>
+        <label className="block text-xs uppercase tracking-wide text-zinc-500 mb-2 font-semibold">
+          Country / Region
+        </label>
+        <select
+          value={country}
+          onChange={(e) => setCountry(e.target.value)}
+          className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-lg text-black focus:outline-none focus:ring-2 focus:ring-[#008080] focus:border-[#008080] transition-all"
+        >
+          <option value="US">United States</option>
+          <option value="CA">Canada</option>
+          <option value="GB">United Kingdom</option>
+          <option value="AU">Australia</option>
+          <option value="DE">Germany</option>
+          <option value="FR">France</option>
+          <option value="JP">Japan</option>
+          <option value="KR">South Korea</option>
+          <option value="CN">China</option>
+          <option value="MX">Mexico</option>
+          <option value="BR">Brazil</option>
+          <option value="IN">India</option>
+          <option value="SG">Singapore</option>
+          <option value="NL">Netherlands</option>
+          <option value="IT">Italy</option>
+          <option value="ES">Spain</option>
+          <option value="OTHER">Other</option>
+        </select>
+      </div>
+
+      {/* Address with Map Icon */}
+      <div>
+        <label className="block text-xs uppercase tracking-wide text-zinc-500 mb-2 font-semibold">
+          Address
+        </label>
+        <div className="relative">
           <input
             type="text"
-            className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-lg text-black placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-[#008080] focus:border-[#008080] transition-all"
+            className="w-full px-4 py-3 pl-11 bg-gray-50 border border-gray-200 rounded-lg text-black placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-[#008080] focus:border-[#008080] transition-all"
             placeholder="123 Main Street"
           />
+          <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-zinc-400" />
         </div>
+      </div>
 
-        <div>
+      {/* Apt / Suite */}
+      <div>
+        <label className="block text-xs uppercase tracking-wide text-zinc-500 mb-2 font-semibold">
+          Apt / Suite
+        </label>
+        <input
+          type="text"
+          className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-lg text-black placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-[#008080] focus:border-[#008080] transition-all"
+          placeholder="Suite 100"
+        />
+      </div>
+
+      {/* 3-Column Grid: City (50%) | State (25%) | Zip Code (25%) */}
+      <div className="grid grid-cols-1 md:grid-cols-12 gap-4">
+        <div className="md:col-span-6">
           <label className="block text-xs uppercase tracking-wide text-zinc-500 mb-2 font-semibold">
-            Apt / Suite
+            City
           </label>
           <input
             type="text"
             className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-lg text-black placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-[#008080] focus:border-[#008080] transition-all"
-            placeholder="Suite 100"
+            placeholder="Los Angeles"
           />
         </div>
 
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <label className="block text-xs uppercase tracking-wide text-zinc-500 mb-2 font-semibold">
-              City
-            </label>
-            <input
-              type="text"
-              className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-lg text-black placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-[#008080] focus:border-[#008080] transition-all"
-              placeholder="Los Angeles"
-            />
-          </div>
-
-          <div>
-            <label className="block text-xs uppercase tracking-wide text-zinc-500 mb-2 font-semibold">
-              State
-            </label>
-            <input
-              type="text"
-              className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-lg text-black placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-[#008080] focus:border-[#008080] transition-all"
-              placeholder="CA"
-            />
-          </div>
+        <div className="md:col-span-3">
+          <label className="block text-xs uppercase tracking-wide text-zinc-500 mb-2 font-semibold">
+            State
+          </label>
+          <select
+            className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-lg text-black focus:outline-none focus:ring-2 focus:ring-[#008080] focus:border-[#008080] transition-all"
+          >
+            {US_STATES.map((state) => (
+              <option key={state.value} value={state.value}>
+                {state.label}
+              </option>
+            ))}
+          </select>
         </div>
 
-        <div>
+        <div className="md:col-span-3">
           <label className="block text-xs uppercase tracking-wide text-zinc-500 mb-2 font-semibold">
             Zip Code
           </label>
@@ -505,17 +834,18 @@ function ShippingTab() {
             placeholder="90001"
           />
         </div>
+      </div>
 
-        <div className="flex justify-end pt-6 border-t border-gray-200 md:hidden">
-          <button
-            type="submit"
-            form="shipping-form"
-            className="px-6 py-3 bg-[#008080] text-white rounded-lg font-medium hover:bg-[#006666] transition-colors"
-          >
-            Save Changes
-          </button>
-        </div>
-      </form>
-    </>
+      {/* Save Button - Desktop (폼 하단) */}
+      <div className="flex justify-end pt-6 border-t border-gray-200">
+        <button
+          type="submit"
+          form="shipping-form"
+          className="px-6 py-3 bg-[#008080] text-white rounded-lg font-medium hover:bg-[#006666] transition-colors"
+        >
+          Save Changes
+        </button>
+      </div>
+    </form>
   )
 }

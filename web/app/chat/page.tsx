@@ -17,7 +17,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Send } from 'lucide-react';
+import { Send, CheckCircle2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
@@ -804,7 +804,7 @@ export default function ChatPage() {
   return (
     <div className="min-h-screen bg-white">
       {/* Header */}
-      <header className="sticky top-0 z-50 bg-white border-b border-neutral-200">
+      <header className="sticky top-0 z-50 bg-white shadow-sm">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex items-center justify-center">
             <Link href="/" className="cursor-pointer hover:opacity-80 transition-opacity">
@@ -816,7 +816,7 @@ export default function ChatPage() {
         {/* Progress Bar */}
         <div className="h-1 bg-neutral-100">
           <motion.div
-            className="h-full bg-neutral-900"
+            className="h-full bg-gradient-to-r from-teal-600 to-teal-700"
             initial={{ width: 0 }}
             animate={{ width: `${progress}%` }}
             transition={{ duration: 0.5, ease: "easeOut" }}
@@ -841,12 +841,20 @@ export default function ChatPage() {
                 <div
                   className={`max-w-[85%] sm:max-w-lg rounded-2xl px-4 py-3 ${
                     message.type === 'user'
-                      ? 'bg-neutral-900 text-white'
+                      ? 'bg-[#008080] text-white'
+                      : message.content.toString().includes('Perfect!') || message.content.toString().includes('all the information')
+                      ? 'bg-green-50 text-green-900 border border-green-200'
+                      : message.content.toString().trim().startsWith('(')
+                      ? 'bg-transparent px-0'
                       : 'bg-neutral-100 text-neutral-900'
                   }`}
                 >
                   <div className="flex items-center gap-2">
-                    <p className="text-sm leading-relaxed whitespace-pre-wrap">
+                    <p className={`text-sm leading-relaxed whitespace-pre-wrap ${
+                      message.content.toString().trim().startsWith('(')
+                      ? 'text-neutral-500 text-xs italic text-center w-full'
+                      : ''
+                    }`}>
                       {message.content}
                     </p>
                     {/* Loading spinner for calculating messages */}
@@ -857,6 +865,7 @@ export default function ChatPage() {
                         transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
                       />
                     )}
+                    {/* Success checkmark for completed steps - TODO: Add state management */}
                   </div>
                 </div>
               </motion.div>
@@ -941,7 +950,7 @@ export default function ChatPage() {
                           className={`px-6 py-3 h-auto rounded-full text-sm font-medium transition-all whitespace-normal text-left max-w-full sm:max-w-[80%] focus:outline-none focus:ring-2 focus:ring-offset-2 ${
                             isSkipOption
                               ? 'border border-neutral-200 bg-white text-neutral-500 hover:bg-neutral-50 hover:text-neutral-600 focus:ring-neutral-300'
-                              : 'border-2 border-neutral-300 bg-white text-neutral-900 hover:bg-neutral-900 hover:text-white hover:border-neutral-900 focus:ring-neutral-900'
+                              : 'border-2 border-neutral-300 bg-white text-neutral-900 hover:bg-[#008080] hover:text-white hover:border-[#008080] focus:ring-[#008080]'
                           }`}
                         >
                           {option}
@@ -972,7 +981,7 @@ export default function ChatPage() {
                         disabled={!textInput.trim()}
                         whileHover={{ scale: 1.05 }}
                         whileTap={{ scale: 0.95 }}
-                        className="px-6 py-3 rounded-full bg-neutral-900 text-white disabled:opacity-50 disabled:cursor-not-allowed transition-all focus:outline-none focus:ring-2 focus:ring-neutral-900 focus:ring-offset-2"
+                        className="px-6 py-3 rounded-full bg-[#008080] text-white disabled:opacity-50 disabled:cursor-not-allowed transition-all focus:outline-none focus:ring-2 focus:ring-[#008080] focus:ring-offset-2 hover:bg-[#006666]"
                       >
                         <Send className="w-4 h-4" />
                       </motion.button>
@@ -1027,7 +1036,7 @@ export default function ChatPage() {
                     </button>
                     <button
                       onClick={() => handleSkipConfirm(true)}
-                      className="flex-1 px-4 py-2 bg-neutral-900 text-white rounded-lg text-sm font-medium hover:bg-neutral-800 transition-colors"
+                      className="flex-1 px-4 py-2 bg-[#008080] text-white rounded-lg text-sm font-medium hover:bg-[#006666] transition-colors"
                     >
                       Skip Anyway
                     </button>
@@ -1041,10 +1050,10 @@ export default function ChatPage() {
           <AnimatePresence>
             {isCompleted && (
               <motion.div
-                initial="hidden"
-                animate="visible"
-                exit="exit"
-                variants={inputVariants}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: 20 }}
+                transition={{ duration: 0.5, ease: "easeOut" }}
                 className="flex justify-center pt-4"
               >
                 <motion.button
@@ -1065,7 +1074,7 @@ export default function ChatPage() {
                   }}
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
-                  className="px-8 py-4 rounded-full bg-neutral-900 text-white text-base font-semibold shadow-lg hover:shadow-xl transition-all focus:outline-none focus:ring-2 focus:ring-neutral-900 focus:ring-offset-2"
+                  className="px-8 py-4 rounded-full bg-[#008080] text-white text-base font-semibold shadow-lg hover:shadow-xl hover:bg-[#006666] transition-all focus:outline-none focus:ring-2 focus:ring-[#008080] focus:ring-offset-2"
                 >
                   Reveal My Sourcing Strategy
                 </motion.button>

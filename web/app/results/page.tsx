@@ -6,7 +6,7 @@
 
 'use client';
 
-import { useSearchParams } from 'next/navigation';
+import { useSearchParams, useRouter } from 'next/navigation';
 import { useEffect, useState, Suspense } from 'react';
 import Link from 'next/link';
 import { Card } from '@/components/ui/card';
@@ -196,7 +196,7 @@ function CostBreakdown({ costBreakdown, totalLandedCost }: { costBreakdown: any;
                 data={chartData}
                 cx="50%"
                 cy="50%"
-                innerRadius={70}
+                innerRadius={80}
                 outerRadius={100}
                 paddingAngle={2}
                 dataKey="value"
@@ -213,8 +213,8 @@ function CostBreakdown({ costBreakdown, totalLandedCost }: { costBreakdown: any;
           </ResponsiveContainer>
           {/* Center Text Overlay */}
           <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-            <p className="text-xs text-gray-500 uppercase tracking-wide mb-1">Total Landed Cost</p>
-            <p className="text-2xl font-bold font-mono text-blue-600">${totalLandedCost.toFixed(2)}</p>
+            <p className="text-xs text-gray-500 uppercase tracking-wide mb-1">Total</p>
+            <p className="text-3xl sm:text-4xl font-extrabold font-mono text-blue-600">${totalLandedCost.toFixed(2)}</p>
           </div>
         </div>
 
@@ -342,18 +342,23 @@ function ProfitabilitySimulator({ totalLandedCost, answers, costBreakdown, aiAna
       <div className="space-y-3 flex-1 flex flex-col">
         <div>
           <label className="text-sm text-gray-700 mb-2 block font-medium">Target Retail Price</label>
-          <input
-            type="range"
-            min={minPrice}
-            max={maxPrice}
-            step="0.01"
-            value={retailPrice}
-            onChange={(e) => setRetailPrice(parseFloat(e.target.value))}
-            className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-blue-600"
-          />
-          <div className="flex justify-between text-xs text-gray-500 mt-1">
+          <div className="relative">
+            <input
+              type="range"
+              min={minPrice}
+              max={maxPrice}
+              step="0.01"
+              value={retailPrice}
+              onChange={(e) => setRetailPrice(parseFloat(e.target.value))}
+              className="custom-slider w-full h-3 bg-gray-200 rounded-full appearance-none cursor-pointer"
+              style={{
+                background: `linear-gradient(to right, #14b8a6 0%, #14b8a6 ${((retailPrice - minPrice) / (maxPrice - minPrice)) * 100}%, #e5e7eb ${((retailPrice - minPrice) / (maxPrice - minPrice)) * 100}%, #e5e7eb 100%)`
+              }}
+            />
+          </div>
+          <div className="flex justify-between text-xs text-gray-500 mt-2">
             <span>${minPrice}</span>
-            <span className="text-blue-600 font-bold font-mono">${retailPrice.toFixed(2)}</span>
+            <span className="text-[#008080] font-bold font-mono">${retailPrice.toFixed(2)}</span>
             <span>${maxPrice}</span>
           </div>
         </div>
@@ -528,7 +533,7 @@ function ScaleAnalysis({ scaleAnalysis, totalLandedCost, costBreakdown }: {
 }
 
 // Risk Assessment Component (2x2 Grid with Left-Border Style)
-function RiskAssessment({ risks, osintRiskScore }: { risks: any; osintRiskScore?: number }) {
+function RiskAssessment({ risks, osintRiskScore, hasCriticalRisk }: { risks: any; osintRiskScore?: number; hasCriticalRisk?: boolean }) {
   const getRiskColor = (level?: string) => {
     if (!level) return { border: 'border-l-gray-400', text: 'text-gray-600', icon: 'text-gray-400' };
     switch (level.toLowerCase()) {
@@ -577,22 +582,22 @@ function RiskAssessment({ risks, osintRiskScore }: { risks: any; osintRiskScore?
             </span>
             <div className="text-right">
               <span className="text-2xl font-bold font-mono text-gray-900">
-                {osintRiskScore.toFixed(0)}/100
+                {hasCriticalRisk ? Math.max(20, osintRiskScore).toFixed(0) : osintRiskScore.toFixed(0)}/100
               </span>
               <div className="mt-1">
                 <span className={`text-xs font-semibold px-2 py-0.5 rounded ${
-                  osintRiskScore >= 67 
+                  hasCriticalRisk || osintRiskScore < 34
+                    ? 'bg-red-100 text-red-700' 
+                    : osintRiskScore >= 67 
                     ? 'bg-green-100 text-green-700' 
-                    : osintRiskScore >= 34 
-                    ? 'bg-yellow-100 text-yellow-700' 
-                    : 'bg-red-100 text-red-700'
+                    : 'bg-yellow-100 text-yellow-700'
                 }`}>
                   Risk Level: {
-                    osintRiskScore >= 67 
+                    hasCriticalRisk || osintRiskScore < 34
+                      ? 'High' 
+                      : osintRiskScore >= 67 
                       ? 'Low' 
-                      : osintRiskScore >= 34 
-                      ? 'Medium' 
-                      : 'High'
+                      : 'Medium'
                   }
                 </span>
               </div>
@@ -1005,7 +1010,7 @@ function ActionRoadmap({ answers, aiAnalysis }: { answers: Answers; aiAnalysis?:
                 {hasImmediateHalt && step.icon ? step.icon : (index + 1)}
               </div>
               {index < roadmapSteps.length - 1 && (
-                <div className={`w-0.5 h-full ${hasImmediateHalt ? 'bg-red-300' : 'bg-gray-300'} mt-2`} />
+                <div className={`w-0.5 h-full ${hasImmediateHalt ? 'bg-red-300 border-l-2 border-dashed border-red-400' : 'bg-gray-300 border-l-2 border-dashed border-gray-400'} mt-2`} />
               )}
             </div>
             <div className="flex-1 pb-6">
@@ -1053,12 +1058,9 @@ function ResultsActionButtons({
   aiAnalysis?: AIAnalysisResult | null
   compact?: boolean
 }) {
-  const [isProcessingPayment, setIsProcessingPayment] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [showPaymentModal, setShowPaymentModal] = useState(false);
-  const [gumroadUrl, setGumroadUrl] = useState<string | null>(null);
-  // Agreement is now implicit (caption text only, no checkbox)
-  const isAgreed = true;
+  const router = useRouter();
 
   // 인증 상태 확인
   useEffect(() => {
@@ -1075,219 +1077,69 @@ function ResultsActionButtons({
     checkAuth();
   }, []);
 
-  // Start Sourcing Request 핸들러 - 결제 모달 표시
-  const handleStartSourcing = () => {
+  // Save Report 핸들러 - 리포트를 저장하고 Dashboard로 리다이렉트
+  const handleSaveReport = async () => {
     if (!isAuthenticated) {
       window.location.href = '/login?redirect=/results';
       return;
     }
 
-    // 결제 유도 모달 표시
-    setShowPaymentModal(true);
-  };
+    setIsSaving(true);
+    
+    try {
+      // 프로젝트 이름 추출
+      const productName = answers?.product_info?.split('-')[0]?.trim() || 
+                         answers?.product_info?.split(',')[0]?.trim() ||
+                         answers?.product_desc?.split(',')[0] || 
+                         answers?.project_name || 
+                         'Saved Analysis';
 
-  // 결제 진행 핸들러 - 프로젝트 생성 및 모달 닫기 (Gumroad Overlay는 <a> 태그가 자동 처리)
-  const handleProceedToPayment = async (e: React.MouseEvent<HTMLAnchorElement>) => {
-    if (!isAuthenticated) {
-      e.preventDefault();
-      window.location.href = '/login?redirect=/results';
-      return;
-    }
+      // 프로젝트 저장 (API 호출)
+      const saveResponse = await fetch('/api/projects/save', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          project_id: projectId, // 기존 프로젝트가 있으면 업데이트, 없으면 생성
+          answers: answers,
+          ai_analysis: aiAnalysis,
+        }),
+      });
 
-    // 프로젝트가 없으면 먼저 생성
-    if (!projectId) {
-      e.preventDefault();
-      setIsProcessingPayment(true);
+      const saveData = await saveResponse.json();
       
-      try {
-        // 프로젝트 이름 추출
-        const productName = answers?.product_info?.split('-')[0]?.trim() || 
-                           answers?.product_info?.split(',')[0]?.trim() ||
-                           answers?.product_desc?.split(',')[0] || 
-                           answers?.project_name || 
-                           'New Sourcing Project';
-
-        // 프로젝트 생성
-        const projectResponse = await fetch('/api/projects/submit', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            name: productName,
-            answers: answers,
-            ai_analysis: aiAnalysis,
-          }),
-        });
-
-        const projectData = await projectResponse.json();
-        if (projectData.ok && projectData.projectId) {
-          setIsProcessingPayment(false);
-          setShowPaymentModal(false);
-          
-          // 프로젝트 ID를 포함한 Gumroad 링크로 Overlay 열기
-          const gumroadUrl = `https://junkim82.gumroad.com/l/wmtnuv?custom_field1=${projectData.projectId}`;
-          const gumroadLink = document.createElement('a');
-          gumroadLink.href = gumroadUrl;
-          gumroadLink.setAttribute('data-gumroad-single-product', 'true');
-          gumroadLink.style.display = 'none';
-          document.body.appendChild(gumroadLink);
-          
-          // Gumroad 스크립트가 로드될 때까지 대기 후 클릭
-          const triggerGumroad = () => {
-            if (typeof (window as any).GumroadOverlay !== 'undefined') {
-              gumroadLink.click();
-              setTimeout(() => {
-                document.body.removeChild(gumroadLink);
-              }, 100);
-            } else {
-              setTimeout(triggerGumroad, 100);
-            }
-          };
-          
-          triggerGumroad();
-        } else {
-          throw new Error('Failed to create project');
-        }
-      } catch (error) {
-        console.error('[Payment] Failed to proceed:', error);
-        alert(`Failed to proceed with payment: ${error instanceof Error ? error.message : 'Unknown error'}`);
-        setIsProcessingPayment(false);
+      if (saveData.ok) {
+        // Dashboard의 'Sourcing Estimates' 탭으로 리다이렉트
+        router.push('/dashboard?tab=requests');
+      } else {
+        throw new Error(saveData.error || 'Failed to save report');
       }
-    } else {
-      // 프로젝트가 이미 있으면 모달만 닫기 (Gumroad Overlay는 자동으로 열림)
-      setShowPaymentModal(false);
+    } catch (error) {
+      console.error('[Save Report] Failed to save:', error);
+      alert(`Failed to save report: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      setIsSaving(false);
     }
   };
+
 
   // Compact Header Style
   if (compact) {
     return (
-      <>
-        <Button
-          onClick={handleStartSourcing}
-          disabled={isProcessingPayment}
-          className="px-4 py-2 text-sm font-semibold bg-[#008080] hover:bg-teal-700 text-white rounded-lg transition-colors"
-        >
-          {isProcessingPayment ? (
-            <span className="flex items-center gap-2">
-              <Loader2 className="w-4 h-4 animate-spin" />
-              <span>Processing...</span>
-            </span>
-          ) : (
-            'Request Official Quote'
-          )}
-        </Button>
-
-        {/* Payment Modal - New Design */}
-        <Dialog open={showPaymentModal} onOpenChange={setShowPaymentModal}>
-          <DialogContent className="sm:max-w-lg">
-            <DialogHeader>
-              <DialogTitle className="text-2xl font-bold text-gray-900">
-                Connect with a Dedicated Agent
-              </DialogTitle>
-              <DialogDescription className="text-gray-600">
-                Get official quotes and negotiate with suppliers.
-              </DialogDescription>
-            </DialogHeader>
-
-            <div className="space-y-6 py-4">
-              {/* Price Display */}
-              <div className="text-center">
-                <p className="text-sm text-gray-500 mb-2">$49 Sourcing Retainer</p>
-                <div className="flex items-center justify-center gap-2">
-                  <span className="text-4xl font-bold text-gray-900">$49</span>
-                </div>
-                <p className="text-xs text-gray-500 mt-1">One-time sourcing initiation fee</p>
-              </div>
-
-              {/* Credited Upon Order Policy (Most Important) */}
-              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                <div className="flex items-start gap-2">
-                  <Shield className="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" />
-                  <div>
-                    <p className="text-sm font-semibold text-blue-900 mb-1">Credited Upon Order</p>
-                    <p className="text-sm text-blue-900 leading-relaxed">
-                      This fee covers the agent's labor for negotiation and is <strong>non-refundable</strong>. However, it will be <strong>fully deducted</strong> from your final 5% service fee when you proceed with the order.
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              {/* Feature List */}
-              <div className="space-y-3">
-                <div className="flex items-start gap-3">
-                  <CheckCircle2 className="w-5 h-5 text-emerald-600 mt-0.5 flex-shrink-0" />
-                  <div>
-                    <p className="font-semibold text-gray-900">Dedicated Agent Assignment</p>
-                    <p className="text-sm text-gray-600">
-                      Your personal sourcing specialist assigned to your project
-                    </p>
-                  </div>
-                </div>
-                <div className="flex items-start gap-3">
-                  <CheckCircle2 className="w-5 h-5 text-emerald-600 mt-0.5 flex-shrink-0" />
-                  <div>
-                    <p className="font-semibold text-gray-900">Factory Verification & Price Negotiation</p>
-                    <p className="text-sm text-gray-600">
-                      We find and verify trusted factories, then negotiate the best prices
-                    </p>
-                  </div>
-                </div>
-                <div className="flex items-start gap-3">
-                  <CheckCircle2 className="w-5 h-5 text-emerald-600 mt-0.5 flex-shrink-0" />
-                  <div>
-                    <p className="font-semibold text-gray-900">Official Quote (PI) Issuance</p>
-                    <p className="text-sm text-gray-600">
-                      Receive formal Proforma Invoice from verified manufacturers
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              {/* Non-refundable Notice (Microcopy) */}
-              <div className="pt-2 border-t border-gray-200">
-                <p className="text-xs text-gray-500 text-center leading-relaxed">
-                  The sourcing fee is non-refundable once the official quote has been delivered.
-                </p>
-              </div>
-            </div>
-
-        <DialogFooter className="flex-col sm:flex-col gap-3">
-          {isProcessingPayment ? (
-            <Button
-              disabled
-              className="w-full bg-[#008080] hover:bg-teal-700 text-white font-semibold py-3"
-            >
-              <span className="flex items-center gap-2">
-                <Loader2 className="w-4 h-4 animate-spin" />
-                <span>Processing...</span>
-              </span>
-            </Button>
-          ) : (
-            <a
-              href={projectId 
-                ? `https://junkim82.gumroad.com/l/wmtnuv?custom_field1=${projectId}`
-                : 'https://junkim82.gumroad.com/l/wmtnuv'
-              }
-              data-gumroad-single-product="true"
-              onClick={handleProceedToPayment}
-              className="w-full inline-flex items-center justify-center bg-[#008080] hover:bg-teal-700 text-white font-semibold py-3 rounded-lg transition-colors"
-            >
-              Proceed to Payment
-            </a>
-          )}
-          <button
-            onClick={() => setShowPaymentModal(false)}
-            className="text-sm text-gray-500 hover:text-gray-700"
-            disabled={isProcessingPayment}
-          >
-            Cancel
-          </button>
-        </DialogFooter>
-          </DialogContent>
-        </Dialog>
-      </>
+      <Button
+        onClick={handleSaveReport}
+        disabled={isSaving}
+        className="px-4 py-2 text-sm font-semibold bg-[#008080] hover:bg-teal-700 text-white rounded-lg transition-colors"
+      >
+        {isSaving ? (
+          <span className="flex items-center gap-2">
+            <Loader2 className="w-4 h-4 animate-spin" />
+            <span>Saving...</span>
+          </span>
+        ) : (
+          'Save to Estimates'
+        )}
+      </Button>
     )
   }
 
@@ -1303,170 +1155,52 @@ function ResultsActionButtons({
             <div className="flex flex-col items-end gap-3 min-w-[360px] ml-auto">
               {/* Main CTA Button */}
               <div className="w-full">
-              <a
-                href={projectId 
-                  ? `https://junkim82.gumroad.com/l/wmtnuv?custom_field1=${projectId}`
-                  : 'https://junkim82.gumroad.com/l/wmtnuv'
-                }
-                data-gumroad-single-product="true"
-                onClick={(e) => {
-                  if (!isAuthenticated) {
-                    e.preventDefault();
-                    window.location.href = '/login?redirect=/results';
-                    return;
-                  }
-                  if (!projectId) {
-                    e.preventDefault();
-                    handleStartSourcing();
-                  }
-                }}
-                className="w-full inline-flex items-center justify-center bg-[#008080] hover:bg-teal-700 text-white font-semibold py-3.5 px-6 rounded-lg transition-colors"
-              >
-                {isProcessingPayment ? (
-                  <span className="flex items-center gap-2">
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                    <span>Processing...</span>
-                  </span>
-                ) : (
-                  <span className="text-base">Request Official Quote</span>
-                )}
-              </a>
+                <Button
+                  onClick={handleSaveReport}
+                  disabled={isSaving}
+                  className="w-full bg-[#008080] hover:bg-teal-700 text-white font-semibold py-3.5 px-6 rounded-lg transition-colors"
+                >
+                  {isSaving ? (
+                    <span className="flex items-center gap-2">
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      <span>Saving...</span>
+                    </span>
+                  ) : (
+                    <span className="text-base">Save to Estimates</span>
+                  )}
+                </Button>
                 {/* Info Badge */}
                 <div className="mt-2 text-center">
                   <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-gray-600">
                     <CheckCircle2 className="w-3.5 h-3.5" />
-                    Start chatting with your dedicated agent immediately. Pay later when you approve the quote.
+                    Report saved to your Sourcing Estimates
                   </span>
-                </div>
-                {/* Agreement Caption */}
-                <div className="mt-2 text-center">
-                  <p className="text-[10px] text-gray-500 leading-relaxed">
-                    By proceeding, I agree that design/marketing services are excluded.
-                  </p>
                 </div>
               </div>
             </div>
           </div>
 
-          {/* Payment Modal */}
-          <Dialog open={showPaymentModal} onOpenChange={setShowPaymentModal}>
-            <DialogContent className="sm:max-w-lg">
-              <DialogHeader>
-                <DialogTitle className="text-2xl font-bold text-gray-900">
-                  Start Your Official Sourcing Project
-                </DialogTitle>
-                <DialogDescription className="text-gray-600">
-                  Get real factory quotes and dedicated support for your sourcing project
-                </DialogDescription>
-              </DialogHeader>
-
-              <div className="space-y-6 py-4">
-                {/* Value Proposition */}
-                <div className="space-y-3">
-                  <div className="flex items-start gap-3">
-                    <CheckCircle2 className="w-5 h-5 text-emerald-600 mt-0.5 flex-shrink-0" />
-                    <div>
-                      <p className="font-semibold text-gray-900">Real Factory Quotes</p>
-                      <p className="text-sm text-gray-600">
-                        AI 추정치가 아닌, 실제 공장 3곳의 확정 견적을 48시간 내 제공
-                      </p>
-                    </div>
-                  </div>
-                  <div className="flex items-start gap-3">
-                    <CheckCircle2 className="w-5 h-5 text-emerald-600 mt-0.5 flex-shrink-0" />
-                    <div>
-                      <p className="font-semibold text-gray-900">Dedicated Sourcing Agent</p>
-                      <p className="text-sm text-gray-600">
-                        전담 매니저 배정 (영어/한국어/중국어 지원)
-                      </p>
-                    </div>
-                  </div>
-                  <div className="flex items-start gap-3">
-                    <CheckCircle2 className="w-5 h-5 text-emerald-600 mt-0.5 flex-shrink-0" />
-                    <div>
-                      <p className="font-semibold text-gray-900">100% Credit Back</p>
-                      <p className="text-sm text-gray-600">
-                        본 발주(Order) 진행 시, 이 $49는 수수료에서 전액 차감됩니다. (사실상 무료)
-                      </p>
-                    </div>
-                  </div>
-                  <div className="flex items-start gap-3">
-                    <Sparkles className="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" />
-                    <div>
-                      <p className="font-semibold text-gray-900">Bonus: 30-Day Unlimited AI Analysis</p>
-                      <p className="text-sm text-gray-600">
-                        결제 즉시 30일간 AI 분석 무제한 혜택 잠금 해제
-                      </p>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Price */}
-                <div className="bg-gray-50 rounded-lg p-4 text-center border border-gray-200">
-                  <p className="text-sm text-gray-500 mb-1">One-time fee</p>
-                  <div className="flex items-center justify-center gap-2">
-                    <span className="text-lg text-gray-400 line-through">$299</span>
-                    <span className="text-3xl font-bold text-gray-900">$49</span>
-                  </div>
-                </div>
-              </div>
-
-              <DialogFooter className="flex-col sm:flex-col gap-3">
-                {isProcessingPayment ? (
-                  <Button
-                    disabled
-                    className="w-full bg-neutral-900 hover:bg-neutral-800 text-white font-semibold py-3"
-                  >
-                    <span className="flex items-center gap-2">
-                      <Loader2 className="w-4 h-4 animate-spin" />
-                      <span>Processing...</span>
-                    </span>
-                  </Button>
-                ) : (
-                  <a
-                    href={projectId 
-                      ? `https://junkim82.gumroad.com/l/wmtnuv?custom_field1=${projectId}`
-                      : 'https://junkim82.gumroad.com/l/wmtnuv'
-                    }
-                    data-gumroad-single-product="true"
-                    onClick={handleProceedToPayment}
-                    className="w-full inline-flex items-center justify-center bg-neutral-900 hover:bg-neutral-800 text-white font-semibold py-3 rounded-lg transition-colors"
-                  >
-                    Pay $49 & Start Sourcing
-                  </a>
-                )}
-                <button
-                  onClick={() => setShowPaymentModal(false)}
-                  className="text-sm text-gray-500 hover:text-gray-700"
-                  disabled={isProcessingPayment}
-                >
-                  Cancel
-                </button>
-              </DialogFooter>
-            </DialogContent>
-          </Dialog>
-
           {/* Mobile Layout */}
           <div className="md:hidden space-y-4">
             <div className="space-y-2">
               <Button
-                onClick={handleStartSourcing}
-                disabled={isProcessingPayment}
+                onClick={handleSaveReport}
+                disabled={isSaving}
                 className="w-full bg-[#008080] hover:bg-teal-700 text-white font-semibold text-xs py-2.5"
               >
-                {isProcessingPayment ? (
+                {isSaving ? (
                   <span className="flex items-center gap-1">
                     <Loader2 className="w-3 h-3 animate-spin" />
-                    <span>Processing...</span>
+                    <span>Saving...</span>
                   </span>
                 ) : (
-                  <span>Request Official Quote</span>
+                  <span>Save to Estimates</span>
                 )}
               </Button>
               <div className="mt-1.5 text-center">
                 <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-gray-600">
                   <CheckCircle2 className="w-3 h-3" />
-                  Chat now, pay later
+                  Save your analysis for later
                 </span>
               </div>
             </div>
@@ -2209,7 +1943,7 @@ function ResultsContent() {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header with Logo and Action Buttons */}
-      <div className="bg-white border-b border-gray-200 sticky top-0 z-50">
+      <div className="bg-white/95 backdrop-blur-sm border-b border-gray-200 sticky top-0 z-50 shadow-sm">
         <div className="max-w-7xl mx-auto px-6 md:px-8 py-4">
           <div className="flex items-center justify-between gap-4">
             <Link href="/" className="inline-block cursor-pointer hover:opacity-80 transition-opacity flex-shrink-0">
@@ -2294,6 +2028,7 @@ function ResultsContent() {
           <RiskAssessment
             risks={risks || {}}
             osintRiskScore={aiAnalysis?.osint_risk_score || 0}
+            hasCriticalRisk={hasCriticalRisk}
           />
 
           {/* Level 2 Features: Compliance Checklist */}

@@ -607,7 +607,7 @@ function DashboardPageContent() {
         </div>
 
         {/* Tabs Navigation */}
-        <div className="flex gap-8 mb-8 border-b border-gray-200">
+        <div className="flex gap-8 mb-6 border-b border-gray-200">
           <TabButton
             label="Overview"
             active={activeTab === 'overview'}
@@ -733,20 +733,20 @@ function SummaryCard({
   color: 'blue' | 'orange' | 'green' | 'red'
 }) {
   const colorClasses = {
-    blue: 'bg-blue-50 text-blue-600',
-    orange: 'bg-orange-50 text-orange-600',
-    green: 'bg-green-50 text-green-600',
-    red: 'bg-red-50 text-red-600',
+    blue: 'bg-blue-50/50 text-blue-600',
+    orange: 'bg-orange-50/50 text-orange-600',
+    green: 'bg-green-50/50 text-green-600',
+    red: 'bg-red-50/50 text-red-600',
   }
 
   return (
-    <div className="bg-white border border-gray-200 rounded-xl p-6">
+    <div className="bg-white border border-gray-200 rounded-xl p-6 hover:border-gray-300 hover:shadow-md hover:-translate-y-0.5 transition-all">
       <div className="flex items-center justify-between">
         <div>
           <p className="text-sm text-gray-600 mb-1">{label}</p>
-          <p className="text-3xl font-bold text-gray-900">{value}</p>
+          <p className="text-5xl font-extrabold text-gray-900">{value}</p>
         </div>
-        <div className={`${colorClasses[color]} p-3 rounded-lg`}>
+        <div className={`${colorClasses[color]} p-4 rounded-full`}>
           {icon}
         </div>
       </div>
@@ -823,10 +823,27 @@ function OverviewTab({
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Recent Activity */}
         <div className="lg:col-span-2">
-          <div className="bg-white border border-gray-200 rounded-xl p-6">
+          <div className="bg-white border border-gray-200 rounded-xl p-6 hover:border-gray-300 hover:shadow-md hover:-translate-y-0.5 transition-all">
             <h2 className="text-lg font-semibold text-gray-900 mb-4">Recent Activity</h2>
             {recentActivity.length === 0 ? (
-              <p className="text-sm text-gray-500">No recent activity</p>
+              <div className="flex flex-col items-center justify-center py-12">
+                <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">
+                  <FileText className="w-8 h-8 text-gray-400" />
+                </div>
+                <p className="text-sm font-medium text-gray-900 mb-2">No recent activity</p>
+                <p className="text-sm text-gray-500 text-center mb-4 max-w-sm">
+                  Get started by creating your first sourcing request to see activity here.
+                </p>
+                <Link href="/chat">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="border-gray-300 hover:bg-gray-50 text-gray-700"
+                  >
+                    Create First Request
+                  </Button>
+                </Link>
+              </div>
             ) : (
               <div className="space-y-3">
                 {recentActivity.map((item: any) => (
@@ -860,16 +877,28 @@ function OverviewTab({
 
         {/* Quick Action */}
         <div className="lg:col-span-1">
-          <div className="bg-white border border-gray-200 rounded-xl p-6">
+          <div className="bg-white border border-gray-200 rounded-xl p-6 hover:border-gray-300 hover:shadow-md hover:-translate-y-0.5 transition-all">
             <h2 className="text-lg font-semibold text-gray-900 mb-4">Quick Actions</h2>
-            <Link href="/chat">
-              <Button
-                size="lg"
-                className="w-full bg-[#008080] hover:bg-[#006666] text-white rounded-lg py-3 sm:py-6 font-semibold text-sm sm:text-base"
-              >
-                + New Analysis Request
-              </Button>
-            </Link>
+            <div className="space-y-3">
+              <Link href="/account">
+                <Button
+                  variant="outline"
+                  size="lg"
+                  className="w-full border-gray-300 hover:bg-gray-50 text-gray-700 rounded-lg py-3 font-medium text-sm"
+                >
+                  View Account Settings
+                </Button>
+              </Link>
+              <Link href="/dashboard?tab=requests">
+                <Button
+                  variant="outline"
+                  size="lg"
+                  className="w-full border-gray-300 hover:bg-gray-50 text-gray-700 rounded-lg py-3 font-medium text-sm"
+                >
+                  View All Estimates
+                </Button>
+              </Link>
+            </div>
           </div>
         </div>
       </div>
@@ -923,12 +952,12 @@ function PaymentModal({
           </div>
 
           {/* Credited Upon Order Policy (Most Important) */}
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+          <div className="bg-teal-50 border border-teal-200 rounded-lg p-4">
             <div className="flex items-start gap-2">
-              <Shield className="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" />
+              <Shield className="w-5 h-5 text-teal-600 mt-0.5 flex-shrink-0" />
               <div>
-                <p className="text-sm font-semibold text-blue-900 mb-1">Credited Upon Order</p>
-                <p className="text-sm text-blue-900 leading-relaxed">
+                <p className="text-sm font-semibold text-teal-900 mb-1">Credited Upon Order</p>
+                <p className="text-sm text-teal-900 leading-relaxed">
                   This fee covers the agent's labor for negotiation and is <strong>non-refundable</strong>. However, it will be <strong>fully deducted</strong> from your final 5% service fee when you proceed with the order.
                 </p>
               </div>
@@ -1029,9 +1058,9 @@ function PaymentModal({
                 }
                 onProceed(e)
               }}
-              className={`w-full inline-flex items-center justify-center font-semibold py-3 rounded-lg transition-colors ${
+              className={`w-full inline-flex items-center justify-center font-semibold py-3 rounded-lg transition-all duration-200 ${
                 ndaAccepted
-                  ? 'bg-[#008080] hover:bg-teal-700 text-white cursor-pointer'
+                  ? 'bg-[#008080] hover:bg-teal-800 hover:-translate-y-0.5 text-white cursor-pointer shadow-md hover:shadow-lg'
                   : 'bg-gray-300 text-gray-500 cursor-not-allowed'
               }`}
             >
@@ -1048,6 +1077,41 @@ function PaymentModal({
         </DialogFooter>
       </DialogContent>
     </Dialog>
+  )
+}
+
+// Product Initials Avatar Component
+function ProductInitialsAvatar({ productName }: { productName: string }) {
+  // 제품명에서 첫 두 단어의 첫 글자를 추출
+  const getInitials = (name: string): string => {
+    if (!name || name.trim().length === 0) return '?'
+    
+    // 공백, 하이픈, 쉼표 등으로 단어 분리
+    const words = name.trim().split(/[\s\-_,]+/).filter(word => word.length > 0)
+    
+    if (words.length === 0) return '?'
+    
+    // 첫 단어의 첫 글자
+    const firstLetter = words[0].charAt(0).toUpperCase()
+    
+    // 두 번째 단어가 있으면 두 번째 단어의 첫 글자, 없으면 첫 단어의 두 번째 글자
+    const secondLetter = words.length > 1 
+      ? words[1].charAt(0).toUpperCase()
+      : words[0].length > 1 
+        ? words[0].charAt(1).toUpperCase()
+        : firstLetter
+    
+    return `${firstLetter}${secondLetter}`
+  }
+
+  const initials = getInitials(productName)
+
+  return (
+    <div className="w-8 h-8 sm:w-10 sm:h-10 bg-teal-50 rounded-lg flex items-center justify-center flex-shrink-0 border border-teal-100">
+      <span className="text-teal-700 font-semibold text-xs sm:text-sm">
+        {initials}
+      </span>
+    </div>
   )
 }
 
@@ -1082,7 +1146,7 @@ function EstimatesList({ estimates }: { estimates: any[] }) {
   }
 
   return (
-    <div className="bg-white border border-gray-200 rounded-xl overflow-hidden">
+    <div className="bg-white border border-gray-200 rounded-xl overflow-hidden hover:border-gray-300 hover:shadow-md transition-all">
       <div className="overflow-x-auto">
         <table className="w-full min-w-[640px]">
           <thead className="bg-gray-50 border-b border-gray-200">
@@ -1103,9 +1167,7 @@ function EstimatesList({ estimates }: { estimates: any[] }) {
                 <tr key={estimate.id} className="hover:bg-gray-50 transition-colors">
                   <td className="px-3 sm:px-6 py-4 whitespace-nowrap">
                     <div className="flex items-center gap-2 sm:gap-3">
-                      <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gray-100 rounded-full flex items-center justify-center flex-shrink-0">
-                        <Package className="h-4 w-4 sm:h-5 sm:w-5 text-gray-600" />
-                      </div>
+                      <ProductInitialsAvatar productName={estimate.productName} />
                       <div className="min-w-0">
                         <Link 
                           href={`/results?project_id=${estimate.id}`}
@@ -1406,7 +1468,7 @@ function ShipmentsList({ shipments }: { shipments: any[] }) {
         const action = getActionForStep(currentStep, shipment, quoteStatus)
 
         return (
-          <div key={shipment.id} className="bg-white border border-gray-200 rounded-xl p-6 hover:border-gray-300 hover:shadow-sm transition-all">
+          <div key={shipment.id} className="bg-white border border-gray-200 rounded-xl p-6 hover:border-gray-300 hover:shadow-md hover:-translate-y-0.5 transition-all">
             <div className="flex items-start justify-between mb-6">
               <div className="flex items-center gap-4 flex-1">
                 <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
@@ -1495,7 +1557,7 @@ function DashboardCard({
   rightContent: React.ReactNode
 }) {
   return (
-    <div className="bg-white border border-gray-200 rounded-xl p-5 hover:border-gray-300 hover:shadow-sm transition-all">
+    <div className="bg-white border border-gray-200 rounded-xl p-5 hover:border-gray-300 hover:shadow-md hover:-translate-y-0.5 transition-all">
       <div className="flex items-center justify-between">
         {/* Left: Info */}
         <div className="flex-1 min-w-0">
@@ -1574,10 +1636,16 @@ function StatusBadge({ status }: { status: string }) {
   const colorClass = statusColors[formattedStatus] || 
                      'bg-gray-50 text-gray-700 border-gray-200'
 
+  // 'Analysis Complete'일 때 체크 아이콘 표시
+  const showCheckIcon = formattedStatus === 'Analysis Complete' || formattedStatus === 'Completed'
+
   return (
     <span
-      className={`px-3 py-1 rounded-full text-xs font-medium border ${colorClass}`}
+      className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium border ${colorClass}`}
     >
+      {showCheckIcon && (
+        <CheckCircle2 className="w-3.5 h-3.5 text-green-600" />
+      )}
       {formattedStatus}
     </span>
   )

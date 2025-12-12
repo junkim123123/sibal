@@ -79,7 +79,7 @@ export default function AnalysisLoader() {
       
       {/* Main Card Container */}
       <div className="relative z-10 w-full max-w-md">
-        <div className="bg-white border border-neutral-200 rounded-lg p-8 shadow-sm">
+        <div className="bg-white border border-neutral-200 rounded-2xl p-8 shadow-2xl shadow-neutral-900/5">
           <div className="space-y-8">
             {/* Dynamic Animation: Map Route + Radar Scan */}
             <div className="flex justify-center">
@@ -282,13 +282,13 @@ export default function AnalysisLoader() {
                   initial={{ width: 0 }}
                   animate={{ width: `${progress}%` }}
                   transition={{ duration: 0.5, ease: 'easeOut' }}
-                  className="h-full bg-gradient-to-r from-neutral-700 to-neutral-900 rounded-full relative"
+                  className="h-full bg-gradient-to-r from-teal-500 to-teal-600 rounded-full relative"
                 >
                   {/* Pulsing glow effect */}
                   <motion.div
-                    className="absolute inset-0 bg-neutral-900 rounded-full"
+                    className="absolute inset-0 bg-teal-500 rounded-full"
                     animate={{
-                      opacity: [0.5, 1, 0.5],
+                      opacity: [0.6, 1, 0.6],
                     }}
                     transition={{
                       duration: 1.5,

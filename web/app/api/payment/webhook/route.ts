@@ -326,80 +326,105 @@ export async function POST(req: Request) {
       console.log('[Webhook] Successfully updated user subscription status to active');
     }
 
-    // 2. 프로젝트 레벨: is_paid_subscription을 true로 설정 (project_id가 있는 경우)
+    // 2. 프로젝트 레벨: 결제 완료 후 프로젝트 상태 업데이트 (project_id가 있는 경우)
     if (projectId) {
-      const { error: projectUpdateError } = await adminClient
+      // 프로젝트 현재 상태 확인
+      const { data: currentProject } = await adminClient
         .from('projects')
-        .update({
+        .select('id, status, manager_id')
+        .eq('id', projectId)
+        .eq('user_id', userId)
+        .single();
+
+      if (currentProject) {
+        // 프로젝트 상태 업데이트: 'saved' 또는 'completed' → 'in_progress'
+        // manager_id가 없으면 자동 할당을 위해 'in_progress'로만 변경 (관리자가 나중에 할당)
+        const updateData: any = {
           is_paid_subscription: true,
           lemon_squeezy_subscription_id: subscriptionId,
+          payment_status: 'paid',
+          payment_date: new Date().toISOString(),
           updated_at: new Date().toISOString(),
-        })
-        .eq('id', projectId)
-        .eq('user_id', userId); // 보안: 사용자 소유 프로젝트만 업데이트
+        };
 
-      if (projectUpdateError) {
-        console.error('[Webhook] Failed to update project subscription status:', projectUpdateError);
-        // 프로젝트 업데이트 실패는 치명적이지 않으므로 계속 진행
-      } else {
-        console.log('[Webhook] Successfully updated project subscription status:', projectId);
+        // 상태가 'saved' 또는 'completed'이고 manager_id가 없으면 'in_progress'로 변경
+        if ((currentProject.status === 'saved' || currentProject.status === 'completed') && !currentProject.manager_id) {
+          updateData.status = 'in_progress';
+          updateData.dispatched_at = new Date().toISOString();
+        }
 
-        // 3. 자동 메시지 전송: 결제 확인 메시지를 채팅방에 삽입
-        try {
-          // 채팅 세션 찾기 또는 생성
-          let chatSessionId: string | null = null;
+        const { error: projectUpdateError } = await adminClient
+          .from('projects')
+          .update(updateData)
+          .eq('id', projectId)
+          .eq('user_id', userId); // 보안: 사용자 소유 프로젝트만 업데이트
 
-          // 기존 세션 확인
-          const { data: existingSession } = await adminClient
-            .from('chat_sessions')
-            .select('id')
-            .eq('project_id', projectId)
-            .eq('user_id', userId)
-            .maybeSingle();
+        if (projectUpdateError) {
+          console.error('[Webhook] Failed to update project subscription status:', projectUpdateError);
+          // 프로젝트 업데이트 실패는 치명적이지 않으므로 계속 진행
+        } else {
+          console.log('[Webhook] Successfully updated project subscription status:', projectId, {
+            newStatus: updateData.status,
+            paymentStatus: 'paid',
+          });
 
-          if (existingSession) {
-            chatSessionId = existingSession.id;
-          } else {
-            // 세션이 없으면 생성
-            const { data: newSession, error: sessionError } = await adminClient
+          // 3. 자동 메시지 전송: 결제 확인 메시지를 채팅방에 삽입
+          try {
+            // 채팅 세션 찾기 또는 생성
+            let chatSessionId: string | null = null;
+
+            // 기존 세션 확인
+            const { data: existingSession } = await adminClient
               .from('chat_sessions')
-              .insert({
-                project_id: projectId,
-                user_id: userId,
-                status: 'in_progress',
-              })
               .select('id')
-              .single();
+              .eq('project_id', projectId)
+              .eq('user_id', userId)
+              .maybeSingle();
 
-            if (sessionError || !newSession) {
-              console.error('[Webhook] Failed to create chat session:', sessionError);
+            if (existingSession) {
+              chatSessionId = existingSession.id;
             } else {
-              chatSessionId = newSession.id;
-            }
-          }
+              // 세션이 없으면 생성
+              const { data: newSession, error: sessionError } = await adminClient
+                .from('chat_sessions')
+                .insert({
+                  project_id: projectId,
+                  user_id: userId,
+                  status: 'in_progress',
+                })
+                .select('id')
+                .single();
 
-          // 자동 메시지 삽입 (chat_messages 테이블 사용)
-          // Note: chat_messages는 sender_id가 NOT NULL이므로, 시스템 메시지는 role='manager'로 설정
-          if (chatSessionId) {
-            // 시스템 메시지를 위해 사용자 ID를 sender_id로 사용 (RLS 우회를 위해 adminClient 사용)
-            const { error: messageError } = await adminClient
-              .from('chat_messages')
-              .insert({
-                session_id: chatSessionId,
-                sender_id: userId, // 시스템 메시지이지만 sender_id는 필수이므로 사용자 ID 사용
-                role: 'manager', // 시스템 메시지는 manager 역할로 표시
-                content: 'System: Payment confirmed! ✅ We are assigning your expert manager. Please upload your product details/files here. Expect a response within 24 hours.',
-              });
-
-            if (messageError) {
-              console.error('[Webhook] Failed to insert auto message:', messageError);
-            } else {
-              console.log('[Webhook] Successfully inserted auto confirmation message');
+              if (sessionError || !newSession) {
+                console.error('[Webhook] Failed to create chat session:', sessionError);
+              } else {
+                chatSessionId = newSession.id;
+              }
             }
+
+            // 자동 메시지 삽입 (chat_messages 테이블 사용)
+            // Note: chat_messages는 sender_id가 NOT NULL이므로, 시스템 메시지는 role='manager'로 설정
+            if (chatSessionId) {
+              // 시스템 메시지를 위해 사용자 ID를 sender_id로 사용 (RLS 우회를 위해 adminClient 사용)
+              const { error: messageError } = await adminClient
+                .from('chat_messages')
+                .insert({
+                  session_id: chatSessionId,
+                  sender_id: userId, // 시스템 메시지이지만 sender_id는 필수이므로 사용자 ID 사용
+                  role: 'manager', // 시스템 메시지는 manager 역할로 표시
+                  content: 'System: Payment confirmed! ✅ We are assigning your expert manager. Please upload your product details/files here. Expect a response within 24 hours.',
+                });
+
+              if (messageError) {
+                console.error('[Webhook] Failed to insert auto message:', messageError);
+              } else {
+                console.log('[Webhook] Successfully inserted auto confirmation message');
+              }
+            }
+          } catch (messageError) {
+            console.error('[Webhook] Error in auto message insertion:', messageError);
+            // 메시지 삽입 실패는 치명적이지 않으므로 계속 진행
           }
-        } catch (messageError) {
-          console.error('[Webhook] Error in auto message insertion:', messageError);
-          // 메시지 삽입 실패는 치명적이지 않으므로 계속 진행
         }
       }
     } else {

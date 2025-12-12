@@ -8,6 +8,7 @@ import { login, signup } from './actions'
 import { Button } from '@/components/ui/button'
 import { Chrome, Eye, EyeOff } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
+import { motion, AnimatePresence } from 'framer-motion'
 
 function LoginPageContent() {
   const searchParams = useSearchParams()
@@ -183,21 +184,31 @@ function LoginPageContent() {
             </div>
 
             {/* Error Message */}
-            {error && (
-              <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
-                <p className="text-sm text-red-600 font-medium mb-2">{error}</p>
-                {error.toLowerCase().includes('email not confirmed') || error.toLowerCase().includes('email_not_confirmed') ? (
-                  <div className="mt-3 pt-3 border-t border-red-200">
-                    <p className="text-xs text-red-700">
-                      Please check your email inbox and click the confirmation link to verify your account.
-                    </p>
-                    <p className="text-xs text-red-600 mt-1">
-                      If you didn't receive the email, check your spam folder or try signing up again.
-                    </p>
+            <AnimatePresence>
+              {error && (
+                <motion.div
+                  initial={{ opacity: 0, height: 0, marginBottom: 0 }}
+                  animate={{ opacity: 1, height: 'auto', marginBottom: '1.5rem' }}
+                  exit={{ opacity: 0, height: 0, marginBottom: 0 }}
+                  transition={{ duration: 0.3, ease: 'easeInOut' }}
+                  className="overflow-hidden"
+                >
+                  <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
+                    <p className="text-sm text-red-600 font-medium mb-2">{error}</p>
+                    {error.toLowerCase().includes('email not confirmed') || error.toLowerCase().includes('email_not_confirmed') ? (
+                      <div className="mt-3 pt-3 border-t border-red-200">
+                        <p className="text-xs text-red-700">
+                          Please check your email inbox and click the confirmation link to verify your account.
+                        </p>
+                        <p className="text-xs text-red-600 mt-1">
+                          If you didn't receive the email, check your spam folder or try signing up again.
+                        </p>
+                      </div>
+                    ) : null}
                   </div>
-                ) : null}
-              </div>
-            )}
+                </motion.div>
+              )}
+            </AnimatePresence>
 
             {/* OAuth Buttons */}
             <div className="grid grid-cols-2 gap-3 mb-6">
@@ -206,7 +217,7 @@ function LoginPageContent() {
                 type="button"
                 onClick={() => handleOAuthSignIn('google')}
                 disabled={isLoading}
-                className="flex items-center justify-center gap-2 px-4 py-3 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                className="flex items-center justify-center gap-2 px-4 py-3 border border-gray-200 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 hover:border-gray-300 transition-all shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <svg className="h-5 w-5" viewBox="0 0 24 24">
                   <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
@@ -222,7 +233,7 @@ function LoginPageContent() {
                 type="button"
                 onClick={() => handleOAuthSignIn('kakao')}
                 disabled={isLoading}
-                className="flex items-center justify-center gap-2 px-4 py-3 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                className="flex items-center justify-center gap-2 px-4 py-3 border border-gray-200 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 hover:border-gray-300 transition-all shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <svg
                   className="h-5 w-5"
@@ -421,8 +432,8 @@ function LoginPageContent() {
 
         {/* Quote Content */}
         <div className="relative z-10 flex items-center justify-center h-full px-12">
-          <div className="text-center max-w-md">
-            <blockquote className="text-3xl lg:text-4xl font-bold text-white leading-tight mb-4">
+          <div className="text-center max-w-md" style={{ transform: 'translateY(-5%)' }}>
+            <blockquote className="text-3xl lg:text-4xl font-bold text-white leading-tight mb-4 tracking-tight" style={{ letterSpacing: '-0.02em' }}>
               Predictable Sourcing for Modern Brands.
             </blockquote>
             <p className="text-lg text-neutral-300 mt-6">

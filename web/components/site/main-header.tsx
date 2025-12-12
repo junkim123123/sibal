@@ -103,33 +103,55 @@ export function MainHeader() {
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="flex h-[72px] items-center justify-between">
           {/* Left: Logo */}
-          <Link href="/" className="flex items-center">
+          <Link 
+            href="/" 
+            onClick={(e) => {
+              if (pathname === '/') {
+                e.preventDefault();
+                return;
+              }
+              // 즉시 네비게이션
+              e.preventDefault();
+              router.push('/');
+            }}
+            className="flex items-center"
+          >
             <span className="text-2xl font-bold text-black dark:text-white">NexSupply</span>
           </Link>
 
           {/* Center: Navigation Links (Based on Page Type) */}
           {/* 로딩 중에도 메뉴 위치를 유지하여 Layout Shift 방지 */}
-          <nav className={`hidden md:flex md:items-center md:gap-8 md:absolute md:left-1/2 md:-translate-x-1/2 z-20 ${isLoading ? 'opacity-50' : ''}`}>
-            {currentNavItems.map((item) => (
-              <Link
-                key={item.href}
-                href={item.href}
-                onClick={(e) => {
-                  // 중복 클릭 방지
-                  if (pathname === item.href) {
-                    e.preventDefault();
-                    return;
-                  }
-                }}
-                className={`text-sm font-normal transition-colors relative ${
-                  pathname === item.href
-                    ? 'text-black dark:text-white after:absolute after:bottom-0 after:left-0 after:right-0 after:h-0.5 after:bg-black dark:after:bg-white'
-                    : 'text-zinc-700 dark:text-gray-300 hover:text-black dark:hover:text-white'
-                }`}
-              >
-                {item.label}
-              </Link>
-            ))}
+          <nav className={`hidden md:flex md:items-center md:gap-8 md:absolute md:left-1/2 md:-translate-x-1/2 z-20 ${isLoading ? 'opacity-50 pointer-events-none' : ''}`}>
+            {currentNavItems.map((item) => {
+              const handleNavClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
+                e.preventDefault();
+                e.stopPropagation();
+                
+                // 로딩 중이면 무시
+                if (isLoading) return;
+                
+                // 같은 페이지면 무시
+                if (pathname === item.href) return;
+                
+                // 즉시 네비게이션 (SPA 방식)
+                router.push(item.href);
+              };
+              
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  onClick={handleNavClick}
+                  className={`text-sm font-normal transition-colors relative ${
+                    pathname === item.href
+                      ? 'text-black dark:text-white after:absolute after:bottom-0 after:left-0 after:right-0 after:h-0.5 after:bg-black dark:after:bg-white'
+                      : 'text-zinc-700 dark:text-gray-300 hover:text-black dark:hover:text-white'
+                  }`}
+                >
+                  {item.label}
+                </Link>
+              );
+            })}
           </nav>
 
           {/* Right: Action Buttons Group */}
@@ -241,19 +263,35 @@ export function MainHeader() {
                 </div>
                 
                 {/* Navigation Links (Based on Page Type) */}
-                {currentNavItems.map((item) => (
-                  <Link
-                    key={item.href}
-                    href={item.href}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setMobileMenuOpen(false);
-                    }}
-                    className="block rounded-md px-3 py-2 text-base font-medium text-black dark:text-white hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
-                  >
-                    {item.label}
-                  </Link>
-                ))}
+                {currentNavItems.map((item) => {
+                  const handleMobileNavClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    
+                    // 로딩 중이면 무시
+                    if (isLoading) return;
+                    
+                    // 모바일 메뉴 닫기
+                    setMobileMenuOpen(false);
+                    
+                    // 같은 페이지면 무시
+                    if (pathname === item.href) return;
+                    
+                    // 즉시 네비게이션 (SPA 방식)
+                    router.push(item.href);
+                  };
+                  
+                  return (
+                    <Link
+                      key={item.href}
+                      href={item.href}
+                      onClick={handleMobileNavClick}
+                      className="block rounded-md px-3 py-2 text-base font-medium text-black dark:text-white hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+                    >
+                      {item.label}
+                    </Link>
+                  );
+                })}
                 
                 {/* Action Buttons */}
                 <div className="border-t border-gray-200 dark:border-gray-800 pt-4 space-y-2">

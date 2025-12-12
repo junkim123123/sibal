@@ -108,30 +108,29 @@ export function MainHeader() {
           </Link>
 
           {/* Center: Navigation Links (Based on Page Type) */}
-          {!isLoading && (
-            <nav className="hidden md:flex md:items-center md:gap-8 md:absolute md:left-1/2 md:-translate-x-1/2 z-20">
-              {currentNavItems.map((item) => (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  onClick={(e) => {
-                    // 중복 클릭 방지
-                    if (pathname === item.href) {
-                      e.preventDefault();
-                      return;
-                    }
-                  }}
-                  className={`text-sm font-normal transition-colors relative ${
-                    pathname === item.href
-                      ? 'text-black dark:text-white after:absolute after:bottom-0 after:left-0 after:right-0 after:h-0.5 after:bg-black dark:after:bg-white'
-                      : 'text-zinc-700 dark:text-gray-300 hover:text-black dark:hover:text-white'
-                  }`}
-                >
-                  {item.label}
-                </Link>
-              ))}
-            </nav>
-          )}
+          {/* 로딩 중에도 메뉴 위치를 유지하여 Layout Shift 방지 */}
+          <nav className={`hidden md:flex md:items-center md:gap-8 md:absolute md:left-1/2 md:-translate-x-1/2 z-20 ${isLoading ? 'opacity-50' : ''}`}>
+            {currentNavItems.map((item) => (
+              <Link
+                key={item.href}
+                href={item.href}
+                onClick={(e) => {
+                  // 중복 클릭 방지
+                  if (pathname === item.href) {
+                    e.preventDefault();
+                    return;
+                  }
+                }}
+                className={`text-sm font-normal transition-colors relative ${
+                  pathname === item.href
+                    ? 'text-black dark:text-white after:absolute after:bottom-0 after:left-0 after:right-0 after:h-0.5 after:bg-black dark:after:bg-white'
+                    : 'text-zinc-700 dark:text-gray-300 hover:text-black dark:hover:text-white'
+                }`}
+              >
+                {item.label}
+              </Link>
+            ))}
+          </nav>
 
           {/* Right: Action Buttons Group */}
           {isLoading ? (
@@ -174,9 +173,8 @@ export function MainHeader() {
                     if (isAuthenticated) {
                       setUserMenuOpen(!userMenuOpen);
                     } else {
-                      // 로그인 안 된 경우 로그인 페이지로 리다이렉트
-                      setIsLoading(true); // 로딩 표시 추가
-                      window.location.href = '/login';
+                      // 로그인 안 된 경우 로그인 페이지로 이동 (SPA 네비게이션 사용)
+                      router.push('/login');
                     }
                   }}
                   disabled={isLoading}

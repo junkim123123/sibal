@@ -24,7 +24,7 @@ function ClientChatContent() {
   const [userId, setUserId] = useState<string | null>(null);
   const [projectName, setProjectName] = useState<string>('');
   const [project, setProject] = useState<any>(null);
-  const [projectSpecs, setProjectSpecs] = useState<{ qty?: number; targetPrice?: number; port?: string; image?: string } | null>(null);
+  const [projectSpecs, setProjectSpecs] = useState<{ qty?: number | string; targetPrice?: number; port?: string; image?: string } | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [chatSessions, setChatSessions] = useState<any[]>([]);
   const [selectedSession, setSelectedSession] = useState<string | null>(sessionIdParam);
@@ -563,17 +563,40 @@ function ClientChatContent() {
                       : 'border-gray-200 hover:border-gray-300 hover:bg-white bg-white'
                   }`}
                 >
-                  <div className="flex items-start justify-between mb-1">
-                    <h3 className="font-medium text-sm text-gray-900 truncate">
+                  <div className="flex items-start justify-between mb-1 gap-2">
+                    <h3 className="font-medium text-sm text-gray-900 truncate flex-1">
                       {session.projectName}
                     </h3>
+                    {session.lastMessageAt && (
+                      <span className="text-[10px] text-gray-400 flex-shrink-0">
+                        {(() => {
+                          try {
+                            const date = new Date(session.lastMessageAt);
+                            const now = new Date();
+                            const diffMs = now.getTime() - date.getTime();
+                            const diffMins = Math.floor(diffMs / 60000);
+                            const diffHours = Math.floor(diffMs / 3600000);
+                            const diffDays = Math.floor(diffMs / 86400000);
+                            
+                            if (diffMins < 1) return 'now';
+                            if (diffMins < 60) return `${diffMins}m`;
+                            if (diffHours < 24) return `${diffHours}h`;
+                            if (diffDays < 7) return `${diffDays}d`;
+                            return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+                          } catch {
+                            return '';
+                          }
+                        })()}
+                      </span>
+                    )}
                   </div>
-                  <p className="text-xs text-gray-500 truncate mb-1">
-                    Dedicated Expert
-                  </p>
-                  {session.lastMessage && (
-                    <p className="text-xs text-gray-600 truncate">
+                  {session.lastMessage ? (
+                    <p className="text-xs text-gray-600 truncate mb-1">
                       {session.lastMessage}
+                    </p>
+                  ) : (
+                    <p className="text-xs text-gray-400 italic truncate mb-1">
+                      Start a conversation
                     </p>
                   )}
                 </button>
@@ -603,20 +626,34 @@ function ClientChatContent() {
                   </div>
                 )}
                 {projectSpecs.qty && (
-                  <span className="inline-flex items-center gap-1.5 px-3 sm:px-4 py-1 sm:py-1.5 bg-teal-50 text-teal-700 border border-teal-200 rounded-full text-[10px] sm:text-xs font-semibold whitespace-nowrap">
+                  <span className="inline-flex items-center gap-1.5 px-3 sm:px-4 py-1 sm:py-1.5 bg-teal-50 text-teal-700 border border-teal-100 rounded-full text-[10px] sm:text-xs font-semibold whitespace-nowrap">
                     <Package className="w-3 h-3 flex-shrink-0" />
                     <span className="font-medium">Qty:</span>
-                    <span>{projectSpecs.qty.toLocaleString()}</span>
+                    <span>
+                      {(() => {
+                        const qty = projectSpecs.qty;
+                        if (typeof qty === 'string') {
+                          const qtyLower = qty.toLowerCase();
+                          if (qtyLower.includes('no idea') || qtyLower.includes('not specified') || qtyLower === 'tbd') {
+                            return 'TBD';
+                          }
+                          return qty;
+                        } else if (typeof qty === 'number') {
+                          return qty.toLocaleString();
+                        }
+                        return String(qty);
+                      })()}
+                    </span>
                   </span>
                 )}
                 {projectSpecs.targetPrice && (
-                  <span className="inline-flex items-center gap-1.5 px-3 sm:px-4 py-1 sm:py-1.5 bg-teal-50 text-teal-700 border border-teal-200 rounded-full text-[10px] sm:text-xs font-semibold whitespace-nowrap">
+                  <span className="inline-flex items-center gap-1.5 px-3 sm:px-4 py-1 sm:py-1.5 bg-teal-50 text-teal-700 border border-teal-100 rounded-full text-[10px] sm:text-xs font-semibold whitespace-nowrap">
                     <span className="font-medium">Target:</span>
                     <span>${projectSpecs.targetPrice}</span>
                   </span>
                 )}
                 {projectSpecs.port && (
-                  <span className="inline-flex items-center gap-1.5 px-3 sm:px-4 py-1 sm:py-1.5 bg-teal-50 text-teal-700 border border-teal-200 rounded-full text-[10px] sm:text-xs font-semibold whitespace-nowrap">
+                  <span className="inline-flex items-center gap-1.5 px-3 sm:px-4 py-1 sm:py-1.5 bg-teal-50 text-teal-700 border border-teal-100 rounded-full text-[10px] sm:text-xs font-semibold whitespace-nowrap">
                     <span className="font-medium">Port:</span>
                     <span>{projectSpecs.port}</span>
                   </span>

@@ -9,7 +9,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { createClient } from '@/lib/supabase/client';
-import { Send, Loader2, FileText, X, Paperclip, Image as ImageIcon, CheckCircle2 } from 'lucide-react';
+import { Send, Loader2, FileText, X, Paperclip, Image as ImageIcon, CheckCircle2, Zap, StickyNote } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -28,7 +28,7 @@ interface ChatMessage {
   file_url?: string | null;
   file_type?: string | null;
   file_name?: string | null;
-  message_type?: 'text' | 'quote' | 'system';
+  message_type?: 'text' | 'quote' | 'system' | 'internal_note';
   quote_data?: {
     title: string;
     price: number;
@@ -49,6 +49,8 @@ interface ManagerChatProps {
     quantity?: number;
     targetPrice?: number;
     port?: string;
+    client_name?: string;
+    client_email?: string;
   } | null;
 }
 
@@ -81,6 +83,8 @@ export function ManagerChat({
   const [inputMessage, setInputMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [isSending, setIsSending] = useState(false);
+  const [isInternalNote, setIsInternalNote] = useState(false);
+  const [showQuickRepliesPopover, setShowQuickRepliesPopover] = useState(false);
   const [showAnalysisModal, setShowAnalysisModal] = useState(false);
   const [analysisData, setAnalysisData] = useState<any>(null);
   const [isLoadingAnalysis, setIsLoadingAnalysis] = useState(false);
@@ -392,6 +396,7 @@ export function ManagerChat({
       sender_id: userId,
       role: isManager ? 'manager' : 'user',
       content: messageContent,
+      message_type: isManager && isInternalNote ? 'internal_note' : 'text',
       created_at: new Date().toISOString(),
       file_url: null,
       file_type: null,
@@ -412,6 +417,7 @@ export function ManagerChat({
           sender_id: userId,
           role: isManager ? 'manager' : 'user',
           content: messageContent,
+          message_type: isManager && isInternalNote ? 'internal_note' : 'text',
         }),
       });
 
@@ -548,11 +554,11 @@ export function ManagerChat({
                 }
               </p>
               
-              {/* 클라이언트용 초기 메시지 제안 - 가로 스크롤 칩 형태 */}
+              {/* 클라이언트용 초기 메시지 제안 - 가로 스크롤 칩 형태 (더 컴팩트) */}
               {!isManager && projectId && sessionId && (
-                <div className="mt-6">
-                  <p className="text-xs font-medium text-gray-600 mb-3 text-center">Suggested messages:</p>
-                  <div className="flex gap-2 overflow-x-auto pb-2 px-2 max-w-md mx-auto scrollbar-hide">
+                <div className="mt-4">
+                  <p className="text-xs font-medium text-gray-500 mb-2 text-center">Suggested messages:</p>
+                  <div className="flex gap-2 overflow-x-auto pb-2 px-4 max-w-lg mx-auto scrollbar-hide">
                     {CLIENT_START_MESSAGES.map((message, idx) => (
                       <button
                         key={idx}
@@ -564,7 +570,7 @@ export function ManagerChat({
                             input?.focus();
                           }, 100);
                         }}
-                        className="px-4 py-2 text-xs sm:text-sm bg-white hover:bg-gray-50 border border-gray-200 rounded-full transition-colors text-gray-700 whitespace-nowrap flex-shrink-0"
+                        className="px-3 py-1.5 text-xs bg-white hover:bg-teal-50 border border-gray-200 hover:border-teal-300 rounded-full transition-all text-gray-700 hover:text-teal-700 whitespace-nowrap flex-shrink-0"
                       >
                         {message}
                       </button>
@@ -579,6 +585,12 @@ export function ManagerChat({
             const isManagerMessage = message.role === 'manager';
             const isSystemMessage = message.role === 'system' || message.content.startsWith('System:') || message.content.startsWith('[System]');
             const isQuoteMessage = message.message_type === 'quote' || message.quote_data;
+            const isInternalNote = message.message_type === 'internal_note';
+            
+            // Internal notes are only visible to managers
+            if (isInternalNote && !isManager) {
+              return null;
+            }
             
             // 자신의 메시지인지 확인
             const isOwnMessage = 
@@ -635,6 +647,27 @@ export function ManagerChat({
                       </Button>
                     </div>
                     <p className="text-xs text-gray-400 px-4 pb-2 text-right">
+                      {new Date(message.created_at).toLocaleTimeString('en-US', {
+                        hour: '2-digit',
+                        minute: '2-digit',
+                      })}
+                    </p>
+                  </div>
+                </div>
+              );
+            }
+            
+            // Internal note rendering (yellow background, manager only)
+            if (isInternalNote) {
+              return (
+                <div key={message.id} className="flex justify-center my-2">
+                  <div className="max-w-[85%] sm:max-w-[80%] rounded-lg p-2.5 sm:p-3 bg-yellow-50 border border-yellow-200">
+                    <div className="flex items-center gap-1.5 mb-1">
+                      <StickyNote className="w-3 h-3 text-yellow-600" />
+                      <p className="text-[10px] font-semibold text-yellow-800">Internal Note</p>
+                    </div>
+                    <p className="text-sm text-yellow-900">{message.content}</p>
+                    <p className="text-[10px] text-yellow-600 mt-1.5 text-right">
                       {new Date(message.created_at).toLocaleTimeString('en-US', {
                         hour: '2-digit',
                         minute: '2-digit',
@@ -844,6 +877,24 @@ export function ManagerChat({
 
       {/* Input */}
       <div className="p-3 sm:p-4 border-t border-gray-200 flex-shrink-0">
+        {/* Internal Note Toggle (Manager Only) */}
+        {isManager && (
+          <div className="mb-2 flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => setIsInternalNote(!isInternalNote)}
+              className={`flex items-center gap-1.5 px-2 py-1 text-xs rounded transition-colors ${
+                isInternalNote
+                  ? 'bg-yellow-100 text-yellow-700 border border-yellow-300'
+                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200 border border-gray-200'
+              }`}
+            >
+              <StickyNote className="w-3 h-3" />
+              <span>{isInternalNote ? 'Internal Note' : 'Reply to Client'}</span>
+            </button>
+          </div>
+        )}
+        
         <div className="flex gap-2">
           {/* File Upload Button */}
           <input
@@ -858,11 +909,41 @@ export function ManagerChat({
             type="button"
             onClick={() => fileInputRef.current?.click()}
             className="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors flex-shrink-0"
-            disabled={isSending || uploadingFile || !!previewFile}
+            disabled={isSending || uploadingFile || !!previewFile || isInternalNote}
             title="Attach file"
           >
             <Paperclip className="w-4 h-4 sm:w-5 sm:h-5" />
           </button>
+          
+          {/* Quick Replies Button (Manager Only, Popover) */}
+          {isManager && showQuickReplies && !isInternalNote && (
+            <div className="relative">
+              <button
+                type="button"
+                onClick={() => setShowQuickRepliesPopover(!showQuickRepliesPopover)}
+                className="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors flex-shrink-0"
+                title="Quick replies"
+              >
+                <Zap className="w-4 h-4 sm:w-5 sm:h-5" />
+              </button>
+              {showQuickRepliesPopover && (
+                <div className="absolute bottom-full left-0 mb-2 w-64 bg-white border border-gray-200 rounded-lg shadow-lg z-10 p-2 max-h-48 overflow-y-auto">
+                  {QUICK_REPLIES.map((reply, idx) => (
+                    <button
+                      key={idx}
+                      onClick={() => {
+                        setInputMessage(reply);
+                        setShowQuickRepliesPopover(false);
+                      }}
+                      className="w-full text-left px-3 py-2 text-xs hover:bg-gray-100 rounded transition-colors"
+                    >
+                      {reply}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
           
           <input
             type="text"
@@ -874,14 +955,27 @@ export function ManagerChat({
                 handleSendMessage();
               }
             }}
-            placeholder="Type your message..."
-            className="flex-1 px-3 sm:px-4 py-2 text-sm sm:text-base border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 bg-white min-w-0"
+            placeholder={isInternalNote ? "Add internal note (visible only to managers)..." : "Type your message..."}
+            className={`flex-1 px-3 sm:px-4 py-2 text-sm sm:text-base border rounded-lg focus:outline-none focus:ring-2 text-gray-900 bg-white min-w-0 ${
+              isInternalNote 
+                ? 'border-yellow-300 focus:ring-yellow-500 bg-yellow-50' 
+                : 'border-gray-300 focus:ring-blue-500'
+            }`}
             disabled={isSending || uploadingFile || !!previewFile}
           />
           <Button
-            onClick={handleSendMessage}
+            onClick={() => {
+              handleSendMessage();
+              if (isInternalNote) {
+                setIsInternalNote(false); // Reset after sending
+              }
+            }}
             disabled={!inputMessage.trim() || isSending || uploadingFile || !!previewFile}
-            className="bg-blue-600 hover:bg-blue-700 text-white p-2 sm:px-4 flex-shrink-0"
+            className={`p-2 sm:px-4 flex-shrink-0 ${
+              isInternalNote
+                ? 'bg-yellow-600 hover:bg-yellow-700 text-white'
+                : 'bg-blue-600 hover:bg-blue-700 text-white'
+            }`}
           >
             {isSending ? (
               <Loader2 className="w-4 h-4 animate-spin" />

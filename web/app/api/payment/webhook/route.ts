@@ -337,8 +337,32 @@ export async function POST(req: Request) {
         .single();
 
       if (currentProject) {
-        // 프로젝트 상태 업데이트: 결제 완료 후 super admin이 매니저를 배정할 수 있도록 설정
-        // payment_status를 'paid'로 설정하고, 상태는 유지 (super admin이 확인 후 배정)
+        // 결제 완료 후 자동 매니저 매칭
+        let assignedManagerId: string | null = null;
+        
+        // manager_id가 없으면 자동으로 매니저 배정
+        if (!currentProject.manager_id) {
+          // 사용 가능한 매니저 찾기 (워크로드가 가장 낮은 매니저 우선)
+          const { data: availableManagers, error: managersError } = await adminClient
+            .from('profiles')
+            .select('id, name, email, workload_score, availability_status')
+            .eq('is_manager', true)
+            .order('workload_score', { ascending: true })
+            .limit(1);
+          
+          if (!managersError && availableManagers && availableManagers.length > 0) {
+            assignedManagerId = availableManagers[0].id;
+            console.log('[Webhook] Auto-assigning manager:', {
+              managerId: assignedManagerId,
+              managerName: availableManagers[0].name || availableManagers[0].email,
+              workloadScore: availableManagers[0].workload_score,
+            });
+          } else {
+            console.warn('[Webhook] No available managers found, project will remain unassigned');
+          }
+        }
+        
+        // 프로젝트 상태 업데이트
         const updateData: any = {
           is_paid_subscription: true,
           lemon_squeezy_subscription_id: subscriptionId,
@@ -346,13 +370,12 @@ export async function POST(req: Request) {
           payment_date: new Date().toISOString(),
           updated_at: new Date().toISOString(),
         };
-
-        // 상태가 'saved' 또는 'completed'이고 manager_id가 없으면 상태 유지
-        // (super admin이 Dispatch Center에서 결제 여부를 확인하고 매니저를 배정)
-        // 필요시 'in_progress'로 변경할 수 있지만, 우선 상태를 유지하여 super admin이 확인할 수 있도록 함
-        if ((currentProject.status === 'saved' || currentProject.status === 'completed') && !currentProject.manager_id) {
-          // 상태는 그대로 유지 (saved 또는 completed)
-          // super admin이 Dispatch Center에서 결제 완료된 프로젝트를 확인하고 매니저 배정
+        
+        // 매니저가 배정된 경우 상태 업데이트
+        if (assignedManagerId) {
+          updateData.manager_id = assignedManagerId;
+          updateData.status = 'in_progress';
+          updateData.dispatched_at = new Date().toISOString();
         }
 
         const { error: projectUpdateError } = await adminClient
@@ -368,6 +391,7 @@ export async function POST(req: Request) {
           console.log('[Webhook] Successfully updated project subscription status:', projectId, {
             newStatus: updateData.status,
             paymentStatus: 'paid',
+            managerId: assignedManagerId,
           });
 
           // 3. 자동 메시지 전송: 결제 확인 메시지를 채팅방에 삽입
@@ -385,14 +409,26 @@ export async function POST(req: Request) {
 
             if (existingSession) {
               chatSessionId = existingSession.id;
+              // 기존 세션이 있으면 매니저 ID 업데이트
+              if (assignedManagerId) {
+                await adminClient
+                  .from('chat_sessions')
+                  .update({
+                    manager_id: assignedManagerId,
+                    status: 'in_progress',
+                    updated_at: new Date().toISOString(),
+                  })
+                  .eq('id', existingSession.id);
+              }
             } else {
-              // 세션이 없으면 생성
+              // 세션이 없으면 생성 (매니저가 배정된 경우 manager_id 포함)
               const { data: newSession, error: sessionError } = await adminClient
                 .from('chat_sessions')
                 .insert({
                   project_id: projectId,
                   user_id: userId,
-                  status: 'in_progress',
+                  manager_id: assignedManagerId,
+                  status: assignedManagerId ? 'in_progress' : 'open',
                 })
                 .select('id')
                 .single();
@@ -414,7 +450,9 @@ export async function POST(req: Request) {
                   session_id: chatSessionId,
                   sender_id: userId, // 시스템 메시지이지만 sender_id는 필수이므로 사용자 ID 사용
                   role: 'manager', // 시스템 메시지는 manager 역할로 표시
-                  content: 'System: Payment confirmed! ✅ We are assigning your expert manager. Please upload your product details/files here. Expect a response within 24 hours.',
+                  content: assignedManagerId 
+                    ? 'System: Payment confirmed! ✅ Your expert manager has been assigned. Please upload your product details/files here. Expect a response within 24 hours.'
+                    : 'System: Payment confirmed! ✅ We are assigning your expert manager. Please upload your product details/files here. Expect a response within 24 hours.',
                 });
 
               if (messageError) {

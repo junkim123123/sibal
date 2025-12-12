@@ -182,16 +182,35 @@ function DashboardPageContent() {
       setActiveTab(tab)
     }
     
-    // refresh 파라미터 제거 (URL 정리)
-    if (refresh) {
+    // refresh 파라미터 처리: 데이터 새로고침
+    if (refresh && userId) {
+      loadProjects(userId)
       const newUrl = new URL(window.location.href)
       newUrl.searchParams.delete('refresh')
       window.history.replaceState({}, '', newUrl.toString())
     }
   }, [searchParams, activeTab])
 
-  // 초기 로드 시에만 데이터 로드 (탭 클릭은 직접 처리하므로 useEffect 제거)
-  // URL 파라미터 변경은 위의 useEffect에서 처리
+  // 주기적으로 결제 상태 체크 (결제 완료 후 상태 업데이트 확인)
+  useEffect(() => {
+    if (!userId || activeTab !== 'requests') return
+    
+    // Sourcing Estimates 탭일 때만 주기적으로 체크
+    const checkInterval = setInterval(() => {
+      loadProjects(userId)
+    }, 10000) // 10초마다 체크
+    
+    // 윈도우가 다시 포커스될 때도 체크 (Gumroad 결제 후 돌아올 때)
+    const handleFocus = () => {
+      loadProjects(userId)
+    }
+    window.addEventListener('focus', handleFocus)
+    
+    return () => {
+      clearInterval(checkInterval)
+      window.removeEventListener('focus', handleFocus)
+    }
+  }, [userId, activeTab, loadProjects])
 
   useEffect(() => {
     async function checkAuth() {
@@ -688,7 +707,15 @@ function DashboardPageContent() {
                 />
               )}
               {activeTab === 'requests' && (
-                <EstimatesList estimates={estimates} />
+                <EstimatesList 
+                  estimates={estimates} 
+                  onPaymentComplete={() => {
+                    // 결제 완료 후 프로젝트 데이터 새로고침
+                    if (userId) {
+                      loadProjects(userId)
+                    }
+                  }}
+                />
               )}
               {activeTab === 'production' && (
                 <ShipmentsList shipments={shipments} />
@@ -1070,28 +1097,25 @@ function PaymentModal({
               onClick={(e) => {
                 // Gumroad 스크립트가 로드되었는지 확인
                 if (typeof window !== 'undefined' && !(window as any).gumroad) {
-                  // Gumroad 스크립트가 아직 로드되지 않은 경우, 직접 로드 시도
+                  // 스크립트가 없으면 로드하고 기본 동작 막기
+                  e.preventDefault()
                   const script = document.createElement('script')
                   script.src = 'https://gumroad.com/js/gumroad.js'
                   script.async = true
-                  document.head.appendChild(script)
-                  
-                  // 스크립트 로드 후 링크 클릭 다시 시도
                   script.onload = () => {
-                    // 약간의 지연 후 링크 다시 클릭 (프로그래밍 방식)
+                    // 스크립트 로드 후 링크 다시 클릭
                     const link = e.currentTarget as HTMLAnchorElement
                     link.click()
                   }
-                  
-                  e.preventDefault()
+                  document.head.appendChild(script)
                   return false
                 }
                 
-                // Gumroad 스크립트가 이미 로드된 경우, 정상 진행
+                // Gumroad 스크립트가 있으면 기본 동작 허용 (오버레이 자동 처리)
                 // 모달은 Gumroad 오버레이가 열린 후 닫기
                 setTimeout(() => {
                   onClose()
-                }, 300)
+                }, 500)
               }}
               className="w-full inline-flex items-center justify-center font-semibold py-3 rounded-lg transition-all duration-200 bg-[#008080] hover:bg-teal-800 hover:-translate-y-0.5 text-white cursor-pointer shadow-md hover:shadow-lg"
             >
@@ -1158,7 +1182,13 @@ function ProductInitialsAvatar({ productName }: { productName: string }) {
 }
 
 // Estimates List Component (Table Format)
-function EstimatesList({ estimates }: { estimates: any[] }) {
+function EstimatesList({ 
+  estimates, 
+  onPaymentComplete 
+}: { 
+  estimates: any[]
+  onPaymentComplete?: () => void
+}) {
   const [showPaymentModal, setShowPaymentModal] = useState(false)
   const [selectedProjectId, setSelectedProjectId] = useState<string | null>(null)
   const [isProcessingPayment, setIsProcessingPayment] = useState(false)
@@ -1171,8 +1201,43 @@ function EstimatesList({ estimates }: { estimates: any[] }) {
   }
 
   const handleProceedToPayment = (e: React.MouseEvent<HTMLAnchorElement>) => {
-    // 모달만 닫기 (Gumroad Overlay는 <a> 태그가 자동 처리)
+    // 모달 닫기
     setShowPaymentModal(false)
+    
+    // 결제 완료 후 데이터 새로고침
+    // Gumroad 오버레이가 열리면 잠시 후 체크 시작
+    const checkPaymentStatus = setInterval(() => {
+      if (onPaymentComplete) {
+        onPaymentComplete()
+      }
+    }, 5000) // 5초마다 체크
+    
+    // 60초 후 자동 체크 중단
+    setTimeout(() => {
+      clearInterval(checkPaymentStatus)
+    }, 60000)
+    
+    // 윈도우 포커스 이벤트로도 체크 (Gumroad 결제 후 돌아올 때)
+    const handleWindowFocus = () => {
+      if (onPaymentComplete) {
+        onPaymentComplete()
+      }
+      window.removeEventListener('focus', handleWindowFocus)
+    }
+    window.addEventListener('focus', handleWindowFocus)
+  }
+  
+  // 모달이 닫힐 때도 체크
+  const handleModalClose = () => {
+    setShowPaymentModal(false)
+    // 결제 완료 가능성이 있으므로 데이터 새로고침
+    if (onPaymentComplete) {
+      // 즉시 한 번 체크하고, 잠시 후 다시 체크
+      onPaymentComplete()
+      setTimeout(() => {
+        onPaymentComplete()
+      }, 5000) // 5초 후 다시 체크
+    }
   }
 
   if (estimates.length === 0) {
@@ -1294,7 +1359,7 @@ function EstimatesList({ estimates }: { estimates: any[] }) {
       {/* Payment Modal */}
       <PaymentModal
         isOpen={showPaymentModal}
-        onClose={() => setShowPaymentModal(false)}
+        onClose={handleModalClose}
         onProceed={handleProceedToPayment}
         isProcessing={isProcessingPayment}
         projectId={selectedProjectId}

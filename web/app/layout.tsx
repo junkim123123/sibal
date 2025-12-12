@@ -22,6 +22,11 @@ const jetbrainsMono = JetBrains_Mono({
 export const metadata: Metadata = {
   title: "NexSupply",
   description: "NexSupply Marketing Site",
+  icons: {
+    icon: '/static/icons/icon-192.png',
+    shortcut: '/static/icons/icon-192.png',
+    apple: '/static/icons/icon-192.png',
+  },
 }
 
 export default function RootLayout({

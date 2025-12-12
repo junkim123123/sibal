@@ -948,8 +948,8 @@ function PaymentModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-lg">
-        <DialogHeader>
+      <DialogContent className="sm:max-w-lg max-h-[90vh] flex flex-col p-0 gap-0">
+        <DialogHeader className="px-6 pt-6 pb-4 flex-shrink-0">
           <DialogTitle className="text-2xl font-bold text-gray-900">
             Connect with a Dedicated Agent
           </DialogTitle>
@@ -958,7 +958,7 @@ function PaymentModal({
           </DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-6 py-4">
+        <div className="space-y-6 px-6 py-4 overflow-y-auto flex-1">
           {/* Price Display */}
           <div className="text-center">
             <p className="text-sm text-gray-500 mb-2">$49 Sourcing Retainer</p>
@@ -1049,7 +1049,7 @@ function PaymentModal({
           </div>
         </div>
 
-        <DialogFooter className="flex-col sm:flex-col gap-3">
+        <DialogFooter className="px-6 pb-6 pt-4 border-t border-gray-200 flex-col sm:flex-col gap-3 flex-shrink-0 bg-white">
           {isProcessing ? (
             <Button
               disabled

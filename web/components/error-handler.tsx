@@ -114,7 +114,7 @@ export function ErrorHandler() {
                 script.src?.includes('itemscout.io') ||
                 script.src?.includes('4bd1b696-182b6b13bdad92e3.js')
               ) {
-                console.log('[ErrorHandler] Blocked itemscout.io script:', script.src)
+                // console.log('[ErrorHandler] Blocked itemscout.io script:', script.src)
                 script.remove()
                 return
               }
@@ -127,7 +127,7 @@ export function ErrorHandler() {
                 iframe.src?.includes('itemscout.io') ||
                 iframe.src?.includes('pixel.itemscout.io')
               ) {
-                console.log('[ErrorHandler] Blocked itemscout.io iframe:', iframe.src)
+                // console.log('[ErrorHandler] Blocked itemscout.io iframe:', iframe.src)
                 iframe.remove()
                 return
               }
@@ -138,7 +138,7 @@ export function ErrorHandler() {
               'script[src*="itemscout.io"], iframe[src*="itemscout.io"]'
             )
             itemscoutElements?.forEach((el) => {
-              console.log('[ErrorHandler] Blocked nested itemscout.io element')
+              // console.log('[ErrorHandler] Blocked nested itemscout.io element')
               el.remove()
             })
           }
@@ -156,13 +156,13 @@ export function ErrorHandler() {
     const removeExistingItemscoutElements = () => {
       const scripts = document.querySelectorAll('script[src*="itemscout.io"]')
       scripts.forEach((script) => {
-        console.log('[ErrorHandler] Removed existing itemscout.io script')
+        // console.log('[ErrorHandler] Removed existing itemscout.io script')
         script.remove()
       })
 
       const iframes = document.querySelectorAll('iframe[src*="itemscout.io"]')
       iframes.forEach((iframe) => {
-        console.log('[ErrorHandler] Removed existing itemscout.io iframe')
+        // console.log('[ErrorHandler] Removed existing itemscout.io iframe')
         iframe.remove()
       })
     }

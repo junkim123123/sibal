@@ -157,9 +157,24 @@ export default function RootLayout({
                   // setInterval 제거: MutationObserver가 실시간으로 처리하므로 불필요
                 }
                 
-                // 콘솔 오류 필터링
+                // 콘솔 오류 필터링 (itemscout.io 메시지 완전 차단)
                 const originalError = console.error;
                 const originalWarn = console.warn;
+                const originalLog = console.log;
+                
+                // console.log도 필터링하여 ErrorHandler 메시지 숨김
+                console.log = function() {
+                  const message = Array.from(arguments).join(' ');
+                  if (
+                    message.includes('ErrorHandler') ||
+                    message.includes('Blocked itemscout') ||
+                    message.includes('itemscout.io') ||
+                    message.includes('4bd1b696-182b6b13bdad92e3.js')
+                  ) {
+                    return; // itemscout.io 관련 메시지 완전 차단
+                  }
+                  originalLog.apply(console, arguments);
+                };
                 
                 console.error = function() {
                   const message = Array.from(arguments).join(' ');
@@ -169,7 +184,8 @@ export default function RootLayout({
                     message.includes('removeChild') ||
                     message.includes('Quirks Mode') ||
                     message.includes('ud @') ||
-                    message.includes('uf @')
+                    message.includes('uf @') ||
+                    message.includes('ErrorHandler')
                   ) {
                     return;
                   }
@@ -181,7 +197,8 @@ export default function RootLayout({
                   if (
                     message.includes('Quirks Mode') ||
                     message.includes('itemscout.io') ||
-                    message.includes('4bd1b696-182b6b13bdad92e3.js')
+                    message.includes('4bd1b696-182b6b13bdad92e3.js') ||
+                    message.includes('ErrorHandler')
                   ) {
                     return;
                   }

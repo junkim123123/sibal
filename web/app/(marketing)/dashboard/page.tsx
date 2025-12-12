@@ -182,13 +182,13 @@ function DashboardPageContent() {
       setActiveTab(tab)
     }
     
-    // refresh 파라미터 처리: 데이터 새로고침
-    if (refresh && userId) {
-      loadProjects(userId)
-      const newUrl = new URL(window.location.href)
-      newUrl.searchParams.delete('refresh')
-      window.history.replaceState({}, '', newUrl.toString())
-    }
+    // refresh 파라미터 처리: 데이터 새로고침 (비활성화 - 사용자가 불편하다고 함)
+    // if (refresh && userId) {
+    //   loadProjects(userId)
+    //   const newUrl = new URL(window.location.href)
+    //   newUrl.searchParams.delete('refresh')
+    //   window.history.replaceState({}, '', newUrl.toString())
+    // }
   }, [searchParams, activeTab])
 
   // 주기적으로 결제 상태 체크 - 완전히 비활성화 (사용자가 직접 새로고침하도록)
@@ -242,35 +242,35 @@ function DashboardPageContent() {
     checkAuth()
   }, [])
 
-  // 페이지 포커스/가시성 변경 시 데이터 다시 불러오기
-  useEffect(() => {
-    if (!userId || !isAuthenticated || !loadProjects) return
-
-    const handleFocus = () => {
-      // console.log('[Dashboard] Page focused, reloading data...')
-      loadProjects(userId)
-      loadUsageData(userId) // 사용량 데이터도 새로고침
-    }
-
-    const handleVisibilityChange = () => {
-      // 페이지가 보이게 되었을 때 (다른 탭에서 돌아왔을 때) 데이터 새로고침
-      if (!document.hidden) {
-        // console.log('[Dashboard] Page visible, reloading data...')
-        loadProjects(userId)
-        loadUsageData(userId)
-      }
-    }
-
-    // 페이지 포커스 시 데이터 새로고침
-    window.addEventListener('focus', handleFocus)
-    // 페이지 가시성 변경 시 데이터 새로고침 (다른 탭에서 돌아올 때)
-    document.addEventListener('visibilitychange', handleVisibilityChange)
-
-    return () => {
-      window.removeEventListener('focus', handleFocus)
-      document.removeEventListener('visibilitychange', handleVisibilityChange)
-    }
-  }, [userId, isAuthenticated, loadProjects])
+  // 페이지 포커스/가시성 변경 시 데이터 다시 불러오기 (비활성화 - 사용자가 불편하다고 함)
+  // useEffect(() => {
+  //   if (!userId || !isAuthenticated || !loadProjects) return
+  //
+  //   const handleFocus = () => {
+  //     // console.log('[Dashboard] Page focused, reloading data...')
+  //     loadProjects(userId)
+  //     loadUsageData(userId) // 사용량 데이터도 새로고침
+  //   }
+  //
+  //   const handleVisibilityChange = () => {
+  //     // 페이지가 보이게 되었을 때 (다른 탭에서 돌아왔을 때) 데이터 새로고침
+  //     if (!document.hidden) {
+  //       // console.log('[Dashboard] Page visible, reloading data...')
+  //       loadProjects(userId)
+  //       loadUsageData(userId)
+  //     }
+  //   }
+  //
+  //   // 페이지 포커스 시 데이터 새로고침
+  //   window.addEventListener('focus', handleFocus)
+  //   // 페이지 가시성 변경 시 데이터 새로고침 (다른 탭에서 돌아올 때)
+  //   document.addEventListener('visibilitychange', handleVisibilityChange)
+  //
+  //   return () => {
+  //     window.removeEventListener('focus', handleFocus)
+  //     document.removeEventListener('visibilitychange', handleVisibilityChange)
+  //   }
+  // }, [userId, isAuthenticated, loadProjects])
 
 
   // 사용량 데이터 로드
@@ -1464,24 +1464,24 @@ function OrderStepper({
   quoteStatus?: 'preparing' | 'ready' | 'approved'
 }) {
   const steps = [
-    { label: 'Quote', key: 'quote' },
-    { label: 'Deposit', key: 'deposit' },
-    { label: 'Production', key: 'production' },
-    { label: 'QC', key: 'qc' },
-    { label: 'Shipping', key: 'shipping' },
-    { label: 'Delivered', key: 'delivered' },
+    { label: 'Agent Review', key: 'quote' },
+    { label: 'Sourcing', key: 'deposit' },
+    { label: 'Final Quote', key: 'production' },
+    { label: 'Deposit Payment', key: 'qc' },
+    { label: 'Production', key: 'shipping' },
+    { label: 'Shipping', key: 'delivered' },
   ]
 
-  // Step 1(Quote)의 상태 결정
+  // Step 1(Agent Review)의 상태 결정
   const getQuoteStepState = () => {
     if (quoteStatus === 'approved' || currentStep > 0) {
-      return { isCompleted: true, isCurrent: false, label: 'Quote' }
+      return { isCompleted: true, isCurrent: false, label: 'Agent Review' }
     }
     if (quoteStatus === 'ready') {
-      return { isCompleted: false, isCurrent: true, label: 'Quote Received' }
+      return { isCompleted: false, isCurrent: true, label: 'Final Quote Ready' }
     }
     // quoteStatus === 'preparing' or undefined
-    return { isCompleted: false, isCurrent: true, label: 'Preparing Quote' }
+    return { isCompleted: false, isCurrent: true, label: 'Agent Review' }
   }
 
   const quoteState = getQuoteStepState()
@@ -1669,7 +1669,7 @@ function ShipmentsList({ shipments }: { shipments: any[] }) {
                   </Link>
                   {quoteStatus === 'preparing' ? (
                     <p className="text-sm text-gray-500 mt-1">
-                      Waiting for Quote
+                      Agent is reviewing your request
                     </p>
                   ) : shipment.destination === 'TBD' ? (
                     <p className="text-sm text-gray-600 mt-1">
@@ -1687,7 +1687,7 @@ function ShipmentsList({ shipments }: { shipments: any[] }) {
                   )}
                   {quoteStatus === 'preparing' && (
                     <p className="text-xs text-orange-600 font-medium mt-1">
-                      Agent is preparing your quote
+                      Start chatting with your agent to discuss requirements
                     </p>
                   )}
                 </div>
@@ -1695,13 +1695,23 @@ function ShipmentsList({ shipments }: { shipments: any[] }) {
               <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-3">
                 <StatusBadge status={shipment.status} />
                 <Link href={`/dashboard/chat?project_id=${shipment.id}`} className="w-full sm:w-auto">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="w-full sm:w-auto text-xs text-gray-600 border-gray-300 hover:bg-gray-50"
+                  <button
+                    type="button"
+                    className={`w-full sm:w-auto px-3 sm:px-4 py-1.5 sm:py-2 text-xs rounded-lg transition-all ${
+                      currentStep === 0 && quoteStatus === 'preparing'
+                        ? 'bg-[#008080] text-white border border-[#008080] hover:bg-teal-700 shadow-md animate-pulse'
+                        : 'text-gray-600 border border-gray-300 hover:bg-gray-50 bg-white'
+                    }`}
                   >
-                    Message Agent
-                  </Button>
+                    <span className="flex items-center gap-1.5">
+                      Message Agent
+                      {currentStep === 0 && quoteStatus === 'preparing' && (
+                        <span className="px-1.5 py-0.5 text-[10px] font-bold bg-white text-[#008080] rounded-full">
+                          New
+                        </span>
+                      )}
+                    </span>
+                  </button>
                 </Link>
               </div>
             </div>

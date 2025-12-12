@@ -8,7 +8,7 @@
 
 import { useState, useEffect, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
-import { ManagerChat } from '@/components/ManagerChat';
+import { WhatsAppConnectCard } from '@/components/WhatsAppConnectCard';
 import { createClient } from '@/lib/supabase/client';
 import { Loader2, ArrowLeft, MessageSquare, FileText, Package } from 'lucide-react';
 import Link from 'next/link';
@@ -663,27 +663,26 @@ function ClientChatContent() {
             
             <p className="text-[10px] sm:text-xs text-gray-500">
               {project?.manager_id 
-                ? `Chat with your Dedicated Expert` 
-                : 'Your Dedicated Expert will be assigned within 24 hours. You can send messages now.'
+                ? `Connect with your Dedicated Expert via WhatsApp` 
+                : 'Your Dedicated Expert will be assigned within 24 hours.'
               }
             </p>
           </div>
 
           {/* Chat Body - Flex-1 to fill remaining space */}
           <div className="flex-1 overflow-hidden">
-            {sessionId ? (
-              <ManagerChat
-                sessionId={sessionId}
+            {projectId ? (
+              <WhatsAppConnectCard
                 projectId={projectId}
-                userId={userId}
-                isManager={false}
-                showQuickReplies={false}
+                projectName={projectName}
+                managerId={project?.manager_id || null}
+                clientName={userId ? undefined : undefined}
               />
             ) : (
               <div className="flex items-center justify-center h-full p-8">
                 <div className="text-center">
                   <Loader2 className="w-8 h-8 animate-spin text-blue-600 mx-auto mb-4" />
-                  <p className="text-gray-600">Setting up chat session...</p>
+                  <p className="text-gray-600">Loading project information...</p>
                   <p className="text-sm text-gray-400 mt-2">This may take a moment</p>
                 </div>
               </div>

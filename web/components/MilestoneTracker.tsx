@@ -22,12 +22,13 @@ interface MilestoneTrackerProps {
 }
 
 const DEFAULT_MILESTONES: Milestone[] = [
-  { title: 'Sourcing Started', status: 'completed', date: null, index: 0 },
-  { title: 'Supplier Verified', status: 'pending', date: null, index: 1 },
-  { title: 'Samples Ordered', status: 'pending', date: null, index: 2 },
-  { title: 'QC Inspection', status: 'pending', date: null, index: 3 },
-  { title: 'Shipping Arranged', status: 'pending', date: null, index: 4 },
-  { title: 'Final Delivery', status: 'pending', date: null, index: 5 },
+  { title: 'Agent Review', status: 'completed', date: null, index: 0 },
+  { title: 'Sourcing', status: 'pending', date: null, index: 1 },
+  { title: 'Samples', status: 'pending', date: null, index: 2 },
+  { title: 'Final Quote', status: 'pending', date: null, index: 3 },
+  { title: 'Deposit Payment', status: 'pending', date: null, index: 4 },
+  { title: 'Production', status: 'pending', date: null, index: 5 },
+  { title: 'Shipping', status: 'pending', date: null, index: 6 },
 ];
 
 export function MilestoneTracker({ projectId, managerId }: MilestoneTrackerProps) {

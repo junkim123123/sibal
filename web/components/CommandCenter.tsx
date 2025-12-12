@@ -37,10 +37,11 @@ interface ProjectFile {
 const DEFAULT_MILESTONES: Milestone[] = [
   { title: 'Agent Review', status: 'completed', date: null, index: 0 },
   { title: 'Sourcing', status: 'pending', date: null, index: 1 },
-  { title: 'Final Quote', status: 'pending', date: null, index: 2 },
-  { title: 'Deposit Payment', status: 'pending', date: null, index: 3 },
-  { title: 'Production', status: 'pending', date: null, index: 4 },
-  { title: 'Shipping', status: 'pending', date: null, index: 5 },
+  { title: 'Samples', status: 'pending', date: null, index: 2 },
+  { title: 'Final Quote', status: 'pending', date: null, index: 3 },
+  { title: 'Deposit Payment', status: 'pending', date: null, index: 4 },
+  { title: 'Production', status: 'pending', date: null, index: 5 },
+  { title: 'Shipping', status: 'pending', date: null, index: 6 },
 ];
 
 type TabType = 'info' | 'notes';

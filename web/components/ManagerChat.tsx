@@ -90,6 +90,7 @@ export function ManagerChat({
   const [isLoadingAnalysis, setIsLoadingAnalysis] = useState(false);
   const [uploadingFile, setUploadingFile] = useState(false);
   const [previewFile, setPreviewFile] = useState<{ file: File; preview: string } | null>(null);
+  const [welcomeMessageSent, setWelcomeMessageSent] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const supabase = createClient();
@@ -176,7 +177,7 @@ export function ManagerChat({
     };
 
     loadMessages();
-  }, [sessionId, supabase]);
+  }, [sessionId, supabase, isManager, userId]);
 
   // Supabase Realtime 구독
   useEffect(() => {
@@ -384,6 +385,85 @@ export function ManagerChat({
   };
 
   // 메시지 전송
+  // 매니저가 채팅창을 열었을 때 자동으로 환영 메시지 전송
+  const sendWelcomeMessageAsManager = async () => {
+    if (!isManager || !sessionId || !userId || welcomeMessageSent) return;
+    
+    // 이미 환영 메시지가 있는지 확인
+    const hasWelcomeMessage = messages.some(
+      (msg) => 
+        msg.role === 'manager' && 
+        msg.sender_id === userId &&
+        (msg.content.toLowerCase().includes('welcome') || 
+         msg.content.toLowerCase().includes('24') || 
+         msg.content.toLowerCase().includes('respond') ||
+         msg.content.toLowerCase().includes('thank you for contacting'))
+    );
+    
+    if (hasWelcomeMessage) {
+      console.log('[ManagerChat] Welcome message already exists, skipping');
+      setWelcomeMessageSent(true);
+      return;
+    }
+
+    const welcomeMessage = "Hello! Thank you for contacting NexSupply. I'll review your project details and respond within 24 hours. Please wait a moment.";
+
+    try {
+      console.log('[ManagerChat] Sending automatic welcome message as manager');
+      setWelcomeMessageSent(true); // 플래그 설정 (중복 전송 방지)
+      
+      const response = await fetch('/api/chat-messages', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          session_id: sessionId,
+          sender_id: userId,
+          role: 'manager',
+          content: welcomeMessage,
+        }),
+      });
+
+      const data = await response.json();
+      if (data.ok && data.message) {
+        console.log('[ManagerChat] Welcome message sent successfully');
+        setMessages((prev) => [...prev, {
+          ...data.message,
+          sender_id: userId,
+          role: 'manager',
+        }]);
+      } else {
+        console.error('[ManagerChat] Failed to send welcome message:', data.error);
+        setWelcomeMessageSent(false); // 실패 시 플래그 리셋
+      }
+    } catch (error) {
+      console.error('[ManagerChat] Failed to send welcome message:', error);
+      setWelcomeMessageSent(false); // 실패 시 플래그 리셋
+    }
+  };
+
+  // 메시지 로드 후 환영 메시지 확인 및 전송
+  useEffect(() => {
+    if (!isManager || !sessionId || !userId || isLoading || welcomeMessageSent) return;
+    
+    // 메시지가 로드된 후 (빈 배열이어도 완료된 것으로 간주)
+    // 매니저 메시지가 있는지 확인
+    const hasManagerMessage = messages.some((msg) => msg.role === 'manager' && msg.sender_id === userId);
+    
+    if (!hasManagerMessage) {
+      // 매니저 메시지가 없으면 환영 메시지 전송
+      console.log('[ManagerChat] No manager message found, sending welcome message');
+      sendWelcomeMessageAsManager();
+    } else {
+      console.log('[ManagerChat] Manager message already exists, skipping welcome message');
+      setWelcomeMessageSent(true);
+    }
+  }, [isLoading, isManager, sessionId, userId, messages, welcomeMessageSent]);
+  
+  // 세션이 변경되면 플래그 리셋
+  useEffect(() => {
+    setWelcomeMessageSent(false);
+  }, [sessionId]);
+
   const handleSendMessage = async () => {
     if (!inputMessage.trim() || isSending || !sessionId) return;
 
@@ -545,7 +625,7 @@ export function ManagerChat({
           <div className="flex flex-col items-center justify-center h-full text-gray-500 text-sm space-y-4">
             <div className="text-center">
               <p className="mb-2">No messages yet.</p>
-              <p className="text-xs text-gray-400 mb-4">
+              <p className="text-xs text-gray-400">
                 {!projectId || !sessionId 
                   ? 'Preparing chat session...'
                   : isManager
@@ -553,31 +633,6 @@ export function ManagerChat({
                   : 'Send your first message. Your manager will respond once assigned.'
                 }
               </p>
-              
-              {/* 클라이언트용 초기 메시지 제안 - 가로 스크롤 칩 형태 (더 컴팩트) */}
-              {!isManager && projectId && sessionId && (
-                <div className="mt-4">
-                  <p className="text-xs font-medium text-gray-500 mb-2 text-center">Suggested messages:</p>
-                  <div className="flex gap-2 overflow-x-auto pb-2 px-4 max-w-lg mx-auto scrollbar-hide">
-                    {CLIENT_START_MESSAGES.map((message, idx) => (
-                      <button
-                        key={idx}
-                        onClick={() => {
-                          setInputMessage(message);
-                          // 자동으로 포커스 이동
-                          setTimeout(() => {
-                            const input = document.querySelector('input[type="text"][placeholder="Type your message..."]') as HTMLInputElement;
-                            input?.focus();
-                          }, 100);
-                        }}
-                        className="px-3 py-1.5 text-xs bg-white hover:bg-teal-50 border border-gray-200 hover:border-teal-300 rounded-full transition-all text-gray-700 hover:text-teal-700 whitespace-nowrap flex-shrink-0"
-                      >
-                        {message}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              )}
             </div>
           </div>
         ) : (
@@ -746,78 +801,6 @@ export function ManagerChat({
         <div ref={messagesEndRef} />
       </div>
 
-      {/* Quick Replies (Manager Only) */}
-      {showQuickReplies && isManager && (
-        <div className="px-3 sm:px-4 pt-3 sm:pt-4 border-t border-gray-200 flex-shrink-0">
-          <p className="text-xs text-gray-500 mb-2">Quick Replies:</p>
-          <div className="flex flex-wrap gap-1.5 sm:gap-2">
-            {QUICK_REPLIES.map((reply, idx) => (
-              <button
-                key={idx}
-                onClick={async () => {
-                  if (!sessionId || isSending) return;
-                  
-                  const tempMessageId = `temp-${Date.now()}`;
-                  const optimisticMessage: ChatMessage = {
-                    id: tempMessageId,
-                    sender_id: userId,
-                    role: 'manager',
-                    content: reply,
-                    created_at: new Date().toISOString(),
-                    file_url: null,
-                    file_type: null,
-                    file_name: null,
-                  };
-                  
-                  setMessages((prev) => [...prev, optimisticMessage]);
-                  setIsSending(true);
-
-                  try {
-                    const response = await fetch('/api/chat-messages', {
-                      method: 'POST',
-                      headers: { 'Content-Type': 'application/json' },
-                      body: JSON.stringify({
-                        session_id: sessionId,
-                        sender_id: userId,
-                        role: 'manager',
-                        content: reply,
-                      }),
-                    });
-
-                    const data = await response.json();
-                    if (!data.ok) throw new Error(data.error || 'Failed to send message');
-
-                    if (data.message) {
-                      setMessages((prev) => {
-                        const tempIndex = prev.findIndex((msg) => msg.id === tempMessageId);
-                        if (tempIndex >= 0) {
-                          const updated = [...prev];
-                          updated[tempIndex] = {
-                            ...data.message,
-                            sender_id: userId,
-                            role: 'manager',
-                          };
-                          return updated;
-                        }
-                        return prev;
-                      });
-                    }
-                  } catch (error) {
-                    console.error('[ManagerChat] Failed to send quick reply:', error);
-                    setMessages((prev) => prev.filter((msg) => msg.id !== tempMessageId));
-                  } finally {
-                    setIsSending(false);
-                  }
-                }}
-                disabled={isSending}
-                className="px-2 sm:px-3 py-1 sm:py-1.5 text-[10px] sm:text-xs bg-gray-100 hover:bg-[#008080] hover:text-white text-gray-700 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
-              >
-                {reply}
-              </button>
-            ))}
-          </div>
-        </div>
-      )}
 
       {/* File Preview */}
       {previewFile && (

@@ -94,14 +94,15 @@ export async function PATCH(req: Request) {
       }
     }
 
-    // 마일스톤에 따른 프로젝트 상태 매핑
+    // 마일스톤에 따른 프로젝트 상태 매핑 (7단계 워크플로우)
     const milestoneStatusMap: { [key: string]: string } = {
-      'Sourcing Started': 'active',
-      'Supplier Verified': 'in_progress',
-      'Samples Ordered': 'in_progress',
-      'QC Inspection': 'in_progress',
-      'Shipping Arranged': 'in_progress',
-      'Final Delivery': 'completed',
+      'Agent Review': 'active',
+      'Sourcing': 'in_progress',
+      'Samples': 'in_progress',
+      'Final Quote': 'in_progress',
+      'Deposit Payment': 'in_progress',
+      'Production': 'in_progress',
+      'Shipping': 'in_progress',
     };
 
     const currentMilestone = updatedMilestones[milestone_index];

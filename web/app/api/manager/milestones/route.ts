@@ -72,14 +72,15 @@ export async function GET(req: Request) {
       );
     }
 
-    // 기본 마일스톤 정의
+    // 기본 마일스톤 정의 (7단계 워크플로우)
     const DEFAULT_MILESTONES = [
-      { title: 'Sourcing Started', status: 'completed', date: null, index: 0 },
-      { title: 'Supplier Verified', status: 'pending', date: null, index: 1 },
-      { title: 'Samples Ordered', status: 'pending', date: null, index: 2 },
-      { title: 'QC Inspection', status: 'pending', date: null, index: 3 },
-      { title: 'Shipping Arranged', status: 'pending', date: null, index: 4 },
-      { title: 'Final Delivery', status: 'pending', date: null, index: 5 },
+      { title: 'Agent Review', status: 'completed', date: null, index: 0 },
+      { title: 'Sourcing', status: 'pending', date: null, index: 1 },
+      { title: 'Samples', status: 'pending', date: null, index: 2 },
+      { title: 'Final Quote', status: 'pending', date: null, index: 3 },
+      { title: 'Deposit Payment', status: 'pending', date: null, index: 4 },
+      { title: 'Production', status: 'pending', date: null, index: 5 },
+      { title: 'Shipping', status: 'pending', date: null, index: 6 },
     ];
 
     const milestones = (project.milestones && Array.isArray(project.milestones))

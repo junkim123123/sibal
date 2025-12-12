@@ -1466,6 +1466,7 @@ function OrderStepper({
   const steps = [
     { label: 'Agent Review', key: 'quote' },
     { label: 'Sourcing', key: 'deposit' },
+    { label: 'Samples', key: 'samples' },
     { label: 'Final Quote', key: 'production' },
     { label: 'Deposit Payment', key: 'qc' },
     { label: 'Production', key: 'shipping' },
@@ -1493,7 +1494,7 @@ function OrderStepper({
         <div className="absolute top-5 left-0 right-0 h-0.5 bg-gray-200 z-0">
           <div 
             className="absolute top-0 left-0 h-full bg-[#008080] transition-all duration-300 z-10"
-            style={{ width: `${(currentStep / (steps.length - 1)) * 100}%` }}
+            style={{ width: `${(currentStep / Math.max(steps.length - 1, 1)) * 100}%` }}
           />
         </div>
 
@@ -1623,12 +1624,14 @@ function ShipmentsList({ shipments }: { shipments: any[] }) {
     
     // 견적 승인 후 단계들
     if (status === 'In Progress' || status === 'in_progress') {
-      return shipment.hasManager ? 1 : 0 // Deposit 단계
+      return shipment.hasManager ? 1 : 0 // Sourcing 단계
     }
-    if (status.includes('Production') || status.includes('Manufacturing')) return 2
-    if (status.includes('QC') || status.includes('Inspection')) return 3
-    if (status === 'Shipping' || status === 'In Transit') return 4
-    if (status === 'Delivered' || status === 'Completed') return 5
+    if (status.includes('Sample') || status.includes('Samples')) return 2
+    if (status.includes('Quote') || status.includes('PI') || status.includes('Final Quote')) return 3
+    if (status.includes('Deposit') || status.includes('Payment')) return 4
+    if (status.includes('Production') || status.includes('Manufacturing')) return 5
+    if (status === 'Shipping' || status === 'In Transit') return 6
+    if (status === 'Delivered' || status === 'Completed') return 6 // 최종 단계
     return 0 // 기본값: Step 1 진행 중
   }
 

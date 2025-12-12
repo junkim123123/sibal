@@ -9,7 +9,8 @@
 import { useState, useEffect, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
-import { ManagerChat } from '@/components/ManagerChat';
+import { WhatsAppConnectCard } from '@/components/WhatsAppConnectCard';
+import { ConsultationLog } from '@/components/ConsultationLog';
 import { SmartQueue } from '@/components/SmartQueue';
 import { CommandCenter } from '@/components/CommandCenter';
 import { Loader2 } from 'lucide-react';
@@ -145,34 +146,31 @@ function WorkstationPageContent() {
           />
         </div>
 
-        {/* Center: Communication Hub (50%) */}
+        {/* Center: Communication Hub (50%) - Split into Contact & Log */}
         <div className="w-[50%] flex-shrink-0 flex flex-col overflow-hidden bg-white border-r border-gray-200">
-          {selectedProjectId && chatSessionId && managerId ? (
-            <ManagerChat
-              sessionId={chatSessionId}
-              projectId={selectedProjectId}
-              userId={managerId}
-              showQuickReplies={true}
-              isManager={true}
-              projectData={project ? {
-                name: project.name,
-                // Load from analysis_data if available
-                quantity: project.analysis_data?.answers?.volume || project.analysis_data?.answers?.quantity,
-                targetPrice: project.analysis_data?.answers?.target_price || project.analysis_data?.answers?.price,
-                port: project.analysis_data?.answers?.source_country || project.analysis_data?.answers?.origin,
-              } : null}
-            />
-          ) : selectedProjectId && managerId ? (
-            <div className="h-full flex items-center justify-center">
-              <div className="text-center">
-                <Loader2 className="w-8 h-8 mx-auto mb-4 animate-spin text-blue-600" />
-                <p className="text-gray-500 text-sm">Setting up chat session...</p>
+          {selectedProjectId && project && managerId ? (
+            <>
+              {/* Top Section: WhatsApp Connect Card */}
+              <div className="flex-shrink-0 border-b border-gray-200">
+                <WhatsAppConnectCard
+                  projectId={selectedProjectId}
+                  projectName={project.name || 'this project'}
+                  managerId={project.manager_id || managerId}
+                />
               </div>
-            </div>
+              
+              {/* Bottom Section: Consultation Log */}
+              <div className="flex-1 min-h-0 overflow-hidden">
+                <ConsultationLog
+                  projectId={selectedProjectId}
+                  managerId={managerId}
+                />
+              </div>
+            </>
           ) : (
             <div className="h-full flex items-center justify-center">
               <div className="text-center">
-                <p className="text-gray-400 text-sm">Select a project to start chatting</p>
+                <p className="text-gray-400 text-sm">Select a project to view contact options</p>
               </div>
             </div>
           )}

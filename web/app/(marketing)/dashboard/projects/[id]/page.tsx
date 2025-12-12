@@ -5,7 +5,7 @@ import { useParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
 import { ChevronLeft, FileText, Package, MessageSquare, ArrowLeft, Upload, Loader2 as Loader2Icon, CheckCircle2 } from 'lucide-react'
-import { ManagerChat } from '@/components/ManagerChat'
+import { WhatsAppConnectCard } from '@/components/WhatsAppConnectCard'
 import { Loader2 } from 'lucide-react'
 
 // Progress Tracker Component (Client-facing, read-only)
@@ -441,17 +441,16 @@ function ProjectDetailPageContent() {
         <div className="space-y-6">
           {activeTab === 'chat' && (
             <div className="bg-white rounded-lg border border-gray-200">
-              {sessionId && userId ? (
-                <ManagerChat
-                  sessionId={sessionId}
+              {projectId && project ? (
+                <WhatsAppConnectCard
                   projectId={projectId}
-                  userId={userId}
-                  showQuickReplies={true}
+                  projectName={project.name || 'this project'}
+                  managerId={project.manager_id || null}
                 />
               ) : (
                 <div className="p-12 text-center">
                   <Loader2 className="w-8 h-8 text-gray-400 mx-auto mb-4 animate-spin" />
-                  <p className="text-gray-600">Loading chat...</p>
+                  <p className="text-gray-600">Loading project information...</p>
                 </div>
               )}
             </div>

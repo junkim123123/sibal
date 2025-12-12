@@ -138,7 +138,7 @@ export default function ResourcesPage() {
 
       {/* Knowledge Hub / Video Guides section */}
       <section aria-label="Sourcing Insights" className="py-16 sm:py-20 bg-white">
-        <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-10">
             <h2 className="text-2xl sm:text-3xl font-semibold text-neutral-900 mb-3">
               {knowledgeHub.title}
@@ -153,11 +153,11 @@ export default function ResourcesPage() {
           {/* Operations Section */}
           <div className="mb-12">
             <h3 className="text-xl font-semibold text-neutral-900 mb-6">Operations & Infrastructure</h3>
-            <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+            <div className="grid grid-cols-1 gap-4 md:gap-6 md:grid-cols-2 lg:grid-cols-3">
               {knowledgeHub.videos
                 .filter(video => !video.category || video.category === 'operations')
                 .map((video) => (
-                  <Card key={video.id} className="overflow-hidden bg-white border-neutral-200 shadow-sm rounded-2xl group cursor-pointer">
+                  <Card key={video.id} className="overflow-hidden bg-white border-neutral-200 shadow-sm rounded-2xl group cursor-pointer min-w-0 flex-shrink">
                     <a
                       href={video.youtubeId ? `https://www.youtube.com/watch?v=${video.youtubeId}` : '#'}
                       target="_blank"
@@ -223,11 +223,11 @@ export default function ResourcesPage() {
                         )}
                       </div>
                     </a>
-                    <div className="p-6">
-                      <h3 className="text-lg font-semibold text-neutral-900 mb-2">
+                    <div className="p-4 md:p-6">
+                      <h3 className="text-base md:text-lg font-semibold text-neutral-900 mb-2 line-clamp-2">
                         {video.title}
                       </h3>
-                      <p className="text-sm text-neutral-600 leading-relaxed">
+                      <p className="text-xs md:text-sm text-neutral-600 leading-relaxed line-clamp-3">
                         {video.description}
                       </p>
                     </div>
@@ -239,11 +239,11 @@ export default function ResourcesPage() {
           {/* Trends Section */}
           <div>
             <h3 className="text-xl font-semibold text-neutral-900 mb-6">Market Trends & Experiments</h3>
-            <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+            <div className="grid grid-cols-1 gap-4 md:gap-6 md:grid-cols-2 lg:grid-cols-3">
               {knowledgeHub.videos
                 .filter(video => video.category === 'trends')
                 .map((video) => (
-                  <Card key={video.id} className="overflow-hidden bg-white border-neutral-200 shadow-sm rounded-2xl group cursor-pointer">
+                  <Card key={video.id} className="overflow-hidden bg-white border-neutral-200 shadow-sm rounded-2xl group cursor-pointer min-w-0 flex-shrink">
                     <a
                       href={video.youtubeId ? `https://www.youtube.com/watch?v=${video.youtubeId}` : '#'}
                       target="_blank"
@@ -309,11 +309,11 @@ export default function ResourcesPage() {
                         )}
                       </div>
                     </a>
-                    <div className="p-6">
-                      <h3 className="text-lg font-semibold text-neutral-900 mb-2">
+                    <div className="p-4 md:p-6">
+                      <h3 className="text-base md:text-lg font-semibold text-neutral-900 mb-2 line-clamp-2">
                         {video.title}
                       </h3>
-                      <p className="text-sm text-neutral-600 leading-relaxed">
+                      <p className="text-xs md:text-sm text-neutral-600 leading-relaxed line-clamp-3">
                         {video.description}
                       </p>
                     </div>

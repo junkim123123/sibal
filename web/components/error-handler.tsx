@@ -20,7 +20,8 @@ export function ErrorHandler() {
         message.includes('itemscout.io') ||
         message.includes('4bd1b696-182b6b13bdad92e3.js') ||
         message.includes('removeChild') ||
-        message.includes('Quirks Mode')
+        message.includes('Quirks Mode') ||
+        message.includes('[ErrorHandler]')
       ) {
         return // 오류 무시
       }
@@ -29,15 +30,31 @@ export function ErrorHandler() {
 
     console.warn = (...args: any[]) => {
       const message = args.join(' ')
-      // Quirks Mode 경고 무시
+      // 경고 필터링
       if (
         message.includes('Quirks Mode') ||
         message.includes('itemscout.io') ||
-        message.includes('4bd1b696-182b6b13bdad92e3.js')
+        message.includes('4bd1b696-182b6b13bdad92e3.js') ||
+        message.includes('[ErrorHandler]') ||
+        message.includes('font-src-elem')
       ) {
         return // 경고 무시
       }
       originalWarn.apply(console, args)
+    }
+
+    // console.log도 필터링 (ErrorHandler 메시지 제거)
+    const originalLog = console.log
+    console.log = (...args: any[]) => {
+      const message = args.join(' ')
+      if (
+        message.includes('[ErrorHandler]') ||
+        message.includes('itemscout.io') ||
+        message.includes('Blocked')
+      ) {
+        return // 로그 무시
+      }
+      originalLog.apply(console, args)
     }
 
     // 외부 스크립트 오류 완전 차단 (ErrorEvent만 처리, 클릭 이벤트는 자동으로 무시됨)
@@ -107,38 +124,38 @@ export function ErrorHandler() {
           if (node.nodeType === Node.ELEMENT_NODE) {
             const element = node as HTMLElement
             
-            // itemscout.io 관련 스크립트 태그 제거
+            // itemscout.io 관련 스크립트 태그 제거 (조용히 처리)
             if (element.tagName === 'SCRIPT') {
               const script = element as HTMLScriptElement
               if (
                 script.src?.includes('itemscout.io') ||
                 script.src?.includes('4bd1b696-182b6b13bdad92e3.js')
               ) {
-                console.log('[ErrorHandler] Blocked itemscout.io script:', script.src)
+                // 콘솔 로그 제거 - 조용히 차단
                 script.remove()
                 return
               }
             }
             
-            // itemscout.io 관련 iframe 제거
+            // itemscout.io 관련 iframe 제거 (조용히 처리)
             if (element.tagName === 'IFRAME') {
               const iframe = element as HTMLIFrameElement
               if (
                 iframe.src?.includes('itemscout.io') ||
                 iframe.src?.includes('pixel.itemscout.io')
               ) {
-                console.log('[ErrorHandler] Blocked itemscout.io iframe:', iframe.src)
+                // 콘솔 로그 제거 - 조용히 차단
                 iframe.remove()
                 return
               }
             }
             
-            // 내부에 itemscout.io 관련 요소가 있는지 확인
+            // 내부에 itemscout.io 관련 요소가 있는지 확인 (조용히 처리)
             const itemscoutElements = element.querySelectorAll?.(
               'script[src*="itemscout.io"], iframe[src*="itemscout.io"]'
             )
             itemscoutElements?.forEach((el) => {
-              console.log('[ErrorHandler] Blocked nested itemscout.io element')
+              // 콘솔 로그 제거 - 조용히 차단
               el.remove()
             })
           }
@@ -152,17 +169,17 @@ export function ErrorHandler() {
       subtree: true,
     })
 
-    // 기존 itemscout.io 요소 제거
+    // 기존 itemscout.io 요소 제거 (조용히 처리)
     const removeExistingItemscoutElements = () => {
       const scripts = document.querySelectorAll('script[src*="itemscout.io"]')
       scripts.forEach((script) => {
-        console.log('[ErrorHandler] Removed existing itemscout.io script')
+        // 콘솔 로그 제거 - 조용히 차단
         script.remove()
       })
 
       const iframes = document.querySelectorAll('iframe[src*="itemscout.io"]')
       iframes.forEach((iframe) => {
-        console.log('[ErrorHandler] Removed existing itemscout.io iframe')
+        // 콘솔 로그 제거 - 조용히 차단
         iframe.remove()
       })
     }
@@ -177,6 +194,7 @@ export function ErrorHandler() {
       window.removeEventListener('unhandledrejection', handleUnhandledRejection, true)
       console.error = originalError
       console.warn = originalWarn
+      console.log = originalLog
       Node.prototype.removeChild = originalRemoveChild
       observer.disconnect()
       clearInterval(checkInterval)

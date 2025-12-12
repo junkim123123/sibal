@@ -9,6 +9,7 @@ import { AssetLibrary } from '@/components/AssetLibrary'
 import { ClientMessagesList } from '@/components/ClientMessagesList'
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import { useLanguage } from '@/components/i18n/language-provider'
 
 // 더미 데이터 제거 - 실제 Supabase 데이터 사용
 
@@ -23,6 +24,7 @@ function formatStatus(status: string): string {
 type TabType = 'overview' | 'requests' | 'production' | 'agent'
 
 function DashboardPageContent() {
+  const { t } = useLanguage()
   const searchParams = useSearchParams()
   const tabParam = searchParams?.get('tab') || 'overview'
   
@@ -603,7 +605,9 @@ function DashboardPageContent() {
             {/* Left: Greeting */}
             <div className="flex-1 min-w-0">
               <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold text-black tracking-tight">
-                {userName ? `Welcome back, ${userName}.` : 'Welcome back.'}
+                {userName 
+                  ? t.dashboard.greetingWithName.replace('{name}', userName)
+                  : t.dashboard.greeting}
               </h1>
             </div>
             
@@ -614,8 +618,8 @@ function DashboardPageContent() {
                   size="lg"
                   className="w-full sm:w-auto bg-[#008080] hover:bg-[#006666] text-white rounded-lg px-3 sm:px-6 py-2 sm:py-3 text-xs sm:text-sm font-semibold whitespace-nowrap"
                 >
-                  <span className="hidden sm:inline">+ New Analysis Request</span>
-                  <span className="sm:hidden">+ New</span>
+                  <span className="hidden sm:inline">{t.dashboard.newAnalysisRequest}</span>
+                  <span className="sm:hidden">{t.dashboard.newAnalysisRequestShort}</span>
                 </Button>
               </Link>
             </div>
@@ -623,14 +627,14 @@ function DashboardPageContent() {
           
           {/* Sub-text below greeting */}
           <p className="text-zinc-600 text-lg">
-            Manage your sourcing estimates and track shipments.
+            {t.dashboard.subtitle}
           </p>
         </div>
 
         {/* Tabs Navigation */}
         <div className="flex gap-8 mb-6 border-b border-gray-200">
           <TabButton
-            label="Overview"
+            label={t.dashboard.tabs.overview}
             active={activeTab === 'overview'}
             onClick={(e) => {
               e.preventDefault()
@@ -647,7 +651,7 @@ function DashboardPageContent() {
             }}
           />
           <TabButton
-            label="Sourcing Estimates"
+            label={t.dashboard.tabs.sourcingEstimates}
             active={activeTab === 'requests'}
             onClick={(e) => {
               e.preventDefault()
@@ -664,7 +668,7 @@ function DashboardPageContent() {
             }}
           />
           <TabButton
-            label="Active Orders"
+            label={t.dashboard.tabs.activeOrders}
             active={activeTab === 'production'}
             onClick={(e) => {
               e.preventDefault()
@@ -686,7 +690,7 @@ function DashboardPageContent() {
         <div className="space-y-3">
           {isLoading ? (
             <div className="bg-white border border-gray-200 rounded-xl p-12 text-center">
-              <div className="text-zinc-400">Loading...</div>
+              <div className="text-zinc-400">{t.common.loading}</div>
             </div>
           ) : (
             <>
@@ -695,6 +699,7 @@ function DashboardPageContent() {
                   estimates={estimates} 
                   shipments={shipments}
                   userId={userId}
+                  t={t}
                 />
               )}
               {activeTab === 'requests' && (
@@ -706,10 +711,11 @@ function DashboardPageContent() {
                       loadProjects(userId)
                     }
                   }}
+                  t={t}
                 />
               )}
               {activeTab === 'production' && (
-                <ShipmentsList shipments={shipments} onPaymentComplete={() => userId && loadProjects(userId)} />
+                <ShipmentsList shipments={shipments} onPaymentComplete={() => userId && loadProjects(userId)} t={t} />
               )}
             </>
           )}
@@ -787,11 +793,13 @@ function SummaryCard({
 function OverviewTab({ 
   estimates, 
   shipments,
-  userId 
+  userId,
+  t
 }: { 
   estimates: any[]
   shipments: any[]
   userId: string | null
+  t: any
 }) {
   // Action Required: 승인 대기 중인 견적 (status가 completed이고 아직 agent 요청 안 한 것)
   const actionRequired = estimates.filter((e: any) => 
@@ -831,19 +839,19 @@ function OverviewTab({
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <SummaryCard
           icon={<Clock className="w-5 h-5" />}
-          label="Action Required"
+          label={t.dashboard.stats.actionRequired}
           value={actionRequired}
           color="red"
         />
         <SummaryCard
           icon={<Truck className="w-5 h-5" />}
-          label="In Transit"
+          label={t.dashboard.stats.inTransit}
           value={inTransit}
           color="blue"
         />
         <SummaryCard
           icon={<BarChart3 className="w-5 h-5" />}
-          label="Active Orders"
+          label={t.dashboard.stats.activeOrders}
           value={shipments.length}
           color="green"
         />
@@ -853,15 +861,15 @@ function OverviewTab({
         {/* Recent Activity */}
         <div className="lg:col-span-2">
           <div className="bg-white border border-gray-200 rounded-xl p-6 hover:border-gray-300 hover:shadow-md hover:-translate-y-0.5 transition-all">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">Recent Activity</h2>
+            <h2 className="text-lg font-semibold text-gray-900 mb-4">{t.dashboard.overview.recentActivity}</h2>
             {recentActivity.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-12">
                 <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">
                   <FileText className="w-8 h-8 text-gray-400" />
                 </div>
-                <p className="text-sm font-medium text-gray-900 mb-2">No recent activity</p>
+                <p className="text-sm font-medium text-gray-900 mb-2">{t.dashboard.overview.noRecentActivity}</p>
                 <p className="text-sm text-gray-500 text-center mb-4 max-w-sm">
-                  Get started by creating your first sourcing request to see activity here.
+                  {t.dashboard.overview.noRecentActivityDesc}
                 </p>
                 <Link href="/chat">
                   <Button
@@ -869,7 +877,7 @@ function OverviewTab({
                     size="sm"
                     className="border-gray-300 hover:bg-gray-50 text-gray-700"
                   >
-                    Create First Request
+                    {t.dashboard.overview.createFirstRequest}
                   </Button>
                 </Link>
               </div>
@@ -907,7 +915,7 @@ function OverviewTab({
         {/* Quick Action */}
         <div className="lg:col-span-1">
           <div className="bg-white border border-gray-200 rounded-xl p-6 hover:border-gray-300 hover:shadow-md hover:-translate-y-0.5 transition-all">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">Quick Actions</h2>
+            <h2 className="text-lg font-semibold text-gray-900 mb-4">{t.dashboard.overview.quickActions}</h2>
             <div className="grid grid-cols-2 gap-3">
               <Link 
                 href="/account"
@@ -918,7 +926,7 @@ function OverviewTab({
                   className="w-full flex flex-col items-center justify-center gap-2 px-3 py-4 bg-gray-50 rounded-lg text-gray-700 font-medium text-xs hover:bg-gray-100 transition-all"
                 >
                   <Settings className="h-5 w-5" />
-                  <span className="text-center leading-tight">Settings</span>
+                  <span className="text-center leading-tight">{t.dashboard.overview.settings}</span>
                 </button>
               </Link>
               <Link 
@@ -930,7 +938,7 @@ function OverviewTab({
                   className="w-full flex flex-col items-center justify-center gap-2 px-3 py-4 bg-gray-50 rounded-lg text-gray-700 font-medium text-xs hover:bg-gray-100 transition-all"
                 >
                   <List className="h-5 w-5" />
-                  <span className="text-center leading-tight">All Estimates</span>
+                  <span className="text-center leading-tight">{t.dashboard.overview.allEstimates}</span>
                 </button>
               </Link>
             </div>
@@ -1149,10 +1157,12 @@ function ProductInitialsAvatar({ productName }: { productName: string }) {
 // Estimates List Component (Table Format)
 function EstimatesList({ 
   estimates, 
-  onPaymentComplete 
+  onPaymentComplete,
+  t
 }: { 
   estimates: any[]
   onPaymentComplete?: () => void
+  t: any
 }) {
   const [showPaymentModal, setShowPaymentModal] = useState(false)
   const [selectedProjectId, setSelectedProjectId] = useState<string | null>(null)
@@ -1281,9 +1291,9 @@ function EstimatesList({
     return (
       <EmptyState
         icon={<Package className="h-12 w-12" />}
-        title="No estimates yet"
-        description="Start by analyzing your first product to see your estimates here."
-        actionLabel="Create first request"
+        title={t.dashboard.estimates.noEstimates}
+        description={t.dashboard.estimates.noEstimatesDesc}
+        actionLabel={t.dashboard.estimates.createFirstRequest}
         actionHref="/chat"
       />
     )
@@ -1295,11 +1305,11 @@ function EstimatesList({
         <table className="w-full min-w-[640px]">
           <thead className="bg-gray-50 border-b border-gray-200">
             <tr>
-              <th className="px-3 sm:px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Product Info</th>
-              <th className="px-3 sm:px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Date</th>
-              <th className="px-3 sm:px-6 py-3 text-right text-xs font-semibold text-gray-600 uppercase tracking-wider">Est. Unit Cost</th>
-              <th className="px-3 sm:px-6 py-3 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">Status</th>
-              <th className="px-3 sm:px-6 py-3 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">Action</th>
+              <th className="px-3 sm:px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">{t.dashboard.estimates.productInfo}</th>
+              <th className="px-3 sm:px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">{t.dashboard.estimates.date}</th>
+              <th className="px-3 sm:px-6 py-3 text-right text-xs font-semibold text-gray-600 uppercase tracking-wider">{t.dashboard.estimates.estUnitCost}</th>
+              <th className="px-3 sm:px-6 py-3 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">{t.dashboard.estimates.status}</th>
+              <th className="px-3 sm:px-6 py-3 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">{t.dashboard.estimates.action}</th>
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
@@ -1363,13 +1373,13 @@ function EstimatesList({
                         {isProcessingPayment ? (
                           <>
                             <Loader2 className="h-3 w-3 animate-spin" />
-                            <span className="hidden sm:inline">Connecting...</span>
+                            <span className="hidden sm:inline">{t.dashboard.estimates.connecting}</span>
                             <span className="sm:hidden">...</span>
                           </>
                         ) : (
                           <>
-                            <span className="hidden sm:inline">Connect Agent</span>
-                            <span className="sm:hidden">Connect</span>
+                            <span className="hidden sm:inline">{t.dashboard.estimates.connectAgent}</span>
+                            <span className="sm:hidden">{t.dashboard.estimates.connect}</span>
                           </>
                         )}
                       </button>
@@ -1380,8 +1390,8 @@ function EstimatesList({
                         className="px-2 sm:px-3 md:px-4 py-1.5 sm:py-2 text-[10px] sm:text-xs md:text-sm font-semibold bg-gray-100 text-gray-500 rounded-lg cursor-not-allowed whitespace-nowrap flex items-center gap-1.5 mx-auto"
                       >
                         <Loader2 className="h-3 w-3 animate-spin" />
-                        <span className="hidden sm:inline">Awaiting Agent...</span>
-                        <span className="sm:hidden">Awaiting...</span>
+                        <span className="hidden sm:inline">{t.dashboard.estimates.awaitingAgent}</span>
+                        <span className="sm:hidden">{t.dashboard.estimates.awaiting}</span>
                       </button>
                     ) : (
                       // Case C: View Report 버튼 (분석 중이거나 완료되지 않은 경우)
@@ -1391,8 +1401,8 @@ function EstimatesList({
                           size="sm"
                           className="text-[10px] sm:text-xs"
                         >
-                          <span className="hidden sm:inline">View Report</span>
-                          <span className="sm:hidden">View</span>
+                          <span className="hidden sm:inline">{t.dashboard.estimates.viewReport}</span>
+                          <span className="sm:hidden">{t.dashboard.estimates.view}</span>
                         </Button>
                       </Link>
                     )}
@@ -1576,7 +1586,7 @@ function OrderStepper({
 }
 
 // Active Orders List Component with Stepper
-function ShipmentsList({ shipments, onPaymentComplete }: { shipments: any[], onPaymentComplete?: () => void }) {
+function ShipmentsList({ shipments, onPaymentComplete, t }: { shipments: any[], onPaymentComplete?: () => void, t: any }) {
   const [showPaymentModal, setShowPaymentModal] = useState(false)
   const [selectedProjectId, setSelectedProjectId] = useState<string | null>(null)
   const [isProcessingPayment, setIsProcessingPayment] = useState(false)
@@ -1585,9 +1595,9 @@ function ShipmentsList({ shipments, onPaymentComplete }: { shipments: any[], onP
     return (
       <EmptyState
         icon={<Truck className="h-12 w-12" />}
-        title="No active orders yet"
-        description="Request an agent from your estimates to see active orders here."
-        actionLabel="View estimates"
+        title={t.dashboard.orders.noOrders}
+        description={t.dashboard.orders.noOrdersDesc}
+        actionLabel={t.dashboard.orders.viewEstimates}
         actionHref="/dashboard?tab=requests"
       />
     )

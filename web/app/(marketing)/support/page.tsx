@@ -3,8 +3,10 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { ArrowRight, AlertCircle, MessageCircle, Briefcase, Handshake, UserCircle } from 'lucide-react'
+import { useLanguage } from '@/components/i18n/language-provider'
 
 export default function SupportPage() {
+  const { t } = useLanguage()
   const [showChat, setShowChat] = useState(false)
 
   return (
@@ -15,10 +17,10 @@ export default function SupportPage() {
           <div className="lg:col-span-3">
             <div className="lg:sticky lg:top-24">
               <h1 className="text-5xl lg:text-6xl font-bold leading-tight mb-4 text-black">
-                Get in touch
+                {t.support.title}
               </h1>
               <p className="text-lg text-zinc-600">
-                Choose the right channel for your inquiry.
+                {t.support.subtitle}
               </p>
             </div>
           </div>
@@ -34,13 +36,13 @@ export default function SupportPage() {
                   </div>
                   <div className="flex-1">
                     <h2 className="text-2xl font-bold mb-3 text-black">
-                      Critical Logistics Escalation
+                      {t.support.critical.title}
                     </h2>
                     <p className="text-base text-zinc-700 mb-3 leading-relaxed">
-                      For customs holds or shipping emergencies. This inbox is monitored by our senior logistics team.
+                      {t.support.critical.description}
                     </p>
                     <p className="text-sm font-medium text-red-700 mb-4">
-                      Avg. Response: &lt; 2 Hours
+                      {t.support.critical.avgResponse}
                     </p>
                     <a
                       href="mailto:urgent@nexsupply.net"
@@ -61,16 +63,16 @@ export default function SupportPage() {
                   </div>
                   <div className="flex-1">
                     <h2 className="text-2xl font-bold mb-3 text-black">
-                      Talk to your Sourcing Agent
+                      {t.support.agent.title}
                     </h2>
                     <p className="text-base text-zinc-600 mb-4 leading-relaxed">
-                      Need updates on an active quote or sample? The fastest way is to message your agent directly through the dashboard.
+                      {t.support.agent.description}
                     </p>
                     <Link
                       href="/dashboard/chat"
                       className="inline-flex items-center justify-center gap-2 w-full px-4 py-2.5 bg-[#008080] hover:bg-teal-700 text-white rounded-lg font-semibold transition-all hover:shadow-md group"
                     >
-                      Open Agent Chat
+                      {t.support.agent.button}
                       <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
                     </Link>
                   </div>
@@ -85,16 +87,16 @@ export default function SupportPage() {
                   </div>
                   <div className="flex-1">
                     <h2 className="text-2xl font-bold mb-3 text-black">
-                      Trade Operations Desk
+                      {t.support.operations.title}
                     </h2>
                     <p className="text-base text-zinc-600 mb-2 leading-relaxed">
-                      For billing, platform usage, and account management.
+                      {t.support.operations.description}
                     </p>
                     <p className="text-sm text-zinc-500 mb-1">
-                      Hours: 9am to 6pm EST, Mon-Fri.
+                      {t.support.operations.hours}
                     </p>
                     <p className="text-xs text-zinc-400 mb-4 italic">
-                      Async support available during Asia business hours.
+                      {t.support.operations.asyncSupport}
                     </p>
                     <a
                       href="mailto:support@nexsupply.net"
@@ -115,10 +117,10 @@ export default function SupportPage() {
                   </div>
                   <div className="flex-1">
                     <h2 className="text-2xl font-bold mb-3 text-black">
-                      Business & Press
+                      {t.support.business.title}
                     </h2>
                     <p className="text-base text-zinc-600 mb-4 leading-relaxed">
-                      For factory partnerships or media inquiries.
+                      {t.support.business.description}
                     </p>
                     <a
                       href="mailto:partners@nexsupply.net"
@@ -142,7 +144,7 @@ export default function SupportPage() {
         aria-label="Need help?"
       >
         <MessageCircle className="h-5 w-5" />
-        <span>Need Help?</span>
+        <span>{t.support.chat.needHelp}</span>
       </button>
 
       {/* Simple Chat Panel (placeholder) */}
@@ -150,7 +152,7 @@ export default function SupportPage() {
         <div className="fixed bottom-24 right-6 z-50 w-80 bg-white border border-gray-200 rounded-xl shadow-2xl overflow-hidden">
           <div className="p-4 border-b border-gray-200">
             <div className="flex items-center justify-between">
-              <h3 className="font-semibold text-black">Chat Support</h3>
+              <h3 className="font-semibold text-black">{t.support.chat.chatSupport}</h3>
               <button
                 onClick={() => setShowChat(false)}
                 className="text-zinc-600 hover:text-black"
@@ -161,13 +163,13 @@ export default function SupportPage() {
           </div>
           <div className="p-6">
             <p className="text-zinc-600 text-sm mb-4">
-              Start a conversation with our support team.
+              {t.support.chat.startConversation}
             </p>
             <a
               href="mailto:support@nexsupply.net"
               className="block w-full text-center px-4 py-2 bg-[#008080] text-white rounded-lg font-medium hover:bg-[#006666] transition-colors"
             >
-              Email Support
+              {t.support.chat.emailSupport}
             </a>
           </div>
         </div>

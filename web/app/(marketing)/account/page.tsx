@@ -6,10 +6,12 @@ import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import { useEffect } from 'react'
 import { Camera, ChevronDown, ChevronUp, Loader2, MapPin, Package } from 'lucide-react'
+import { useLanguage } from '@/components/i18n/language-provider'
 
 type TabType = 'profile' | 'company' | 'shipping'
 
 export default function AccountPage() {
+  const { t } = useLanguage()
   const [activeTab, setActiveTab] = useState<TabType>('profile')
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null)
   const [userEmail, setUserEmail] = useState<string>('')
@@ -47,10 +49,10 @@ export default function AccountPage() {
         {/* Header */}
         <div className="mb-12">
           <h1 className="text-4xl md:text-5xl font-bold text-black tracking-tight mb-2">
-            Account Settings
+            {t.account.title}
           </h1>
           <p className="text-zinc-600 text-lg">
-            Manage your profile, company information, and shipping preferences.
+            {t.account.subtitle}
           </p>
         </div>
 
@@ -58,17 +60,17 @@ export default function AccountPage() {
         <div className="flex items-center justify-between mb-8 border-b border-gray-200">
           <div className="flex gap-8">
             <TabButton
-              label="My Profile"
+              label={t.account.tabs.myProfile}
               active={activeTab === 'profile'}
               onClick={() => setActiveTab('profile')}
             />
             <TabButton
-              label="Company Details"
+              label={t.account.tabs.companyDetails}
               active={activeTab === 'company'}
               onClick={() => setActiveTab('company')}
             />
             <TabButton
-              label="Warehouse / Destination"
+              label={t.account.tabs.warehouseDestination}
               active={activeTab === 'shipping'}
               onClick={() => setActiveTab('shipping')}
             />
@@ -77,9 +79,9 @@ export default function AccountPage() {
 
         {/* Tab Content */}
         <div className="bg-white border border-gray-200 rounded-xl shadow-sm p-8 mb-20 md:mb-0 max-w-3xl">
-          {activeTab === 'profile' && <ProfileTab userEmail={userEmail} />}
-          {activeTab === 'company' && <CompanyTab />}
-          {activeTab === 'shipping' && <ShippingTab />}
+          {activeTab === 'profile' && <ProfileTab userEmail={userEmail} t={t} />}
+          {activeTab === 'company' && <CompanyTab t={t} />}
+          {activeTab === 'shipping' && <ShippingTab t={t} />}
         </div>
       </div>
       
@@ -91,7 +93,7 @@ export default function AccountPage() {
             form={activeTab === 'profile' ? 'profile-form' : activeTab === 'company' ? 'company-form' : 'shipping-form'}
             className="w-full px-6 py-3 bg-[#008080] text-white rounded-lg font-medium hover:bg-[#006666] transition-colors"
           >
-            Save Changes
+            {t.account.profile.saveChanges}
           </button>
         </div>
       </div>
@@ -196,16 +198,16 @@ function ProfileAvatar({ name, onImageChange }: { name: string; onImageChange?: 
           onClick={() => document.getElementById('avatar-upload')?.click()}
           className="text-sm font-medium text-zinc-600 hover:text-[#008080] transition-colors"
         >
-          Change Photo
+          {t.account.profile.changePhoto}
         </button>
-        <p className="text-xs text-zinc-500 mt-1">JPG, PNG or GIF. Max size 2MB</p>
+        <p className="text-xs text-zinc-500 mt-1">{t.account.profile.photoHint}</p>
       </div>
     </div>
   )
 }
 
 // Profile Tab
-function ProfileTab({ userEmail }: { userEmail: string }) {
+function ProfileTab({ userEmail, t }: { userEmail: string; t: any }) {
   const [name, setName] = useState('')
   const [jobTitle, setJobTitle] = useState('')
   const [phone, setPhone] = useState('')
@@ -265,7 +267,7 @@ function ProfileTab({ userEmail }: { userEmail: string }) {
 
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) {
-        setError('로그인이 필요합니다.')
+        setError(t.account.profile.loginRequired)
         return
       }
 
@@ -281,17 +283,17 @@ function ProfileTab({ userEmail }: { userEmail: string }) {
 
       if (updateError) {
         console.error('[ProfileTab] Failed to update profile:', updateError)
-        setError('프로필 저장에 실패했습니다. 다시 시도해주세요.')
+        setError(t.account.profile.saveFailed)
         return
       }
 
-      setSuccess('프로필이 성공적으로 저장되었습니다.')
+      setSuccess(t.account.profile.profileSaved)
       // 성공 메시지 3초 후 제거
       setTimeout(() => setSuccess(null), 3000)
-    } catch (err) {
-      console.error('[ProfileTab] Save error:', err)
-      setError('프로필 저장 중 오류가 발생했습니다.')
-    } finally {
+      } catch (err) {
+        console.error('[ProfileTab] Save error:', err)
+        setError(t.account.profile.saveError)
+      } finally {
       setIsSaving(false)
     }
   }
@@ -375,7 +377,7 @@ function ProfileTab({ userEmail }: { userEmail: string }) {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div>
           <label className="block text-xs uppercase tracking-wide text-zinc-500 mb-2 font-semibold">
-            Full Name
+            {t.account.profile.fullName}
           </label>
           <input
             type="text"
@@ -389,7 +391,7 @@ function ProfileTab({ userEmail }: { userEmail: string }) {
 
         <div>
           <label className="block text-xs uppercase tracking-wide text-zinc-500 mb-2 font-semibold">
-            Job Title
+            {t.account.profile.jobTitle}
           </label>
           <input
             type="text"
@@ -397,7 +399,7 @@ function ProfileTab({ userEmail }: { userEmail: string }) {
             value={jobTitle}
             onChange={(e) => setJobTitle(e.target.value)}
             className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-lg text-black placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-[#008080] focus:border-[#008080] transition-all"
-            placeholder="e.g. CEO, Purchasing Manager"
+            placeholder={t.account.profile.jobTitlePlaceholder}
           />
         </div>
       </div>
@@ -530,7 +532,7 @@ function ProfileTab({ userEmail }: { userEmail: string }) {
 }
 
 // Company Tab
-function CompanyTab() {
+function CompanyTab({ t }: { t: any }) {
   return (
     <form className="space-y-6" id="company-form">
       {/* 2-Column Grid: Company Name + Tax ID */}
@@ -661,7 +663,7 @@ const US_STATES = [
 ]
 
 // Shipping Tab
-function ShippingTab() {
+function ShippingTab({ t }: { t: any }) {
   const [isFBAWarehouse, setIsFBAWarehouse] = useState(false)
   const [country, setCountry] = useState('US')
 

@@ -130,6 +130,189 @@ export interface Translations {
     mostPopular: string;
     sslSecure: string;
   };
+  dashboard: {
+    greeting: string;
+    greetingWithName: string;
+    subtitle: string;
+    newAnalysisRequest: string;
+    newAnalysisRequestShort: string;
+    tabs: {
+      overview: string;
+      sourcingEstimates: string;
+      activeOrders: string;
+    };
+    stats: {
+      actionRequired: string;
+      inTransit: string;
+      activeOrders: string;
+    };
+    overview: {
+      recentActivity: string;
+      noRecentActivity: string;
+      noRecentActivityDesc: string;
+      createFirstRequest: string;
+      quickActions: string;
+      settings: string;
+      allEstimates: string;
+    };
+    estimates: {
+      noEstimates: string;
+      noEstimatesDesc: string;
+      createFirstRequest: string;
+      productInfo: string;
+      date: string;
+      estUnitCost: string;
+      status: string;
+      action: string;
+      connectAgent: string;
+      connect: string;
+      connecting: string;
+      awaitingAgent: string;
+      awaiting: string;
+      viewReport: string;
+      view: string;
+    };
+    orders: {
+      noOrders: string;
+      noOrdersDesc: string;
+      viewEstimates: string;
+      messageAgent: string;
+      agentReviewing: string;
+      managerWillBeAssigned: string;
+      startChattingWithAgent: string;
+      viewQuoteApprove: string;
+      unlockQuote: string;
+      new: string;
+    };
+    payment: {
+      connectWithAgent: string;
+      connectAgentDesc: string;
+      sourcingRetainer: string;
+      oneTimeFee: string;
+      creditedUponOrder: string;
+      creditedUponOrderDesc: string;
+      dedicatedAgent: string;
+      dedicatedAgentDesc: string;
+      factoryVerification: string;
+      factoryVerificationDesc: string;
+      officialQuote: string;
+      officialQuoteDesc: string;
+      ndaAgreement: string;
+      ndaAgreementDesc: string;
+      viewNDATerms: string;
+      nonRefundableNotice: string;
+      proceedToPayment: string;
+      processing: string;
+      cancel: string;
+      paymentSuccessful: string;
+      paymentSuccessfulDesc: string;
+    };
+  };
+  account: {
+    title: string;
+    subtitle: string;
+    tabs: {
+      myProfile: string;
+      companyDetails: string;
+      warehouseDestination: string;
+    };
+    profile: {
+      changePhoto: string;
+      photoHint: string;
+      fullName: string;
+      jobTitle: string;
+      jobTitlePlaceholder: string;
+      email: string;
+      emailCannotChange: string;
+      phoneNumber: string;
+      phonePlaceholder: string;
+      updatePassword: string;
+      currentPassword: string;
+      newPassword: string;
+      confirmPassword: string;
+      updating: string;
+      saveChanges: string;
+      saving: string;
+      profileSaved: string;
+      loginRequired: string;
+      saveFailed: string;
+      saveError: string;
+    };
+    company: {
+      companyName: string;
+      companyNamePlaceholder: string;
+      taxId: string;
+      taxIdOptional: string;
+      taxIdPlaceholder: string;
+      taxIdHint: string;
+      storefrontUrl: string;
+      storefrontUrlPlaceholder: string;
+      storefrontUrlHint: string;
+      expectedVolume: string;
+      selectVolume: string;
+      volumeLcl: string;
+      volumeSmall: string;
+      volumeMedium: string;
+      volumeLarge: string;
+      volumeEnterprise: string;
+    };
+    shipping: {
+      fbaWarehouse: string;
+      fbaWarehouseDesc: string;
+      fbaLabelingRequired: string;
+      fbaLabelingDesc: string;
+      fbaShipmentId: string;
+      fbaShipmentIdPlaceholder: string;
+      fbaShipmentIdHint: string;
+      storeName: string;
+      storeNamePlaceholder: string;
+      storeNameHint: string;
+      country: string;
+      address: string;
+      addressPlaceholder: string;
+      aptSuite: string;
+      aptSuitePlaceholder: string;
+      city: string;
+      cityPlaceholder: string;
+      state: string;
+      selectState: string;
+      zipCode: string;
+      zipCodePlaceholder: string;
+    };
+  };
+  support: {
+    title: string;
+    subtitle: string;
+    critical: {
+      title: string;
+      description: string;
+      avgResponse: string;
+      email: string;
+    };
+    agent: {
+      title: string;
+      description: string;
+      button: string;
+    };
+    operations: {
+      title: string;
+      description: string;
+      hours: string;
+      asyncSupport: string;
+      email: string;
+    };
+    business: {
+      title: string;
+      description: string;
+      email: string;
+    };
+    chat: {
+      needHelp: string;
+      chatSupport: string;
+      startConversation: string;
+      emailSupport: string;
+    };
+  };
 }
 
 export const translations: Record<Language, Translations> = {
@@ -342,6 +525,189 @@ export const translations: Record<Language, Translations> = {
       mostPopular: 'Most Popular',
       sslSecure: 'SSL Secure Payment',
     },
+    dashboard: {
+      greeting: 'Welcome back.',
+      greetingWithName: 'Welcome back, {name}.',
+      subtitle: 'Manage your sourcing estimates and track shipments.',
+      newAnalysisRequest: '+ New Analysis Request',
+      newAnalysisRequestShort: '+ New',
+      tabs: {
+        overview: 'Overview',
+        sourcingEstimates: 'Sourcing Estimates',
+        activeOrders: 'Active Orders',
+      },
+      stats: {
+        actionRequired: 'Action Required',
+        inTransit: 'In Transit',
+        activeOrders: 'Active Orders',
+      },
+      overview: {
+        recentActivity: 'Recent Activity',
+        noRecentActivity: 'No recent activity',
+        noRecentActivityDesc: 'Get started by creating your first sourcing request to see activity here.',
+        createFirstRequest: 'Create First Request',
+        quickActions: 'Quick Actions',
+        settings: 'Settings',
+        allEstimates: 'All Estimates',
+      },
+      estimates: {
+        noEstimates: 'No estimates yet',
+        noEstimatesDesc: 'Start by analyzing your first product to see your estimates here.',
+        createFirstRequest: 'Create first request',
+        productInfo: 'Product Info',
+        date: 'Date',
+        estUnitCost: 'Est. Unit Cost',
+        status: 'Status',
+        action: 'Action',
+        connectAgent: 'Connect Agent',
+        connect: 'Connect',
+        connecting: 'Connecting...',
+        awaitingAgent: 'Awaiting Agent...',
+        awaiting: 'Awaiting...',
+        viewReport: 'View Report',
+        view: 'View',
+      },
+      orders: {
+        noOrders: 'No active orders yet',
+        noOrdersDesc: 'Request an agent from your estimates to see active orders here.',
+        viewEstimates: 'View estimates',
+        messageAgent: 'Message Agent',
+        agentReviewing: 'Agent is reviewing your request',
+        managerWillBeAssigned: '⏰ Manager will be assigned within 24 hours',
+        startChattingWithAgent: 'Start chatting with your agent to discuss requirements',
+        viewQuoteApprove: 'View Quote & Approve',
+        unlockQuote: 'Unlock Quote - $49',
+        new: 'New',
+      },
+      payment: {
+        connectWithAgent: 'Connect with a Dedicated Agent',
+        connectAgentDesc: 'Get official quotes and negotiate with suppliers.',
+        sourcingRetainer: '$49 Sourcing Retainer',
+        oneTimeFee: 'One-time sourcing initiation fee',
+        creditedUponOrder: 'Credited Upon Order',
+        creditedUponOrderDesc: 'This fee covers the agent\'s labor for negotiation and is non-refundable. However, it will be fully deducted from your final 5% service fee when you proceed with the order.',
+        dedicatedAgent: 'Dedicated Agent Assignment',
+        dedicatedAgentDesc: 'Your personal sourcing specialist assigned to your project',
+        factoryVerification: 'Factory Verification & Price Negotiation',
+        factoryVerificationDesc: 'We find and verify trusted factories, then negotiate the best prices',
+        officialQuote: 'Official Quote (PI) Issuance',
+        officialQuoteDesc: 'Receive formal Proforma Invoice from verified manufacturers',
+        ndaAgreement: 'I agree to the NexSupply Standard NDA (Non-Disclosure Agreement)',
+        ndaAgreementDesc: 'By proceeding, you acknowledge that all project information will be kept confidential and protected under our standard NDA terms.',
+        viewNDATerms: 'View NDA Terms',
+        nonRefundableNotice: 'The sourcing fee is non-refundable once the official quote has been delivered.',
+        proceedToPayment: 'Proceed to Payment',
+        processing: 'Processing...',
+        cancel: 'Cancel',
+        paymentSuccessful: 'Payment Successful!',
+        paymentSuccessfulDesc: 'An agent will be assigned shortly.',
+      },
+    },
+    account: {
+      title: 'Account Settings',
+      subtitle: 'Manage your profile, company information, and shipping preferences.',
+      tabs: {
+        myProfile: 'My Profile',
+        companyDetails: 'Company Details',
+        warehouseDestination: 'Warehouse / Destination',
+      },
+      profile: {
+        changePhoto: 'Change Photo',
+        photoHint: 'JPG, PNG or GIF. Max size 2MB',
+        fullName: 'Full Name',
+        jobTitle: 'Job Title',
+        jobTitlePlaceholder: 'e.g. CEO, Purchasing Manager',
+        email: 'Email',
+        emailCannotChange: 'Email cannot be changed. Contact support if you need to update it.',
+        phoneNumber: 'Phone Number',
+        phonePlaceholder: '+1 (555) 123-4567',
+        updatePassword: 'Update Password',
+        currentPassword: 'Current Password',
+        newPassword: 'New Password',
+        confirmPassword: 'Confirm New Password',
+        updating: 'Updating...',
+        saveChanges: 'Save Changes',
+        saving: 'Saving...',
+        profileSaved: 'Profile saved successfully.',
+        loginRequired: 'Login required.',
+        saveFailed: 'Failed to save profile. Please try again.',
+        saveError: 'An error occurred while saving profile.',
+      },
+      company: {
+        companyName: 'Company Name',
+        companyNamePlaceholder: 'Acme Corporation',
+        taxId: 'Tax ID / EIN',
+        taxIdOptional: '(Optional)',
+        taxIdPlaceholder: 'e.g. EIN, VAT Number, or Business Reg. ID',
+        taxIdHint: 'Required for invoicing and tax documentation',
+        storefrontUrl: 'Storefront / Sales Channel URL',
+        storefrontUrlPlaceholder: 'https://www.amazon.com/shops/yourstore or https://yourstore.com',
+        storefrontUrlHint: 'Your Amazon store, Shopify store, or other sales channel',
+        expectedVolume: 'Expected Import Volume',
+        selectVolume: 'Select volume...',
+        volumeLcl: 'Less than 1 container (LCL / Air Freight)',
+        volumeSmall: '1-5 containers/year',
+        volumeMedium: '6-20 containers/year',
+        volumeLarge: '21-50 containers/year',
+        volumeEnterprise: '50+ containers/year',
+      },
+      shipping: {
+        fbaWarehouse: 'This is an Amazon FBA Warehouse',
+        fbaWarehouseDesc: 'Check this if you\'re shipping directly to an Amazon fulfillment center',
+        fbaLabelingRequired: '⚠️ Amazon FBA Labeling Required',
+        fbaLabelingDesc: 'Make sure you have your FBA Shipment ID ready for proper labeling',
+        fbaShipmentId: 'FBA Shipment ID / Reference Code',
+        fbaShipmentIdPlaceholder: 'e.g. FBA123456789 or Shipment Reference',
+        fbaShipmentIdHint: 'Optional: Your Amazon shipment reference for labeling',
+        storeName: 'Store Name (for Labeling)',
+        storeNamePlaceholder: 'e.g. My Amazon Store',
+        storeNameHint: 'Optional: Store name for FBA shipment labeling',
+        country: 'Country / Region',
+        address: 'Address',
+        addressPlaceholder: '123 Main Street',
+        aptSuite: 'Apt / Suite',
+        aptSuitePlaceholder: 'Suite 100',
+        city: 'City',
+        cityPlaceholder: 'Los Angeles',
+        state: 'State',
+        selectState: 'Select State',
+        zipCode: 'Zip Code',
+        zipCodePlaceholder: '90001',
+      },
+    },
+    support: {
+      title: 'Get in touch',
+      subtitle: 'Choose the right channel for your inquiry.',
+      critical: {
+        title: 'Critical Logistics Escalation',
+        description: 'For customs holds or shipping emergencies. This inbox is monitored by our senior logistics team.',
+        avgResponse: 'Avg. Response: < 2 Hours',
+        email: 'urgent@nexsupply.net',
+      },
+      agent: {
+        title: 'Talk to your Sourcing Agent',
+        description: 'Need updates on an active quote or sample? The fastest way is to message your agent directly through the dashboard.',
+        button: 'Open Agent Chat',
+      },
+      operations: {
+        title: 'Trade Operations Desk',
+        description: 'For billing, platform usage, and account management.',
+        hours: 'Hours: 9am to 6pm EST, Mon-Fri.',
+        asyncSupport: 'Async support available during Asia business hours.',
+        email: 'support@nexsupply.net',
+      },
+      business: {
+        title: 'Business & Press',
+        description: 'For factory partnerships or media inquiries.',
+        email: 'partners@nexsupply.net',
+      },
+      chat: {
+        needHelp: 'Need Help?',
+        chatSupport: 'Chat Support',
+        startConversation: 'Start a conversation with our support team.',
+        emailSupport: 'Email Support',
+      },
+    },
   },
   ko: {
     nav: {
@@ -551,6 +917,189 @@ export const translations: Record<Language, Translations> = {
       disclaimer: '서비스 수수료는 FOB 가치를 기반으로 합니다. AI 추정치는 참고용입니다. 최종 가격은 예치금 결제 시 확인됩니다.',
       mostPopular: '가장 인기',
       sslSecure: 'SSL 보안 결제',
+    },
+    dashboard: {
+      greeting: '다시 오신 것을 환영합니다.',
+      greetingWithName: '{name}님, 다시 오신 것을 환영합니다.',
+      subtitle: '소싱 견적을 관리하고 배송을 추적하세요.',
+      newAnalysisRequest: '+ 새 분석 요청',
+      newAnalysisRequestShort: '+ 새로 만들기',
+      tabs: {
+        overview: '개요',
+        sourcingEstimates: '소싱 견적',
+        activeOrders: '진행 중인 주문',
+      },
+      stats: {
+        actionRequired: '조치 필요',
+        inTransit: '배송 중',
+        activeOrders: '진행 중인 주문',
+      },
+      overview: {
+        recentActivity: '최근 활동',
+        noRecentActivity: '최근 활동이 없습니다',
+        noRecentActivityDesc: '첫 번째 소싱 요청을 만들어 활동을 확인하세요.',
+        createFirstRequest: '첫 요청 만들기',
+        quickActions: '빠른 작업',
+        settings: '설정',
+        allEstimates: '모든 견적',
+      },
+      estimates: {
+        noEstimates: '아직 견적이 없습니다',
+        noEstimatesDesc: '첫 번째 제품을 분석하여 여기에 견적을 확인하세요.',
+        createFirstRequest: '첫 요청 만들기',
+        productInfo: '제품 정보',
+        date: '날짜',
+        estUnitCost: '예상 단위 비용',
+        status: '상태',
+        action: '작업',
+        connectAgent: '에이전트 연결',
+        connect: '연결',
+        connecting: '연결 중...',
+        awaitingAgent: '에이전트 대기 중...',
+        awaiting: '대기 중...',
+        viewReport: '보고서 보기',
+        view: '보기',
+      },
+      orders: {
+        noOrders: '아직 진행 중인 주문이 없습니다',
+        noOrdersDesc: '견적에서 에이전트를 요청하여 진행 중인 주문을 확인하세요.',
+        viewEstimates: '견적 보기',
+        messageAgent: '에이전트에게 메시지',
+        agentReviewing: '에이전트가 요청을 검토 중입니다',
+        managerWillBeAssigned: '⏰ 24시간 이내에 매니저가 배정됩니다',
+        startChattingWithAgent: '에이전트와 대화를 시작하여 요구사항을 논의하세요',
+        viewQuoteApprove: '견적 보기 및 승인',
+        unlockQuote: '견적 잠금 해제 - $49',
+        new: '새로',
+      },
+      payment: {
+        connectWithAgent: '전담 에이전트와 연결',
+        connectAgentDesc: '공식 견적을 받고 공급업체와 협상하세요.',
+        sourcingRetainer: '$49 소싱 유지비',
+        oneTimeFee: '일회성 소싱 시작 수수료',
+        creditedUponOrder: '주문 시 크레딧',
+        creditedUponOrderDesc: '이 수수료는 협상을 위한 에이전트의 노동력을 포함하며 환불 불가입니다. 그러나 주문을 진행하면 최종 5% 서비스 수수료에서 완전히 공제됩니다.',
+        dedicatedAgent: '전담 에이전트 배정',
+        dedicatedAgentDesc: '프로젝트에 배정된 개인 소싱 전문가',
+        factoryVerification: '공장 검증 및 가격 협상',
+        factoryVerificationDesc: '신뢰할 수 있는 공장을 찾아 검증한 후 최고의 가격을 협상합니다',
+        officialQuote: '공식 견적서(PI) 발행',
+        officialQuoteDesc: '검증된 제조업체로부터 정식 Proforma Invoice 수신',
+        ndaAgreement: 'NexSupply 표준 비밀유지협정(NDA)에 동의합니다',
+        ndaAgreementDesc: '진행하면 모든 프로젝트 정보가 비밀로 유지되고 표준 NDA 조건에 따라 보호됨을 인정합니다.',
+        viewNDATerms: 'NDA 조건 보기',
+        nonRefundableNotice: '공식 견적서가 전달되면 소싱 수수료는 환불되지 않습니다.',
+        proceedToPayment: '결제 진행',
+        processing: '처리 중...',
+        cancel: '취소',
+        paymentSuccessful: '결제 완료!',
+        paymentSuccessfulDesc: '곧 에이전트가 배정됩니다.',
+      },
+    },
+    account: {
+      title: '계정 설정',
+      subtitle: '프로필, 회사 정보 및 배송 설정을 관리하세요.',
+      tabs: {
+        myProfile: '내 프로필',
+        companyDetails: '회사 정보',
+        warehouseDestination: '창고 / 배송지',
+      },
+      profile: {
+        changePhoto: '사진 변경',
+        photoHint: 'JPG, PNG 또는 GIF. 최대 2MB',
+        fullName: '성명',
+        jobTitle: '직책',
+        jobTitlePlaceholder: '예: CEO, 구매 관리자',
+        email: '이메일',
+        emailCannotChange: '이메일은 변경할 수 없습니다. 업데이트가 필요하면 지원팀에 문의하세요.',
+        phoneNumber: '전화번호',
+        phonePlaceholder: '+82 10-1234-5678',
+        updatePassword: '비밀번호 변경',
+        currentPassword: '현재 비밀번호',
+        newPassword: '새 비밀번호',
+        confirmPassword: '새 비밀번호 확인',
+        updating: '업데이트 중...',
+        saveChanges: '변경 사항 저장',
+        saving: '저장 중...',
+        profileSaved: '프로필이 성공적으로 저장되었습니다.',
+        loginRequired: '로그인이 필요합니다.',
+        saveFailed: '프로필 저장에 실패했습니다. 다시 시도해주세요.',
+        saveError: '프로필 저장 중 오류가 발생했습니다.',
+      },
+      company: {
+        companyName: '회사명',
+        companyNamePlaceholder: 'Acme Corporation',
+        taxId: '세금 ID / EIN',
+        taxIdOptional: '(선택사항)',
+        taxIdPlaceholder: '예: EIN, VAT 번호 또는 사업자 등록 번호',
+        taxIdHint: '인보이스 및 세금 문서에 필요합니다',
+        storefrontUrl: '상점 / 판매 채널 URL',
+        storefrontUrlPlaceholder: 'https://www.amazon.com/shops/yourstore 또는 https://yourstore.com',
+        storefrontUrlHint: 'Amazon 상점, Shopify 상점 또는 기타 판매 채널',
+        expectedVolume: '예상 수입 물량',
+        selectVolume: '물량 선택...',
+        volumeLcl: '컨테이너 1개 미만 (LCL / 항공 운송)',
+        volumeSmall: '연간 1-5개 컨테이너',
+        volumeMedium: '연간 6-20개 컨테이너',
+        volumeLarge: '연간 21-50개 컨테이너',
+        volumeEnterprise: '연간 50개 이상 컨테이너',
+      },
+      shipping: {
+        fbaWarehouse: 'Amazon FBA 창고입니다',
+        fbaWarehouseDesc: 'Amazon 이행 센터로 직접 배송하는 경우 체크하세요',
+        fbaLabelingRequired: '⚠️ Amazon FBA 라벨링 필요',
+        fbaLabelingDesc: '적절한 라벨링을 위해 FBA 배송 ID를 준비하세요',
+        fbaShipmentId: 'FBA 배송 ID / 참조 코드',
+        fbaShipmentIdPlaceholder: '예: FBA123456789 또는 배송 참조',
+        fbaShipmentIdHint: '선택사항: 라벨링을 위한 Amazon 배송 참조',
+        storeName: '상점명 (라벨링용)',
+        storeNamePlaceholder: '예: 내 Amazon 상점',
+        storeNameHint: '선택사항: FBA 배송 라벨링용 상점명',
+        country: '국가 / 지역',
+        address: '주소',
+        addressPlaceholder: '메인 스트리트 123',
+        aptSuite: '아파트 / 스위트',
+        aptSuitePlaceholder: '스위트 100',
+        city: '도시',
+        cityPlaceholder: '서울',
+        state: '주/도',
+        selectState: '주/도 선택',
+        zipCode: '우편번호',
+        zipCodePlaceholder: '12345',
+      },
+    },
+    support: {
+      title: '문의하기',
+      subtitle: '문의 유형에 맞는 채널을 선택하세요.',
+      critical: {
+        title: '긴급 물류 에스컬레이션',
+        description: '세관 보류 또는 배송 비상 상황용. 이 받은 편지함은 우리 고급 물류 팀이 모니터링합니다.',
+        avgResponse: '평균 응답: 2시간 이내',
+        email: 'urgent@nexsupply.net',
+      },
+      agent: {
+        title: '소싱 에이전트와 대화',
+        description: '진행 중인 견적 또는 샘플에 대한 업데이트가 필요하신가요? 가장 빠른 방법은 대시보드를 통해 에이전트에게 직접 메시지를 보내는 것입니다.',
+        button: '에이전트 채팅 열기',
+      },
+      operations: {
+        title: '무역 운영 데스크',
+        description: '청구, 플랫폼 사용 및 계정 관리용.',
+        hours: '운영 시간: 오전 9시 - 오후 6시 EST, 월-금.',
+        asyncSupport: '아시아 영업 시간 동안 비동기 지원 제공.',
+        email: 'support@nexsupply.net',
+      },
+      business: {
+        title: '비즈니스 및 언론',
+        description: '공장 파트너십 또는 미디어 문의용.',
+        email: 'partners@nexsupply.net',
+      },
+      chat: {
+        needHelp: '도움이 필요하신가요?',
+        chatSupport: '채팅 지원',
+        startConversation: '지원 팀과 대화를 시작하세요.',
+        emailSupport: '이메일 지원',
+      },
     },
   },
 };

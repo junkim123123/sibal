@@ -20,8 +20,7 @@ export function ErrorHandler() {
         message.includes('itemscout.io') ||
         message.includes('4bd1b696-182b6b13bdad92e3.js') ||
         message.includes('removeChild') ||
-        message.includes('Quirks Mode') ||
-        message.includes('[ErrorHandler]')
+        message.includes('Quirks Mode')
       ) {
         return // 오류 무시
       }
@@ -30,31 +29,15 @@ export function ErrorHandler() {
 
     console.warn = (...args: any[]) => {
       const message = args.join(' ')
-      // 경고 필터링
+      // Quirks Mode 경고 무시
       if (
         message.includes('Quirks Mode') ||
         message.includes('itemscout.io') ||
-        message.includes('4bd1b696-182b6b13bdad92e3.js') ||
-        message.includes('[ErrorHandler]') ||
-        message.includes('font-src-elem')
+        message.includes('4bd1b696-182b6b13bdad92e3.js')
       ) {
         return // 경고 무시
       }
       originalWarn.apply(console, args)
-    }
-
-    // console.log도 필터링 (ErrorHandler 메시지 제거)
-    const originalLog = console.log
-    console.log = (...args: any[]) => {
-      const message = args.join(' ')
-      if (
-        message.includes('[ErrorHandler]') ||
-        message.includes('itemscout.io') ||
-        message.includes('Blocked')
-      ) {
-        return // 로그 무시
-      }
-      originalLog.apply(console, args)
     }
 
     // 외부 스크립트 오류 완전 차단 (ErrorEvent만 처리, 클릭 이벤트는 자동으로 무시됨)
@@ -117,63 +100,49 @@ export function ErrorHandler() {
       }
     }
 
-    // MutationObserver로 외부 스크립트/iframe 감지 및 제거 (클릭 이벤트와 충돌 방지)
-    let isProcessingMutation = false
+    // MutationObserver로 외부 스크립트/iframe 감지 및 제거
     const observer = new MutationObserver((mutations) => {
-      // 이미 처리 중이면 스킵 (클릭 이벤트 방해 방지)
-      if (isProcessingMutation) return
-      
-      // 비동기로 처리하여 클릭 이벤트와 충돌 방지
-      requestAnimationFrame(() => {
-        if (isProcessingMutation) return
-        isProcessingMutation = true
-        
-        try {
-          mutations.forEach((mutation) => {
-            mutation.addedNodes.forEach((node) => {
-              if (node.nodeType === Node.ELEMENT_NODE) {
-                const element = node as HTMLElement
-                
-                // itemscout.io 관련 스크립트 태그 제거 (조용히 처리)
-                if (element.tagName === 'SCRIPT') {
-                  const script = element as HTMLScriptElement
-                  if (
-                    script.src?.includes('itemscout.io') ||
-                    script.src?.includes('4bd1b696-182b6b13bdad92e3.js')
-                  ) {
-                    // 콘솔 로그 제거 - 조용히 차단
-                    script.remove()
-                    return
-                  }
-                }
-                
-                // itemscout.io 관련 iframe 제거 (조용히 처리)
-                if (element.tagName === 'IFRAME') {
-                  const iframe = element as HTMLIFrameElement
-                  if (
-                    iframe.src?.includes('itemscout.io') ||
-                    iframe.src?.includes('pixel.itemscout.io')
-                  ) {
-                    // 콘솔 로그 제거 - 조용히 차단
-                    iframe.remove()
-                    return
-                  }
-                }
-                
-                // 내부에 itemscout.io 관련 요소가 있는지 확인 (조용히 처리)
-                const itemscoutElements = element.querySelectorAll?.(
-                  'script[src*="itemscout.io"], iframe[src*="itemscout.io"]'
-                )
-                itemscoutElements?.forEach((el) => {
-                  // 콘솔 로그 제거 - 조용히 차단
-                  el.remove()
-                })
+      mutations.forEach((mutation) => {
+        mutation.addedNodes.forEach((node) => {
+          if (node.nodeType === Node.ELEMENT_NODE) {
+            const element = node as HTMLElement
+            
+            // itemscout.io 관련 스크립트 태그 제거
+            if (element.tagName === 'SCRIPT') {
+              const script = element as HTMLScriptElement
+              if (
+                script.src?.includes('itemscout.io') ||
+                script.src?.includes('4bd1b696-182b6b13bdad92e3.js')
+              ) {
+                console.log('[ErrorHandler] Blocked itemscout.io script:', script.src)
+                script.remove()
+                return
               }
+            }
+            
+            // itemscout.io 관련 iframe 제거
+            if (element.tagName === 'IFRAME') {
+              const iframe = element as HTMLIFrameElement
+              if (
+                iframe.src?.includes('itemscout.io') ||
+                iframe.src?.includes('pixel.itemscout.io')
+              ) {
+                console.log('[ErrorHandler] Blocked itemscout.io iframe:', iframe.src)
+                iframe.remove()
+                return
+              }
+            }
+            
+            // 내부에 itemscout.io 관련 요소가 있는지 확인
+            const itemscoutElements = element.querySelectorAll?.(
+              'script[src*="itemscout.io"], iframe[src*="itemscout.io"]'
+            )
+            itemscoutElements?.forEach((el) => {
+              console.log('[ErrorHandler] Blocked nested itemscout.io element')
+              el.remove()
             })
-          })
-        } finally {
-          isProcessingMutation = false
-        }
+          }
+        })
       })
     })
 
@@ -183,28 +152,24 @@ export function ErrorHandler() {
       subtree: true,
     })
 
-    // 기존 itemscout.io 요소 제거 (조용히 처리)
+    // 기존 itemscout.io 요소 제거
     const removeExistingItemscoutElements = () => {
       const scripts = document.querySelectorAll('script[src*="itemscout.io"]')
       scripts.forEach((script) => {
-        // 콘솔 로그 제거 - 조용히 차단
+        console.log('[ErrorHandler] Removed existing itemscout.io script')
         script.remove()
       })
 
       const iframes = document.querySelectorAll('iframe[src*="itemscout.io"]')
       iframes.forEach((iframe) => {
-        // 콘솔 로그 제거 - 조용히 차단
+        console.log('[ErrorHandler] Removed existing itemscout.io iframe')
         iframe.remove()
       })
     }
 
-    // 즉시 실행 및 주기적 체크 (빈도 감소로 성능 개선 및 클릭 이벤트 간섭 방지)
+    // 즉시 실행 및 주기적 체크 (빈도 감소로 성능 개선)
     removeExistingItemscoutElements()
-    const checkInterval = setInterval(() => {
-      if (!isProcessingMutation) {
-        removeExistingItemscoutElements()
-      }
-    }, 3000) // 2초 -> 3초로 변경 (더 여유롭게)
+    const checkInterval = setInterval(removeExistingItemscoutElements, 2000) // 1초 -> 2초로 변경
 
     return () => {
       // 정리
@@ -212,7 +177,6 @@ export function ErrorHandler() {
       window.removeEventListener('unhandledrejection', handleUnhandledRejection, true)
       console.error = originalError
       console.warn = originalWarn
-      console.log = originalLog
       Node.prototype.removeChild = originalRemoveChild
       observer.disconnect()
       clearInterval(checkInterval)

@@ -60,12 +60,13 @@ export function MainHeader() {
     router.refresh();
   };
 
+  // UX 개선: Get Started 버튼 클릭 핸들러 통합
   const handleGetStarted = (e: React.MouseEvent) => {
-    // 버튼 클릭 시에는 명시적 핸들링 유지
-    e.preventDefault(); 
+    e.preventDefault();
+    e.stopPropagation();
     if (isLoading) return;
-    
-    setIsLoading(true);
+
+    setIsLoading(true); // 페이지 이동 직전에 로딩 상태 표시
     if (isAuthenticated) {
       router.push('/chat');
     } else {
@@ -101,18 +102,25 @@ export function MainHeader() {
     <header className="sticky top-0 z-[100] w-full border-b border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 backdrop-blur-sm bg-opacity-95 dark:bg-opacity-95">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="flex h-[72px] items-center justify-between">
-          {/* Logo */}
+          {/* Left: Logo */}
           <Link href="/" className="flex items-center">
             <span className="text-2xl font-bold text-black dark:text-white">NexSupply</span>
           </Link>
 
-          {/* Center: Navigation Links */}
-          {/* 수정됨: pointer-events-none 제거, Link 본연의 기능 사용 */}
+          {/* Center: Navigation Links (Based on Page Type) */}
+          {/* 로딩 중에도 메뉴 위치를 유지하여 Layout Shift 방지 */}
           <nav className={`hidden md:flex md:items-center md:gap-8 md:absolute md:left-1/2 md:-translate-x-1/2 z-20 ${isLoading ? 'opacity-50' : ''}`}>
             {currentNavItems.map((item) => (
               <Link
                 key={item.href}
                 href={item.href}
+                onClick={(e) => {
+                  // 중복 클릭 방지
+                  if (pathname === item.href) {
+                    e.preventDefault();
+                    return;
+                  }
+                }}
                 className={`text-sm font-normal transition-colors relative ${
                   pathname === item.href
                     ? 'text-black dark:text-white after:absolute after:bottom-0 after:left-0 after:right-0 after:h-0.5 after:bg-black dark:after:bg-white'
@@ -152,18 +160,27 @@ export function MainHeader() {
                 </button>
               )}
 
+              {/* User Icon (Always visible - Right position) */}
               <div className="relative" ref={userMenuRef}>
                 <button
                   type="button"
                   onClick={(e) => {
-                    e.stopPropagation(); // 메뉴 토글용이므로 전파 방지는 유지
+                    e.preventDefault();
+                    e.stopPropagation();
+                    // 로딩 중이면 아무것도 하지 않음
+                    if (isLoading) return;
+                    
                     if (isAuthenticated) {
                       setUserMenuOpen(!userMenuOpen);
                     } else {
+                      // 로그인 안 된 경우 로그인 페이지로 이동 (SPA 네비게이션 사용)
                       router.push('/login');
                     }
                   }}
-                  className="flex items-center justify-center w-10 h-10 rounded-full border border-gray-400 dark:border-gray-600 text-gray-800 dark:text-gray-200 hover:border-gray-500 dark:hover:border-gray-500 hover:text-black dark:hover:text-white transition-colors"
+                  disabled={isLoading}
+                  className="flex items-center justify-center w-10 h-10 rounded-full border border-gray-400 dark:border-gray-600 text-gray-800 dark:text-gray-200 hover:border-gray-500 dark:hover:border-gray-500 hover:text-black dark:hover:text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  aria-label={isAuthenticated ? "User menu" : "Sign in"}
+                  title={isAuthenticated ? "User menu" : "Sign in"}
                 >
                   <User className="h-6 w-6" />
                 </button>
@@ -223,11 +240,15 @@ export function MainHeader() {
                   <LanguageSelector />
                 </div>
                 
+                {/* Navigation Links (Based on Page Type) */}
                 {currentNavItems.map((item) => (
                   <Link
                     key={item.href}
                     href={item.href}
-                    onClick={() => setMobileMenuOpen(false)}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setMobileMenuOpen(false);
+                    }}
                     className="block rounded-md px-3 py-2 text-base font-medium text-black dark:text-white hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
                   >
                     {item.label}

@@ -153,13 +153,18 @@ export default function ResourcesPage() {
           {/* Operations Section */}
           <div className="mb-12">
             <h3 className="text-xl font-semibold text-neutral-900 mb-6">Operations & Infrastructure</h3>
-            {knowledgeHub.videos.filter(video => video.category === 'operations').length === 0 ? (
-              <p className="text-sm text-neutral-500">No videos available at the moment.</p>
-            ) : (
-              <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
-                {knowledgeHub.videos
-                  .filter(video => video.category === 'operations')
-                  .map((video) => (
+            {(() => {
+              const operationsVideos = knowledgeHub.videos.filter(video => video.category === 'operations');
+              if (operationsVideos.length === 0) {
+                return (
+                  <p className="text-sm text-neutral-500 text-center py-8">
+                    No videos available at the moment.
+                  </p>
+                );
+              }
+              return (
+                <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+                  {operationsVideos.map((video) => (
                   <Card key={video.id} className="overflow-hidden bg-white border-neutral-200 shadow-sm rounded-2xl group cursor-pointer">
                     <a
                       href={video.youtubeId ? `https://www.youtube.com/watch?v=${video.youtubeId}` : '#'}
@@ -175,9 +180,19 @@ export default function ResourcesPage() {
                               alt={video.title}
                               className="absolute inset-0 w-full h-full object-cover"
                               loading="lazy"
-                              // hqdefault.jpg를 직접 사용 (maxresdefault 업그레이드 제거로 404 에러 방지)
+                              onLoad={(e) => {
+                                // hqdefault 로드 성공 후 maxresdefault로 업그레이드 시도
+                                const target = e.target as HTMLImageElement;
+                                const maxresImg = document.createElement('img');
+                                maxresImg.onload = () => {
+                                  target.src = `https://img.youtube.com/vi/${video.youtubeId}/maxresdefault.jpg`;
+                                };
+                                maxresImg.onerror = () => {
+                                  // maxresdefault가 없으면 hqdefault 유지
+                                };
+                                maxresImg.src = `https://img.youtube.com/vi/${video.youtubeId}/maxresdefault.jpg`;
+                              }}
                               onError={(e) => {
-                                // hqdefault 로드 실패 시에만 콘솔 에러 표시
                                 console.error('[Resources] Failed to load YouTube thumbnail:', video.youtubeId, video.title);
                                 const target = e.target as HTMLImageElement;
                                 // 여러 썸네일 옵션 시도
@@ -226,8 +241,9 @@ export default function ResourcesPage() {
                     </div>
                   </Card>
                   ))}
-              </div>
-            )}
+                </div>
+              );
+            })()}
           </div>
 
           {/* Trends Section */}
@@ -252,9 +268,19 @@ export default function ResourcesPage() {
                               alt={video.title}
                               className="absolute inset-0 w-full h-full object-cover"
                               loading="lazy"
-                              // hqdefault.jpg를 직접 사용 (maxresdefault 업그레이드 제거로 404 에러 방지)
+                              onLoad={(e) => {
+                                // hqdefault 로드 성공 후 maxresdefault로 업그레이드 시도
+                                const target = e.target as HTMLImageElement;
+                                const maxresImg = document.createElement('img');
+                                maxresImg.onload = () => {
+                                  target.src = `https://img.youtube.com/vi/${video.youtubeId}/maxresdefault.jpg`;
+                                };
+                                maxresImg.onerror = () => {
+                                  // maxresdefault가 없으면 hqdefault 유지
+                                };
+                                maxresImg.src = `https://img.youtube.com/vi/${video.youtubeId}/maxresdefault.jpg`;
+                              }}
                               onError={(e) => {
-                                // hqdefault 로드 실패 시에만 콘솔 에러 표시
                                 console.error('[Resources] Failed to load YouTube thumbnail:', video.youtubeId, video.title);
                                 const target = e.target as HTMLImageElement;
                                 // 여러 썸네일 옵션 시도
@@ -302,7 +328,7 @@ export default function ResourcesPage() {
                       </p>
                     </div>
                   </Card>
-                  ))}
+                ))}
             </div>
           </div>
         </div>

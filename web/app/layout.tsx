@@ -22,11 +22,6 @@ const jetbrainsMono = JetBrains_Mono({
 export const metadata: Metadata = {
   title: "NexSupply",
   description: "NexSupply Marketing Site",
-  icons: {
-    icon: '/static/icons/icon-192.png',
-    shortcut: '/static/icons/icon-192.png',
-    apple: '/static/icons/icon-192.png',
-  },
 }
 
 export default function RootLayout({
@@ -43,7 +38,7 @@ export default function RootLayout({
         {/* Content Security Policy로 외부 스크립트 제한 */}
         <meta
           httpEquiv="Content-Security-Policy"
-          content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://vercel.live https://gumroad.com https://www.gumroad.com https://assets.gumroad.com https://www.googletagmanager.com https://www.google-analytics.com https://clarity.ms https://connect.facebook.net; script-src-elem 'self' 'unsafe-inline' 'unsafe-eval' https://vercel.live https://gumroad.com https://www.gumroad.com https://assets.gumroad.com https://www.googletagmanager.com https://www.google-analytics.com https://clarity.ms https://connect.facebook.net; style-src 'self' 'unsafe-inline' https://assets.gumroad.com; style-src-elem 'self' 'unsafe-inline' https://assets.gumroad.com; img-src 'self' data: https:; font-src 'self' data: https://assets.gumroad.com; connect-src 'self' https: https://gumroad.com https://www.gumroad.com https://api.gumroad.com https://assets.gumroad.com https://www.google-analytics.com https://clarity.ms https://www.facebook.com; frame-src 'self' https://www.youtube.com https://youtube.com https://gumroad.com https://www.gumroad.com;"
+          content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://vercel.live https://gumroad.com https://www.gumroad.com https://assets.gumroad.com https://www.googletagmanager.com https://www.google-analytics.com https://clarity.ms https://connect.facebook.net; script-src-elem 'self' 'unsafe-inline' 'unsafe-eval' https://vercel.live https://gumroad.com https://www.gumroad.com https://assets.gumroad.com https://www.googletagmanager.com https://www.google-analytics.com https://clarity.ms https://connect.facebook.net; style-src 'self' 'unsafe-inline' https://assets.gumroad.com; style-src-elem 'self' 'unsafe-inline' https://assets.gumroad.com; img-src 'self' data: https:; font-src 'self' data: https://assets.gumroad.com; font-src-elem 'self' data: https://assets.gumroad.com; connect-src 'self' https: https://gumroad.com https://www.gumroad.com https://api.gumroad.com https://assets.gumroad.com https://www.google-analytics.com https://clarity.ms https://www.facebook.com; frame-src 'self' https://www.youtube.com https://youtube.com https://gumroad.com https://www.gumroad.com;"
         />
         {/* Gumroad Overlay Script */}
         <script src="https://gumroad.com/js/gumroad.js" async></script>
@@ -135,35 +130,22 @@ export default function RootLayout({
                   removeItemscoutElements();
                 }
                 
-                // MutationObserver로 실시간 감시 (클릭 이벤트와 충돌 방지)
+                // MutationObserver로 실시간 감시
                 if (typeof MutationObserver !== 'undefined') {
-                  let isProcessing = false; // 중복 처리 방지 플래그
-                  
                   const observer = new MutationObserver(function(mutations) {
-                    // 이미 처리 중이면 스킵 (클릭 이벤트 방해 방지)
-                    if (isProcessing) return;
-                    
-                    // 비동기로 처리하여 클릭 이벤트와 충돌 방지
-                    setTimeout(function() {
-                      isProcessing = true;
-                      try {
-                        mutations.forEach(function(mutation) {
-                          mutation.addedNodes.forEach(function(node) {
-                            if (node.nodeType === 1) { // ELEMENT_NODE
-                              var element = node;
-                              if (element.tagName === 'SCRIPT' || element.tagName === 'IFRAME') {
-                                var src = element.src || element.getAttribute('src') || '';
-                                if (src.indexOf('itemscout.io') !== -1) {
-                                  element.remove();
-                                }
-                              }
+                    mutations.forEach(function(mutation) {
+                      mutation.addedNodes.forEach(function(node) {
+                        if (node.nodeType === 1) { // ELEMENT_NODE
+                          var element = node;
+                          if (element.tagName === 'SCRIPT' || element.tagName === 'IFRAME') {
+                            var src = element.src || element.getAttribute('src') || '';
+                            if (src.indexOf('itemscout.io') !== -1) {
+                              element.remove();
                             }
-                          });
-                        });
-                      } finally {
-                        isProcessing = false;
-                      }
-                    }, 0);
+                          }
+                        }
+                      });
+                    });
                   });
                   
                   observer.observe(document.documentElement, {
@@ -172,11 +154,7 @@ export default function RootLayout({
                   });
                   
                   // 주기적 체크 (빈도 감소로 성능 개선 및 클릭 이벤트 간섭 방지)
-                  setInterval(function() {
-                    if (!isProcessing) {
-                      removeItemscoutElements();
-                    }
-                  }, 3000); // 2초 -> 3초로 변경 (더 여유롭게)
+                  setInterval(removeItemscoutElements, 2000); // 500ms -> 2000ms로 변경
                 }
                 
                 // 콘솔 오류 필터링

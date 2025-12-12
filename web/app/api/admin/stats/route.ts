@@ -29,7 +29,9 @@ export async function GET(req: Request) {
       .eq('id', user.id)
       .single();
 
-    if (profile?.role !== 'super_admin') {
+    // 통합 Admin 권한
+    const isAdmin = profile?.role === 'admin' || profile?.role === 'super_admin' || profile?.role === 'manager';
+    if (!isAdmin) {
       return NextResponse.json(
         { ok: false, error: 'Forbidden: Super admin access required' },
         { status: 403 }

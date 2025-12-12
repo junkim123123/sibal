@@ -31,7 +31,7 @@ export default function SuperAdminLayout({
   const pathname = usePathname();
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
   const [isSuperAdmin, setIsSuperAdmin] = useState(false);
-  const [userRole, setUserRole] = useState<'super_admin' | 'manager' | null>(null);
+  const [userRole, setUserRole] = useState<'admin' | 'super_admin' | 'manager' | null>(null);
   const [userName, setUserName] = useState<string>('');
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
@@ -46,17 +46,17 @@ export default function SuperAdminLayout({
           return;
         }
 
-        // Super admin 권한 확인
+        // 통합 Admin 권한 확인
         // 이메일로 먼저 체크 (k.myungjun@nexsupply.net)
         const userEmail = user.email?.toLowerCase() || '';
-        const isSuperAdminEmail = userEmail === 'k.myungjun@nexsupply.net';
+        const isAdminEmail = userEmail === 'k.myungjun@nexsupply.net';
 
-        if (isSuperAdminEmail) {
-          // 이메일로 super admin 확인됨
+        if (isAdminEmail) {
+          // 이메일로 admin 확인됨
           setIsSuperAdmin(true);
           setIsAuthenticated(true);
-          setUserRole('super_admin');
-          setUserName(user.email?.split('@')[0] || 'Super Admin');
+          setUserRole('admin');
+          setUserName(user.email?.split('@')[0] || 'Admin');
           return;
         }
 
@@ -72,14 +72,17 @@ export default function SuperAdminLayout({
           return;
         }
 
-        // super_admin 또는 manager만 접근 허용
-        if (profile.role !== 'super_admin' && profile.role !== 'manager') {
+        // admin, super_admin, 또는 manager 모두 통합 Admin으로 처리 (모든 권한 부여)
+        const isAdminRole = profile.role === 'admin' || profile.role === 'super_admin' || profile.role === 'manager';
+        
+        if (!isAdminRole) {
           router.push('/dashboard');
           return;
         }
 
-        setIsSuperAdmin(profile.role === 'super_admin');
-        setUserRole(profile.role as 'super_admin' | 'manager');
+        // 모든 관리자 역할을 통합 Admin으로 처리
+        setIsSuperAdmin(true); // 통합 Admin은 모든 기능 접근 가능
+        setUserRole('admin');
         setIsAuthenticated(true);
         setUserName(profile.name || user.email?.split('@')[0] || 'Admin');
       } catch (error) {
@@ -147,7 +150,7 @@ export default function SuperAdminLayout({
                 </h1>
               </div>
               <p className="text-sm text-neutral-400">
-                {userRole === 'super_admin' ? 'God Mode' : 'Project Management'}
+                Full Access Management
               </p>
             </div>
 
@@ -180,7 +183,7 @@ export default function SuperAdminLayout({
               <div className="mb-3 px-4">
                 <p className="text-sm font-medium text-white">{userName}</p>
                 <p className="text-xs text-neutral-400">
-                  {userRole === 'super_admin' ? 'Super Admin' : 'Manager'}
+                  Admin
                 </p>
               </div>
               <button

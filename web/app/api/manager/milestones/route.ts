@@ -38,7 +38,10 @@ export async function GET(req: Request) {
       .eq('id', user.id)
       .single();
 
-    if (!profile?.is_manager && profile?.role !== 'super_admin') {
+    // 통합 Admin 권한
+    const isManager = profile?.is_manager === true;
+    const hasAdminRole = profile?.role === 'admin' || profile?.role === 'super_admin';
+    if (!isManager && !hasAdminRole) {
       return NextResponse.json(
         { ok: false, error: 'Forbidden: Manager access required' },
         { status: 403 }
@@ -61,7 +64,8 @@ export async function GET(req: Request) {
     }
 
     // 매니저가 할당되었는지 확인
-    if (project.manager_id !== user.id && profile?.role !== 'super_admin') {
+        // 통합 Admin 권한
+        if (project.manager_id !== user.id && !hasAdminRole) {
       return NextResponse.json(
         { ok: false, error: 'Forbidden: Not assigned to this project' },
         { status: 403 }

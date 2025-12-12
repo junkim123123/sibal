@@ -104,8 +104,9 @@ export async function middleware(request: NextRequest) {
           .eq('id', user.id)
           .single()
 
-        if (profile?.role !== 'super_admin') {
-          // Not a super admin - redirect to dashboard
+        // 통합 Admin 역할 체크: admin 역할이면 모든 권한 허용
+        if (profile?.role !== 'admin' && profile?.role !== 'super_admin') {
+          // admin 또는 super_admin이 아니면 dashboard로 리다이렉트
           return NextResponse.redirect(new URL('/dashboard', request.url))
         }
       }
@@ -195,8 +196,9 @@ export async function middleware(request: NextRequest) {
           .single()
 
         const isManager = profile?.is_manager === true
-        const isAdmin = profile?.role === 'admin'
+        const isAdmin = profile?.role === 'admin' || profile?.role === 'super_admin'
 
+        // 통합 Admin 역할: admin이면 모든 권한 허용 (manager 기능 포함)
         if (!isManager && !isAdmin) {
           // Not a manager or admin - redirect to dashboard
           return NextResponse.redirect(new URL('/dashboard', request.url))

@@ -28,7 +28,10 @@ export async function GET(req: Request) {
       .eq('id', user.id)
       .single();
 
-    if (!profile?.is_manager && profile?.role !== 'super_admin') {
+    // 통합 Admin 권한: manager 또는 admin 모두 접근 가능
+    const isManager = profile?.is_manager === true;
+    const isAdmin = profile?.role === 'admin' || profile?.role === 'super_admin';
+    if (!isManager && !isAdmin) {
       return NextResponse.json(
         { ok: false, error: 'Forbidden: Manager access required' },
         { status: 403 }

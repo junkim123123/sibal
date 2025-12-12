@@ -41,18 +41,18 @@ export async function assignManagerToProject(projectId: string, managerId: strin
       return { success: false, error: 'Failed to verify permissions' };
     }
 
-    // 이메일로도 super admin 확인 (k.myungjun@nexsupply.net)
+    // 통합 Admin 권한 확인
     const userEmail = user.email?.toLowerCase() || '';
-    const isSuperAdminEmail = userEmail === 'k.myungjun@nexsupply.net';
-    const isSuperAdminRole = profile?.role === 'super_admin';
+    const isAdminEmail = userEmail === 'k.myungjun@nexsupply.net';
+    const isAdminRole = profile?.role === 'admin' || profile?.role === 'super_admin' || profile?.role === 'manager';
 
-    if (!isSuperAdminEmail && !isSuperAdminRole) {
+    if (!isAdminEmail && !isAdminRole) {
       console.error('[Assign Manager] Access denied:', {
         userId: user.id,
         email: userEmail,
         role: profile?.role,
       });
-      return { success: false, error: 'Forbidden: Super admin access required' };
+      return { success: false, error: 'Forbidden: Admin access required' };
     }
 
     console.log('[Assign Manager] Permission verified:', {
@@ -223,8 +223,10 @@ export async function banUser(userId: string, isBanned: boolean) {
       .eq('id', user.id)
       .single();
 
-    if (profile?.role !== 'super_admin') {
-      return { success: false, error: 'Forbidden: Super admin access required' };
+    // 통합 Admin 권한
+    const hasAdminRole = profile?.role === 'admin' || profile?.role === 'super_admin' || profile?.role === 'manager';
+    if (!hasAdminRole) {
+      return { success: false, error: 'Forbidden: Admin access required' };
     }
 
     // 유저 밴 상태 업데이트
@@ -276,7 +278,9 @@ export async function getSalesStats() {
       .eq('id', user.id)
       .single();
 
-    if (profile?.role !== 'super_admin') {
+    // 통합 Admin 권한
+    const hasAdminRole = profile?.role === 'admin' || profile?.role === 'super_admin' || profile?.role === 'manager';
+    if (!hasAdminRole) {
       return { 
         totalOrderCount: 0, 
         recentOrders: [] 

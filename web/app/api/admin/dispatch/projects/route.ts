@@ -29,9 +29,11 @@ export async function GET(req: Request) {
       .eq('id', user.id)
       .single();
 
-    if (profile?.role !== 'super_admin') {
+    // 통합 Admin 권한: admin, super_admin, 또는 manager 모두 접근 가능
+    const isAdmin = profile?.role === 'admin' || profile?.role === 'super_admin' || profile?.role === 'manager';
+    if (!isAdmin) {
       return NextResponse.json(
-        { ok: false, error: 'Forbidden: Super admin access required' },
+        { ok: false, error: 'Forbidden: Admin access required' },
         { status: 403 }
       );
     }

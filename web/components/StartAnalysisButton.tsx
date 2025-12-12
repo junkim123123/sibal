@@ -28,10 +28,12 @@ export function StartAnalysisButton({ href, label, className }: StartAnalysisBut
 
   const handleClick = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault()
+    e.stopPropagation()
     
+    // 로딩 중이면 리턴
     if (isLoading) return
     
-    // 로그인한 경우 /chat으로, 로그인하지 않은 경우 /login으로
+    // 즉시 네비게이션
     if (isAuthenticated) {
       router.push('/chat')
     } else {

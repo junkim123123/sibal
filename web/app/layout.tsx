@@ -38,7 +38,7 @@ export default function RootLayout({
         {/* Content Security Policy로 외부 스크립트 제한 */}
         <meta
           httpEquiv="Content-Security-Policy"
-          content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://vercel.live https://gumroad.com https://www.gumroad.com https://assets.gumroad.com https://www.googletagmanager.com https://www.google-analytics.com https://clarity.ms https://connect.facebook.net; script-src-elem 'self' 'unsafe-inline' 'unsafe-eval' https://vercel.live https://gumroad.com https://www.gumroad.com https://assets.gumroad.com https://www.googletagmanager.com https://www.google-analytics.com https://clarity.ms https://connect.facebook.net; style-src 'self' 'unsafe-inline' https://assets.gumroad.com; style-src-elem 'self' 'unsafe-inline' https://assets.gumroad.com; img-src 'self' data: https:; font-src 'self' data: https://assets.gumroad.com; font-src-elem 'self' data: https://assets.gumroad.com; connect-src 'self' https: https://gumroad.com https://www.gumroad.com https://api.gumroad.com https://assets.gumroad.com https://www.google-analytics.com https://clarity.ms https://www.facebook.com; frame-src 'self' https://www.youtube.com https://youtube.com https://gumroad.com https://www.gumroad.com;"
+          content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://vercel.live https://gumroad.com https://www.gumroad.com https://assets.gumroad.com https://www.googletagmanager.com https://www.google-analytics.com https://clarity.ms https://connect.facebook.net; script-src-elem 'self' 'unsafe-inline' 'unsafe-eval' https://vercel.live https://gumroad.com https://www.gumroad.com https://assets.gumroad.com https://www.googletagmanager.com https://www.google-analytics.com https://clarity.ms https://connect.facebook.net; style-src 'self' 'unsafe-inline' https://assets.gumroad.com; style-src-elem 'self' 'unsafe-inline' https://assets.gumroad.com; img-src 'self' data: https:; font-src 'self' data: https://assets.gumroad.com; connect-src 'self' https: https://gumroad.com https://www.gumroad.com https://api.gumroad.com https://assets.gumroad.com https://www.google-analytics.com https://clarity.ms https://www.facebook.com; frame-src 'self' https://www.youtube.com https://youtube.com https://gumroad.com https://www.gumroad.com;"
         />
         {/* Gumroad Overlay Script */}
         <script src="https://gumroad.com/js/gumroad.js" async></script>
@@ -153,8 +153,8 @@ export default function RootLayout({
                     subtree: true
                   });
                   
-                  // 주기적 체크 (빈도 감소로 성능 개선 및 클릭 이벤트 간섭 방지)
-                  setInterval(removeItemscoutElements, 2000); // 500ms -> 2000ms로 변경
+                  // 주기적 체크 제거 - MutationObserver만으로 충분하며, 클릭 이벤트 간섭 방지
+                  // setInterval 제거: MutationObserver가 실시간으로 처리하므로 불필요
                 }
                 
                 // 콘솔 오류 필터링

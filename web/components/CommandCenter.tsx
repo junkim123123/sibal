@@ -197,6 +197,7 @@ export function CommandCenter({ project, projectId, sessionId, managerId }: Comm
       const response = await fetch('/api/manager/update-milestone', {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify({
           project_id: projectId,
           milestone_index: index,
@@ -206,9 +207,16 @@ export function CommandCenter({ project, projectId, sessionId, managerId }: Comm
       const data = await response.json();
       if (data.ok && data.milestones) {
         setMilestones(data.milestones);
+        // Reload milestones to get updated data
+        await loadMilestones();
+        alert(`Milestone "${milestones[index]?.title}" marked as complete!`);
+      } else {
+        console.error('[CommandCenter] Failed to update milestone:', data.error);
+        alert(`Failed to update milestone: ${data.error || 'Unknown error'}`);
       }
     } catch (error) {
       console.error('[CommandCenter] Failed to update milestone:', error);
+      alert('An error occurred while updating the milestone. Please try again.');
     } finally {
       setIsUpdating(false);
     }

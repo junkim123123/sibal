@@ -232,7 +232,7 @@ My question is:`;
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center h-full min-h-[400px]">
+      <div className="flex items-center justify-center h-full min-h-[340px]">
         <div className="text-center">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-teal-600 mx-auto mb-4"></div>
           <p className="text-gray-500">Loading contact information...</p>
@@ -242,22 +242,22 @@ My question is:`;
   }
 
   return (
-    <div className="flex flex-col items-center justify-center h-full min-h-[400px] p-6">
+    <div className="flex flex-col items-center justify-center h-full min-h-[340px] p-4">
       {/* Connect Card */}
-      <div className="w-full max-w-md bg-white rounded-xl shadow-md border border-gray-200 p-8 space-y-6">
+      <div className="w-full max-w-md bg-white rounded-xl shadow-md border border-gray-200 p-6 space-y-5">
         {/* Icon */}
         <div className="flex justify-center">
-          <div className="w-20 h-20 rounded-full bg-green-100 flex items-center justify-center">
-            <MessageCircle className="w-10 h-10 text-green-600" />
+          <div className="w-16 h-16 rounded-full bg-green-100 flex items-center justify-center">
+            <MessageCircle className="w-8 h-8 text-green-600" />
           </div>
         </div>
 
         {/* Title */}
-        <div className="text-center space-y-2">
-          <h2 className="text-2xl font-bold text-gray-900">
+        <div className="text-center space-y-1.5">
+          <h2 className="text-xl font-bold text-gray-900">
             Chat with your Dedicated Agent
           </h2>
-          <p className="text-gray-600 text-sm">
+          <p className="text-gray-600 text-xs">
             For the fastest response and file sharing, please communicate directly via WhatsApp. Your expert is ready to help.
           </p>
         </div>
@@ -284,6 +284,7 @@ My question is:`;
               </label>
               <input
                 id="whatsapp-phone"
+                name="whatsapp-phone"
                 type="tel"
                 value={userPhone}
                 onChange={(e) => setUserPhone(e.target.value)}
@@ -302,7 +303,7 @@ My question is:`;
                 <Button
                   onClick={handleStartWhatsApp}
                   disabled={!userPhone.trim() || isSaving}
-                  className="w-full bg-green-600 hover:bg-green-700 text-white py-6 text-lg font-semibold rounded-xl shadow-md hover:shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="w-full bg-green-600 hover:bg-green-700 text-white py-5 text-base font-semibold rounded-xl shadow-md hover:shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {isSaving ? (
                     <>

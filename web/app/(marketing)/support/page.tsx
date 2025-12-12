@@ -8,6 +8,15 @@ import { useLanguage } from '@/components/i18n/language-provider'
 export default function SupportPage() {
   const { t } = useLanguage()
   const [showChat, setShowChat] = useState(false)
+  
+  // Safety check: ensure support translations are available
+  if (!t?.support) {
+    return (
+      <div className="min-h-screen bg-white flex items-center justify-center">
+        <div className="text-zinc-600">Loading translations...</div>
+      </div>
+    )
+  }
 
   return (
     <div className="min-h-screen bg-white">

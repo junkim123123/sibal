@@ -43,10 +43,13 @@ export function LanguageProvider({
     setLanguageState(lang);
   };
 
+  // Ensure we always have a valid translation object
+  const currentTranslation = translations[language] || translations.en;
+  
   const value = {
     language,
     setLanguage,
-    t: translations[language],
+    t: currentTranslation,
   };
 
   // Prevent hydration mismatch

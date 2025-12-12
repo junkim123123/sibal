@@ -28,6 +28,16 @@ function DashboardPageContent() {
   const searchParams = useSearchParams()
   const tabParam = searchParams?.get('tab') || 'overview'
   
+  // Safety check: ensure dashboard translations are available
+  if (!t?.dashboard) {
+    console.error('[Dashboard] Dashboard translations not available')
+    return (
+      <div className="min-h-screen bg-white flex items-center justify-center">
+        <div className="text-zinc-600">Loading translations...</div>
+      </div>
+    )
+  }
+  
   // 하위 호환성: 기존 탭 이름 매핑
   let initialTab: TabType = 'overview'
   if (tabParam === 'overview' || tabParam === 'home' || tabParam === 'dashboard') {

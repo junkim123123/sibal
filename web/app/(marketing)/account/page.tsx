@@ -16,6 +16,15 @@ export default function AccountPage() {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null)
   const [userEmail, setUserEmail] = useState<string>('')
   const router = useRouter()
+  
+  // Safety check: ensure account translations are available
+  if (!t?.account) {
+    return (
+      <div className="min-h-screen bg-white flex items-center justify-center">
+        <div className="text-zinc-600">Loading translations...</div>
+      </div>
+    )
+  }
 
   useEffect(() => {
     async function checkAuth() {
@@ -134,7 +143,7 @@ function TabButton({
 }
 
 // Profile Avatar Component
-function ProfileAvatar({ name, onImageChange }: { name: string; onImageChange?: (file: File) => void }) {
+function ProfileAvatar({ name, onImageChange, t }: { name: string; onImageChange?: (file: File) => void; t: any }) {
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null)
 
   // 이름에서 이니셜 추출
@@ -371,7 +380,7 @@ function ProfileTab({ userEmail, t }: { userEmail: string; t: any }) {
       )}
 
       {/* Profile Avatar */}
-      <ProfileAvatar name={name} onImageChange={handleAvatarChange} />
+      <ProfileAvatar name={name} onImageChange={handleAvatarChange} t={t} />
 
       {/* 2-Column Grid: Full Name + Job Title */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

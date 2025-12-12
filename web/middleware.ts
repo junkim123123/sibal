@@ -17,7 +17,6 @@ export async function middleware(request: NextRequest) {
     "style-src-elem 'self' 'unsafe-inline' https://assets.gumroad.com",
     "img-src 'self' data: https:",
     "font-src 'self' data: https://assets.gumroad.com",
-    "font-src-elem 'self' data: https://assets.gumroad.com",
     "connect-src 'self' https: https://gumroad.com https://www.gumroad.com https://api.gumroad.com https://assets.gumroad.com https://www.google-analytics.com https://clarity.ms https://www.facebook.com",
     "frame-src 'self' https://www.youtube.com https://youtube.com https://gumroad.com https://www.gumroad.com",
   ].join('; ')

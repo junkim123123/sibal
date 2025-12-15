@@ -170,7 +170,7 @@ export const useCasesPageContent: UseCasesPageContent = {
         deliverables: 'Estimated delivered cost range and key DDP drivers\nDuty and compliance red flags\nClear go or no-go recommendation',
         badge: 'Best for first order',
         ctaLabel: 'Start this workflow',
-        outcomeExample: 'Typical margin check completed in 24 hours',
+        outcomeExample: 'Typical margin check completed within 1 business day',
       },
       {
         id: 're-source-existing-sku',
@@ -330,7 +330,7 @@ export const useCasesPageContent: UseCasesPageContent = {
     buttonLabel: 'Get free snapshot',
     buttonHref: '/chat',
     disclaimer: 'NexSupply is not a customs broker or legal advisor. Estimates are for directional planning only.',
-    helperText: 'We\'ll reply within 24 hours with next steps',
+    helperText: 'We\'ll reply within 1 business day with next steps',
   },
 } as const;
 

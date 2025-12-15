@@ -86,7 +86,7 @@ export const howItWorksPageConfig: HowItWorksPageConfig = {
         label: 'Talk to a manager',
         href: '/chat',
       },
-      helperText: 'Within 1 business day. Often ready in minutes. Up to 1 hour during peak times. Deposit is non-refundable once outreach begins.',
+      helperText: 'No credit card for the free snapshot. Deposit is applied to your first order if you proceed.',
     },
     chips: [
       { text: 'Step 1: Project brief 10 minutes' },
@@ -109,7 +109,7 @@ export const howItWorksPageConfig: HowItWorksPageConfig = {
       },
       {
         title: 'Free snapshot',
-        body: 'Often ready in under an hour. Up to 1 business day during peak times.',
+        body: 'Within 1 business day. Often ready in minutes.',
         icon: TrendingUp,
         deliverables: [
           'DDP breakdown',
@@ -179,7 +179,7 @@ export const howItWorksPageConfig: HowItWorksPageConfig = {
     ],
   },
   pricing: {
-    title: 'What you pay and where we work',
+    title: 'What you pay',
     cards: [
       {
         title: 'Free snapshot',
@@ -208,15 +208,15 @@ export const howItWorksPageConfig: HowItWorksPageConfig = {
       },
       {
         question: 'Can I use NexSupply if I already have suppliers?',
-        answer: 'Yes. Most sellers overpay because they never benchmark. We compare your current supplier against real quotes and landed cost.',
+        answer: 'Yes. We can benchmark your current quotes, verify landed cost assumptions, and flag compliance or duty risk. If needed, we can also source alternatives.',
       },
       {
         question: 'Do you handle shipping and customs?',
-        answer: 'We coordinate logistics planning and documentation support. We are not a customs broker, but we catch duty and compliance surprises early.',
+        answer: 'We can coordinate logistics options and help you plan costs and paperwork. We are not a customs broker or legal advisor. Customs entry is handled by licensed partners.',
       },
       {
         question: 'How long does the whole process take?',
-        answer: 'Free snapshot delivered within 1 business day. Often ready in minutes. Factory quotes in 7 days after deposit.',
+        answer: 'Free snapshot within 1 business day. After deposit, we target 3 factory quotes within 7 days. Sampling timelines depend on the product, typically 2 to 4 weeks after you choose a factory.',
       },
     ],
   },

@@ -112,11 +112,8 @@ export default async function HowItWorksPage() {
               </span>
             </div>
             <h3 className="text-lg font-semibold text-neutral-900 mb-2">Free snapshot</h3>
-            <p className="text-sm text-neutral-600 leading-relaxed mb-2">
+            <p className="text-sm text-neutral-600 leading-relaxed mb-3">
               AI cost and risk snapshot
-            </p>
-            <p className="text-xs text-neutral-500 mb-3">
-              Often ready in under an hour. Up to 1 business day during peak times.
             </p>
             <ul className="space-y-1.5 text-xs text-neutral-600">
               <li className="flex items-start gap-2">
@@ -137,12 +134,12 @@ export default async function HowItWorksPage() {
           {/* Deposit and Fee combined */}
           <div className="bg-white border-2 border-blue-300 rounded-lg p-5 shadow-sm flex flex-col">
             <div className="grid grid-cols-2 gap-4 mb-3">
-              <div>
-                <div className="text-4xl font-bold text-blue-600 mb-1">$49</div>
+              <div className="flex flex-col">
+                <div className="text-4xl font-bold text-blue-600 leading-none mb-1">$49</div>
                 <p className="text-xs text-neutral-600 font-medium">Deposit</p>
               </div>
-              <div>
-                <div className="text-4xl font-bold text-neutral-900 mb-1">5%</div>
+              <div className="flex flex-col">
+                <div className="text-4xl font-bold text-neutral-900 leading-none mb-1">5%</div>
                 <p className="text-xs text-neutral-600 font-medium">On FOB</p>
               </div>
             </div>
@@ -171,7 +168,7 @@ export default async function HowItWorksPage() {
       {/* FAQ Section */}
       <SectionLayout
         title={faq.title}
-        className="bg-white py-10 md:py-14"
+        className="bg-white py-10 md:py-12"
       >
         <div className="max-w-3xl mx-auto">
           <Accordion>
@@ -188,13 +185,13 @@ export default async function HowItWorksPage() {
       </SectionLayout>
 
       {/* Final CTA Banner */}
-      <section aria-label="Call to action" className="py-12 md:py-16 bg-neutral-900 text-white">
+      <section aria-label="Call to action" className="py-10 md:py-14 bg-neutral-900 text-white">
         <div className="mx-auto w-full max-w-6xl px-6 lg:px-8">
           <div className="max-w-3xl mx-auto text-center">
             <h2 className="text-2xl md:text-3xl lg:text-4xl font-semibold text-white mb-4">
               {cta.title}
             </h2>
-            <p className="text-sm md:text-base lg:text-lg text-neutral-300 mb-6 max-w-2xl mx-auto">
+            <p className="text-sm md:text-base lg:text-lg text-neutral-300 mb-6 max-w-xl mx-auto">
               {cta.description}
             </p>
             <Link href="/chat" className="inline-block w-full sm:w-auto mb-6">

@@ -129,7 +129,7 @@ export default async function HowItWorksPage() {
               </li>
               <li className="flex items-start gap-2">
                 <span className="text-blue-600 mt-0.5 font-bold">•</span>
-                <span>No payment unless you request factory quotes</span>
+                <span>No payment to get the snapshot</span>
               </li>
             </ul>
           </div>

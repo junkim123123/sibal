@@ -86,7 +86,7 @@ export const howItWorksPageConfig: HowItWorksPageConfig = {
         label: 'Talk to a manager',
         href: '/chat',
       },
-      helperText: 'Often ready in under an hour. Up to 1 business day during peak times.',
+      helperText: 'Within 1 business day. Often ready in minutes. Up to 1 hour during peak times. Deposit is non-refundable once outreach begins.',
     },
     chips: [
       { text: 'Step 1: Project brief 10 minutes' },

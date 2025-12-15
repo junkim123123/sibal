@@ -20,7 +20,7 @@ export default function HomeHero({ page }: Props) {
   };
 
   return (
-    <section className="py-12 md:py-16 lg:py-20 bg-gradient-to-b from-neutral-50 to-white dark:from-neutral-900 dark:to-gray-900 relative overflow-hidden">
+    <section className="py-20 bg-gradient-to-b from-neutral-50 to-white dark:from-neutral-900 dark:to-gray-900 relative overflow-hidden">
       {/* Subtle grid pattern overlay */}
       <div className="absolute inset-0 opacity-[0.015] pointer-events-none" style={{
         backgroundImage: `radial-gradient(circle at 2px 2px, currentColor 1px, transparent 0)`,
@@ -48,19 +48,15 @@ export default function HomeHero({ page }: Props) {
               See landed cost, duty exposure, and compliance flags before you commit to inventory.
             </p>
 
-            {/* Bullets */}
-            <ul className="space-y-2">
-              <li className="flex items-start gap-2 text-sm md:text-base text-neutral-700 dark:text-neutral-300">
+            {/* Short bullets - details in icon row below */}
+            <ul className="space-y-1.5">
+              <li className="flex items-start gap-2 text-sm text-neutral-600 dark:text-neutral-400">
                 <span className="text-blue-600 dark:text-blue-400 mt-1 flex-shrink-0">•</span>
-                <span>AI cost and risk snapshot in 1 business day</span>
+                <span>AI-powered analysis</span>
               </li>
-              <li className="flex items-start gap-2 text-sm md:text-base text-neutral-700 dark:text-neutral-300">
+              <li className="flex items-start gap-2 text-sm text-neutral-600 dark:text-neutral-400">
                 <span className="text-blue-600 dark:text-blue-400 mt-1 flex-shrink-0">•</span>
-                <span>Unlock a dedicated manager with a $49 deposit</span>
-              </li>
-              <li className="flex items-start gap-2 text-sm md:text-base text-neutral-700 dark:text-neutral-300">
-                <span className="text-blue-600 dark:text-blue-400 mt-1 flex-shrink-0">•</span>
-                <span>3 real factory quotes within 7 days</span>
+                <span>Dedicated manager support</span>
               </li>
             </ul>
 
@@ -70,7 +66,7 @@ export default function HomeHero({ page }: Props) {
                 onClick={handleStartAnalysis}
                 className="inline-flex items-center justify-center gap-2 group bg-blue-600 hover:bg-blue-700 text-white font-semibold px-6 py-3 rounded-lg transition-all shadow-sm hover:shadow-md w-full sm:w-auto"
               >
-                Get free snapshot
+                Calculate landed cost and risk
                 <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
               </Button>
               <Link
@@ -80,9 +76,9 @@ export default function HomeHero({ page }: Props) {
                 Talk to a manager
               </Link>
             </div>
-            {/* Deposit microcopy */}
-            <p className="text-xs text-neutral-500 dark:text-neutral-400 leading-relaxed">
-              The $49 deposit is credited to your first order and refundable if you do not proceed.
+            {/* Deposit microcopy - 바로 아래 고정 */}
+            <p className="text-xs text-neutral-600 dark:text-neutral-500 mt-2 font-medium">
+              $49 deposit refundable, credited to first order
             </p>
           </div>
 
@@ -96,39 +92,39 @@ export default function HomeHero({ page }: Props) {
           </div>
         </div>
 
-        {/* 3 Step Micro Section */}
-        <div className="mt-8 pt-8 border-t border-neutral-200 dark:border-neutral-700">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto">
+        {/* 3 Step Micro Section - Enhanced */}
+        <div className="mt-12 pt-12 border-t border-neutral-200 dark:border-neutral-700">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto">
             {/* Step 1 */}
-            <div className="flex items-start gap-4 p-4 rounded-lg hover:bg-neutral-50 dark:hover:bg-neutral-800/50 transition-colors">
-              <div className="flex-shrink-0 w-8 h-8 rounded-lg bg-blue-50 dark:bg-blue-900/30 flex items-center justify-center">
-                <Brain className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+            <div className="flex items-start gap-4 p-6 rounded-2xl bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 shadow-sm hover:shadow-md hover:border-blue-300 dark:hover:border-blue-700 transition-all">
+              <div className="flex-shrink-0 w-10 h-10 rounded-xl bg-blue-50 dark:bg-blue-900/30 flex items-center justify-center">
+                <Brain className="w-5 h-5 text-blue-600 dark:text-blue-400" />
               </div>
               <div className="flex-1 min-w-0">
-                <div className="text-2xl font-bold text-neutral-900 dark:text-white mb-1">1 business day</div>
-                <p className="text-sm font-medium text-neutral-700 dark:text-neutral-300">AI snapshot, cost and risk</p>
+                <div className="text-3xl font-bold text-neutral-900 dark:text-white mb-1.5">1 business day</div>
+                <p className="text-base font-medium text-neutral-700 dark:text-neutral-300">AI snapshot, cost and risk</p>
               </div>
             </div>
 
             {/* Step 2 */}
-            <div className="flex items-start gap-4 p-4 rounded-lg hover:bg-neutral-50 dark:hover:bg-neutral-800/50 transition-colors">
-              <div className="flex-shrink-0 w-8 h-8 rounded-lg bg-blue-50 dark:bg-blue-900/30 flex items-center justify-center">
-                <FileText className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+            <div className="flex items-start gap-4 p-6 rounded-2xl bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 shadow-sm hover:shadow-md hover:border-blue-300 dark:hover:border-blue-700 transition-all">
+              <div className="flex-shrink-0 w-10 h-10 rounded-xl bg-blue-50 dark:bg-blue-900/30 flex items-center justify-center">
+                <FileText className="w-5 h-5 text-blue-600 dark:text-blue-400" />
               </div>
               <div className="flex-1 min-w-0">
-                <div className="text-2xl font-bold text-neutral-900 dark:text-white mb-1">3 quotes</div>
-                <p className="text-sm font-medium text-neutral-700 dark:text-neutral-300">Factory quotes from three options in 7 days</p>
+                <div className="text-3xl font-bold text-neutral-900 dark:text-white mb-1.5">3 quotes</div>
+                <p className="text-base font-medium text-neutral-700 dark:text-neutral-300">Factory quotes from three options in 7 days</p>
               </div>
             </div>
 
             {/* Step 3 */}
-            <div className="flex items-start gap-4 p-4 rounded-lg hover:bg-neutral-50 dark:hover:bg-neutral-800/50 transition-colors">
-              <div className="flex-shrink-0 w-8 h-8 rounded-lg bg-blue-50 dark:bg-blue-900/30 flex items-center justify-center">
-                <Users className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+            <div className="flex items-start gap-4 p-6 rounded-2xl bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 shadow-sm hover:shadow-md hover:border-blue-300 dark:hover:border-blue-700 transition-all">
+              <div className="flex-shrink-0 w-10 h-10 rounded-xl bg-blue-50 dark:bg-blue-900/30 flex items-center justify-center">
+                <Users className="w-5 h-5 text-blue-600 dark:text-blue-400" />
               </div>
               <div className="flex-1 min-w-0">
-                <div className="text-2xl font-bold text-neutral-900 dark:text-white mb-1">5% fee</div>
-                <p className="text-sm font-medium text-neutral-700 dark:text-neutral-300">Transparent management fee on FOB only</p>
+                <div className="text-3xl font-bold text-neutral-900 dark:text-white mb-1.5">5% fee</div>
+                <p className="text-base font-medium text-neutral-700 dark:text-neutral-300">Transparent management fee on FOB only</p>
               </div>
             </div>
           </div>

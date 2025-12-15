@@ -11,6 +11,7 @@ export function ReviewsSection({ section }: { section: HomeReviewsSection }) {
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(true);
+  const [currentIndex, setCurrentIndex] = useState(0);
 
   const checkScrollability = () => {
     if (!scrollContainerRef.current) return;
@@ -35,19 +36,21 @@ export function ReviewsSection({ section }: { section: HomeReviewsSection }) {
   const scroll = (direction: 'left' | 'right') => {
     if (!scrollContainerRef.current) return;
     const container = scrollContainerRef.current;
-    const scrollAmount = container.clientWidth * 0.8;
-    const targetScroll = direction === 'left' 
-      ? container.scrollLeft - scrollAmount
-      : container.scrollLeft + scrollAmount;
+    const cardWidth = 360 + 24; // card width + gap
+    const scrollAmount = cardWidth;
+    const newIndex = direction === 'left' 
+      ? Math.max(0, currentIndex - 1)
+      : Math.min(reviews.length - 3, currentIndex + 1);
     
+    setCurrentIndex(newIndex);
     container.scrollTo({
-      left: targetScroll,
+      left: newIndex * scrollAmount,
       behavior: 'smooth',
     });
   };
 
   return (
-    <section className="py-12 md:py-16 border-t border-neutral-200 dark:border-gray-700 bg-neutral-50 dark:bg-neutral-900">
+    <section className="py-20 border-t border-neutral-200 dark:border-gray-700 bg-neutral-50 dark:bg-neutral-900">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="flex flex-col gap-6 md:flex-row md:items-end md:justify-between mb-8">
           <div className="max-w-xl space-y-3">
@@ -81,28 +84,51 @@ export function ReviewsSection({ section }: { section: HomeReviewsSection }) {
 
         {/* Horizontal Scroll Container with Controls */}
         <div className="mt-6 relative">
-          {/* Left Arrow Button */}
+          {/* Left Arrow Button - Outside section on desktop */}
           <button
             onClick={() => scroll('left')}
             disabled={!canScrollLeft}
-            className={`absolute left-2 sm:left-0 top-1/2 -translate-y-1/2 z-10 bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-full p-2 shadow-sm hover:bg-neutral-50 dark:hover:bg-neutral-700 transition-all ${
-              canScrollLeft ? 'opacity-100 cursor-pointer' : 'opacity-30 cursor-not-allowed'
+            className={`hidden md:flex absolute -left-12 top-1/2 -translate-y-1/2 z-10 items-center justify-center w-8 h-8 rounded-full bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 shadow-sm hover:shadow-md transition-all ${
+              canScrollLeft ? 'opacity-100 cursor-pointer' : 'opacity-30 pointer-events-none'
             }`}
             aria-label="Scroll left"
           >
-            <ChevronLeft className="w-5 h-5 text-neutral-700" />
+            <ChevronLeft className="w-4 h-4 text-neutral-600 dark:text-neutral-400" />
           </button>
 
-          {/* Right Arrow Button */}
+          {/* Right Arrow Button - Outside section on desktop */}
           <button
             onClick={() => scroll('right')}
             disabled={!canScrollRight}
-            className={`absolute right-2 sm:right-0 top-1/2 -translate-y-1/2 z-10 bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-full p-2 shadow-sm hover:bg-neutral-50 dark:hover:bg-neutral-700 transition-all ${
-              canScrollRight ? 'opacity-100 cursor-pointer' : 'opacity-30 cursor-not-allowed'
+            className={`hidden md:flex absolute -right-12 top-1/2 -translate-y-1/2 z-10 items-center justify-center w-8 h-8 rounded-full bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 shadow-sm hover:shadow-md transition-all ${
+              canScrollRight ? 'opacity-100 cursor-pointer' : 'opacity-30 pointer-events-none'
             }`}
             aria-label="Scroll right"
           >
-            <ChevronRight className="w-5 h-5 text-neutral-700" />
+            <ChevronRight className="w-4 h-4 text-neutral-600 dark:text-neutral-400" />
+          </button>
+          
+          {/* Mobile arrows - inside container */}
+          <button
+            onClick={() => scroll('left')}
+            disabled={!canScrollLeft}
+            className={`md:hidden absolute left-2 top-1/2 -translate-y-1/2 z-10 flex items-center justify-center w-8 h-8 rounded-full bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 shadow-sm hover:shadow-md transition-all ${
+              canScrollLeft ? 'opacity-100 cursor-pointer' : 'opacity-30 pointer-events-none'
+            }`}
+            aria-label="Scroll left"
+          >
+            <ChevronLeft className="w-4 h-4 text-neutral-600 dark:text-neutral-400" />
+          </button>
+
+          <button
+            onClick={() => scroll('right')}
+            disabled={!canScrollRight}
+            className={`md:hidden absolute right-2 top-1/2 -translate-y-1/2 z-10 flex items-center justify-center w-8 h-8 rounded-full bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 shadow-sm hover:shadow-md transition-all ${
+              canScrollRight ? 'opacity-100 cursor-pointer' : 'opacity-30 pointer-events-none'
+            }`}
+            aria-label="Scroll right"
+          >
+            <ChevronRight className="w-4 h-4 text-neutral-600 dark:text-neutral-400" />
           </button>
 
           {/* Scroll Container */}
@@ -121,38 +147,33 @@ export function ReviewsSection({ section }: { section: HomeReviewsSection }) {
                   return (
                     <article
                       key={review.id}
-                      className="flex flex-col w-[320px] sm:w-[360px] flex-shrink-0 rounded-lg bg-white dark:bg-neutral-800 p-4 sm:p-5 shadow-sm border border-neutral-200 dark:border-neutral-700"
+                      className="flex flex-col w-[320px] sm:w-[360px] md:w-full flex-shrink-0 rounded-2xl bg-white dark:bg-neutral-800 p-6 shadow-sm border border-neutral-200 dark:border-neutral-700 hover:shadow-md hover:border-blue-300 dark:hover:border-blue-700 transition-all"
                     >
+                      {/* Outcome pill */}
                       {review.outcome && (
-                        <div className="mb-3">
-                          <p className="text-sm font-semibold text-neutral-900 dark:text-white leading-snug">
+                        <div className="mb-4">
+                          <span className="inline-flex items-center px-3 py-1.5 rounded-full text-xs font-semibold bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800">
                             {review.outcome}
-                          </p>
+                          </span>
                         </div>
                       )}
-                      <p className="text-sm text-neutral-700 dark:text-neutral-300 flex-1 leading-relaxed mb-3">
+                      <p className="text-sm text-neutral-700 dark:text-neutral-300 flex-1 leading-relaxed mb-4">
                         &ldquo;{review.quote}&rdquo;
                       </p>
-                      <div className="mt-auto pt-3 border-t border-neutral-200 dark:border-neutral-700">
-                        <div className="flex items-center justify-between">
-                          <div className="text-xs text-neutral-500 dark:text-neutral-400">
-                            <p className="font-medium text-neutral-700 dark:text-neutral-300">
-                              {review.name}
-                            </p>
-                            <p className="mt-0.5">
-                              {review.role ? `${review.role}` : ''}
-                            </p>
+                      <div className="mt-auto pt-4 border-t border-neutral-200 dark:border-neutral-700">
+                        <div className="space-y-1.5 text-xs text-neutral-500 dark:text-neutral-400">
+                          <div className="flex items-center justify-between">
+                            <span className="font-medium text-neutral-600 dark:text-neutral-400">Role</span>
+                            <span className="text-neutral-700 dark:text-neutral-300">{review.role || 'N/A'}</span>
                           </div>
-                          <a
-                            href="#"
-                            className="text-xs font-medium text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300"
-                            onClick={(e) => {
-                              e.preventDefault();
-                              // TODO: Link to case study
-                            }}
-                          >
-                            View case study →
-                          </a>
+                          <div className="flex items-center justify-between">
+                            <span className="font-medium text-neutral-600 dark:text-neutral-400">Category</span>
+                            <span className="text-neutral-700 dark:text-neutral-300">{review.category || 'N/A'}</span>
+                          </div>
+                          <div className="flex items-center justify-between">
+                            <span className="font-medium text-neutral-600 dark:text-neutral-400">Date</span>
+                            <span className="text-neutral-700 dark:text-neutral-300">{review.date}</span>
+                          </div>
                         </div>
                       </div>
                     </article>
@@ -160,6 +181,31 @@ export function ReviewsSection({ section }: { section: HomeReviewsSection }) {
                 })}
               </div>
             </div>
+          </div>
+          
+          {/* Dot indicators - Desktop only */}
+          <div className="hidden md:flex justify-center gap-2 mt-8">
+            {[0, 1, 2].map((index) => (
+              <button
+                key={index}
+                onClick={() => {
+                  if (!scrollContainerRef.current) return;
+                  const container = scrollContainerRef.current;
+                  const cardWidth = 360 + 24;
+                  setCurrentIndex(index);
+                  container.scrollTo({
+                    left: index * cardWidth,
+                    behavior: 'smooth',
+                  });
+                }}
+                className={`w-2 h-2 rounded-full transition-all ${
+                  currentIndex === index
+                    ? 'bg-blue-600 dark:bg-blue-400 w-6'
+                    : 'bg-neutral-300 dark:bg-neutral-600 hover:bg-neutral-400 dark:hover:bg-neutral-500'
+                }`}
+                aria-label={`Go to review ${index + 1}`}
+              />
+            ))}
           </div>
         </div>
       </div>

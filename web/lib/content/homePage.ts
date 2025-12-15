@@ -8,6 +8,7 @@ export type HomeReview = {
   role?: string;
   date: string;
   outcome?: string; // e.g., "Saved 12% landed cost" or "Avoided AD/CVD surprise"
+  category?: string; // e.g., "CPG", "Hardlines", "DTC"
 };
 
 export type HomeReviewsSection = {
@@ -234,6 +235,7 @@ export const homePageConfig: HomePageConfig = {
         role: 'Miami-based Importer',
         date: 'November 25, 2025',
         outcome: 'Scaled from cartons to pallets',
+        category: 'CPG',
       },
       {
         id: 'ashley',
@@ -244,6 +246,7 @@ export const homePageConfig: HomePageConfig = {
         role: 'DTC brand operator',
         date: 'November 22, 2025',
         outcome: 'Saved 12% landed cost',
+        category: 'DTC',
       },
       {
         id: 'retail-buyer',
@@ -254,6 +257,7 @@ export const homePageConfig: HomePageConfig = {
         role: 'Retail buyer, hardlines',
         date: 'November 20, 2025',
         outcome: 'Avoided AD/CVD surprise',
+        category: 'Hardlines',
       },
       {
         id: 'fba-seller-2',
@@ -264,6 +268,7 @@ export const homePageConfig: HomePageConfig = {
         role: 'Amazon FBA seller, CPG',
         date: 'November 18, 2025',
         outcome: 'Validated 35% margin',
+        category: 'CPG',
       },
       {
         id: 'trading-company',
@@ -274,6 +279,7 @@ export const homePageConfig: HomePageConfig = {
         role: 'Trading company owner',
         date: 'November 15, 2025',
         outcome: 'Saved 3 weeks on comparison',
+        category: 'CPG',
       },
       {
         id: 'dtc-brand',
@@ -284,6 +290,7 @@ export const homePageConfig: HomePageConfig = {
         role: 'Food & beverage brand manager',
         date: 'November 12, 2025',
         outcome: 'Pilot to scale in 2 weeks',
+        category: 'DTC',
       },
       {
         id: 'wholesale',

@@ -34,7 +34,6 @@ export default async function HomePage() {
   return (
     <div className="bg-white dark:bg-gray-900">
       <HomeHero page={page} />
-      <HomeSocialProofStrip />
       <HomeUseCases />
       <HomeBenefitsGridV2 />
       <ReviewsSection section={homePageConfig.reviewsSection} />

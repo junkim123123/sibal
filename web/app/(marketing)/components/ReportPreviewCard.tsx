@@ -114,13 +114,23 @@ export function ReportPreviewCard() {
       </div>
 
       <div className="p-5 md:p-6 min-h-[420px]">
-        {/* Header */}
-        <div className="mb-4">
-          <div className="flex items-center justify-between mb-1">
+        {/* Header with report bar */}
+        <div className="mb-4 pb-3 border-b border-neutral-200 dark:border-neutral-700">
+          <div className="flex items-center justify-between mb-2">
             <h3 className="text-xs font-semibold text-neutral-900 dark:text-white uppercase tracking-wider">
               Sourcing report preview
             </h3>
             <span className="text-xs text-neutral-400">Example preview</span>
+          </div>
+          {/* Report meta bar */}
+          <div className="flex items-center gap-3 text-[10px] text-neutral-500 dark:text-neutral-400 mt-2">
+            <span>Updated today</span>
+            <span>•</span>
+            <span>3 suppliers compared</span>
+            <span>•</span>
+            <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[9px] font-medium bg-yellow-100 dark:bg-yellow-800 text-yellow-700 dark:text-yellow-300 border border-yellow-200 dark:border-yellow-700">
+              Medium confidence
+            </span>
           </div>
         </div>
 
@@ -183,9 +193,12 @@ export function ReportPreviewCard() {
                   onClick={() => window.location.href = '/chat'}
                   className="w-full flex items-center justify-center gap-2 py-2.5 px-4 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 rounded-lg transition-all shadow-sm hover:shadow-md"
                 >
-                  Get free snapshot
+                  Calculate landed cost and risk
                   <ArrowRight className="w-4 h-4" />
                 </button>
+                <p className="text-[10px] text-neutral-500 dark:text-neutral-400 text-center mt-1">
+                  $49 deposit refundable, credited to first order
+                </p>
                 <button
                   onClick={() => setIsExpanded(!isExpanded)}
                   className="w-full flex items-center justify-center gap-2 py-2 px-3 text-xs font-medium text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 bg-blue-50 hover:bg-blue-100 dark:bg-blue-900/20 dark:hover:bg-blue-900/30 rounded-lg transition-all border border-blue-200 dark:border-blue-800"
@@ -209,15 +222,25 @@ export function ReportPreviewCard() {
                 <h4 className="text-xs font-semibold text-neutral-500 dark:text-neutral-400 uppercase tracking-wider mb-3">
                   Confidence band
                 </h4>
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-xs text-neutral-600 dark:text-neutral-400">Confidence level,</span>
-                  <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-medium bg-yellow-100 dark:bg-yellow-800 text-yellow-700 dark:text-yellow-300 border border-yellow-200 dark:border-yellow-700">
-                    Medium
-                  </span>
+                {/* Confidence Bar */}
+                <div className="mb-3">
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="flex items-center gap-2">
+                      <span className="text-[10px] text-neutral-500 dark:text-neutral-400">Low</span>
+                      <div className="w-full max-w-[120px] bg-neutral-200 dark:bg-neutral-700 rounded-full h-1.5 relative overflow-hidden">
+                        <div className="bg-yellow-500 dark:bg-yellow-400 h-1.5 rounded-full" style={{ width: '60%' }} />
+                      </div>
+                      <span className="text-[10px] text-neutral-500 dark:text-neutral-400">High</span>
+                    </div>
+                    <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-medium bg-yellow-100 dark:bg-yellow-800 text-yellow-700 dark:text-yellow-300 border border-yellow-200 dark:border-yellow-700">
+                      Medium
+                    </span>
+                  </div>
+                  <div className="space-y-1 text-[10px] text-neutral-600 dark:text-neutral-400">
+                    <p>Factory quote stable</p>
+                    <p>Shipping varies by carton and route</p>
+                  </div>
                 </div>
-                <p className="text-xs text-neutral-600 dark:text-neutral-400 mb-4">
-                  Factory quotes are stable, shipping and packaging assumptions can shift with order size and routing.
-                </p>
 
                 <h4 className="text-xs font-semibold text-neutral-500 dark:text-neutral-400 uppercase tracking-wider mb-3 mt-4">
                   DDP cost breakdown
@@ -268,70 +291,10 @@ export function ReportPreviewCard() {
                   Assumptions include destination, carton specs, and target incoterms. Updating these tightens the range.
                 </p>
                 
-                {/* Confidence Band */}
-                <div className="mt-4 pt-4 border-t border-neutral-200 dark:border-neutral-700">
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-[10px] font-semibold text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">Confidence band</span>
-                    <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-medium bg-yellow-100 dark:bg-yellow-800 text-yellow-700 dark:text-yellow-300 border border-yellow-200 dark:border-yellow-700">
-                      Medium confidence
-                    </span>
-                  </div>
-                  <p className="text-[10px] text-neutral-600 dark:text-neutral-400 mb-3">
-                    This range reflects remaining unknowns that tighten after manager confirmation.
-                  </p>
-                  
-                  {/* Confidence Bar */}
-                  <div className="mb-2">
-                    <div className="w-full bg-neutral-200 dark:bg-neutral-700 rounded-full h-2 relative overflow-hidden">
-                      <div className="bg-yellow-500 dark:bg-yellow-400 h-2 rounded-full" style={{ width: '60%' }} />
-                    </div>
-                    <div className="flex items-center justify-between mt-1.5">
-                      <span className="text-[10px] text-neutral-500 dark:text-neutral-400">What drives the range</span>
-                      <div className="flex items-center gap-1" title="Confidence is based on how stable the lane and specs are, and how many inputs are confirmed.">
-                        <Info className="w-3 h-3 text-neutral-400" />
-                      </div>
-                    </div>
-                  </div>
-                  
-                  {/* Range Driver Chips */}
-                  <div className="flex flex-wrap gap-1.5 mb-3">
-                    {['Freight variance', 'Packaging assumptions', 'Duty classification', 'Customs exam tail risk', 'Local delivery zone', 'MOQ and packout'].map((chip) => (
-                      <span
-                        key={chip}
-                        className="inline-flex items-center px-2 py-0.5 rounded text-[9px] font-medium bg-neutral-100 dark:bg-neutral-700 text-neutral-600 dark:text-neutral-400 border border-neutral-200 dark:border-neutral-600"
-                      >
-                        {chip}
-                      </span>
-                    ))}
-                  </div>
-                  
-                  <p className="text-[10px] text-neutral-600 dark:text-neutral-400 mb-4">
-                    Most inputs stable. One or two variables can move the total.
-                  </p>
-                  
-                  {/* How to Tighten */}
-                  <div className="mt-4 pt-3 border-t border-neutral-200 dark:border-neutral-700">
-                    <p className="text-[10px] font-semibold text-neutral-500 dark:text-neutral-400 uppercase tracking-wider mb-2">How to tighten this range</p>
-                    <ul className="space-y-1.5 text-[10px] text-neutral-600 dark:text-neutral-400">
-                      <li className="flex items-start gap-2">
-                        <CheckCircle className="w-3 h-3 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5" />
-                        <span>Confirm carton dimensions and pack count</span>
-                      </li>
-                      <li className="flex items-start gap-2">
-                        <CheckCircle className="w-3 h-3 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5" />
-                        <span>Confirm product materials and usage</span>
-                      </li>
-                      <li className="flex items-start gap-2">
-                        <CheckCircle className="w-3 h-3 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5" />
-                        <span>Share target port and delivery zip</span>
-                      </li>
-                      <li className="flex items-start gap-2">
-                        <CheckCircle className="w-3 h-3 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5" />
-                        <span>Upload label and ingredient list if applicable</span>
-                      </li>
-                    </ul>
-                  </div>
-                </div>
+                {/* Disclaimer in Costs tab */}
+                <p className="text-[9px] text-neutral-400 dark:text-neutral-500 mt-4 pt-3 border-t border-neutral-200 dark:border-neutral-700 italic">
+                  Estimates are directional. Manager confirms final numbers.
+                </p>
 
               </div>
             </div>
@@ -355,9 +318,9 @@ export function ReportPreviewCard() {
                 <div className="mb-4 pb-4 border-b border-neutral-200 dark:border-neutral-700">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     {/* Top Risk Card */}
-                    <div className="p-3 rounded-lg bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800">
-                      <div className="flex items-center gap-2 mb-2">
-                        <span className="text-[10px] font-semibold text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">Top risk</span>
+                    <div className="p-6 rounded-2xl bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 shadow-sm">
+                      <div className="flex items-center gap-2 mb-3">
+                        <span className="text-[10px] font-semibold text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">TOP RISK</span>
                       </div>
                       <div className="flex items-start gap-2 mb-2">
                         <AlertTriangle className="w-4 h-4 text-yellow-600 dark:text-yellow-400 flex-shrink-0 mt-0.5" />
@@ -368,21 +331,29 @@ export function ReportPreviewCard() {
                               Moderate
                             </span>
                           </div>
-                          <p className="text-[10px] text-yellow-700 dark:text-yellow-300 mt-1">
-                            HTS classification may change the duty rate and impact the landed cost range.
+                          <p className="text-[10px] font-semibold text-neutral-600 dark:text-neutral-400 mt-2 mb-1">Severity</p>
+                          <p className="text-[10px] text-yellow-700 dark:text-yellow-300 mb-2">Moderate</p>
+                          <p className="text-[10px] font-semibold text-neutral-600 dark:text-neutral-400 mt-2 mb-1">Impact</p>
+                          <p className="text-[10px] text-yellow-700 dark:text-yellow-300">
+                            Could shift duty rate and move landed cost range
                           </p>
                         </div>
                       </div>
                     </div>
 
                     {/* Recommended Action Checklist */}
-                    <div className="p-3 rounded-lg bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800">
-                      <div className="flex items-center gap-2 mb-2">
-                        <span className="text-[10px] font-semibold text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">Recommended action</span>
+                    <div className="p-6 rounded-2xl bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 shadow-sm">
+                      <div className="flex items-center gap-2 mb-3">
+                        <span className="text-[10px] font-semibold text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">RECOMMENDED ACTION</span>
                       </div>
-                      <p className="text-[10px] text-blue-700 dark:text-blue-300 mb-3">
-                        Share product photos, materials, and use case. We will confirm HTS and screen AD or CVD exposure.
+                      <p className="text-xs font-semibold text-blue-900 dark:text-blue-100 mb-2">
+                        Send product photos, materials, and use case
                       </p>
+                      <p className="text-[10px] text-blue-700 dark:text-blue-300 mb-3">
+                        We will confirm HTS and screen AD or CVD exposure
+                      </p>
+                      <p className="text-[10px] font-semibold text-neutral-600 dark:text-neutral-400 mt-3 mb-1">ETA</p>
+                      <p className="text-[10px] text-blue-700 dark:text-blue-300 mb-3">1 business day after deposit</p>
                       <ul className="space-y-2">
                         {[
                           { id: 'spec-sheet', label: 'Share spec sheet and materials list' },
@@ -424,13 +395,33 @@ export function ReportPreviewCard() {
                           );
                         })}
                       </ul>
+                      {/* Progress status */}
                       <div className="mt-3 pt-3 border-t border-blue-200 dark:border-blue-700">
+                        <div className="mb-2">
+                          <div className="flex items-center justify-between mb-1">
+                            <p className="text-[9px] text-neutral-500 dark:text-neutral-400">
+                              {Object.values(checklistStatus).filter(s => s === 'done').length} of 3 items needed to confirm HTS
+                            </p>
+                            <span className="text-[9px] font-semibold text-blue-600 dark:text-blue-400">
+                              {Math.round((Object.values(checklistStatus).filter(s => s === 'done').length / 3) * 100)}%
+                            </span>
+                          </div>
+                          <div className="h-1 w-full rounded-full bg-neutral-200 dark:bg-neutral-700">
+                            <div 
+                              className="h-1 rounded-full bg-blue-500 dark:bg-blue-400 transition-all"
+                              style={{ width: `${(Object.values(checklistStatus).filter(s => s === 'done').length / 3) * 100}%` }}
+                            />
+                          </div>
+                        </div>
                         <button
                           onClick={() => window.location.href = '/chat'}
                           className="w-full text-[10px] font-medium text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 text-center"
                         >
-                          Send to manager →
+                          Confirm HTS with manager →
                         </button>
+                        <p className="text-[9px] text-neutral-500 dark:text-neutral-400 mt-2 text-center">
+                          Once confirmed, we will lock duty assumptions in the report
+                        </p>
                       </div>
                     </div>
                   </div>
@@ -444,8 +435,8 @@ export function ReportPreviewCard() {
                   <h4 className="text-[10px] font-semibold text-neutral-500 dark:text-neutral-400 uppercase tracking-wider mb-3">
                     Other checks
                   </h4>
-                  <div className="space-y-2.5">
-                    <div className="p-3 rounded-lg bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800">
+                  <div className="space-y-3">
+                    <div className="p-6 rounded-2xl bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 shadow-sm">
                       <div className="flex items-start gap-2">
                         <CheckCircle className="w-4 h-4 text-green-600 dark:text-green-400 flex-shrink-0 mt-0.5" />
                         <div className="flex-1">
@@ -459,7 +450,7 @@ export function ReportPreviewCard() {
                         </div>
                       </div>
                     </div>
-                    <div className="p-3 rounded-lg bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800">
+                    <div className="p-6 rounded-2xl bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 shadow-sm">
                       <div className="flex items-start gap-2">
                         <AlertTriangle className="w-4 h-4 text-yellow-600 dark:text-yellow-400 flex-shrink-0 mt-0.5" />
                         <div className="flex-1">
@@ -473,7 +464,7 @@ export function ReportPreviewCard() {
                         </div>
                       </div>
                     </div>
-                    <div className="p-3 rounded-lg bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800">
+                    <div className="p-6 rounded-2xl bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 shadow-sm">
                       <div className="flex items-start gap-2">
                         <CheckCircle className="w-4 h-4 text-green-600 dark:text-green-400 flex-shrink-0 mt-0.5" />
                         <div className="flex-1">
@@ -492,8 +483,12 @@ export function ReportPreviewCard() {
                 
                 {/* Footer */}
                 <div className="mt-4 pt-4 border-t border-neutral-200 dark:border-neutral-700">
-                  <p className="text-[10px] text-neutral-500 dark:text-neutral-400 leading-relaxed">
+                  <p className="text-[10px] text-neutral-500 dark:text-neutral-400 leading-relaxed mb-3">
                     We flag risks early, then document the decision path so you can move fast with fewer surprises.
+                  </p>
+                  {/* Disclaimer in Risks tab */}
+                  <p className="text-[9px] text-neutral-400 dark:text-neutral-500 italic">
+                    Estimates are directional. Manager confirms final numbers.
                   </p>
                 </div>
               </div>
@@ -550,22 +545,39 @@ export function ReportPreviewCard() {
 
         {/* Expand/Collapse Button - Only show on Summary tab */}
         {activeTab === 'summary' && (
-          <button
-            onClick={() => setIsExpanded(!isExpanded)}
-            className="w-full flex items-center justify-center gap-2 py-2.5 px-4 text-sm font-medium text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 bg-blue-50 hover:bg-blue-100 dark:bg-blue-900/20 dark:hover:bg-blue-900/30 rounded-lg transition-all border border-blue-200 dark:border-blue-800 mt-4"
-          >
-            {isExpanded ? (
-              <>
-                <span>Show less</span>
-                <ChevronUp className="w-4 h-4" />
-              </>
-            ) : (
-              <>
-                <span>View full sample report</span>
-                <ChevronDown className="w-4 h-4" />
-              </>
+          <>
+            <button
+              onClick={() => setIsExpanded(!isExpanded)}
+              className="w-full flex items-center justify-center gap-2 py-2.5 px-4 text-sm font-medium text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 bg-blue-50 hover:bg-blue-100 dark:bg-blue-900/20 dark:hover:bg-blue-900/30 rounded-lg transition-all border border-blue-200 dark:border-blue-800 mt-4"
+            >
+              {isExpanded ? (
+                <>
+                  <span>Show less</span>
+                  <ChevronUp className="w-4 h-4" />
+                </>
+              ) : (
+                <>
+                  <span>View full sample report</span>
+                  <ChevronDown className="w-4 h-4" />
+                </>
+              )}
+            </button>
+            {/* CTA after viewing sample - only show when expanded */}
+            {isExpanded && (
+              <div className="mt-4 pt-4 border-t border-neutral-200 dark:border-neutral-700">
+                <button
+                  onClick={() => window.location.href = '/chat'}
+                  className="w-full flex items-center justify-center gap-2 py-2.5 px-4 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 rounded-lg transition-all shadow-sm hover:shadow-md"
+                >
+                  Calculate landed cost and risk
+                  <ArrowRight className="w-4 h-4" />
+                </button>
+                <p className="text-[10px] text-neutral-500 dark:text-neutral-400 text-center mt-2">
+                  $49 deposit refundable, credited to first order
+                </p>
+              </div>
             )}
-          </button>
+          </>
         )}
 
         {/* Footer - Only show on Summary tab */}

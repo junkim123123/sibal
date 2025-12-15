@@ -15,19 +15,19 @@ export default async function UseCasesPage() {
   return (
     <div className="bg-white">
       {/* Hero Section - Use Cases Specific */}
-      <section aria-label="Hero" className="py-10 md:py-12 lg:py-14 bg-white border-b border-neutral-100">
+      <section aria-label="Hero" className="py-8 md:py-10 bg-white border-b border-neutral-100">
         <div className="mx-auto max-w-6xl px-4 md:px-6">
           <div className="text-center max-w-3xl mx-auto">
-            <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold tracking-tight text-neutral-900 leading-tight mb-6">
+            <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold tracking-tight text-neutral-900 leading-tight mb-4">
               {hero.title}
             </h1>
             <p className="text-base md:text-lg text-neutral-600 leading-relaxed mb-6">
               {hero.body}
             </p>
-            <div className="flex flex-col sm:flex-row gap-3 justify-center items-center">
+            <div className="flex flex-col sm:flex-row gap-3 justify-center items-center mb-3">
               <Link href={hero.ctaPrimary.href} className="w-full sm:w-auto">
                 <Button className="bg-blue-600 hover:bg-blue-700 text-white rounded-lg px-6 md:px-8 py-3 md:py-3.5 w-full sm:w-auto">
-                  {hero.ctaPrimary.label}
+                  Get free snapshot
                 </Button>
               </Link>
               <Link href={hero.ctaSecondary.href} className="w-full sm:w-auto">
@@ -35,12 +35,12 @@ export default async function UseCasesPage() {
                   variant="outline"
                   className="border-2 border-neutral-300 hover:border-neutral-400 text-neutral-700 hover:text-neutral-900 rounded-lg px-6 md:px-8 py-3 md:py-3.5 w-full sm:w-auto"
                 >
-                  {hero.ctaSecondary.label}
+                  Talk to a manager
                 </Button>
               </Link>
             </div>
             {hero.ctaHelperText && (
-              <p className="mt-4 text-xs text-neutral-500">
+              <p className="text-xs text-neutral-500">
                 {hero.ctaHelperText}
               </p>
             )}
@@ -48,115 +48,8 @@ export default async function UseCasesPage() {
         </div>
       </section>
 
-      {/* Free vs Deposit Comparison */}
-      {freeVsDeposit && (
-        <section aria-label="Free vs Deposit" className="py-8 md:py-12 bg-neutral-50 border-b border-neutral-100">
-          <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="text-center mb-8">
-              <h2 className="text-2xl sm:text-3xl font-semibold text-neutral-900 mb-3">
-                {freeVsDeposit.title}
-              </h2>
-            </div>
-            <div className="grid md:grid-cols-2 gap-6 max-w-4xl mx-auto">
-              {/* Free Snapshot Card */}
-              <div className="bg-white border border-neutral-200 rounded-2xl p-6 shadow-sm">
-                <h3 className="text-lg font-semibold text-neutral-900 mb-4">
-                  {freeVsDeposit.free.title}
-                </h3>
-                <ul className="space-y-2 mb-6">
-                  {freeVsDeposit.free.items.map((item, i) => (
-                    <li key={i} className="flex items-start gap-2 text-sm text-neutral-600">
-                      <span className="text-blue-600 mt-0.5 font-bold">•</span>
-                      <span>{item}</span>
-                    </li>
-                  ))}
-                </ul>
-                <Link href="/chat" className="block w-full">
-                  <button
-                    type="button"
-                    className="w-full inline-flex items-center justify-center font-semibold transition-all rounded-lg px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white"
-                  >
-                    Get free snapshot
-                  </button>
-                </Link>
-              </div>
-              {/* Deposit Card */}
-              <div className="bg-white border border-neutral-200 rounded-2xl p-6 shadow-sm">
-                <h3 className="text-lg font-semibold text-neutral-900 mb-4">
-                  {freeVsDeposit.deposit.title}
-                </h3>
-                <ul className="space-y-2 mb-6">
-                  {freeVsDeposit.deposit.items.map((item, i) => (
-                    <li key={i} className="flex items-start gap-2 text-sm text-neutral-600">
-                      <span className="text-blue-600 mt-0.5 font-bold">•</span>
-                      <span>{item}</span>
-                    </li>
-                  ))}
-                </ul>
-                <Link href="/chat" className="block w-full">
-                  <button
-                    type="button"
-                    className="w-full inline-flex items-center justify-center font-semibold transition-all rounded-lg px-6 py-3 border-2 border-neutral-300 hover:border-neutral-400 text-neutral-700 hover:text-neutral-900 bg-white"
-                  >
-                    Talk to a manager
-                  </button>
-                </Link>
-              </div>
-            </div>
-            {freeVsDeposit.helperText && (
-              <p className="text-center text-xs text-neutral-500 mt-4">
-                {freeVsDeposit.helperText}
-              </p>
-            )}
-          </div>
-        </section>
-      )}
-
-      {/* Snapshot Preview */}
-      {snapshotPreview && (
-        <section aria-label="Snapshot preview" className="py-8 md:py-12 bg-white border-b border-neutral-100">
-          <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="text-center mb-8">
-              <h2 className="text-2xl sm:text-3xl font-semibold text-neutral-900 mb-2">
-                {snapshotPreview.title}
-              </h2>
-              <p className="text-base text-neutral-600">
-                {snapshotPreview.subtitle}
-              </p>
-            </div>
-            <div className="bg-white border border-neutral-200 rounded-2xl p-6 shadow-sm">
-              <div className="space-y-4">
-                {snapshotPreview.items.map((item, i) => (
-                  <div key={i} className="border-b border-neutral-100 pb-4 last:border-0 last:pb-0">
-                    <div className="text-xs font-semibold text-neutral-500 uppercase tracking-wide mb-1">
-                      {item.label}
-                    </div>
-                    <div className="text-sm text-neutral-700">
-                      {item.value}
-                    </div>
-                  </div>
-                ))}
-              </div>
-              <div className="mt-6 pt-4 border-t border-neutral-200">
-                <Link href="/chat" className="inline-flex items-center text-sm font-medium text-blue-600 hover:text-blue-700">
-                  View a sample snapshot
-                  <svg className="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                  </svg>
-                </Link>
-              </div>
-              {snapshotPreview.disclaimer && (
-                <p className="mt-4 text-xs text-neutral-400 text-center">
-                  {snapshotPreview.disclaimer}
-                </p>
-              )}
-            </div>
-          </div>
-        </section>
-      )}
-
       {/* Common ways people start */}
-      <section id="projects" aria-label="Common projects" className="py-8 md:py-12 bg-white">
+      <section id="projects" aria-label="Common projects" className="py-8 md:py-12 bg-white border-b border-neutral-100">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-10">
             <h2 className="text-2xl sm:text-3xl font-semibold text-neutral-900 mb-3">
@@ -223,6 +116,51 @@ export default async function UseCasesPage() {
         </div>
       </section>
 
+      {/* Snapshot Preview */}
+      {snapshotPreview && (
+        <section aria-label="Snapshot preview" className="py-8 md:py-12 bg-neutral-50 border-b border-neutral-100">
+          <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="text-center mb-8">
+              <h2 className="text-2xl sm:text-3xl font-semibold text-neutral-900 mb-2">
+                {snapshotPreview.title}
+              </h2>
+              {snapshotPreview.subtitle && (
+                <p className="text-base text-neutral-600">
+                  {snapshotPreview.subtitle}
+                </p>
+              )}
+            </div>
+            <div className="bg-white border border-neutral-200 rounded-2xl p-6 shadow-sm">
+              <div className="space-y-4">
+                {snapshotPreview.items.map((item, i) => (
+                  <div key={i} className="border-b border-neutral-100 pb-4 last:border-0 last:pb-0">
+                    <div className="text-xs font-semibold text-neutral-500 uppercase tracking-wide mb-1">
+                      {item.label}
+                    </div>
+                    <div className="text-sm text-neutral-700">
+                      {item.value}
+                    </div>
+                  </div>
+                ))}
+              </div>
+              <div className="mt-6 pt-4 border-t border-neutral-200">
+                <Link href="/chat" className="inline-flex items-center text-sm font-medium text-blue-600 hover:text-blue-700">
+                  View a sample snapshot
+                  <svg className="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                  </svg>
+                </Link>
+              </div>
+              {snapshotPreview.disclaimer && (
+                <p className="mt-4 text-xs text-neutral-400 text-center">
+                  {snapshotPreview.disclaimer}
+                </p>
+              )}
+            </div>
+          </div>
+        </section>
+      )}
+
       {/* Social proof summary - Metrics version */}
       <section aria-label="Social proof" className="py-8 md:py-12 bg-neutral-50 border-t border-neutral-100">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -247,9 +185,9 @@ export default async function UseCasesPage() {
               {socialProof.metrics.map((metric, index) => (
                 <div
                   key={index}
-                  className="bg-white border border-neutral-200 rounded-lg p-6 shadow-sm text-center"
+                  className="bg-white border border-neutral-200 rounded-lg p-6 shadow-sm"
                 >
-                  <div className="text-2xl font-bold text-blue-600 mb-2">
+                  <div className="text-3xl md:text-4xl font-bold text-blue-600 mb-2">
                     {metric.value}
                   </div>
                   <div className="text-sm text-neutral-600">
@@ -260,38 +198,15 @@ export default async function UseCasesPage() {
             </div>
           )}
           {socialProof.subtitle && (
-            <p className="text-center text-xs text-neutral-500">
+            <p className="text-center text-xs text-neutral-500 mb-2">
               {socialProof.subtitle}
             </p>
           )}
+          <p className="text-center text-xs text-neutral-500">
+            Most snapshots generate in under a minute. Complex products may take a bit longer.
+          </p>
         </div>
       </section>
-
-      {/* Trust Elements */}
-      {trustElements && (
-        <section aria-label="Trust elements" className="py-8 md:py-12 bg-white border-t border-neutral-100">
-          <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="grid md:grid-cols-2 gap-6 max-w-4xl mx-auto">
-              <div className="bg-neutral-50 border border-neutral-200 rounded-lg p-6">
-                <h3 className="text-base font-semibold text-neutral-900 mb-2">
-                  {trustElements.whatWeCheck.title}
-                </h3>
-                <p className="text-sm text-neutral-600">
-                  {trustElements.whatWeCheck.items}
-                </p>
-              </div>
-              <div className="bg-neutral-50 border border-neutral-200 rounded-lg p-6">
-                <h3 className="text-base font-semibold text-neutral-900 mb-2">
-                  {trustElements.whereWeOperate.title}
-                </h3>
-                <p className="text-sm text-neutral-600">
-                  {trustElements.whereWeOperate.items}
-                </p>
-              </div>
-            </div>
-          </div>
-        </section>
-      )}
 
       {/* Why importers work with NexSupply */}
       <section aria-label="Benefits" className="py-8 md:py-12 bg-white border-t border-neutral-100">

@@ -130,8 +130,8 @@ export interface UseCasesPageContent {
 export const useCasesPageContent: UseCasesPageContent = {
   hero: {
     badge: 'Predictable Sourcing for Modern Brands',
-    title: 'De-risk your next import in 1 business day',
-    body: 'See your landed cost and compliance risks in one place. If you want, we can connect you to real factory quotes with a $49 refundable deposit.',
+    title: 'De-risk your next import in 1 minute',
+    body: 'See landed cost and compliance risks instantly. Upgrade to real factory quotes with a refundable $49 deposit.',
     ctaPrimary: {
       label: 'Get free snapshot',
       href: '/chat',
@@ -140,13 +140,13 @@ export const useCasesPageContent: UseCasesPageContent = {
       label: 'Talk to a manager',
       href: '/chat',
     },
-    ctaHelperText: '$49 deposit is refundable until outreach begins. Credited if you proceed.',
+    ctaHelperText: 'Instant snapshot. Deposit only applies when outreach starts. Credited if you proceed.',
   },
   threeSteps: {
     items: [
       {
         title: 'AI Cost and Risk Snapshot',
-        subtitle: 'Within 1 business day',
+        subtitle: 'In 1 minute',
       },
       {
         title: 'Deposit to Unlock Manager',
@@ -165,17 +165,17 @@ export const useCasesPageContent: UseCasesPageContent = {
       {
         id: 'launch-new-product',
         title: 'Launch a new FBA brand',
-        summary: 'Check margin and risk before your first order.',
+        summary: 'Check margin and duty risk in 1 minute before your first order.',
         footnote: 'Typical users: New FBA sellers and early-stage brands',
-        deliverables: 'Estimated delivered cost range and key DDP drivers\nDuty and compliance red flags\nClear go or no-go recommendation',
+        deliverables: 'Estimated delivered cost range and key cost drivers\nDuty and compliance red flags\nClear go or no-go recommendation',
         badge: 'Best for first order',
         ctaLabel: 'Start this workflow',
-        outcomeExample: 'Typical margin check completed within 1 business day',
+        outcomeExample: 'Typical margin check completed in 1 minute',
       },
       {
         id: 're-source-existing-sku',
         title: 'Re-source an existing SKU',
-        summary: 'Compare your current supplier with alternatives side-by-side on cost and risk.',
+        summary: 'Compare landed cost side by side in 1 minute.',
         footnote: 'Typical users: Established sellers optimizing margins',
         deliverables: 'Side-by-side landed cost comparison\nSupplier tradeoffs and risk flags\nSavings estimate with assumptions',
         badge: 'Best for cost down',
@@ -185,9 +185,9 @@ export const useCasesPageContent: UseCasesPageContent = {
       {
         id: 'test-higher-risk-category',
         title: 'Test a higher-risk category',
-        summary: 'Check AD/CVD and required documents before you import.',
+        summary: 'Run an AD/CVD and docs check in 1 minute.',
         footnote: 'Typical users: Brands entering regulated categories',
-        deliverables: 'AD/CVD risk screen and scope\nRequired documents checklist\nMitigation steps before you place a PO',
+        deliverables: 'Trade risk screen and scope\nRequired documents checklist\nMitigation steps before you place a PO',
         badge: 'Best for compliance',
         ctaLabel: 'Start this workflow',
         outcomeExample: 'Catch compliance gaps before your first shipment',
@@ -196,7 +196,7 @@ export const useCasesPageContent: UseCasesPageContent = {
   },
   snapshotPreview: {
     title: 'Snapshot preview',
-    subtitle: 'A 1 page preview of what you will receive in 1 business day',
+    subtitle: 'A 1 page preview of what you will receive in 1 minute',
     items: [
       {
         label: 'Landed cost range',
@@ -226,7 +226,7 @@ export const useCasesPageContent: UseCasesPageContent = {
     free: {
       title: 'Free snapshot',
       items: [
-        '1 business day delivery',
+        'Instant delivery',
         'Landed cost range and DDP drivers',
         'Compliance and AD/CVD screen',
         'Required docs checklist',
@@ -265,8 +265,8 @@ export const useCasesPageContent: UseCasesPageContent = {
     subtitle: 'Examples are directional and vary by category and volume',
     metrics: [
       {
-        label: 'Average cost clarity time',
-        value: '1 business day',
+        label: 'Average time to get a first snapshot',
+        value: '1 minute',
       },
       {
         label: 'Reduced surprises at customs',
@@ -326,11 +326,11 @@ export const useCasesPageContent: UseCasesPageContent = {
   },
   cta: {
     title: 'Ready to test your next import?',
-    body: 'Start with one product. Get a full landed cost and risk snapshot in 1 business day.',
+    body: 'Start with one product. Get a full landed cost and risk snapshot in 1 minute.',
     buttonLabel: 'Get free snapshot',
     buttonHref: '/chat',
     disclaimer: 'NexSupply is not a customs broker or legal advisor. Estimates are for directional planning only.',
-    helperText: 'We\'ll reply within 1 business day with next steps',
+    helperText: 'Most snapshots generate in under a minute. Complex products may take a bit longer.',
   },
 } as const;
 

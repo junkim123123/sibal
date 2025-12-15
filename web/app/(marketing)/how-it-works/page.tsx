@@ -26,7 +26,7 @@ export default async function HowItWorksPage() {
         className="bg-neutral-50 py-3 md:py-5 -mt-2"
         titleClassName="text-base md:text-lg lg:text-xl font-semibold"
       >
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6 max-w-5xl mx-auto">
           {journey.cards.map((card, idx) => {
             const Icon = card.icon;
             return (

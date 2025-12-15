@@ -23,16 +23,17 @@ export default async function HowItWorksPage() {
       <SectionLayout
         title={journey.title}
         subtitle={journey.subtitle}
-        className="bg-neutral-50 py-8 md:py-12 -mt-2"
+        className="bg-neutral-50 py-6 md:py-10 -mt-2"
+        titleClassName="text-xl md:text-2xl lg:text-3xl font-semibold"
       >
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
           {journey.cards.map((card, idx) => {
             const Icon = card.icon;
             return (
               <div
                 key={idx}
                 id={`step-${idx + 1}`}
-                className={`rounded-lg border p-3.5 shadow-sm h-full flex flex-col scroll-mt-24 ${
+                className={`rounded-lg border p-3 shadow-sm h-full flex flex-col scroll-mt-24 ${
                   idx === 2 
                     ? 'bg-blue-50/80 border-2 border-blue-400' 
                     : 'bg-white border-neutral-200'
@@ -66,7 +67,7 @@ export default async function HowItWorksPage() {
                     </h3>
                   </div>
                 </div>
-                <p className="text-xs text-neutral-600 leading-relaxed mb-2 flex-1">
+                <p className="text-xs text-neutral-600 leading-normal mb-2 flex-1">
                   {card.body.split(/(\d+)/g).map((part, i) => {
                     const isNumber = /^\d+$/.test(part);
                     return isNumber ? (
@@ -77,8 +78,8 @@ export default async function HowItWorksPage() {
                   })}
                 </p>
                 {card.deliverables && card.deliverables.length > 0 && (
-                  <div className="mt-auto pt-2 border-t border-neutral-200">
-                    <p className="text-xs font-semibold text-neutral-500 uppercase tracking-wider mb-1">
+                  <div className="mt-auto pt-1.5 border-t border-neutral-200">
+                    <p className="text-xs font-semibold text-neutral-500 uppercase tracking-wider mb-0.5">
                       Deliverables
                     </p>
                     <ul className="space-y-0.5">

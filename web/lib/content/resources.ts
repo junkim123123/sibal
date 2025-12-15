@@ -71,7 +71,7 @@ const featuredProjectsSection: FeaturedProjectsSection = {
       title: 'Strict QA for Don Quijote Japan',
       description: 'Met rigorous Japanese food safety standards to supply seasonal confectionery to Don Quijote retail chain.',
       tag: 'Japan Export / Food Safety',
-      result: 'Passed Japan food safety requirements',
+      result: 'Met Japan food safety requirements',
       country: 'JP',
       image: {
         src: '/images/projects/donquijote-marshmallow.png',

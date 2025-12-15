@@ -34,8 +34,7 @@ export function ReportPreviewCard() {
           <span className="text-xs font-semibold text-blue-900">GO</span>
         </div>
         <p className="text-sm text-neutral-700 leading-relaxed mt-2">
-          Project shows <span className="font-semibold text-neutral-900">strong viability</span> with manageable compliance requirements. 
-          Recommended to proceed with deposit for factory quotes.
+          Project shows strong viability with manageable compliance requirements. Recommended to proceed with deposit for factory quotes.
         </p>
       </div>
 
@@ -66,7 +65,7 @@ export function ReportPreviewCard() {
               <CheckCircle className="w-3 h-3 text-green-600" />
             </div>
             <div className="flex-1">
-              <span className="text-xs font-medium text-neutral-700">Compliance: </span>
+              <span className="text-xs font-medium text-neutral-700">Compliance </span>
               <span className="text-xs text-green-600 font-medium">Low risk</span>
               <p className="text-xs text-neutral-500 mt-0.5">Standard certifications required</p>
             </div>
@@ -76,7 +75,7 @@ export function ReportPreviewCard() {
               <AlertTriangle className="w-3 h-3 text-yellow-600" />
             </div>
             <div className="flex-1">
-              <span className="text-xs font-medium text-neutral-700">Duty: </span>
+              <span className="text-xs font-medium text-neutral-700">Duty </span>
               <span className="text-xs text-yellow-600 font-medium">Moderate</span>
               <p className="text-xs text-neutral-500 mt-0.5">~8.5% estimated duty rate</p>
             </div>
@@ -86,7 +85,7 @@ export function ReportPreviewCard() {
               <CheckCircle className="w-3 h-3 text-green-600" />
             </div>
             <div className="flex-1">
-              <span className="text-xs font-medium text-neutral-700">Supply Chain: </span>
+              <span className="text-xs font-medium text-neutral-700">Supply Chain </span>
               <span className="text-xs text-green-600 font-medium">Stable</span>
               <p className="text-xs text-neutral-500 mt-0.5">Multiple verified factory options</p>
             </div>
@@ -123,15 +122,15 @@ export function ReportPreviewCard() {
         <ul className="space-y-1.5 text-xs text-neutral-600">
           <li className="flex items-start gap-2">
             <span className="text-neutral-400 mt-0.5">•</span>
-            <span>MOQ: 1,000 units | Lead time: 45-60 days</span>
+            <span>MOQ  1,000 units  Lead time  45-60 days</span>
           </li>
           <li className="flex items-start gap-2">
             <span className="text-neutral-400 mt-0.5">•</span>
-            <span>Shipping: LCL from Yiwu to US West Coast</span>
+            <span>Shipping  LCL from Yiwu to US West Coast</span>
           </li>
           <li className="flex items-start gap-2">
             <span className="text-neutral-400 mt-0.5">•</span>
-            <span>Category: Consumer goods (snack category)</span>
+            <span>Category  Consumer goods  snack category</span>
           </li>
         </ul>
       </div>

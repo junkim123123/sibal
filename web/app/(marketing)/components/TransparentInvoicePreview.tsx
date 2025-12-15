@@ -52,7 +52,7 @@ export function TransparentInvoicePreview() {
                     Factory FOB
                   </p>
                   <p className="text-xs text-neutral-500 dark:text-neutral-400">
-                    Product cost (locked for 3 months)
+                    Product cost locked for 3 months
                   </p>
                 </div>
               </div>
@@ -72,7 +72,7 @@ export function TransparentInvoicePreview() {
                     Logistics
                   </p>
                   <p className="text-xs text-neutral-500 dark:text-neutral-400">
-                    At cost (pass-through)
+                    At cost pass-through
                   </p>
                 </div>
               </div>
@@ -92,7 +92,7 @@ export function TransparentInvoicePreview() {
                     Customs and Duties
                   </p>
                   <p className="text-xs text-neutral-500 dark:text-neutral-400">
-                    At cost (pass-through)
+                    At cost pass-through
                   </p>
                 </div>
               </div>
@@ -112,7 +112,7 @@ export function TransparentInvoicePreview() {
                     Packaging and Kitting
                   </p>
                   <p className="text-xs text-neutral-500 dark:text-neutral-400">
-                    At cost (pass-through)
+                    At cost pass-through
                   </p>
                 </div>
               </div>

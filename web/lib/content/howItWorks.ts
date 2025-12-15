@@ -75,7 +75,7 @@ export const howItWorksPageConfig: HowItWorksPageConfig = {
   hero: {
     title: 'How NexSupply Works',
     subtitle: 'AI-powered sourcing reports. Real factory quotes. Transparent pricing.',
-    description: 'Start with a free analysis. Deposit $49 only if you want real factory quotes and a manager. Fully refundable.',
+    description: 'Start with a free AI cost and risk snapshot. Deposit $49 only if you want a dedicated manager and real factory quotes. Fully refundable and credited if you proceed.',
     note: '',
     cta: {
       primary: {
@@ -86,7 +86,7 @@ export const howItWorksPageConfig: HowItWorksPageConfig = {
         label: 'Talk to a manager',
         href: '/chat',
       },
-      helperText: 'Deposit $49 only if you want real factory quotes and a manager. Fully refundable.',
+      helperText: 'No credit card required for the free snapshot.',
     },
     chips: [
       { text: 'Step 1: Project brief 10 minutes' },
@@ -119,7 +119,7 @@ export const howItWorksPageConfig: HowItWorksPageConfig = {
       },
       {
         title: 'Deposit $49 to Unlock Manager & Factory Quotes',
-        body: 'Deposit $49 to unlock manager and receive 3 factory quotes within 7 days.',
+        body: 'Deposit $49 to unlock a dedicated manager and receive 3 factory quote options within 7 days.',
         icon: Package,
         deliverables: [
           '3 factory quote options',
@@ -219,7 +219,7 @@ export const howItWorksPageConfig: HowItWorksPageConfig = {
       },
       {
         question: 'How long does the whole process take?',
-        answer: 'AI snapshot within 1 business day. Factory quotes within 7 days after deposit.',
+        answer: 'Brief takes 10 minutes. Snapshot within 1 business day. Factory quotes 7 days after deposit.',
       },
     ],
   },

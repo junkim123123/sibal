@@ -2,14 +2,14 @@
 
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import { ArrowRight, Brain, FileText, Package } from 'lucide-react';
+import { ArrowRight } from 'lucide-react';
 import { howItWorksPageConfig } from '@/lib/content/howItWorks';
 
 export default function HowItWorksHero() {
   const { hero } = howItWorksPageConfig;
 
   return (
-    <section aria-label="Hero" className="py-12 md:py-16 lg:py-20 bg-white relative overflow-hidden">
+    <section aria-label="Hero" className="py-16 md:py-20 bg-white relative overflow-hidden">
       {/* Subtle background pattern */}
       <div className="absolute inset-0 opacity-[0.02] pointer-events-none">
         <div className="absolute inset-0" style={{
@@ -50,29 +50,6 @@ export default function HowItWorksHero() {
               {hero.cta.helperText}
             </p>
           )}
-        </div>
-
-        {/* 3 Step Visual Stepper */}
-        <div className="mt-16 grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto">
-          {hero.chips?.map((chip, index) => {
-            const icons = [Brain, FileText, Package];
-            const Icon = icons[index] || Brain;
-            return (
-              <div key={index} className="relative">
-                {/* Connector line on desktop */}
-                {index < 2 && (
-                  <div className="hidden md:block absolute top-6 left-[calc(50%+3rem)] w-full h-0.5 bg-gradient-to-r from-blue-200 to-transparent" />
-                )}
-                <div className="bg-white border border-neutral-200 rounded-lg p-6 shadow-sm text-center h-full">
-                  <div className="w-12 h-12 rounded-full bg-blue-50 flex items-center justify-center mx-auto mb-4">
-                    <Icon className="w-6 h-6 text-blue-600" />
-                  </div>
-                  <div className="text-xs font-semibold text-blue-600 mb-2">Step {index + 1}</div>
-                  <p className="text-sm font-medium text-neutral-900 leading-relaxed">{chip.text}</p>
-                </div>
-              </div>
-            );
-          })}
         </div>
       </div>
     </section>

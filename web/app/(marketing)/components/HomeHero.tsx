@@ -20,40 +20,44 @@ export default function HomeHero({ page }: Props) {
   };
 
   return (
-    <section className="py-16 md:py-24 lg:py-28 bg-white dark:bg-gray-900">
+    <section className="py-12 md:py-16 lg:py-20 bg-white dark:bg-gray-900">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-center">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-start">
           {/* Left: Text Content */}
-          <div className="flex flex-col justify-center space-y-6">
+          <div className="flex flex-col space-y-5">
             {/* Badge */}
-            <div className="inline-flex items-center justify-center">
+            <div className="inline-flex items-center">
               <span className="inline-flex items-center px-4 py-1.5 rounded-full text-xs font-medium text-neutral-700 dark:text-neutral-300 bg-neutral-100 dark:bg-neutral-800 border border-neutral-200/50 dark:border-neutral-700/50">
                 {t.home.hero.badge}
               </span>
             </div>
 
             {/* Main Headline */}
-            <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold tracking-tight text-neutral-900 dark:text-white leading-[1.1]">
+            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight text-neutral-900 dark:text-white leading-tight max-w-2xl">
               {t.home.hero.title}{' '}
-              <span className="text-neutral-950 dark:text-white font-extrabold">{t.home.hero.titleHighlight}</span>
+              <span className="whitespace-nowrap">{t.home.hero.titleHighlight}</span>
             </h1>
 
             {/* Sub-headline */}
-            <p className="text-lg sm:text-xl md:text-2xl text-neutral-600 dark:text-neutral-300 leading-relaxed max-w-2xl">
-              {t.home.hero.subtitle.split(t.home.hero.subtitleHighlight1)[0]}
-              <span className="font-semibold text-neutral-900 dark:text-white">{t.home.hero.subtitleHighlight1}</span>
-              {t.home.hero.subtitle.split(t.home.hero.subtitleHighlight1)[1]?.split(t.home.hero.subtitleHighlight2)[0]}
-              <span className="font-semibold text-neutral-900 dark:text-white">{t.home.hero.subtitleHighlight2}</span>
-              {t.home.hero.subtitle.split(t.home.hero.subtitleHighlight2)[1]?.split(t.home.hero.subtitleHighlight3)[0]}
-              <span className="font-semibold text-neutral-900 dark:text-white">{t.home.hero.subtitleHighlight3}</span>
-              {t.home.hero.subtitle.split(t.home.hero.subtitleHighlight3)[1]}
+            <p className="text-base md:text-lg text-neutral-600 dark:text-neutral-300 leading-relaxed max-w-2xl">
+              {t.home.hero.subheadline}
             </p>
 
+            {/* Bullets */}
+            <ul className="space-y-2">
+              {t.home.hero.bullets.map((bullet, index) => (
+                <li key={index} className="flex items-start gap-2 text-sm md:text-base text-neutral-700 dark:text-neutral-300">
+                  <span className="text-blue-600 dark:text-blue-400 mt-1 flex-shrink-0">•</span>
+                  <span>{bullet}</span>
+                </li>
+              ))}
+            </ul>
+
             {/* CTA Buttons */}
-            <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center pt-2">
+            <div className="flex flex-col sm:flex-row gap-3 items-stretch sm:items-center pt-2">
               <Button
                 onClick={handleStartAnalysis}
-                className="inline-flex items-center gap-2 group bg-blue-600 hover:bg-blue-700 text-white font-semibold px-6 py-3 rounded-lg transition-colors"
+                className="inline-flex items-center justify-center gap-2 group bg-blue-600 hover:bg-blue-700 text-white font-semibold px-6 py-3 rounded-lg transition-colors w-full sm:w-auto"
               >
                 {t.home.hero.cta}
                 <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
@@ -61,7 +65,7 @@ export default function HomeHero({ page }: Props) {
               <Button
                 onClick={() => router.push('/chat')}
                 variant="outline"
-                className="inline-flex items-center gap-2 group border-2 border-neutral-300 hover:border-neutral-400 text-neutral-700 dark:text-neutral-300 hover:text-neutral-900 dark:hover:text-white font-semibold px-6 py-3 rounded-lg transition-colors"
+                className="inline-flex items-center justify-center gap-2 group border-2 border-neutral-300 hover:border-neutral-400 text-neutral-700 dark:text-neutral-300 hover:text-neutral-900 dark:hover:text-white font-semibold px-6 py-3 rounded-lg transition-colors w-full sm:w-auto"
               >
                 {t.home.hero.ctaSecondary}
               </Button>

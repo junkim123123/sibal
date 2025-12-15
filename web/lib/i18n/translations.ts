@@ -25,10 +25,8 @@ export interface Translations {
       badge: string;
       title: string;
       titleHighlight: string;
-      subtitle: string;
-      subtitleHighlight1: string;
-      subtitleHighlight2: string;
-      subtitleHighlight3: string;
+      subheadline: string;
+      bullets: string[];
       cta: string;
       ctaSecondary: string;
     };
@@ -345,12 +343,14 @@ export const translations: Record<Language, Translations> = {
         badge: 'Predictable Sourcing for Modern Brands',
         title: 'Stop Guessing.',
         titleHighlight: 'Start Sourcing with Confidence.',
-        subtitle: 'Get AI cost and risk snapshot within 1 business day. Review the numbers, then deposit $49 to unlock a dedicated manager and real factory quotes within 7 days. All logistics, customs, duties, and packaging costs are pass-through at cost with zero markup. Transparent 5% management fee on FOB.',
-        subtitleHighlight1: 'AI cost and risk snapshot within 1 business day',
-        subtitleHighlight2: 'real factory quotes within 7 days',
-        subtitleHighlight3: 'pass-through at cost with zero markup',
-        cta: 'Start Free Analysis',
-        ctaSecondary: 'Talk to a Manager ($49 deposit)',
+        subheadline: 'See factory cost, freight, duties, and compliance flags before you commit.',
+        bullets: [
+          'AI cost and risk snapshot in 1 business day',
+          'Unlock manager with $49 deposit',
+          '3 factory quotes within 7 days',
+        ],
+        cta: 'Get Free AI Snapshot',
+        ctaSecondary: 'Unlock Manager and Quotes ($49 deposit)',
       },
       benefits: {
         title: 'Why importers work with NexSupply',
@@ -760,12 +760,14 @@ export const translations: Record<Language, Translations> = {
         badge: '현대 브랜드를 위한 예측 가능한 소싱',
         title: '추측하지 마세요.',
         titleHighlight: '자신 있게 소싱을 시작하세요.',
-        subtitle: 'AI 소싱 인텔리전스와 자체 패킹 인프라를 결합하여 FBA 판매자와 소매업체가 완전한 명확성과 통제력을 가지고 수입할 수 있도록 돕습니다.',
-        subtitleHighlight1: 'AI 소싱 인텔리전스',
-        subtitleHighlight2: '자체 패킹 인프라',
-        subtitleHighlight3: '완전한 명확성과 통제력',
-        cta: '무료 분석 시작하기',
-        ctaSecondary: '작동 방식 보기',
+        subheadline: '커밋하기 전에 공장 비용, 운송비, 관세, 규정 준수 플래그를 확인하세요.',
+        bullets: [
+          '1 영업일 내 AI 비용 및 리스크 스냅샷',
+          '$49 디파짓으로 매니저 잠금 해제',
+          '7일 내 3개 공장 견적',
+        ],
+        cta: '무료 AI 스냅샷 받기',
+        ctaSecondary: '매니저 및 견적 잠금 해제 ($49 디파짓)',
       },
       benefits: {
         title: '수입업체가 NexSupply와 협력하는 이유',

@@ -26,6 +26,7 @@ const EXCLUDE_DIRS = [
   'archive',
   'tmp',
   'logs',
+  'docs', // 문서 파일은 예시나 설명이 포함될 수 있으므로 제외
 ];
 
 // 검사할 파일 확장자
@@ -125,6 +126,11 @@ function checkFile(filePath) {
     /passed_quantity/i, // 데이터베이스 필드명
     /passed_quantity:/i, // 객체 속성명
     /\.passed/i, // 객체 속성 접근
+    /passed to/i, // 일반 동사 "passed to"
+    /successfully passed/i, // 일반 동사 "successfully passed"
+    /have passed/i, // 일반 동사 "have passed"
+    /has passed/i, // 일반 동사 "has passed"
+    /time.*passed/i, // 시간 경과 표현
   ];
 
   for (const forbidden of FORBIDDEN_STRINGS) {

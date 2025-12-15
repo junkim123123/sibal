@@ -111,7 +111,7 @@ export async function POST(req: Request) {
     }
     
     // 보안 검증 통과 후에만 JSON 파싱 진행
-    console.log('[Webhook] Security verification passed');
+    console.log('[Webhook] Security verification completed');
     
     // ============================================================================
     // [2. 이벤트 데이터 파싱 및 검증]

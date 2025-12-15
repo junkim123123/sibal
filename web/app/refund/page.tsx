@@ -43,7 +43,7 @@ export default function RefundPolicyPage() {
               <ul className="list-disc list-inside text-neutral-700 space-y-2">
                 <li><strong>Manager chat has been initiated</strong> - Once you start a conversation with a manager, the service is considered delivered and non-refundable</li>
                 <li><strong>Final quote has been sent</strong> - If a manager has sent you a final quote, the service is considered completed</li>
-                <li><strong>7 days have passed</strong> since purchase</li>
+                <li><strong>7 days have elapsed</strong> since purchase</li>
                 <li>You have received the AI analysis results and the service has been delivered as described</li>
                 <li>The refund request is due to a change of mind or buyer's remorse after service delivery</li>
               </ul>

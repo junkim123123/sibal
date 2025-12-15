@@ -153,7 +153,7 @@ export function SmartQueue({ onProjectSelect, selectedProjectId }: SmartQueuePro
 
   const getStatusBadge = (status: string, unreadCount: number, lastMessageAt: string | null, createdAt?: string) => {
     // Priority badges (New, Action Required)
-    // Check if project is new (created within 24 hours and no messages yet)
+    // Check if project is new (created within 1 business day and no messages yet)
     if (createdAt) {
       const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
       const isNew = new Date(createdAt) > oneDayAgo && (!lastMessageAt || !unreadCount);
@@ -181,7 +181,7 @@ export function SmartQueue({ onProjectSelect, selectedProjectId }: SmartQueuePro
       }
     }
     
-    // Check if project is very new (created within 24 hours)
+    // Check if project is very new (created within 1 business day)
     const statusConfig: Record<string, { label: string; color: string }> = {
       'Negotiating': { label: 'Negotiating', color: 'bg-yellow-100 text-yellow-700 border-yellow-200' },
       'Deposit Paid': { label: 'Deposit Paid', color: 'bg-green-100 text-green-700 border-green-200' },

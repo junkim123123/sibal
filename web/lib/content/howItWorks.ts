@@ -114,7 +114,7 @@ export const howItWorksPageConfig: HowItWorksPageConfig = {
         deliverables: [
           'DDP per unit breakdown',
           'AD CVD and compliance flags',
-          'Go Pause Drop recommendation',
+          'Go, Hold, Pass recommendation',
         ],
       },
       {
@@ -185,7 +185,7 @@ export const howItWorksPageConfig: HowItWorksPageConfig = {
         title: 'Analysis and planning',
         items: [
           'Free snapshot in 1 business day.',
-          'No subscription. No commitment. "Go" 사인이 나올 때까지 결제 안 해도 됩니다.',
+          'No subscription. No commitment. No payment until you see a "Go" signal.',
         ],
       },
       {

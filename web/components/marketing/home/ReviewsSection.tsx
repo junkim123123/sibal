@@ -48,7 +48,7 @@ export function ReviewsSection({ section }: { section: HomeReviewsSection }) {
 
   return (
     <section className="py-16 md:py-24 border-t border-neutral-200 dark:border-gray-700 bg-neutral-50 dark:bg-neutral-900">
-      <div className="mx-auto max-w-6xl px-4 sm:px-6">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="flex flex-col gap-8 md:flex-row md:items-end md:justify-between mb-10">
           <div className="max-w-xl space-y-3">
             {t.home.reviews.eyebrow && (

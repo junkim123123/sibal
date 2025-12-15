@@ -26,7 +26,7 @@ export default function HomeHero({ page }: Props) {
         backgroundImage: `radial-gradient(circle at 2px 2px, currentColor 1px, transparent 0)`,
         backgroundSize: '32px 32px',
       }} />
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 relative z-10">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 relative z-10 pb-8">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-start">
           {/* Left: Text Content */}
           <div className="flex flex-col space-y-5 min-w-0">
@@ -91,7 +91,7 @@ export default function HomeHero({ page }: Props) {
         </div>
 
         {/* 3 Step Micro Section */}
-        <div className="mt-16 pt-16 border-t border-neutral-200">
+        <div className="mt-12 pt-12 border-t border-neutral-200 dark:border-neutral-700">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto">
             {/* Step 1 */}
             <div className="flex items-start gap-4 p-4 rounded-lg hover:bg-neutral-50 dark:hover:bg-neutral-800/50 transition-colors">

@@ -198,7 +198,7 @@ export default async function UseCasesPage() {
               {socialProof.title}
             </h2>
             <p className="text-base text-neutral-600 mb-4">
-              {socialProof.rating.badge} {socialProof.rating.value} {socialProof.rating.label}
+              {socialProof.rating.value} {socialProof.rating.label}
             </p>
           </div>
           {socialProof.metrics && (
@@ -208,7 +208,7 @@ export default async function UseCasesPage() {
                   key={index}
                   className="bg-white border border-neutral-200 rounded-lg p-6 shadow-sm"
                 >
-                  <div className="text-5xl md:text-6xl font-bold text-neutral-900 mb-2">
+                  <div className="text-3xl md:text-4xl font-bold text-neutral-900 mb-2">
                     {metric.value}
                   </div>
                   <div className="text-sm font-medium text-neutral-700 mb-1">
@@ -280,7 +280,7 @@ export default async function UseCasesPage() {
                 type="button"
                 className="inline-flex items-center justify-center font-semibold transition-all rounded-lg px-6 md:px-8 py-3 md:py-3.5 w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white"
               >
-                Get free snapshot
+                Get a free snapshot
               </button>
             </Link>
             <Link href="/chat" className="w-full sm:w-auto">

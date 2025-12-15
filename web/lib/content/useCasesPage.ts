@@ -131,17 +131,17 @@ export interface UseCasesPageContent {
 export const useCasesPageContent: UseCasesPageContent = {
   hero: {
     badge: 'Predictable Sourcing for Modern Brands',
-    title: 'De-risk your next import in 1 minute',
-    body: 'See landed cost and compliance flags instantly. Upgrade to real factory quotes with a refundable $49 deposit.',
+    title: 'De-risk your next import in under a minute',
+    body: 'Get an instant landed cost estimate, duty range, and compliance flags. Upgrade for real factory quotes with a refundable $49 deposit.',
     ctaPrimary: {
-      label: 'Get free snapshot',
+      label: 'Get a free snapshot',
       href: '/chat',
     },
     ctaSecondary: {
       label: 'Talk to a manager',
       href: '/chat',
     },
-    ctaHelperText: 'Instant snapshot. Deposit applies only when outreach starts. Credited if you proceed.',
+    ctaHelperText: 'Most snapshots generate in under a minute. Deposit is refundable and credited if you proceed.',
   },
   threeSteps: {
     items: [
@@ -166,38 +166,38 @@ export const useCasesPageContent: UseCasesPageContent = {
       {
         id: 'launch-new-product',
         title: 'Launch a new FBA brand',
-        summary: 'Check margin and duty risk in 1 minute before your first PO.',
+        summary: 'Check margin and duty risk before your first PO.',
         footnote: 'Typical users: New FBA sellers and early-stage brands',
-        deliverables: 'Delivered cost range\nHS code guess and duty range\nCompliance and AD/CVD flags\nRequired docs checklist\nGo or no go recommendation',
+        deliverables: 'Landed cost range and key drivers\nDuty range and HS code guess\nCompliance flags and required docs\nGo or no-go recommendation',
         badge: 'Best for first order',
         ctaLabel: 'Start this workflow',
-        outcomeExample: 'Typical margin check completed in under a minute',
+        outcomeExample: 'Typical turnaround under 1 minute',
       },
       {
         id: 're-source-existing-sku',
         title: 'Re-source an existing SKU',
-        summary: 'Compare your current supplier to alternatives side by side in 1 minute.',
+        summary: 'Compare your current supplier against alternatives.',
         footnote: 'Typical users: Established sellers optimizing margins',
-        deliverables: 'Side by side landed cost\nSupplier tradeoffs\nRisk flags and mitigations\nSavings estimate assumptions',
+        deliverables: 'Side by side landed cost estimate\nSupplier tradeoffs and risk flags\nSavings estimate with assumptions\nNext steps and sample plan',
         badge: 'Best for cost down',
         ctaLabel: 'Start this workflow',
-        outcomeExample: 'Common savings range 5 to 15 percent with supplier switch',
+        outcomeExample: 'Typical savings 5 to 15 percent',
       },
       {
         id: 'test-higher-risk-category',
         title: 'Test a higher risk category',
-        summary: 'Screen AD/CVD and required docs in 1 minute before you import.',
+        summary: 'Screen AD CVD and document requirements early.',
         footnote: 'Typical users: Brands entering regulated categories',
-        deliverables: 'AD/CVD risk screen and scope\nRequired documents checklist\nMitigation steps before you place a PO',
+        deliverables: 'AD CVD screen with scope notes\nRequired documents checklist\nMitigation steps before you place a PO\nFlags that trigger manual review',
         badge: 'Best for compliance',
         ctaLabel: 'Start this workflow',
-        outcomeExample: 'Catch compliance gaps before your first shipment',
+        outcomeExample: 'Catch gaps before your first shipment',
       },
     ],
   },
   snapshotPreview: {
     title: 'Snapshot preview',
-    subtitle: 'A one page preview of what you will receive in under 1 minute.',
+    subtitle: 'A one page report you get instantly.',
     items: [
       {
         label: 'Landed cost range',
@@ -257,11 +257,11 @@ export const useCasesPageContent: UseCasesPageContent = {
     },
   },
   socialProof: {
-    title: 'Results from recent pilot projects',
+    title: 'Results from pilot projects',
     rating: {
       badge: 'Pilot users',
       value: '4.6 out of 5',
-      label: 'based on 50 plus pilot projects',
+      label: 'from 50 plus pilots',
     },
     subtitle: 'Examples vary by category and volume.',
     metrics: [
@@ -273,7 +273,7 @@ export const useCasesPageContent: UseCasesPageContent = {
       {
         label: 'Fewer customs surprises',
         value: 'Fewer holds',
-        subtitle: 'Catch doc gaps early',
+        subtitle: 'Catch doc gaps before customs',
       },
       {
         label: 'Typical savings',
@@ -304,11 +304,11 @@ export const useCasesPageContent: UseCasesPageContent = {
     items: [
       {
         title: 'Transparent pricing',
-        body: 'Pass through at cost. 5 percent fee on FOB only.',
+        body: 'Pass through at cost plus a 5 percent FOB fee.',
       },
       {
         title: 'Real quotes, fast',
-        body: '3 factory quotes within 7 days after deposit.',
+        body: 'Three factory quotes within 7 days after deposit.',
       },
       {
         title: 'Price lock',
@@ -316,7 +316,7 @@ export const useCasesPageContent: UseCasesPageContent = {
       },
       {
         title: 'Risk controls',
-        body: 'Compliance and AD/CVD screening before you commit.',
+        body: 'Compliance and AD CVD screening before you commit.',
       },
       {
         title: 'On the ground QC',
@@ -324,17 +324,17 @@ export const useCasesPageContent: UseCasesPageContent = {
       },
       {
         title: 'Execution support',
-        body: 'Packaging, labeling, kitting, and forwarding billed at cost.',
+        body: 'Packaging, labeling, kitting, and forwarding at cost.',
       },
     ],
   },
   cta: {
     title: 'Ready to test your next import?',
-    body: 'Start with one product. Get a landed cost and risk snapshot in under 1 minute.',
-    buttonLabel: 'Get free snapshot',
+    body: 'Start with one product and get a snapshot in under a minute.',
+    buttonLabel: 'Get a free snapshot',
     buttonHref: '/chat',
-    disclaimer: 'NexSupply is not a customs broker or legal advisor. Estimates are for directional planning only.',
-    helperText: 'Most snapshots generate in under a minute. Complex products may take a bit longer.',
+    disclaimer: 'NexSupply is not a customs broker or law firm. Estimates are directional only.',
+    helperText: 'Complex products may take a bit longer.',
   },
 } as const;
 

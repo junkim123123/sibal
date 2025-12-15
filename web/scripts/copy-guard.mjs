@@ -119,10 +119,30 @@ function checkFile(filePath) {
   const content = readFileSync(filePath, 'utf-8');
   const issues = [];
 
+  // 제외할 컨텍스트 패턴 (제품 사양, 데이터 필드명 등)
+  const excludePatterns = [
+    /keeps cold for 24 hours/i, // 제품 성능 테스트 설명
+    /passed_quantity/i, // 데이터베이스 필드명
+    /passed_quantity:/i, // 객체 속성명
+    /\.passed/i, // 객체 속성 접근
+  ];
+
   for (const forbidden of FORBIDDEN_STRINGS) {
     const matches = content.matchAll(new RegExp(forbidden.pattern, 'gi'));
     
     for (const match of matches) {
+      // 제외 패턴 확인
+      const shouldExclude = excludePatterns.some(pattern => {
+        const contextStart = Math.max(0, match.index - 50);
+        const contextEnd = Math.min(content.length, match.index + match[0].length + 50);
+        const context = content.substring(contextStart, contextEnd);
+        return pattern.test(context);
+      });
+
+      if (shouldExclude) {
+        continue;
+      }
+
       const lineNumber = content.substring(0, match.index).split('\n').length;
       const line = content.split('\n')[lineNumber - 1]?.trim() || '';
       

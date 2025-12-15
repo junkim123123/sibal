@@ -406,7 +406,7 @@ export function ManagerChat({
       return;
     }
 
-    const welcomeMessage = "Hello! Thank you for contacting NexSupply. I'll review your project details and respond within 24 hours. Please wait a moment.";
+    const welcomeMessage = "Hello! Thank you for contacting NexSupply. I'll review your project details and respond within 1 business day. Please wait a moment.";
 
     try {
       console.log('[ManagerChat] Sending automatic welcome message as manager');

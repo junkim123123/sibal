@@ -48,7 +48,7 @@ export function PortfolioMarquee() {
               <div className="relative w-full h-full grayscale group-hover:grayscale-0 transition-all duration-300">
                 <Image
                   src={image}
-                  alt={`Portfolio item ${index + 1}`}
+                  alt={`Project ${index + 1}`}
                   fill
                   className="object-cover"
                   sizes="96px"
@@ -69,7 +69,7 @@ export function PortfolioMarquee() {
               <div className="relative w-full h-full grayscale group-hover:grayscale-0 transition-all duration-300">
                 <Image
                   src={image}
-                  alt={`Portfolio item ${index + 1}`}
+                  alt={`Project ${index + 1}`}
                   fill
                   className="object-cover"
                   sizes="96px"

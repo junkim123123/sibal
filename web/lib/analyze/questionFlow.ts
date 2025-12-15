@@ -262,7 +262,7 @@ export const QUESTION_FLOW: QuestionNode[] = [
   {
     id: 'q14',
     step: 15,
-    question: 'Based on this analysis, would you be open to a short call with the NexSupply team in the next 24 hours to turn this into a real sourcing project?',
+    question: 'Based on this analysis, would you be open to a short call with the NexSupply team within 1 business day to turn this into a real sourcing project?',
     inputType: 'singleChoice',
     choices: [
       { label: 'Yes, let us schedule a call', value: 'yes_call' },

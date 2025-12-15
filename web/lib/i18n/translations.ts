@@ -436,7 +436,7 @@ export const translations: Record<Language, Translations> = {
             author: 'Brand Manager, Food & Beverage',
           },
         ],
-        verifiedShipment: 'Verified Shipment',
+        verifiedShipment: 'Completed Project',
       },
       reviews: {
         eyebrow: 'Showing featured reviews',
@@ -573,7 +573,7 @@ export const translations: Record<Language, Translations> = {
         viewEstimates: 'View estimates',
         messageAgent: 'Message Agent',
         agentReviewing: 'Agent is reviewing your request',
-        managerWillBeAssigned: '⏰ Manager will be assigned within 24 hours',
+        managerWillBeAssigned: '⏰ Manager will be assigned within 1 business day',
         startChattingWithAgent: 'Start chatting with your agent to discuss requirements',
         viewQuoteApprove: 'View Quote & Approve',
         unlockQuote: 'Unlock Quote - $49',
@@ -810,7 +810,7 @@ export const translations: Record<Language, Translations> = {
       socialProof: {
         title: '수입업체가 NexSupply에 대해 말하는 것',
         rating: {
-          value: '4.8 / 5',
+          value: '4.6 / 5',
           label: '검증된 소싱 프로젝트에서',
           badge: '검증된 소싱 프로젝트',
         },

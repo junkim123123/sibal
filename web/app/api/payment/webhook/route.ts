@@ -451,8 +451,8 @@ export async function POST(req: Request) {
                   sender_id: userId, // 시스템 메시지이지만 sender_id는 필수이므로 사용자 ID 사용
                   role: 'manager', // 시스템 메시지는 manager 역할로 표시
                   content: assignedManagerId 
-                    ? 'System: Payment confirmed! ✅ Your expert manager has been assigned. Please upload your product details/files here. Expect a response within 24 hours.'
-                    : 'System: Payment confirmed! ✅ We are assigning your expert manager. Please upload your product details/files here. Expect a response within 24 hours.',
+                    ? 'System: Payment confirmed! ✅ Your expert manager has been assigned. Please upload your product details/files here. Expect a response within 1 business day.'
+                    : 'System: Payment confirmed! ✅ We are assigning your expert manager. Please upload your product details/files here. Expect a response within 1 business day.',
                 });
 
               if (messageError) {

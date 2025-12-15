@@ -666,7 +666,7 @@ function ClientChatContent() {
             <p className="text-[10px] sm:text-xs text-gray-500">
               {project?.manager_id 
                 ? `Connect with your Dedicated Expert via WhatsApp` 
-                : 'Your Dedicated Expert will be assigned within 24 hours.'
+                : 'Your Dedicated Expert will be assigned within 1 business day.'
               }
             </p>
           </div>

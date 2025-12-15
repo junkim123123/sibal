@@ -1719,7 +1719,7 @@ function ShipmentsList({ shipments, onPaymentComplete, t }: { shipments: any[], 
                   )}
                   {shipment.awaitingManager && (
                     <p className="text-xs text-blue-600 font-medium mt-1">
-                      ⏰ Manager will be assigned within 24 hours
+                      ⏰ Manager will be assigned within 1 business day
                     </p>
                   )}
                   {quoteStatus === 'preparing' && (

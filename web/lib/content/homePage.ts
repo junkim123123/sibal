@@ -278,7 +278,7 @@ export const homePageConfig: HomePageConfig = {
         id: 'wholesale',
         headline: 'Better than our old sourcing agent',
         quote:
-          'We used to work with a sourcing agent who took weeks to get quotes. NexSupply gave us the same level of detail in 24 hours. The AI analysis caught things our agent missed.',
+          'We used to work with a sourcing agent who took weeks to get quotes. NexSupply gave us the same level of detail within 1 business day. The AI analysis caught things our agent missed.',
         name: 'David Thompson',
         role: 'Wholesale distributor',
         date: 'November 10, 2025',

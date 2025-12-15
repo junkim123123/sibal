@@ -98,7 +98,7 @@ export const useCasesPageContent: UseCasesPageContent = {
       label: 'Talk to a Manager',
       href: '/chat',
     },
-    ctaHelperText: '$49 deposit credited to first order, refundable if you do not proceed.',
+    ctaHelperText: '$49 deposit is refundable until outreach begins. Credited to your first order if you proceed.',
   },
   threeSteps: {
     items: [
@@ -124,29 +124,29 @@ export const useCasesPageContent: UseCasesPageContent = {
         title: 'Launch a new FBA brand',
         summary:
           'Validate margin and duty risk before you launch your first private label product.',
-        footnote: 'Typical users  CPG brands and FBA aggregators',
+        footnote: 'Typical users: CPG brands and FBA aggregators',
       },
       {
         id: 're-source-existing-sku',
         title: 'Re-source an existing SKU',
         summary: 'Compare your current factory to vetted alternatives on landed cost and risk. Many projects see significant cost savings when switching to optimized suppliers.',
-        footnote: 'Typical users  Established sellers optimizing margins',
+        footnote: 'Typical users: Established sellers optimizing margins',
       },
       {
         id: 'test-higher-risk-category',
         title: 'Test a higher-risk category',
         summary:
           'Get an AD or CVD and compliance check before you import into a new category.',
-        footnote: 'Typical users  Brands entering regulated categories',
+        footnote: 'Typical users: Brands entering regulated categories',
       },
     ],
   },
   socialProof: {
     title: 'See what importers are saying about NexSupply',
     rating: {
-      badge: 'Internal Pilot Users',
+      badge: 'Pilot users',
       value: '4.6 / 5',
-      label: 'from internal pilot users',
+      label: 'based on pilot projects',
     },
     subtitle: 'Faster landed-cost clarity, fewer surprises at customs.',
     quotes: [
@@ -196,7 +196,7 @@ export const useCasesPageContent: UseCasesPageContent = {
   cta: {
     title: 'Ready to test your next import?',
     body: 'Start with one product. We will run a full landed cost and risk review, usually within 1 business day.',
-    buttonLabel: 'Calculate My Profit',
+    buttonLabel: 'Get free snapshot',
     buttonHref: '/chat',
     disclaimer: 'NexSupply is not a customs broker or legal advisor. Estimates are for directional planning only.',
   },

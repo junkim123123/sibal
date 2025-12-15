@@ -15,13 +15,13 @@ export default async function UseCasesPage() {
   return (
     <div className="bg-white">
       {/* Hero Section - Use Cases Specific */}
-      <section aria-label="Hero" className="py-12 md:py-16 lg:py-20 bg-white">
+      <section aria-label="Hero" className="py-10 md:py-12 lg:py-16 bg-white">
         <div className="mx-auto max-w-6xl px-4 md:px-6">
           <div className="text-center max-w-3xl mx-auto">
             <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold tracking-tight text-neutral-900 leading-tight mb-6">
               Common projects we support
             </h1>
-            <p className="text-base md:text-lg text-neutral-600 leading-relaxed mb-8">
+            <p className="text-base md:text-lg text-neutral-600 leading-relaxed mb-6">
               From launching new FBA brands to re-sourcing existing SKUs, see how teams use NexSupply to validate margin and reduce risk before committing inventory.
             </p>
             <div className="flex flex-col sm:flex-row gap-3 justify-center items-center">
@@ -58,15 +58,15 @@ export default async function UseCasesPage() {
             {commonProjects.items.map((project) => (
               <div
                 key={project.id}
-                className="bg-white border border-neutral-200 rounded-2xl p-5 sm:p-6 shadow-sm hover:shadow-md transition-shadow"
+                className="bg-white border border-neutral-200 rounded-2xl p-5 sm:p-6 shadow-sm hover:shadow-md transition-shadow h-full flex flex-col"
               >
                 <h3 className="text-base sm:text-lg font-semibold text-neutral-900 mb-3">
                   {project.title}
                 </h3>
-                <p className="text-sm text-neutral-600 leading-relaxed mb-4">
+                <p className="text-sm text-neutral-600 leading-relaxed mb-3 flex-1">
                   {project.summary}
                 </p>
-                <p className="text-xs text-neutral-500">
+                <p className="text-[11px] text-neutral-400 mt-auto">
                   {project.footnote}
                 </p>
               </div>
@@ -169,18 +169,23 @@ export default async function UseCasesPage() {
           <p className="mt-4 text-sm sm:text-base text-neutral-200 leading-relaxed max-w-2xl mx-auto">
             {cta.body}
           </p>
-          <div className="mt-8">
-            <Link href={cta.buttonHref}>
+          <div className="mt-8 flex flex-col sm:flex-row gap-3 justify-center items-center">
+            <Link href={cta.buttonHref} className="w-full sm:w-auto">
               <Button
-                className="rounded-lg px-6 md:px-8 py-3 md:py-3.5 bg-white text-neutral-900 hover:bg-neutral-100"
+                className="rounded-lg px-6 md:px-8 py-3 md:py-3.5 bg-white text-neutral-900 hover:bg-neutral-100 w-full sm:w-auto"
               >
                 {cta.buttonLabel}
               </Button>
             </Link>
+            <Link href="/chat" className="w-full sm:w-auto">
+              <Button
+                variant="outline"
+                className="rounded-lg px-6 md:px-8 py-3 md:py-3.5 border-2 border-neutral-400 text-white hover:bg-neutral-800 w-full sm:w-auto"
+              >
+                Talk to a manager
+              </Button>
+            </Link>
           </div>
-          <p className="mt-8 text-xs text-neutral-400 text-center max-w-2xl mx-auto">
-            {cta.disclaimer}
-          </p>
         </div>
       </section>
     </div>

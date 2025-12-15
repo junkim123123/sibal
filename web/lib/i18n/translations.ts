@@ -129,6 +129,13 @@ export interface Translations {
     disclaimer: string;
     mostPopular: string;
     sslSecure: string;
+    faq?: {
+      title: string;
+      items: Array<{
+        question: string;
+        answer: string;
+      }>;
+    };
   };
   dashboard: {
     greeting: string;
@@ -474,9 +481,9 @@ export const translations: Record<Language, Translations> = {
           price: '$49',
           pricePeriod: ' Deposit',
           features: [
-            'Deposit is 100 percent credited to your first order',
-            'Real factory quotes within 7 days',
-            'Sample Consolidation',
+            'Reserve your sourcing expert with a 49 USD deposit. This activates your project and prioritizes quoting.',
+            'Deliverables in 7 business days include 2 to 3 verified factory quotes, MOQ, lead time, and key compliance flags.',
+            'Your deposit is applied as credit to your first invoice when you place an order.',
             'Dedicated Sourcing Expert assigned',
             'Supplier Background Check',
           ],
@@ -489,7 +496,8 @@ export const translations: Record<Language, Translations> = {
           pricePeriod: ' Service Fee',
           features: [
             '5% execution fee covers: Production management and QC coordination',
-            '5% execution fee does NOT cover: Packaging, labeling, and kitting costs (quoted separately as pass-through line items)',
+            'Service fee is calculated on FOB order value. A minimum service fee may apply.',
+            'Packaging, labeling, and kitting are quoted separately as pass through items.',
             'DDP Logistics Coordination',
             'Net-30 Payment Terms (Qualified)',
           ],
@@ -501,7 +509,7 @@ export const translations: Record<Language, Translations> = {
         steps: [
           {
             title: 'Place Deposit',
-            description: 'Confirm your seriousness with a $49 deposit. This activates your dedicated team.',
+            description: 'Reserve your sourcing expert with a 49 USD deposit. This activates your project and prioritizes quoting.',
           },
           {
             title: 'Receive Quotes',
@@ -509,7 +517,28 @@ export const translations: Record<Language, Translations> = {
           },
           {
             title: '100% Credited to Your First Order',
-            description: 'Deposit is 100 percent credited to your first order. You lose nothing.',
+            description: 'Your deposit is applied as credit to your first invoice when you place an order.',
+          },
+        ],
+      },
+      faq: {
+        title: 'Common Questions',
+        items: [
+          {
+            question: 'What is the 49 USD deposit for',
+            answer: 'The deposit reserves your dedicated sourcing expert and activates your project. It prioritizes factory quoting and ensures you receive verified quotes within 7 business days.',
+          },
+          {
+            question: 'Is the deposit refundable',
+            answer: 'Deposit policies may vary by project. Please contact our support team to discuss your specific situation.',
+          },
+          {
+            question: 'What does Flat 5 percent include',
+            answer: 'The 5% service fee covers production management and QC coordination. It is calculated on FOB order value. Packaging, labeling, and kitting are quoted separately as pass through items.',
+          },
+          {
+            question: 'What does Net 30 qualified mean',
+            answer: 'Net 30 payment terms allow you to pay invoices within 30 days of delivery. Qualification is based on credit history and order volume. Contact sales to learn more.',
           },
         ],
       },

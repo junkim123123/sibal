@@ -32,7 +32,7 @@ export default async function UseCasesPage() {
               href="#projects"
               className="text-sm text-neutral-600 hover:text-neutral-900 transition-colors"
             >
-              Find Your Strategy
+              Find your path
             </Link>
           </div>
           <div className="mt-12 border-t border-neutral-200"></div>
@@ -42,11 +42,11 @@ export default async function UseCasesPage() {
       {/* Who NexSupply helps - Segments */}
       <section aria-label="Who NexSupply helps" className="py-16 sm:py-20 bg-white">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h2 className="text-2xl sm:text-3xl font-semibold text-center text-neutral-900">
-            Tailored Sourcing Engines for Every Scale
+          <h2 className="text-2xl sm:text-3xl font-semibold text-center text-neutral-900 mb-3">
+            Built for the way you buy
           </h2>
-          <p className="mt-3 text-sm sm:text-base text-neutral-600 text-center max-w-2xl mx-auto">
-            NexSupply works for Amazon FBA sellers, DTC brands, offline buyers, and trading companies.
+          <p className="text-sm sm:text-base text-neutral-600 text-center max-w-2xl mx-auto">
+            Choose your workflow. Get a cost and risk snapshot built for your channel.
           </p>
           <div className="mt-10 grid gap-6 lg:grid-cols-2">
             {segments.map((segment) => {
@@ -72,18 +72,26 @@ export default async function UseCasesPage() {
 
                     {/* Right column */}
                     <div>
-                      <p className="text-xs font-semibold tracking-wide text-neutral-500 uppercase mb-3">
-                        Your Edge
-                      </p>
-                      {segment.decisions && segment.decisions.length > 0 && (
+                      {segment.bullets && segment.bullets.length > 0 && (
                         <ul className="space-y-2">
-                          {segment.decisions.map((decision, i) => (
+                          {segment.bullets.map((bullet, i) => (
                             <li key={i} className="flex items-start gap-2">
                               <div className="w-1.5 h-1.5 rounded-full bg-neutral-900 mt-2 flex-shrink-0" />
-                              <span className="text-sm text-neutral-600 leading-relaxed">{decision}</span>
+                              <span className="text-sm text-neutral-600 leading-relaxed">{bullet}</span>
                             </li>
                           ))}
                         </ul>
+                      )}
+                      {segment.outputChips && segment.outputChips.length > 0 && (
+                        <div className="mt-4 pt-4 border-t border-neutral-200">
+                          <div className="flex flex-wrap gap-2">
+                            {segment.outputChips.map((chip, i) => (
+                              <span key={i} className="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-medium bg-blue-50 text-blue-700 border border-blue-200">
+                                {chip}
+                              </span>
+                            ))}
+                          </div>
+                        </div>
                       )}
                     </div>
                   </div>
@@ -92,7 +100,7 @@ export default async function UseCasesPage() {
                       <Button
                         className="w-full bg-blue-600 hover:bg-blue-700 text-white rounded-lg px-4 py-2 text-sm font-medium"
                       >
-                        Get an analysis
+                        Choose this path
                       </Button>
                     </Link>
                   </div>
@@ -131,14 +139,15 @@ export default async function UseCasesPage() {
                 <p className="mt-3 text-xs sm:text-sm text-neutral-600 leading-relaxed">
                   {project.summary}
                 </p>
+                {project.decisionLine && (
+                  <p className="mt-4 text-xs font-semibold text-neutral-900">
+                    {project.decisionLine}
+                  </p>
+                )}
                 <div className="mt-4 pt-3 border-t border-neutral-100">
-                  <div className="text-[10px] sm:text-xs text-neutral-500 flex flex-wrap gap-x-4 gap-y-1">
-                    <span>
-                      <span className="font-medium">Scope:</span> {project.scope}
-                    </span>
-                    <span>
-                      <span className="font-medium">Timeline:</span> {project.timeline}
-                    </span>
+                  <div className="text-[10px] sm:text-xs text-neutral-500 space-y-1">
+                    <p>{project.scope}</p>
+                    <p>{project.timeline}</p>
                   </div>
                 </div>
               </div>
@@ -287,7 +296,7 @@ export default async function UseCasesPage() {
               </p>
             )}
           </div>
-          <div className="mt-8">
+          <div className="mt-8 flex flex-col items-center gap-4">
             <Link href={cta.ctaHref}>
               <Button
                 className="rounded-lg px-6 md:px-8 py-3 md:py-3.5 bg-white text-neutral-900 hover:bg-neutral-100"
@@ -295,7 +304,16 @@ export default async function UseCasesPage() {
                 {cta.ctaLabel}
               </Button>
             </Link>
+            <Link
+              href="/resources"
+              className="text-sm text-neutral-300 hover:text-neutral-100 transition-colors"
+            >
+              See sample outputs
+            </Link>
           </div>
+          <p className="mt-8 text-xs text-neutral-400 text-center max-w-2xl mx-auto">
+            NexSupply is not a customs broker or legal advisor. Estimates are for directional planning only.
+          </p>
         </div>
       </section>
     </div>

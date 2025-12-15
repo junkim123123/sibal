@@ -129,8 +129,7 @@ export default function ResourcesPage() {
               href="/portfolio"
               className="inline-flex items-center gap-2 px-6 py-3 border-2 border-neutral-300 text-neutral-700 rounded-lg font-medium hover:bg-neutral-50 hover:border-neutral-400 transition-colors"
             >
-              View All 200+ Sourced Products
-              <span>→</span>
+              View all 200 plus sourced products
             </Link>
           </div>
         </div>
@@ -150,9 +149,30 @@ export default function ResourcesPage() {
             )}
           </div>
           
+          {/* Search and Filters - Copy only */}
+          <div className="mb-8 max-w-2xl mx-auto">
+            <input
+              type="text"
+              placeholder="Search resources"
+              className="w-full px-4 py-2 border border-neutral-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              disabled
+            />
+            <div className="mt-4 flex flex-wrap gap-2 justify-center">
+              {['Getting started', 'Pricing', 'Case studies', 'Videos', 'Compliance'].map((filter) => (
+                <button
+                  key={filter}
+                  className="px-3 py-1.5 text-xs font-medium text-neutral-600 bg-neutral-100 rounded-lg hover:bg-neutral-200 transition-colors"
+                  disabled
+                >
+                  {filter}
+                </button>
+              ))}
+            </div>
+          </div>
+          
           {/* Operations Section */}
           <div className="mb-12">
-            <h3 className="text-xl font-semibold text-neutral-900 mb-6">Operations & Infrastructure</h3>
+            <h3 className="text-xl font-semibold text-neutral-900 mb-6">Operations and infrastructure</h3>
             <div className="grid grid-cols-1 gap-4 md:gap-6 md:grid-cols-2 lg:grid-cols-3">
               {knowledgeHub.videos
                 .filter(video => !video.category || video.category === 'operations')
@@ -238,7 +258,7 @@ export default function ResourcesPage() {
 
           {/* Trends Section */}
           <div>
-            <h3 className="text-xl font-semibold text-neutral-900 mb-6">Market Trends & Experiments</h3>
+            <h3 className="text-xl font-semibold text-neutral-900 mb-6">Market trends and experiments</h3>
             <div className="grid grid-cols-1 gap-4 md:gap-6 md:grid-cols-2 lg:grid-cols-3">
               {knowledgeHub.videos
                 .filter(video => video.category === 'trends')

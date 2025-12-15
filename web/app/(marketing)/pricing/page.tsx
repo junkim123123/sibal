@@ -5,6 +5,7 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useLanguage } from '@/components/i18n/language-provider';
 import { ArrowRight, Lock, Shield } from 'lucide-react';
+import { Accordion, AccordionItem } from '@/components/ui/accordion';
 
 
 export default function PricingPage() {
@@ -161,8 +162,29 @@ export default function PricingPage() {
         </div>
       </section>
 
+      {/* FAQ Section - Below Pricing Cards */}
+      {t.pricing.faq && (
+        <section aria-label="Pricing FAQ" className="py-16 sm:py-20 bg-white dark:bg-gray-900">
+          <div className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
+            <h2 className="text-2xl sm:text-3xl font-semibold text-neutral-900 dark:text-white mb-8 text-center">
+              {t.pricing.faq.title}
+            </h2>
+            <Accordion>
+              {t.pricing.faq.items.map((item: { question: string; answer: string }, index: number) => (
+                <AccordionItem
+                  key={index}
+                  question={item.question}
+                  answer={item.answer}
+                  defaultOpen={index === 0}
+                />
+              ))}
+            </Accordion>
+          </div>
+        </section>
+      )}
+
       {/* How Our Pricing Works Section */}
-      <section aria-label="How Our Pricing Works" className="py-16 sm:py-20 bg-white dark:bg-gray-900">
+      <section aria-label="How Our Pricing Works" className="py-16 sm:py-20 bg-neutral-50 dark:bg-gray-800">
         <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
           <h2 className="text-2xl sm:text-3xl font-semibold text-neutral-900 dark:text-white mb-12 text-center">
             {t.pricing.howItWorks.title}
@@ -192,7 +214,7 @@ export default function PricingPage() {
       </section>
 
       {/* Service Promise Section */}
-      <section aria-label="Service Promise" className="py-16 sm:py-20 bg-neutral-50 dark:bg-gray-800">
+      <section aria-label="Service Promise" className="py-16 sm:py-20 bg-white dark:bg-gray-900">
         <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
           <h2 className="text-2xl sm:text-3xl font-semibold text-neutral-900 dark:text-white mb-12 text-center">
             Our Service Promise

@@ -21,7 +21,7 @@ export default function HowItWorksHero() {
       <div className="mx-auto max-w-7xl px-4 md:px-6 relative z-10">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 lg:gap-6 items-center">
           {/* Left: Copy and CTA - 5 columns */}
-          <div className="lg:col-span-5 text-center lg:text-left order-2 lg:order-1">
+          <div className="lg:col-span-5 text-center order-2 lg:order-1">
             {/* 1. Kicker */}
             <div className="mb-2">
               <span className="text-xs font-semibold text-blue-700">
@@ -40,7 +40,7 @@ export default function HowItWorksHero() {
             </p>
             
             {/* 4. CTA Buttons */}
-            <div className="flex flex-col sm:flex-row gap-3 justify-center lg:justify-start mb-3">
+            <div className="flex flex-col sm:flex-row gap-3 justify-center mb-3">
               <Link href={hero.cta.primary.href} className="w-full sm:w-auto">
                 <Button className="bg-blue-600 hover:bg-blue-700 text-white rounded-lg px-6 md:px-8 py-3 md:py-3.5 w-full sm:w-auto">
                   Get free snapshot
@@ -58,7 +58,7 @@ export default function HowItWorksHero() {
             </div>
             
             {/* 5. Trust bar - Small badges */}
-            <div className="flex flex-wrap items-center justify-center lg:justify-start gap-2 text-xs">
+            <div className="flex flex-wrap items-center justify-center gap-2 text-xs">
               <span className="inline-flex items-center px-2 py-1 rounded-full font-medium bg-blue-50 text-blue-700 border border-blue-200">
                 Refundable <span className="font-bold">$49</span> deposit
               </span>

@@ -9,7 +9,7 @@ export default function HowItWorksHero() {
   const { hero } = howItWorksPageConfig;
 
   return (
-    <section aria-label="Hero" className="py-4 md:py-5 bg-white relative overflow-hidden mb-0">
+    <section aria-label="Hero" className="pt-4 md:pt-5 pb-3 md:pb-4 bg-white relative overflow-hidden mb-0">
       {/* Subtle background pattern */}
       <div className="absolute inset-0 opacity-[0.02] pointer-events-none">
         <div className="absolute inset-0" style={{
@@ -19,9 +19,9 @@ export default function HowItWorksHero() {
       </div>
 
       <div className="mx-auto max-w-6xl px-4 md:px-6 relative z-10">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 lg:gap-6 lg:items-center">
-          {/* Left: Copy and CTA - 5 columns */}
-          <div className="lg:col-span-5 text-center order-2 lg:order-1 lg:self-center">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 lg:gap-8 lg:items-center">
+          {/* Left: Copy and CTA */}
+          <div className="text-center order-2 lg:order-1">
             {/* 1. Kicker */}
             <div className="mb-2">
               <span className="text-xs font-semibold text-blue-700">
@@ -65,7 +65,7 @@ export default function HowItWorksHero() {
             {/* 5. Trust bar - Small badges */}
             <div className="flex flex-wrap items-center justify-center gap-2 text-xs">
               <span className="inline-flex items-center px-2 py-1 rounded-full font-medium bg-blue-50 text-blue-700 border border-blue-200">
-                Refundable <span className="font-bold">$49</span> deposit
+                <span className="font-bold">$49</span> deposit
               </span>
               <span className="inline-flex items-center px-2 py-1 rounded-full font-medium bg-blue-50 text-blue-700 border border-blue-200">
                 Pass through at cost
@@ -76,9 +76,9 @@ export default function HowItWorksHero() {
             </div>
           </div>
 
-          {/* Right: Sample report preview - 7 columns (Compact) */}
-          <div className="lg:col-span-7 order-1 lg:order-2 lg:self-center">
-            <div className="bg-white border border-neutral-200 rounded-lg p-5 md:p-6 shadow-sm max-w-lg mx-auto lg:mx-0">
+          {/* Right: Sample report preview */}
+          <div className="order-1 lg:order-2">
+            <div className="bg-white border border-neutral-200 rounded-lg p-5 md:p-6 shadow-sm w-full">
               {/* Header - Minimal */}
               <div className="mb-4">
                 <div className="flex items-center justify-between mb-2">

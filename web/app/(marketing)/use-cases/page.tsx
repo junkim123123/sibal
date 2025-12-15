@@ -18,7 +18,7 @@ export default async function UseCasesPage() {
       <section aria-label="Hero" className="pt-12 pb-10 sm:pt-16 sm:pb-12 bg-white border-y border-neutral-200">
         <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
           <div className="text-center">
-            <h1 className="text-[36px] sm:text-[44px] lg:text-[56px] font-semibold tracking-tight leading-[1.2] text-neutral-900">
+            <h1 className="text-[32px] sm:text-[40px] lg:text-[48px] font-semibold tracking-tight leading-[1.2] text-neutral-900">
               {hero.title}
             </h1>
             <p className="mt-4 sm:mt-5 text-base sm:text-lg text-neutral-600 leading-[1.4] max-w-[640px] mx-auto">
@@ -204,7 +204,7 @@ export default async function UseCasesPage() {
                   key={index}
                   className="rounded-2xl border border-neutral-200 bg-white shadow-sm p-6 sm:p-8 min-h-[180px] sm:min-h-[220px]"
                 >
-                  <div className="text-[44px] font-semibold tracking-tight leading-tight text-neutral-900">
+                  <div className="text-[44px] font-semibold tracking-tight leading-tight text-blue-600">
                     {metric.value}
                   </div>
                   <div className="mt-3 text-sm sm:text-base text-neutral-600 leading-6">

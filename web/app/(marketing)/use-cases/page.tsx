@@ -15,16 +15,16 @@ export default async function UseCasesPage() {
   return (
     <div className="bg-white">
       {/* Hero Section - Use Cases Specific */}
-      <section aria-label="Hero" className="pt-16 pb-12 sm:pt-20 sm:pb-16 bg-white border-y border-neutral-200">
+      <section aria-label="Hero" className="pt-12 pb-10 sm:pt-16 sm:pb-12 bg-white border-y border-neutral-200">
         <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
           <div className="text-center">
-            <h1 className="text-4xl sm:text-6xl font-semibold tracking-tight leading-tight text-neutral-900">
+            <h1 className="text-[36px] sm:text-[44px] lg:text-[56px] font-semibold tracking-tight leading-[1.2] text-neutral-900">
               {hero.title}
             </h1>
-            <p className="mt-5 text-base sm:text-lg text-neutral-600 leading-relaxed max-w-2xl mx-auto">
+            <p className="mt-4 sm:mt-5 text-base sm:text-lg text-neutral-600 leading-[1.4] max-w-[640px] mx-auto">
               {hero.body}
             </p>
-            <div className="mt-8 flex flex-col sm:flex-row gap-3 justify-center">
+            <div className="mt-6 sm:mt-8 flex flex-col sm:flex-row gap-3 justify-center">
               <Link href={hero.ctaPrimary.href} className="w-full sm:w-auto">
                 <button className="w-full sm:w-auto h-11 px-6 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold">
                   {hero.ctaPrimary.label}
@@ -37,7 +37,7 @@ export default async function UseCasesPage() {
               </Link>
             </div>
             {hero.ctaHelperText && (
-              <p className="mt-4 text-xs text-neutral-500 leading-5 max-w-md mx-auto">
+              <p className="mt-4 text-[13px] text-neutral-500 leading-5 max-w-md mx-auto">
                 {hero.ctaHelperText}
               </p>
             )}
@@ -46,7 +46,7 @@ export default async function UseCasesPage() {
       </section>
 
       {/* Common ways people start */}
-      <section id="projects" aria-label="Common projects" className="py-16 sm:py-20 bg-neutral-50 border-y border-neutral-200">
+      <section id="projects" aria-label="Common projects" className="py-12 sm:py-16 bg-neutral-50 border-y border-neutral-200">
         <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
           <div className="text-center">
             <h2 className="text-3xl sm:text-4xl font-semibold text-neutral-900">
@@ -80,7 +80,7 @@ export default async function UseCasesPage() {
                   <div className="mt-5">
                     <p className="text-xs font-semibold text-neutral-500 tracking-wide">Included in the snapshot</p>
                     <ul className="mt-3 space-y-2 text-sm text-neutral-700 leading-6">
-                      {project.deliverables.split('\n').map((item, i) => (
+                      {project.deliverables.split('\n').slice(0, 4).map((item, i) => (
                         <li key={i} className="flex gap-2">
                           <span className="text-neutral-400 mt-0.5">•</span>
                           <span>{item}</span>
@@ -91,11 +91,11 @@ export default async function UseCasesPage() {
                 )}
                 <div className="mt-auto pt-5 border-t border-neutral-200">
                   {project.outcomeExample && (
-                    <p className="text-xs text-neutral-500 leading-5 mb-2">
+                    <p className="text-xs text-neutral-500 leading-5 mb-1.5 line-clamp-2">
                       {project.outcomeExample}
                     </p>
                   )}
-                  <p className="text-xs text-neutral-500 leading-5 mb-3">
+                  <p className="text-xs text-neutral-500 leading-5 mb-3 line-clamp-2">
                     {project.footnote}
                   </p>
                   {project.ctaLabel && (
@@ -112,7 +112,7 @@ export default async function UseCasesPage() {
 
       {/* Snapshot Preview */}
       {snapshotPreview && (
-        <section aria-label="Snapshot preview" className="py-16 sm:py-20 bg-white border-y border-neutral-200">
+        <section aria-label="Snapshot preview" className="py-12 sm:py-16 bg-white border-y border-neutral-200">
           <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
             <div className="text-center">
               <h2 className="text-3xl sm:text-4xl font-semibold text-neutral-900">
@@ -126,9 +126,34 @@ export default async function UseCasesPage() {
             </div>
             <div className="mt-8 sm:mt-10 grid gap-6 sm:gap-8 lg:grid-cols-2 items-start">
               {/* Left: Preview mockup */}
-              <div className="rounded-2xl border border-neutral-200 bg-white p-3 sm:p-4 shadow-sm">
-                <div className="aspect-[16/10] bg-neutral-50 rounded-lg flex items-center justify-center">
-                  <div className="text-xs text-neutral-400">Snapshot preview image</div>
+              <div className="rounded-2xl border border-neutral-200 bg-white p-4 sm:p-5 shadow-sm">
+                <div className="bg-white rounded-lg">
+                  {/* Header */}
+                  <div className="flex items-center justify-between pb-3 border-b border-neutral-200 mb-3">
+                    <div className="h-3 bg-neutral-300 rounded w-24"></div>
+                    <div className="h-2 bg-neutral-200 rounded w-12"></div>
+                  </div>
+                  {/* Title */}
+                  <div className="h-3 bg-neutral-200 rounded w-32 mb-2"></div>
+                  {/* Main content lines */}
+                  <div className="space-y-2 mb-4">
+                    <div className="h-2.5 bg-neutral-200 rounded w-full"></div>
+                    <div className="h-2.5 bg-neutral-200 rounded w-5/6"></div>
+                    <div className="h-2.5 bg-neutral-200 rounded w-4/5"></div>
+                    <div className="h-2.5 bg-neutral-200 rounded w-full"></div>
+                    <div className="h-2.5 bg-neutral-200 rounded w-3/4"></div>
+                    <div className="h-2.5 bg-neutral-200 rounded w-5/6"></div>
+                  </div>
+                  {/* Highlight boxes */}
+                  <div className="grid grid-cols-2 gap-2 mb-3">
+                    <div className="h-8 bg-blue-50 border border-blue-200 rounded"></div>
+                    <div className="h-8 bg-yellow-50 border border-yellow-200 rounded"></div>
+                  </div>
+                  {/* Badges */}
+                  <div className="flex gap-2">
+                    <div className="h-5 w-16 bg-neutral-100 border border-neutral-200 rounded"></div>
+                    <div className="h-5 w-20 bg-neutral-100 border border-neutral-200 rounded"></div>
+                  </div>
                 </div>
               </div>
               {/* Right: Summary */}
@@ -162,7 +187,7 @@ export default async function UseCasesPage() {
       )}
 
       {/* Social proof summary - Metrics version */}
-      <section aria-label="Social proof" className="py-16 sm:py-20 bg-neutral-50 border-y border-neutral-200">
+      <section aria-label="Social proof" className="py-12 sm:py-16 bg-neutral-50 border-y border-neutral-200">
         <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
           <div className="text-center">
             <h2 className="text-3xl sm:text-4xl font-semibold text-neutral-900">
@@ -179,10 +204,10 @@ export default async function UseCasesPage() {
                   key={index}
                   className="rounded-2xl border border-neutral-200 bg-white shadow-sm p-6 sm:p-8 min-h-[180px] sm:min-h-[220px]"
                 >
-                  <div className="text-3xl sm:text-4xl font-semibold tracking-tight leading-tight text-neutral-900">
+                  <div className="text-[44px] font-semibold tracking-tight leading-tight text-neutral-900">
                     {metric.value}
                   </div>
-                  <div className="mt-3 text-sm text-neutral-600 leading-6">
+                  <div className="mt-3 text-sm sm:text-base text-neutral-600 leading-6">
                     {metric.subtitle || metric.label}
                   </div>
                 </div>
@@ -198,7 +223,7 @@ export default async function UseCasesPage() {
       </section>
 
       {/* Why importers work with NexSupply */}
-      <section aria-label="Benefits" className="py-16 sm:py-20 bg-white border-y border-neutral-200">
+      <section aria-label="Benefits" className="py-12 sm:py-16 bg-white border-y border-neutral-200">
         <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
           <div className="text-center">
             <h2 className="text-3xl sm:text-4xl font-semibold text-neutral-900">

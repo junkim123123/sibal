@@ -21,7 +21,7 @@ export default function HowItWorksHero() {
       <div className="mx-auto w-full max-w-6xl px-4 sm:px-6 lg:px-8 relative z-10">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8 lg:gap-10 items-center">
           {/* Left: Copy and CTA */}
-          <div className="text-center lg:text-left order-2 lg:order-1 px-2 sm:px-0">
+          <div className="text-center lg:text-left order-1 lg:order-1 px-2 sm:px-0">
             {/* 1. Kicker */}
             <div className="mb-2">
               <span className="text-xs font-semibold text-blue-700">
@@ -77,7 +77,7 @@ export default function HowItWorksHero() {
           </div>
 
           {/* Right: Sample report preview */}
-          <div className="order-1 lg:order-2">
+          <div className="order-2 lg:order-2">
             <div className="rounded-2xl border border-neutral-200 bg-white p-4 sm:p-5 shadow-sm w-full max-w-none">
               {/* Header */}
               <div className="flex items-center justify-between">

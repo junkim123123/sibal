@@ -26,7 +26,7 @@ export default async function HowItWorksPage() {
         className="bg-neutral-50 py-2 md:py-4 mt-10 border-t border-neutral-200 pt-8"
         titleClassName="text-2xl md:text-3xl font-semibold tracking-tight"
       >
-        <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-5 items-stretch">
           {journey.cards.map((card, idx) => {
             const Icon = card.icon;
             return (
@@ -102,9 +102,9 @@ export default async function HowItWorksPage() {
         className="bg-neutral-50 py-10 md:py-14"
         titleClassName="text-2xl md:text-3xl font-semibold"
       >
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-5 md:gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-5 max-w-5xl mx-auto items-stretch">
           {/* Free */}
-          <div className="bg-white border border-neutral-200 rounded-lg p-5 shadow-sm">
+          <div className="bg-white border border-neutral-200 rounded-lg p-5 shadow-sm flex flex-col">
             <div className="flex items-baseline gap-2 mb-2">
               <div className="text-5xl font-bold text-neutral-900">$0</div>
               <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-50 text-green-700 border border-green-200">
@@ -116,7 +116,7 @@ export default async function HowItWorksPage() {
               AI cost and risk snapshot
             </p>
             <p className="text-xs text-neutral-500 mb-3">
-              Within 1 business day. Often ready in minutes, up to 1 hour during peak times.
+              Often ready in under an hour. Up to 1 business day during peak times.
             </p>
             <ul className="space-y-1.5 text-xs text-neutral-600">
               <li className="flex items-start gap-2">
@@ -129,13 +129,13 @@ export default async function HowItWorksPage() {
               </li>
               <li className="flex items-start gap-2">
                 <span className="text-blue-600 mt-0.5 font-bold">•</span>
-                <span>No payment unless you proceed</span>
+                <span>No payment unless you request factory quotes</span>
               </li>
             </ul>
           </div>
 
           {/* Deposit and Fee combined */}
-          <div className="bg-white border-2 border-blue-300 rounded-lg p-5 shadow-sm">
+          <div className="bg-white border-2 border-blue-300 rounded-lg p-5 shadow-sm flex flex-col">
             <div className="grid grid-cols-2 gap-4 mb-3">
               <div>
                 <div className="text-4xl font-bold text-blue-600 mb-1">$49</div>
@@ -173,7 +173,7 @@ export default async function HowItWorksPage() {
         title={faq.title}
         className="bg-white py-10 md:py-14"
       >
-        <div className="max-w-3xl mx-auto">
+        <div className="max-w-4xl mx-auto">
           <Accordion>
             {faq.items.map((faqItem, idx) => (
               <AccordionItem
@@ -189,7 +189,7 @@ export default async function HowItWorksPage() {
 
       {/* Final CTA Banner */}
       <section aria-label="Call to action" className="py-12 md:py-16 bg-neutral-900 text-white">
-        <div className="mx-auto max-w-6xl px-4 md:px-6">
+        <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
           <div className="max-w-3xl mx-auto text-center">
             <h2 className="text-2xl md:text-3xl lg:text-4xl font-semibold text-white mb-4">
               {cta.title}
@@ -215,6 +215,15 @@ export default async function HowItWorksPage() {
               </span>
             </div>
           </div>
+        </div>
+      </section>
+
+      {/* Footer Disclaimer */}
+      <section className="py-6 bg-white border-t border-neutral-200">
+        <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
+          <p className="text-xs text-neutral-500 text-center">
+            NexSupply is not a customs broker or legal advisor. Estimates are for directional planning only.
+          </p>
         </div>
       </section>
     </div>

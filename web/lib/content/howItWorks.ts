@@ -74,7 +74,7 @@ export interface HowItWorksPageConfig {
 export const howItWorksPageConfig: HowItWorksPageConfig = {
   hero: {
     title: 'How NexSupply works in 3 moves',
-    subtitle: 'Free snapshot within 1 business day. Often ready in minutes, up to 1 hour during peak times. $49 deposit starts factory outreach, credited to your first order if you proceed.',
+    subtitle: 'Free snapshot within 1 business day. Often ready in under an hour. $49 deposit starts factory outreach, credited to your first order if you proceed.',
     description: '',
     note: '',
     cta: {
@@ -86,7 +86,7 @@ export const howItWorksPageConfig: HowItWorksPageConfig = {
         label: 'Talk to a manager',
         href: '/chat',
       },
-      helperText: 'No credit card for the free snapshot.',
+      helperText: 'Often ready in under an hour. Up to 1 business day during peak times.',
     },
     chips: [
       { text: 'Step 1: Project brief 10 minutes' },
@@ -109,7 +109,7 @@ export const howItWorksPageConfig: HowItWorksPageConfig = {
       },
       {
         title: 'Free snapshot',
-        body: 'Within 1 business day. Often ready in minutes, up to 1 hour during peak times.',
+        body: 'Often ready in under an hour. Up to 1 business day during peak times.',
         icon: TrendingUp,
         deliverables: [
           'DDP breakdown',
@@ -182,18 +182,19 @@ export const howItWorksPageConfig: HowItWorksPageConfig = {
     title: 'What you pay and where we work',
     cards: [
       {
-        title: 'Analysis and planning',
+        title: 'Free snapshot',
         items: [
-          'Free snapshot usually ready in minutes. Up to 1 hour during peak times.',
-          'No subscription. No commitment. No payment unless you proceed.',
+          'No subscription',
+          'No commitment',
+          'No payment unless you request factory quotes',
         ],
       },
       {
-        title: 'When orders go through NexSupply',
+        title: 'When you proceed',
         items: [
-          '$49 deposit triggers factory outreach.',
-          'Pass through at cost for logistics and duties.',
-          'We charge 5 percent on FOB for production management and QC.',
+          '$49 deposit is non-refundable once outreach begins. Credited to your first order if you proceed.',
+          '3 quotes in 7 days',
+          'Pass through at cost for logistics and duties',
         ],
       },
     ],
@@ -215,7 +216,7 @@ export const howItWorksPageConfig: HowItWorksPageConfig = {
       },
       {
         question: 'How long does the whole process take?',
-        answer: 'Free snapshot usually ready in minutes. Up to 1 hour during peak times. Manager confirmed within 1 business day. Factory quotes in 7 days after deposit.',
+        answer: 'Free snapshot delivered within 1 business day. Often ready in minutes. Factory quotes in 7 days after deposit.',
       },
     ],
   },

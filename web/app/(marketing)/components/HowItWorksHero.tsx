@@ -18,7 +18,7 @@ export default function HowItWorksHero() {
         }} />
       </div>
 
-      <div className="mx-auto w-full max-w-6xl px-6 lg:px-8 relative z-10">
+      <div className="mx-auto w-full max-w-6xl px-4 sm:px-6 lg:px-8 relative z-10">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-10 lg:items-center">
           {/* Left: Copy and CTA */}
           <div className="col-span-12 lg:col-span-5 text-center order-2 lg:order-1 max-w-xl mx-auto">
@@ -59,7 +59,7 @@ export default function HowItWorksHero() {
             
             {/* CTA Helper Text */}
             <p className="text-xs text-neutral-500 text-center mb-3">
-              Within 1 business day. Often ready in minutes, up to 1 hour during peak times.
+              {hero.cta.helperText}
             </p>
             
             {/* 5. Trust bar - Small badges */}

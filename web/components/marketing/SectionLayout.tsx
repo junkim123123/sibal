@@ -20,7 +20,7 @@ export function SectionLayout({
 }: SectionLayoutProps) {
   return (
     <section className={className || 'py-10 md:py-16'}>
-      <div className="mx-auto max-w-6xl px-6 lg:px-8">
+      <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
         {eyebrow && (
           <p className="text-xs md:text-sm font-semibold text-neutral-500 uppercase tracking-wide mb-2 text-center">
             {eyebrow}

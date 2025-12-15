@@ -17,6 +17,9 @@ export interface CommonProject {
   summary: string;
   footnote: string;
   deliverables?: string;
+  badge?: string;
+  ctaLabel?: string;
+  outcomeExample?: string;
 }
 
 export interface WorkflowStep {
@@ -66,6 +69,10 @@ export interface UseCasesPageContent {
       label: string;
     };
     subtitle: string;
+    metrics?: Array<{
+      label: string;
+      value: string;
+    }>;
     quotes: Array<{
       quote: string;
       author: string;
@@ -79,12 +86,44 @@ export interface UseCasesPageContent {
       body: string;
     }>;
   };
+  snapshotPreview?: {
+    title: string;
+    subtitle?: string;
+    items: Array<{
+      label: string;
+      value: string;
+    }>;
+    disclaimer?: string;
+  };
+  freeVsDeposit?: {
+    title: string;
+    free: {
+      title: string;
+      items: string[];
+    };
+    deposit: {
+      title: string;
+      items: string[];
+    };
+    helperText?: string;
+  };
+  trustElements?: {
+    whatWeCheck: {
+      title: string;
+      items: string;
+    };
+    whereWeOperate: {
+      title: string;
+      items: string;
+    };
+  };
   cta: {
     title: string;
     body: string;
     buttonLabel: string;
     buttonHref: string;
     disclaimer: string;
+    helperText?: string;
   };
 }
 
@@ -129,6 +168,9 @@ export const useCasesPageContent: UseCasesPageContent = {
         summary: 'Check margin and risk before your first order.',
         footnote: 'Typical users: New FBA sellers and early-stage brands',
         deliverables: 'Estimated delivered cost range and key DDP drivers\nDuty and compliance red flags\nClear go or no-go recommendation',
+        badge: 'Best for first order',
+        ctaLabel: 'Start this workflow',
+        outcomeExample: 'Typical margin check completed in 24 hours',
       },
       {
         id: 're-source-existing-sku',
@@ -136,6 +178,9 @@ export const useCasesPageContent: UseCasesPageContent = {
         summary: 'Compare your current supplier with alternatives side-by-side on cost and risk.',
         footnote: 'Typical users: Established sellers optimizing margins',
         deliverables: 'Side-by-side landed cost comparison\nSupplier tradeoffs and risk flags\nSavings estimate with assumptions',
+        badge: 'Best for cost down',
+        ctaLabel: 'Start this workflow',
+        outcomeExample: 'Common savings range 5 to 15 percent with supplier switch',
       },
       {
         id: 'test-higher-risk-category',
@@ -143,8 +188,72 @@ export const useCasesPageContent: UseCasesPageContent = {
         summary: 'Check AD/CVD and required documents before you import.',
         footnote: 'Typical users: Brands entering regulated categories',
         deliverables: 'AD/CVD risk screen and scope\nRequired documents checklist\nMitigation steps before you place a PO',
+        badge: 'Best for compliance',
+        ctaLabel: 'Start this workflow',
+        outcomeExample: 'Catch compliance gaps before your first shipment',
       },
     ],
+  },
+  snapshotPreview: {
+    title: 'Snapshot preview',
+    subtitle: 'A 1 page preview of what you will receive in 1 business day',
+    items: [
+      {
+        label: 'Landed cost range',
+        value: 'Example: $2.18 to $2.74 per unit DDP',
+      },
+      {
+        label: 'Cost drivers',
+        value: 'Factory $1.45 | Freight $0.38 | Duties $0.21 | Packaging $0.09',
+      },
+      {
+        label: 'Compliance flags',
+        value: 'Labeling and safety doc required',
+      },
+      {
+        label: 'AD/CVD screen',
+        value: 'Flagged or not flagged with scope notes',
+      },
+      {
+        label: 'Go or no-go',
+        value: 'Proceed with sample or re-source recommended',
+      },
+    ],
+    disclaimer: 'Examples are directional and vary by category, volume, and ship mode',
+  },
+  freeVsDeposit: {
+    title: 'Two ways to start',
+    free: {
+      title: 'Free snapshot',
+      items: [
+        '1 business day delivery',
+        'Landed cost range and DDP drivers',
+        'Compliance and AD/CVD screen',
+        'Required docs checklist',
+        'Go or no-go recommendation',
+      ],
+    },
+    deposit: {
+      title: '$49 refundable deposit',
+      items: [
+        'Manager assigned',
+        'Factory outreach starts',
+        '3 real quotes within 7 days',
+        'Price lock for 90 days once quoted',
+        'Credited if you proceed',
+      ],
+    },
+    helperText: 'Deposit is refundable until outreach begins',
+  },
+  trustElements: {
+    whatWeCheck: {
+      title: 'What we check in every snapshot',
+      items: 'HS code guess, duty range, AD/CVD screen, compliance docs, landed cost drivers',
+    },
+    whereWeOperate: {
+      title: 'Where we operate',
+      items: 'QC hubs in Seoul, Yiwu, Shantou, Vung Tau',
+    },
   },
   socialProof: {
     title: 'Results from recent pilot projects',
@@ -154,6 +263,20 @@ export const useCasesPageContent: UseCasesPageContent = {
       label: 'based on 50+ pilot projects',
     },
     subtitle: 'Examples are directional and vary by category and volume',
+    metrics: [
+      {
+        label: 'Average cost clarity time',
+        value: '1 business day',
+      },
+      {
+        label: 'Reduced surprises at customs',
+        value: 'Fewer holds by catching doc gaps early',
+      },
+      {
+        label: 'Typical outcome examples',
+        value: 'Saved $0.10 to $0.30 per unit depending on category and volume',
+      },
+    ],
     quotes: [
       {
         quote: 'Finally, I can see landed cost before I wire any money.',
@@ -207,6 +330,7 @@ export const useCasesPageContent: UseCasesPageContent = {
     buttonLabel: 'Get free snapshot',
     buttonHref: '/chat',
     disclaimer: 'NexSupply is not a customs broker or legal advisor. Estimates are for directional planning only.',
+    helperText: 'We\'ll reply within 24 hours with next steps',
   },
 } as const;
 

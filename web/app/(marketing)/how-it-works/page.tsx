@@ -26,7 +26,7 @@ export default async function HowItWorksPage() {
         className="bg-neutral-50 py-3 md:py-5 -mt-2"
         titleClassName="text-base md:text-lg lg:text-xl font-semibold"
       >
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6 max-w-5xl mx-auto">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6 max-w-6xl mx-auto">
           {journey.cards.map((card, idx) => {
             const Icon = card.icon;
             return (
@@ -103,7 +103,7 @@ export default async function HowItWorksPage() {
         title={pricing.title}
         className="bg-neutral-50 py-10 md:py-14"
       >
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-5 md:gap-6 max-w-5xl mx-auto">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-5 md:gap-6 max-w-6xl mx-auto">
           {/* Free */}
           <div className="bg-white border border-neutral-200 rounded-lg p-5 shadow-sm">
             <div className="flex items-baseline gap-2 mb-2">
@@ -151,7 +151,7 @@ export default async function HowItWorksPage() {
             <ul className="space-y-1.5 text-xs text-neutral-600">
               <li className="flex items-start gap-2">
                 <span className="text-blue-600 mt-0.5 font-bold">•</span>
-                <span><span className="font-bold text-neutral-900">$49</span> fully refundable, credited to first order</span>
+                <span><span className="font-bold text-neutral-900">$49</span> non-refundable once outreach begins. Credited to your first order if you proceed.</span>
               </li>
               <li className="flex items-start gap-2">
                 <span className="text-blue-600 mt-0.5 font-bold">•</span>
@@ -206,7 +206,7 @@ export default async function HowItWorksPage() {
             {/* Trust badges */}
             <div className="flex flex-wrap items-center justify-center gap-3">
               <span className="inline-flex items-center px-3 py-1.5 rounded-full text-xs font-medium bg-blue-900/30 text-blue-300 border border-blue-700">
-                Refundable deposit
+                Credited to first order
               </span>
               <span className="inline-flex items-center px-3 py-1.5 rounded-full text-xs font-medium bg-blue-900/30 text-blue-300 border border-blue-700">
                 5% on FOB only

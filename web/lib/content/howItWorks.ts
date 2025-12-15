@@ -74,7 +74,7 @@ export interface HowItWorksPageConfig {
 export const howItWorksPageConfig: HowItWorksPageConfig = {
   hero: {
     title: 'How NexSupply works in 3 moves',
-    subtitle: 'Free snapshot in 1 business day. Refundable $49 deposit only if you want real factory quotes.',
+    subtitle: 'Free snapshot in 1 business day. $49 deposit to start factory outreach, credited to your first order if you proceed.',
     description: '',
     note: '',
     cta: {
@@ -119,7 +119,7 @@ export const howItWorksPageConfig: HowItWorksPageConfig = {
       },
       {
         title: 'Deposit to start factory outreach',
-        body: 'Pay $49 only when you want real quotes. Applied to your first order or refunded if you walk away.',
+        body: 'Pay $49 to start factory outreach. Non-refundable once outreach begins. Credited to your first order if you proceed.',
         icon: Package,
         deliverables: [
           '3 quotes in 7 days',
@@ -165,14 +165,14 @@ export const howItWorksPageConfig: HowItWorksPageConfig = {
         stepNumber: '3',
         title: 'Deposit $49 to unlock manager and factory quotes',
         timeEstimate: 'Real factory quotes within 7 days',
-        body: 'Deposit $49 to unlock your dedicated manager. The deposit is 100% credited to your first order and refundable if you choose not to proceed. Receive 3 real factory quotes within 7 days with FOB prices locked for 3 months.',
+        body: 'Deposit $49 to start factory outreach. Non-refundable once outreach begins. Credited to your first order if you proceed. Receive 3 real factory quotes within 7 days with FOB prices locked for 3 months.',
         bullets: [
           'Shortlist and compare qualified factories',
           'Deliver 3 real factory quotes within 7 days',
           'Assign dedicated manager within 1 business day',
           'Align QC and logistics to match your risk level',
           'Factory FOB locked for 3 months once quoted',
-          'Deposit 100% credited to first order',
+          'Credited to first order if you proceed',
         ],
         icon: Truck,
       },

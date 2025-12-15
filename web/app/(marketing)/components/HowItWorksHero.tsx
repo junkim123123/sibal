@@ -18,7 +18,7 @@ export default function HowItWorksHero() {
         }} />
       </div>
 
-      <div className="mx-auto max-w-7xl px-4 md:px-6 relative z-10">
+      <div className="mx-auto max-w-6xl px-4 md:px-6 relative z-10">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 lg:gap-6 items-center">
           {/* Left: Copy and CTA - 5 columns */}
           <div className="lg:col-span-5 text-center order-2 lg:order-1">

@@ -72,13 +72,13 @@ export function ReportPreviewCard() {
 
   return (
     <div className="relative rounded-2xl bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 shadow-sm overflow-hidden z-10">
-      {/* Segmented Control Style Tabs */}
+      {/* Clean Tabs Style */}
       <div 
         ref={tabListRef}
-        className="p-1.5 bg-neutral-50 dark:bg-neutral-800/50 border-b border-neutral-200 dark:border-neutral-700" 
+        className="border-b border-neutral-200 dark:border-neutral-700" 
         role="tablist"
       >
-        <div className="flex gap-1">
+        <div className="flex gap-0">
           {tabs.map((tab) => (
             <button
               key={tab.id}
@@ -94,17 +94,17 @@ export function ReportPreviewCard() {
               id={`${tab.id}-tab`}
               tabIndex={activeTab === tab.id ? 0 : -1}
               type="button"
-              className={`flex-1 px-3 py-2 text-xs font-medium rounded-md transition-all relative ${
+              className={`px-4 py-2.5 text-xs font-medium transition-all relative ${
                 isReducedMotion ? '' : 'duration-150'
-              } focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-white dark:focus:ring-offset-neutral-800 ${
+              } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:focus-visible:ring-offset-neutral-800 ${
                 activeTab === tab.id
-                  ? 'bg-white dark:bg-neutral-800 text-blue-600 dark:text-blue-400 shadow-sm border border-neutral-200 dark:border-neutral-700'
-                  : 'text-neutral-500 dark:text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-300 hover:bg-white/50 dark:hover:bg-neutral-700/50'
+                  ? 'text-blue-600 dark:text-blue-400'
+                  : 'text-neutral-500 dark:text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-300'
               }`}
             >
               {tab.label}
               <span 
-                className={`absolute bottom-0 left-0 right-0 h-0.5 bg-blue-600 dark:bg-blue-400 rounded-full transition-all ${
+                className={`absolute bottom-0 left-0 right-0 h-[2px] bg-blue-600 dark:bg-blue-400 transition-all ${
                   isReducedMotion ? '' : 'duration-150'
                 } ${activeTab === tab.id ? 'opacity-100 scale-x-100' : 'opacity-0 scale-x-0'}`}
               />
@@ -115,15 +115,15 @@ export function ReportPreviewCard() {
 
       <div className="p-5 md:p-6 min-h-[420px]">
         {/* Header with report bar */}
-        <div className="mb-4 pb-3 border-b border-neutral-200 dark:border-neutral-700">
+        <div className="mb-4">
           <div className="flex items-center justify-between mb-2">
             <h3 className="text-xs font-semibold text-neutral-900 dark:text-white uppercase tracking-wider">
               Sourcing report preview
             </h3>
             <span className="text-xs text-neutral-400">Example preview</span>
           </div>
-          {/* Report meta bar */}
-          <div className="flex items-center gap-3 text-[10px] text-neutral-500 dark:text-neutral-400 mt-2">
+          {/* Report meta bar - one line */}
+          <div className="flex items-center gap-2 text-[10px] text-neutral-500 dark:text-neutral-400">
             <span>Updated today</span>
             <span>•</span>
             <span>3 suppliers compared</span>
@@ -132,6 +132,8 @@ export function ReportPreviewCard() {
               Medium confidence
             </span>
           </div>
+          {/* Divider */}
+          <div className="mt-3 border-b border-neutral-200 dark:border-neutral-700" />
         </div>
 
         {/* Tab Panels with transition */}

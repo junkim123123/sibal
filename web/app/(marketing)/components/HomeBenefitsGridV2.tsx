@@ -50,23 +50,27 @@ export default function HomeBenefitsGridV2() {
             See how transparent pricing works in practice. All pass-through costs are billed at cost with zero markup.
           </p>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {features.map((feature, index) => {
             const Icon = feature.icon;
             return (
               <div
                 key={index}
-                className="bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-2xl p-6 shadow-sm hover:shadow-md hover:border-blue-300 dark:hover:border-blue-700 transition-all duration-300"
+                className="bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-2xl p-5 shadow-sm hover:shadow-md hover:border-blue-300 dark:hover:border-blue-700 transition-all duration-300"
               >
-                <div className="w-10 h-10 rounded-lg bg-blue-50 dark:bg-blue-900/30 flex items-center justify-center mb-4">
-                  <Icon className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+                <div className="flex items-start gap-3">
+                  <div className="w-8 h-8 rounded-lg bg-blue-50 dark:bg-blue-900/30 flex items-center justify-center flex-shrink-0">
+                    <Icon className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <h3 className="text-base font-semibold text-neutral-900 dark:text-white mb-1.5">
+                      {feature.title}
+                    </h3>
+                    <p className="text-xs text-neutral-600 dark:text-neutral-300 leading-relaxed">
+                      {feature.body}
+                    </p>
+                  </div>
                 </div>
-                <h3 className="text-lg font-semibold text-neutral-900 dark:text-white mb-2">
-                  {feature.title}
-                </h3>
-                <p className="text-sm text-neutral-600 dark:text-neutral-300 leading-relaxed">
-                  {feature.body}
-                </p>
               </div>
             );
           })}

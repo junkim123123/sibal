@@ -6,7 +6,7 @@ export default function HomeSocialProofStrip() {
   const { t } = useLanguage();
 
   return (
-    <section className="py-16 md:py-24 bg-white dark:bg-gray-900 border-t border-neutral-200 dark:border-gray-700">
+    <section className="py-16 md:py-24 bg-neutral-50 dark:bg-neutral-900 border-t border-neutral-200 dark:border-gray-700">
       <div className="mx-auto max-w-6xl px-4 md:px-6">
         <div className="flex flex-col items-center gap-6 md:gap-10">
           <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold tracking-tight text-neutral-900 dark:text-white text-center">

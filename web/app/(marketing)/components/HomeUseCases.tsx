@@ -17,7 +17,7 @@ export default function HomeUseCases() {
           {t.home.useCases.cards.map((useCase, index) => (
             <div
               key={index}
-              className="bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 shadow-sm rounded-lg p-6 md:p-8 lg:p-10 hover:shadow-md hover:border-neutral-300 dark:hover:border-neutral-600 transition-all duration-300"
+              className="bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 shadow-sm rounded-2xl p-6 md:p-8 lg:p-10 hover:shadow-md hover:border-blue-300 dark:hover:border-blue-700 transition-all duration-300"
             >
               <h3 className="text-base md:text-lg lg:text-xl font-semibold text-neutral-900 dark:text-white">
                 {useCase.title}

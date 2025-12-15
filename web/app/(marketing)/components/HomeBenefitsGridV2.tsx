@@ -43,9 +43,12 @@ export default function HomeBenefitsGridV2() {
     <section className="py-16 md:py-24 bg-neutral-50 dark:bg-neutral-900 border-t border-neutral-200 dark:border-neutral-700">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-12">
-          <h2 className="text-3xl md:text-4xl font-bold tracking-tight text-neutral-900 dark:text-white mb-4">
+          <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold tracking-tight text-neutral-900 dark:text-white mb-4">
             {t.home.benefits.title}
           </h2>
+          <p className="text-base md:text-lg text-neutral-600 dark:text-neutral-400 max-w-2xl mx-auto">
+            See how transparent pricing works in practice. All pass-through costs are billed at cost with zero markup.
+          </p>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {features.map((feature, index) => {
@@ -53,7 +56,7 @@ export default function HomeBenefitsGridV2() {
             return (
               <div
                 key={index}
-                className="bg-white dark:bg-neutral-800 rounded-lg border border-neutral-200 dark:border-neutral-700 p-6 shadow-sm hover:shadow-md transition-shadow"
+                className="bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-2xl p-6 shadow-sm hover:shadow-md hover:border-blue-300 dark:hover:border-blue-700 transition-all duration-300"
               >
                 <div className="w-10 h-10 rounded-lg bg-blue-50 dark:bg-blue-900/30 flex items-center justify-center mb-4">
                   <Icon className="w-5 h-5 text-blue-600 dark:text-blue-400" />
@@ -72,4 +75,3 @@ export default function HomeBenefitsGridV2() {
     </section>
   );
 }
-

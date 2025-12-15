@@ -73,8 +73,8 @@ export interface HowItWorksPageConfig {
 
 export const howItWorksPageConfig: HowItWorksPageConfig = {
   hero: {
-    title: 'Stop guessing your landed cost.',
-    subtitle: 'Know your real delivered cost and duty risk in 1 business day. If the numbers work, pay a refundable $49 to trigger real factory quotes and a dedicated manager.',
+    title: 'How NexSupply works in 3 moves',
+    subtitle: 'Free snapshot in 1 business day. Refundable $49 deposit only if you want real factory quotes.',
     description: '',
     note: '',
     cta: {

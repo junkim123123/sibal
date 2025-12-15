@@ -5,6 +5,7 @@ import { CheckCircle } from 'lucide-react';
 import { useCasesPageContent } from '@/lib/content/useCasesPage';
 import { ReportPreviewCard } from '@/app/(marketing)/components/ReportPreviewCard';
 import { TransparentInvoicePreview } from '@/app/(marketing)/components/TransparentInvoicePreview';
+import { HeroSection } from '@/app/(marketing)/components/HeroSection';
 import { Shield, Lock, DollarSign, Factory, Truck, AlertTriangle } from 'lucide-react';
 
 export const revalidate = 60;
@@ -17,43 +18,16 @@ export default async function UseCasesPage() {
   return (
     <div className="bg-white">
       {/* Hero Section */}
-      <section aria-label="Hero" className="py-12 md:py-16 lg:py-20 bg-white">
-        <div className="mx-auto max-w-6xl px-4 md:px-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
-            {/* Left: Text Content */}
-            <div className="flex flex-col justify-center">
-              <div className="inline-flex items-center justify-center mb-4">
-                <span className="inline-flex items-center px-4 py-1.5 rounded-full text-xs font-medium text-neutral-700 bg-neutral-100 border border-neutral-200/50">
-                  {hero.badge}
-                </span>
-              </div>
-              <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold tracking-tight text-neutral-900 leading-tight mb-6">
-                {hero.title}
-              </h1>
-              <p className="text-base md:text-lg text-neutral-600 mb-6 leading-relaxed">
-                {hero.body}
-              </p>
-              <div className="flex flex-col sm:flex-row flex-wrap gap-3 sm:gap-4 items-stretch sm:items-center">
-                <Link href={hero.ctaPrimary.href} className="w-full sm:w-auto">
-                  <Button className="bg-blue-600 hover:bg-blue-700 text-white rounded-lg px-6 md:px-8 py-3 md:py-3.5 w-full sm:w-auto">
-                    {hero.ctaPrimary.label}
-                  </Button>
-                </Link>
-                <Link href={hero.ctaSecondary.href} className="w-full sm:w-auto">
-                  <Button variant="outline" className="border-2 border-neutral-300 hover:border-neutral-400 text-neutral-700 hover:text-neutral-900 rounded-lg px-6 md:px-8 py-3 md:py-3.5 w-full sm:w-auto">
-                    {hero.ctaSecondary.label}
-                  </Button>
-                </Link>
-              </div>
-            </div>
-
-            {/* Right: Report Preview Card */}
-            <div className="relative w-full mt-8 md:mt-0">
-              <ReportPreviewCard />
-            </div>
-          </div>
-        </div>
-      </section>
+      <HeroSection
+        title={hero.title}
+        valueStatement={hero.body}
+        cta={{
+          primary: hero.ctaPrimary,
+          secondary: hero.ctaSecondary,
+          helperText: hero.ctaHelperText,
+        }}
+        showPreviewCard={true}
+      />
 
       {/* Three Step Strip */}
       <section aria-label="Three steps" className="py-12 md:py-16 bg-neutral-50">

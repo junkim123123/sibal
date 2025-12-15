@@ -39,7 +39,9 @@ export interface HowItWorksPageConfig {
         label: string;
         href: string;
       };
+      helperText?: string;
     };
+    chips?: Array<{ text: string }>;
   };
   journey: {
     title: string;
@@ -81,10 +83,16 @@ export const howItWorksPageConfig: HowItWorksPageConfig = {
         href: '/chat',
       },
       secondary: {
-        label: 'Talk to a Manager ($49 deposit)',
+        label: 'Talk to a Manager',
         href: '/chat',
       },
+      helperText: '$49 deposit credited to first order, refundable if you do not proceed.',
     },
+    chips: [
+      { text: 'AI snapshot 1 business day' },
+      { text: '3 factory quotes 7 days' },
+      { text: '$49 deposit credited and refundable' },
+    ],
   },
   journey: {
     title: 'Your sourcing journey in three moves',

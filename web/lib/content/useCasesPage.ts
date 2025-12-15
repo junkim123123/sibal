@@ -44,6 +44,7 @@ export interface UseCasesPageContent {
       label: string;
       href: string;
     };
+    ctaHelperText?: string;
   };
   threeSteps: {
     items: Array<{
@@ -90,13 +91,14 @@ export const useCasesPageContent: UseCasesPageContent = {
     title: 'Stop Guessing. Start Sourcing with Confidence.',
     body: 'Get AI cost and risk snapshot within 1 business day. Review the numbers, then deposit $49 to unlock a dedicated manager and real factory quotes within 7 days. All logistics, customs, duties, and packaging costs are pass-through at cost with zero markup. Transparent 5% management fee on FOB.',
     ctaPrimary: {
-      label: 'Start Free Analysis',
+      label: 'Get an analysis',
       href: '/chat',
     },
     ctaSecondary: {
-      label: 'Talk to a Manager ($49 deposit)',
+      label: 'Talk to a Manager',
       href: '/chat',
     },
+    ctaHelperText: '$49 deposit credited to first order, refundable if you do not proceed.',
   },
   threeSteps: {
     items: [

@@ -6,65 +6,56 @@ import { CheckCircle, AlertTriangle, ArrowRight, Lock, Factory, ChevronDown, Che
 export function ReportPreviewCard() {
   const [isExpanded, setIsExpanded] = useState(false);
   return (
-    <div className="relative rounded-lg bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 shadow-sm p-6 md:p-8 lg:p-10">
+    <div className="relative rounded-lg bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 shadow-sm p-5 md:p-6">
       {/* Header */}
-      <div className="mb-6">
-        <h3 className="text-sm font-semibold text-neutral-900 uppercase tracking-wider mb-1">
-          Sourcing Report Preview
-        </h3>
+      <div className="mb-4">
+        <div className="flex items-center justify-between mb-1">
+          <h3 className="text-xs font-semibold text-neutral-900 uppercase tracking-wider">
+            Sourcing Report Preview
+          </h3>
+          <span className="text-xs text-neutral-400">Example preview</span>
+        </div>
         <div className="h-px bg-gradient-to-r from-neutral-200 to-transparent" />
       </div>
 
-      {/* Badges */}
-      <div className="flex flex-wrap gap-2 mb-6">
-        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-blue-50 text-blue-700 border border-blue-200">
-          <Lock className="w-3 h-3" />
-          Product cost locked 3 months
-        </span>
-        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-blue-50 text-blue-700 border border-blue-200">
-          <Factory className="w-3 h-3" />
-          3 factory quote options within 7 days
-        </span>
-      </div>
-
       {/* Decision Summary */}
-      <div className="mb-6 pb-6 border-b border-neutral-200">
-        <h4 className="text-xs font-semibold text-neutral-500 uppercase tracking-wider mb-3">
+      <div className="mb-4 pb-4 border-b border-neutral-200">
+        <h4 className="text-xs font-semibold text-neutral-500 uppercase tracking-wider mb-2">
           Decision Summary
         </h4>
-        <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-blue-50 border border-blue-200 mb-2">
+        <div className="inline-flex items-center gap-2 px-2.5 py-1 rounded-lg bg-blue-50 border border-blue-200 mb-2">
           <span className="text-xs font-semibold text-blue-900">GO</span>
         </div>
-        <p className="text-sm text-neutral-700 leading-relaxed mt-2">
-          Project shows strong viability with manageable compliance requirements. Recommended to proceed with deposit for factory quotes.
+        <p className="text-xs text-neutral-600 leading-relaxed mt-1.5">
+          Project shows strong viability with manageable compliance requirements.
         </p>
       </div>
 
       {/* Cost Range */}
-      <div className="mb-6 pb-6 border-b border-neutral-200">
-        <h4 className="text-xs font-semibold text-neutral-500 uppercase tracking-wider mb-3">
+      <div className="mb-4 pb-4 border-b border-neutral-200">
+        <h4 className="text-xs font-semibold text-neutral-500 uppercase tracking-wider mb-2">
           Estimated Cost Range
         </h4>
         <div className="flex items-baseline gap-2">
-          <span className="text-3xl md:text-4xl font-bold text-neutral-900 font-mono">$1.85</span>
+          <span className="text-2xl md:text-3xl font-bold text-neutral-900 font-mono">$1.85</span>
           <span className="text-sm text-neutral-500">-</span>
-          <span className="text-3xl md:text-4xl font-bold text-neutral-900 font-mono">$2.35</span>
-          <span className="text-sm text-neutral-600 ml-2">per unit DDP</span>
+          <span className="text-2xl md:text-3xl font-bold text-neutral-900 font-mono">$2.35</span>
+          <span className="text-xs text-neutral-600 ml-2">per unit DDP</span>
         </div>
-        <p className="text-xs text-neutral-500 mt-2">
+        <p className="text-xs text-neutral-500 mt-1.5">
           Based on 3 factory options. Final pricing confirmed after deposit.
         </p>
       </div>
 
       {/* Risk Highlights */}
-      <div className="mb-6 pb-6 border-b border-neutral-200">
-        <h4 className="text-xs font-semibold text-neutral-500 uppercase tracking-wider mb-3">
+      <div className="mb-4 pb-4 border-b border-neutral-200">
+        <h4 className="text-xs font-semibold text-neutral-500 uppercase tracking-wider mb-2">
           Risk Highlights
         </h4>
-        <div className="space-y-2">
+        <div className="space-y-1.5">
           <div className="flex items-start gap-2">
-            <div className="w-5 h-5 rounded-full bg-green-50 flex items-center justify-center flex-shrink-0 mt-0.5">
-              <CheckCircle className="w-3 h-3 text-green-600" />
+            <div className="w-4 h-4 rounded-full bg-green-50 flex items-center justify-center flex-shrink-0 mt-0.5">
+              <CheckCircle className="w-2.5 h-2.5 text-green-600" />
             </div>
             <div className="flex-1">
               <span className="text-xs font-medium text-neutral-700">Compliance </span>
@@ -73,8 +64,8 @@ export function ReportPreviewCard() {
             </div>
           </div>
           <div className="flex items-start gap-2">
-            <div className="w-5 h-5 rounded-full bg-yellow-50 flex items-center justify-center flex-shrink-0 mt-0.5">
-              <AlertTriangle className="w-3 h-3 text-yellow-600" />
+            <div className="w-4 h-4 rounded-full bg-yellow-50 flex items-center justify-center flex-shrink-0 mt-0.5">
+              <AlertTriangle className="w-2.5 h-2.5 text-yellow-600" />
             </div>
             <div className="flex-1">
               <span className="text-xs font-medium text-neutral-700">Duty </span>
@@ -83,8 +74,8 @@ export function ReportPreviewCard() {
             </div>
           </div>
           <div className="flex items-start gap-2">
-            <div className="w-5 h-5 rounded-full bg-green-50 flex items-center justify-center flex-shrink-0 mt-0.5">
-              <CheckCircle className="w-3 h-3 text-green-600" />
+            <div className="w-4 h-4 rounded-full bg-green-50 flex items-center justify-center flex-shrink-0 mt-0.5">
+              <CheckCircle className="w-2.5 h-2.5 text-green-600" />
             </div>
             <div className="flex-1">
               <span className="text-xs font-medium text-neutral-700">Supply Chain </span>
@@ -99,7 +90,7 @@ export function ReportPreviewCard() {
       {isExpanded && (
         <>
           {/* Next Actions */}
-          <div className="mb-6 pb-6 border-b border-neutral-200">
+          <div className="mb-4 pb-4 border-b border-neutral-200">
             <h4 className="text-xs font-semibold text-neutral-500 uppercase tracking-wider mb-3">
               Next Actions
             </h4>
@@ -120,7 +111,7 @@ export function ReportPreviewCard() {
           </div>
 
           {/* Assumptions */}
-          <div className="mb-4">
+          <div className="mb-3">
             <h4 className="text-xs font-semibold text-neutral-500 uppercase tracking-wider mb-3">
               Key Assumptions
             </h4>
@@ -161,9 +152,9 @@ export function ReportPreviewCard() {
       </button>
 
       {/* Disclaimer */}
-      <div className="mt-4 pt-4 border-t border-neutral-200">
-        <p className="text-xs text-neutral-500 leading-relaxed">
-          Example report preview. Final analysis confirmed by a manager within 1 business day.
+      <div className="mt-3 pt-3 border-t border-neutral-200">
+        <p className="text-xs text-neutral-400 leading-relaxed">
+          Final analysis confirmed by a manager within 1 business day.
         </p>
       </div>
     </div>

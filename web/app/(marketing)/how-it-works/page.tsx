@@ -7,6 +7,7 @@ import { MessageSquare, FileText, Package } from 'lucide-react';
 import { howItWorksPageConfig } from '@/lib/content/howItWorks';
 import { MarketingCard } from '@/components/marketing/MarketingCard';
 import { SectionLayout } from '@/components/marketing/SectionLayout';
+import { HeroSection } from '@/app/(marketing)/components/HeroSection';
 
 export const revalidate = 60;
 
@@ -16,109 +17,18 @@ export default async function HowItWorksPage() {
   return (
     <div className="bg-white">
       {/* Hero Section */}
-      <section aria-label="Hero" className="py-12 md:py-16 lg:py-20 bg-white">
-        <div className="mx-auto max-w-6xl px-4 md:px-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
-            {/* Left: Text Content */}
-            <div className="flex flex-col justify-center">
-              <h1 className="text-3xl md:text-4xl lg:text-[52px] font-bold tracking-tight text-neutral-900 leading-tight mb-6">
-                {hero.title}
-              </h1>
-              
-              {/* Promise Badges */}
-              <div className="flex flex-wrap gap-2 mb-6">
-                <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-blue-50 text-blue-700 border border-blue-200">
-                  AI snapshot within 1 business day
-                </span>
-                <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-blue-50 text-blue-700 border border-blue-200">
-                  $49 deposit credited to first order
-                </span>
-                <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-blue-50 text-blue-700 border border-blue-200">
-                  3 factory quotes within 7 days
-                </span>
-                <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-blue-50 text-blue-700 border border-blue-200">
-                  FOB locked for 3 months
-                </span>
-              </div>
-
-              <p className="text-base md:text-lg text-neutral-700 font-medium mb-2 leading-relaxed">
-                {hero.subtitle}
-              </p>
-              <p className="text-sm md:text-base text-neutral-600 mb-6 leading-relaxed">
-                {hero.description}
-              </p>
-              <div className="flex flex-col sm:flex-row flex-wrap gap-3 sm:gap-4 items-stretch sm:items-center">
-                <Link href={hero.cta.primary.href} className="w-full sm:w-auto">
-                  <Button
-                    className="bg-blue-600 hover:bg-blue-700 text-white rounded-lg px-6 md:px-8 py-3 md:py-3.5 w-full sm:w-auto"
-                  >
-                    {hero.cta.primary.label}
-                  </Button>
-                </Link>
-                <Link href={hero.cta.secondary.href} className="w-full sm:w-auto">
-                  <Button
-                    variant="outline"
-                    className="border-2 border-neutral-300 hover:border-neutral-400 text-neutral-700 hover:text-neutral-900 rounded-lg px-6 md:px-8 py-3 md:py-3.5 w-full sm:w-auto"
-                  >
-                    {hero.cta.secondary.label}
-                  </Button>
-                </Link>
-              </div>
-            </div>
-
-            {/* Right: Visual Collage */}
-            <div className="relative">
-              {/* Report Preview Card */}
-              <div className="relative z-10 bg-white rounded-lg p-6 shadow-sm border border-neutral-200">
-                <div className="mb-4">
-                  <h3 className="text-xs font-semibold text-neutral-900 uppercase tracking-wider mb-1">
-                    Sourcing Report Preview
-                  </h3>
-                  <div className="h-px bg-gradient-to-r from-neutral-200 to-transparent" />
-                </div>
-                
-                <div className="space-y-4">
-                  <div>
-                    <p className="text-xs font-semibold text-neutral-500 uppercase tracking-wider mb-2">
-                      Decision Summary
-                    </p>
-                    <div className="inline-flex items-center gap-2 px-3 py-1 rounded-lg bg-blue-50 border border-blue-200 mb-2">
-                      <span className="text-xs font-semibold text-blue-900">GO</span>
-                    </div>
-                    <p className="text-xs text-neutral-600 mt-2">
-                      Strong viability with manageable compliance requirements.
-                    </p>
-                  </div>
-                  
-                  <div className="pt-4 border-t border-neutral-200">
-                    <p className="text-xs font-semibold text-neutral-500 uppercase tracking-wider mb-2">
-                      Estimated Cost Range
-                    </p>
-                    <p className="text-lg font-bold text-neutral-900 font-mono">$1.85 - $2.35</p>
-                    <p className="text-xs text-neutral-500">per unit DDP</p>
-                  </div>
-                  
-                  <div className="pt-4 border-t border-neutral-200">
-                    <p className="text-xs font-semibold text-neutral-500 uppercase tracking-wider mb-2">
-                      Risk Highlights
-                    </p>
-                    <div className="space-y-1.5">
-                      <div className="flex items-center gap-2">
-                        <div className="w-1.5 h-1.5 rounded-full bg-green-500"></div>
-                        <span className="text-xs text-neutral-600">Compliance: Low risk</span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <div className="w-1.5 h-1.5 rounded-full bg-yellow-500"></div>
-                        <span className="text-xs text-neutral-600">Duty: Moderate (~8.5%)</span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
+      <HeroSection
+        title={hero.title}
+        chips={hero.chips}
+        valueStatement={hero.subtitle}
+        description={hero.description}
+        cta={{
+          primary: hero.cta.primary,
+          secondary: hero.cta.secondary,
+          helperText: hero.cta.helperText,
+        }}
+        showPreviewCard={true}
+      />
 
       {/* Journey in Three Moves */}
       <SectionLayout

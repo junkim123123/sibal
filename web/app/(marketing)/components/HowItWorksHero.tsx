@@ -19,9 +19,9 @@ export default function HowItWorksHero() {
       </div>
 
       <div className="mx-auto max-w-6xl px-4 md:px-6 relative z-10">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 lg:gap-6 items-center">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 lg:gap-6 lg:items-center">
           {/* Left: Copy and CTA - 5 columns */}
-          <div className="lg:col-span-5 text-center order-2 lg:order-1">
+          <div className="lg:col-span-5 text-center order-2 lg:order-1 lg:self-center">
             {/* 1. Kicker */}
             <div className="mb-2">
               <span className="text-xs font-semibold text-blue-700">
@@ -40,7 +40,7 @@ export default function HowItWorksHero() {
             </p>
             
             {/* 4. CTA Buttons */}
-            <div className="flex flex-col sm:flex-row gap-3 justify-center mb-3">
+            <div className="flex flex-col sm:flex-row gap-3 justify-center mb-2">
               <Link href={hero.cta.primary.href} className="w-full sm:w-auto">
                 <Button className="bg-blue-600 hover:bg-blue-700 text-white rounded-lg px-6 md:px-8 py-3 md:py-3.5 w-full sm:w-auto">
                   Get free snapshot
@@ -57,6 +57,11 @@ export default function HowItWorksHero() {
               </Link>
             </div>
             
+            {/* CTA Helper Text */}
+            <p className="text-xs text-neutral-500 text-center mb-3">
+              Usually ready in minutes. Up to 1 hour during peak times.
+            </p>
+            
             {/* 5. Trust bar - Small badges */}
             <div className="flex flex-wrap items-center justify-center gap-2 text-xs">
               <span className="inline-flex items-center px-2 py-1 rounded-full font-medium bg-blue-50 text-blue-700 border border-blue-200">
@@ -72,7 +77,7 @@ export default function HowItWorksHero() {
           </div>
 
           {/* Right: Sample report preview - 7 columns (Compact) */}
-          <div className="lg:col-span-7 order-1 lg:order-2">
+          <div className="lg:col-span-7 order-1 lg:order-2 lg:self-center">
             <div className="bg-white border border-neutral-200 rounded-lg p-4 shadow-sm max-w-md mx-auto lg:mx-0">
               {/* Header - Minimal */}
               <div className="mb-3">

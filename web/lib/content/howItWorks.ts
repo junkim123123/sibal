@@ -74,7 +74,7 @@ export interface HowItWorksPageConfig {
 export const howItWorksPageConfig: HowItWorksPageConfig = {
   hero: {
     title: 'How NexSupply works in 3 moves',
-    subtitle: 'Free snapshot in 1 business day. $49 deposit to start factory outreach, credited to your first order if you proceed.',
+    subtitle: 'Free snapshot usually ready in minutes. Up to 1 hour during peak times. $49 deposit to start factory outreach, credited to your first order if you proceed.',
     description: '',
     note: '',
     cta: {
@@ -90,7 +90,7 @@ export const howItWorksPageConfig: HowItWorksPageConfig = {
     },
     chips: [
       { text: 'Step 1: Project brief 10 minutes' },
-      { text: 'Step 2: Free AI cost and risk snapshot within 1 business day' },
+      { text: 'Step 2: Free AI cost and risk snapshot, usually ready in minutes' },
       { text: 'Step 3: Deposit $49 to unlock manager plus 3 factory quotes within 7 days' },
     ],
   },
@@ -109,7 +109,7 @@ export const howItWorksPageConfig: HowItWorksPageConfig = {
       },
       {
         title: 'Free snapshot',
-        body: 'Get the DDP breakdown, duty assumptions, and early red flags in 1 business day.',
+        body: 'Usually delivered in minutes. Up to 1 hour during peak times. Manager confirmed within 1 business day.',
         icon: TrendingUp,
         deliverables: [
           'DDP breakdown',
@@ -147,8 +147,8 @@ export const howItWorksPageConfig: HowItWorksPageConfig = {
       {
         stepNumber: '2',
         title: 'Free AI cost and risk snapshot',
-        timeEstimate: 'Within 1 business day',
-        body: 'Review the AI-generated cost and risk snapshot with DDP (delivered cost) breakdown, compliance flags, and risk assessment.',
+        timeEstimate: 'Usually ready in minutes',
+        body: 'Review the AI-generated cost and risk snapshot with DDP (delivered cost) breakdown, compliance flags, and risk assessment. Usually delivered in minutes. Up to 1 hour during peak times. Manager confirmed within 1 business day.',
         bullets: [
           'Estimated DDP per unit including factory, freight, duty, and extras',
           'Compliance and AD/CVD (anti-dumping duties) risk flags',
@@ -184,7 +184,7 @@ export const howItWorksPageConfig: HowItWorksPageConfig = {
       {
         title: 'Analysis and planning',
         items: [
-          'Free snapshot in 1 business day.',
+          'Free snapshot usually ready in minutes. Up to 1 hour during peak times.',
           'No subscription. No commitment. No payment unless you proceed.',
         ],
       },
@@ -215,7 +215,7 @@ export const howItWorksPageConfig: HowItWorksPageConfig = {
       },
       {
         question: 'How long does the whole process take?',
-        answer: 'Free snapshot in 1 business day. Factory quotes in 7 days after deposit.',
+        answer: 'Free snapshot usually ready in minutes. Up to 1 hour during peak times. Manager confirmed within 1 business day. Factory quotes in 7 days after deposit.',
       },
     ],
   },

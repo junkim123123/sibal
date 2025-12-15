@@ -74,7 +74,7 @@ export interface HowItWorksPageConfig {
 export const howItWorksPageConfig: HowItWorksPageConfig = {
   hero: {
     title: 'How NexSupply works in 3 moves',
-    subtitle: 'Free snapshot usually ready in minutes. Up to 1 hour during peak times. $49 deposit to start factory outreach, credited to your first order if you proceed.',
+    subtitle: 'Free snapshot within 1 business day. Often ready in minutes, up to 1 hour during peak times. $49 deposit starts factory outreach, credited to your first order if you proceed.',
     description: '',
     note: '',
     cta: {
@@ -109,7 +109,7 @@ export const howItWorksPageConfig: HowItWorksPageConfig = {
       },
       {
         title: 'Free snapshot',
-        body: 'Usually delivered in minutes. Up to 1 hour during peak times. Manager confirmed within 1 business day.',
+        body: 'Within 1 business day. Often ready in minutes, up to 1 hour during peak times.',
         icon: TrendingUp,
         deliverables: [
           'DDP breakdown',

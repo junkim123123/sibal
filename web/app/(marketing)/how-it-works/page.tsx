@@ -23,17 +23,17 @@ export default async function HowItWorksPage() {
       <SectionLayout
         title={journey.title}
         subtitle={journey.subtitle}
-        className="bg-neutral-50 py-2 md:py-4 -mt-2"
-        titleClassName="text-sm md:text-base lg:text-lg font-semibold"
+        className="bg-neutral-50 py-2 md:py-4 mt-10 border-t border-neutral-200 pt-8"
+        titleClassName="text-2xl md:text-3xl font-semibold tracking-tight"
       >
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6 max-w-6xl mx-auto">
+        <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-6">
           {journey.cards.map((card, idx) => {
             const Icon = card.icon;
             return (
               <div
                 key={idx}
                 id={`step-${idx + 1}`}
-                className={`rounded-lg border p-3 shadow-sm h-full flex flex-col scroll-mt-24 ${
+                className={`rounded-2xl border p-5 shadow-sm h-full flex flex-col scroll-mt-24 ${
                   idx === 2 
                     ? 'bg-blue-50/80 border-2 border-blue-400' 
                     : 'bg-white border-neutral-200'
@@ -67,7 +67,7 @@ export default async function HowItWorksPage() {
                     </h3>
                   </div>
                 </div>
-                <p className="text-xs text-neutral-600 leading-normal mb-2 flex-1">
+                <p className="mt-3 text-sm leading-6 text-neutral-600 flex-1">
                   {card.body.split(/(\d+)/g).map((part, i) => {
                     const isNumber = /^\d+$/.test(part);
                     return isNumber ? (
@@ -78,15 +78,13 @@ export default async function HowItWorksPage() {
                   })}
                 </p>
                 {card.deliverables && card.deliverables.length > 0 && (
-                  <div className="mt-auto pt-1.5 border-t border-neutral-200">
-                    <p className="text-xs font-semibold text-neutral-500 uppercase tracking-wider mb-0.5">
-                      Deliverables
-                    </p>
-                    <ul className="space-y-0.5">
+                  <div className="mt-5 border-t border-neutral-200 pt-4">
+                    <div className="text-xs font-semibold tracking-wide text-neutral-500 uppercase">DELIVERABLES</div>
+                    <ul className="mt-3 space-y-2 text-sm text-neutral-700">
                       {card.deliverables.slice(0, 3).map((item, i) => (
-                        <li key={i} className="flex items-start gap-1.5 text-xs text-neutral-600">
-                          <span className="text-blue-600 mt-0.5 flex-shrink-0">•</span>
-                          <span className="leading-snug">{item}</span>
+                        <li key={i} className="flex gap-2">
+                          <span className="mt-1 h-1.5 w-1.5 rounded-full bg-blue-600 flex-shrink-0" />
+                          <span>{item}</span>
                         </li>
                       ))}
                     </ul>
@@ -102,8 +100,9 @@ export default async function HowItWorksPage() {
       <SectionLayout
         title={pricing.title}
         className="bg-neutral-50 py-10 md:py-14"
+        titleClassName="text-2xl md:text-3xl font-semibold"
       >
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-5 md:gap-6 max-w-6xl mx-auto">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-5 md:gap-6">
           {/* Free */}
           <div className="bg-white border border-neutral-200 rounded-lg p-5 shadow-sm">
             <div className="flex items-baseline gap-2 mb-2">
@@ -113,8 +112,11 @@ export default async function HowItWorksPage() {
               </span>
             </div>
             <h3 className="text-lg font-semibold text-neutral-900 mb-2">Free snapshot</h3>
-            <p className="text-sm text-neutral-600 leading-relaxed mb-3">
+            <p className="text-sm text-neutral-600 leading-relaxed mb-2">
               AI cost and risk snapshot
+            </p>
+            <p className="text-xs text-neutral-500 mb-3">
+              Within 1 business day. Often ready in minutes, up to 1 hour during peak times.
             </p>
             <ul className="space-y-1.5 text-xs text-neutral-600">
               <li className="flex items-start gap-2">
@@ -151,7 +153,7 @@ export default async function HowItWorksPage() {
             <ul className="space-y-1.5 text-xs text-neutral-600">
               <li className="flex items-start gap-2">
                 <span className="text-blue-600 mt-0.5 font-bold">•</span>
-                <span><span className="font-bold text-neutral-900">$49</span> non-refundable once outreach begins. Credited to your first order if you proceed.</span>
+                <span><span className="font-bold text-neutral-900">$49</span> deposit is non-refundable once outreach begins. Credited to your first order if you proceed.</span>
               </li>
               <li className="flex items-start gap-2">
                 <span className="text-blue-600 mt-0.5 font-bold">•</span>

@@ -20,13 +20,13 @@ export function SectionLayout({
 }: SectionLayoutProps) {
   return (
     <section className={className || 'py-10 md:py-16'}>
-      <div className="mx-auto max-w-6xl px-4 md:px-6">
+      <div className="mx-auto max-w-6xl px-6 lg:px-8">
         {eyebrow && (
           <p className="text-xs md:text-sm font-semibold text-neutral-500 uppercase tracking-wide mb-2 text-center">
             {eyebrow}
           </p>
         )}
-        <h2 className={`${titleClassName || 'text-2xl md:text-3xl lg:text-4xl font-bold'} text-neutral-900 ${titleClassName ? 'mb-1.5 md:mb-2' : 'mb-4 md:mb-6'} text-center`}>
+        <h2 className={`${titleClassName || 'text-2xl md:text-3xl lg:text-4xl font-bold'} text-neutral-900 ${titleClassName ? 'mb-6' : 'mb-4 md:mb-6'} text-center`}>
           {title}
         </h2>
         {subtitle && (

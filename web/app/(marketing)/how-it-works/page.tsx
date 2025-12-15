@@ -23,7 +23,7 @@ export default async function HowItWorksPage() {
       <SectionLayout
         title={journey.title}
         subtitle={journey.subtitle}
-        className="bg-neutral-50 py-16 md:py-24"
+        className="bg-neutral-50 py-16 md:py-20"
       >
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {journey.cards.map((card, idx) => {
@@ -37,9 +37,17 @@ export default async function HowItWorksPage() {
                   <div className="flex-shrink-0 w-10 h-10 rounded-lg bg-blue-50 flex items-center justify-center">
                     <Icon className="h-5 w-5 text-blue-600" />
                   </div>
-                  <h3 className="text-lg font-semibold text-neutral-900">
-                    {card.title}
-                  </h3>
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className="text-xs font-semibold text-blue-600">Step {idx + 1}</span>
+                      {idx === 0 && <span className="text-xs text-neutral-500">10 minutes</span>}
+                      {idx === 1 && <span className="text-xs text-neutral-500">1 business day</span>}
+                      {idx === 2 && <span className="text-xs text-neutral-500">7 days after deposit</span>}
+                    </div>
+                    <h3 className="text-lg font-semibold text-neutral-900">
+                      {card.title}
+                    </h3>
+                  </div>
                 </div>
                 <p className="text-sm text-neutral-600 leading-relaxed mb-4 flex-1">
                   {card.body}
@@ -65,82 +73,11 @@ export default async function HowItWorksPage() {
         </div>
       </SectionLayout>
 
-      {/* Step by Step Timeline */}
-      <SectionLayout
-        title={steps.title}
-        className="bg-white py-16 md:py-24"
-      >
-        <div className="max-w-4xl mx-auto">
-          <div className="space-y-8 md:space-y-12 lg:space-y-16">
-            {steps.items.map((step, index) => {
-              const Icon = step.icon;
-              return (
-                <div key={step.stepNumber} className="flex gap-4 md:gap-6">
-                  {/* Left: Number Bubble */}
-                  <div className="flex-shrink-0">
-                    <div className="relative">
-                      <div className="w-12 h-12 md:w-16 md:h-16 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold text-xl md:text-2xl">
-                        {step.stepNumber}
-                      </div>
-                    </div>
-                    {/* Vertical line (except last) */}
-                    {index < steps.items.length - 1 && (
-                      <div className="border-l-2 border-gray-200 ml-6 md:ml-8 mt-4" style={{ height: 'calc(100% + 2rem)' }}></div>
-                    )}
-                  </div>
-
-                  {/* Right: Content */}
-                  <div className="flex-1 pb-8 md:pb-12">
-                    <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 mb-3 md:mb-4">
-                      <h3 className="text-xl md:text-2xl font-bold text-neutral-900">
-                        {step.title}
-                      </h3>
-                      {step.timeEstimate && (
-                        <span className="text-xs md:text-sm text-neutral-500">
-                          {step.timeEstimate}
-                        </span>
-                      )}
-                    </div>
-                    <p className="text-sm md:text-base lg:text-lg text-neutral-600 mb-6 md:mb-8 leading-relaxed">
-                      {step.body}
-                    </p>
-                    {step.deliverables && step.deliverables.length > 0 && (
-                      <div className="mt-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
-                        <p className="text-xs font-semibold text-blue-900 uppercase tracking-wider mb-2">
-                          Deliverables
-                        </p>
-                        <ul className="space-y-1.5">
-                          {step.deliverables.map((item, i) => (
-                            <li key={i} className="flex items-start gap-2 text-xs text-blue-700">
-                              <span className="text-blue-600 mt-0.5">•</span>
-                              <span>{item}</span>
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
-                    )}
-                    {step.bullets && step.bullets.length > 0 && (
-                      <div className="mt-4 space-y-2">
-                        {step.bullets.map((bullet, i) => (
-                          <div key={i} className="flex items-start gap-2 text-sm text-neutral-700">
-                            <span className="text-neutral-400 mt-1.5">•</span>
-                            <span className="leading-relaxed">{bullet}</span>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      </SectionLayout>
 
       {/* Pricing Summary */}
       <SectionLayout
         title={pricing.title}
-        className="bg-neutral-50 py-16 md:py-24"
+        className="bg-neutral-50 py-16 md:py-20"
       >
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8 lg:gap-10">
           {pricing.cards.map((card, idx) => (
@@ -165,7 +102,7 @@ export default async function HowItWorksPage() {
       {/* FAQ Section */}
       <SectionLayout
         title={faq.title}
-        className="bg-white py-16 md:py-24"
+        className="bg-white py-16 md:py-20"
       >
         <div className="max-w-3xl mx-auto">
           <Accordion>
@@ -174,6 +111,7 @@ export default async function HowItWorksPage() {
                 key={idx}
                 question={faqItem.question}
                 answer={faqItem.answer}
+                defaultOpen={faqItem.question.includes('shipping and customs')}
               />
             ))}
           </Accordion>

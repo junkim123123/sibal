@@ -9,7 +9,9 @@ export default function HomeImpactBand() {
   const { t } = useLanguage();
 
   return (
-    <section className="py-20 bg-neutral-900 dark:bg-gray-800 text-white border-t border-blue-600/20">
+    <section className="py-16 md:py-20 bg-neutral-900 dark:bg-gray-800 text-white border-t border-blue-600/20 relative">
+      {/* Gradient transition to footer */}
+      <div className="absolute bottom-0 left-0 right-0 h-8 bg-gradient-to-b from-transparent to-white dark:to-neutral-900 pointer-events-none" />
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="text-center">
           <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold mb-4">

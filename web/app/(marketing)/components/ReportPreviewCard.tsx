@@ -113,7 +113,7 @@ export function ReportPreviewCard() {
         </div>
       </div>
 
-      <div className="p-5 md:p-6 min-h-[420px]">
+      <div className="p-5 md:p-6">
         {/* Header with report bar */}
         <div className="mb-4">
           <div className="flex items-center justify-between mb-2">

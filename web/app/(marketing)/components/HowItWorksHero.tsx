@@ -68,7 +68,7 @@ export default function HowItWorksHero() {
                     <Icon className="w-6 h-6 text-blue-600" />
                   </div>
                   <div className="text-xs font-semibold text-blue-600 mb-2">Step {index + 1}</div>
-                  <p className="text-sm font-medium text-neutral-900">{chip.text}</p>
+                  <p className="text-sm font-medium text-neutral-900 leading-relaxed">{chip.text}</p>
                 </div>
               </div>
             );

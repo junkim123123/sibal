@@ -40,7 +40,7 @@ export default function HomeBenefitsGridV2() {
   const { t } = useLanguage();
 
   return (
-    <section className="py-20 bg-white dark:bg-gray-900 border-t border-neutral-200 dark:border-neutral-700">
+    <section className="py-16 md:py-20 bg-white dark:bg-gray-900 border-t border-neutral-200 dark:border-neutral-700">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-12">
           <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold tracking-tight text-neutral-900 dark:text-white mb-4">

@@ -75,7 +75,7 @@ export const howItWorksPageConfig: HowItWorksPageConfig = {
   hero: {
     title: 'How NexSupply Works',
     subtitle: 'AI-powered sourcing reports. Real factory quotes. Transparent pricing.',
-    description: 'Start with a free analysis. When the numbers work, deposit $49 to unlock factory quotes within 7 days.',
+    description: 'Start with a free analysis. Deposit $49 only if you want real factory quotes and a manager. Fully refundable.',
     note: '',
     cta: {
       primary: {
@@ -83,15 +83,15 @@ export const howItWorksPageConfig: HowItWorksPageConfig = {
         href: '/chat',
       },
       secondary: {
-        label: 'Talk to a Manager',
+        label: 'Talk to a manager',
         href: '/chat',
       },
-      helperText: '$49 deposit credited to first order, refundable if you do not proceed.',
+      helperText: 'Deposit $49 only if you want real factory quotes and a manager. Fully refundable.',
     },
     chips: [
-      { text: 'AI snapshot 1 business day' },
-      { text: '3 factory quotes 7 days' },
-      { text: '$49 deposit credited and refundable' },
+      { text: 'Step 1: Project brief 10 minutes' },
+      { text: 'Step 2: Free AI cost and risk snapshot within 1 business day' },
+      { text: 'Step 3: Deposit $49 to unlock manager plus 3 factory quotes within 7 days' },
     ],
   },
   journey: {
@@ -108,17 +108,17 @@ export const howItWorksPageConfig: HowItWorksPageConfig = {
         ],
       },
       {
-        title: 'Get AI Cost & Risk Snapshot',
+        title: 'Free AI Cost & Risk Snapshot',
         body: 'Receive a comprehensive landed cost and risk assessment within 1 business day.',
         icon: TrendingUp,
         deliverables: [
-          'Estimated DDP per unit breakdown',
-          'Compliance and AD/CVD risk flags',
+          'Estimated DDP (delivered cost) per unit breakdown',
+          'Compliance and AD/CVD (anti-dumping duties) risk flags',
           'Go / Pause / Drop recommendation',
         ],
       },
       {
-        title: 'Deposit & Get Factory Quotes',
+        title: 'Deposit $49 to Unlock Manager & Factory Quotes',
         body: 'Deposit $49 to unlock manager and receive 3 factory quotes within 7 days.',
         icon: Package,
         deliverables: [
@@ -134,8 +134,8 @@ export const howItWorksPageConfig: HowItWorksPageConfig = {
     items: [
       {
         stepNumber: '1',
-        title: 'Describe your product',
-        timeEstimate: '~10 minutes',
+        title: 'Submit project brief',
+        timeEstimate: '10 minutes',
         body: 'Upload your product idea or reference listing. Share target market, sales channel, volume, and timing.',
         bullets: [
           'Create structured sourcing brief',
@@ -146,12 +146,12 @@ export const howItWorksPageConfig: HowItWorksPageConfig = {
       },
       {
         stepNumber: '2',
-        title: 'AI cost and risk check',
+        title: 'Free AI cost and risk snapshot',
         timeEstimate: 'Within 1 business day',
-        body: 'Review the AI-generated cost and risk snapshot with DDP breakdown, compliance flags, and risk assessment.',
+        body: 'Review the AI-generated cost and risk snapshot with DDP (delivered cost) breakdown, compliance flags, and risk assessment.',
         bullets: [
           'Estimated DDP per unit including factory, freight, duty, and extras',
-          'Compliance and AD/CVD risk flags',
+          'Compliance and AD/CVD (anti-dumping duties) risk flags',
           'Margin assumption testing and alternative scenario suggestions',
         ],
         deliverables: [
@@ -163,7 +163,7 @@ export const howItWorksPageConfig: HowItWorksPageConfig = {
       },
       {
         stepNumber: '3',
-        title: 'Deposit & factory quotes',
+        title: 'Deposit $49 to unlock manager and factory quotes',
         timeEstimate: 'Real factory quotes within 7 days',
         body: 'Deposit $49 to unlock your dedicated manager. The deposit is 100% credited to your first order and refundable if you choose not to proceed. Receive 3 real factory quotes within 7 days with FOB prices locked for 3 months.',
         bullets: [
@@ -207,19 +207,19 @@ export const howItWorksPageConfig: HowItWorksPageConfig = {
     items: [
       {
         question: 'Do I have to be an experienced seller?',
-        answer: 'No. Many of our early users are launching their first or second product. We focus on helping you understand landed cost and risk before you commit.',
+        answer: 'No. We work with first time importers. The AI snapshot helps you sanity check costs before you commit.',
       },
       {
         question: 'Can I use NexSupply if I already have suppliers?',
-        answer: 'Yes. You can bring your own suppliers and use NexSupply only for cost and risk checks or to benchmark new options.',
+        answer: 'Yes. We can benchmark your current supplier against alternatives and flag compliance or duty risks early.',
       },
       {
         question: 'Do you handle shipping and customs?',
-        answer: 'We help you plan freight and customs but we are not a customs broker or law firm. We can coordinate with your partners or recommend specialists.',
+        answer: 'We coordinate logistics planning and documentation support. We are not a customs broker.',
       },
       {
         question: 'How long does the whole process take?',
-        answer: 'Most projects receive an initial analysis within 1 business day and a first pilot supplier plan within one to two weeks, depending on category.',
+        answer: 'AI snapshot within 1 business day. Factory quotes within 7 days after deposit.',
       },
     ],
   },

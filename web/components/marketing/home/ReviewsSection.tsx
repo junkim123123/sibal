@@ -13,6 +13,11 @@ export function ReviewsSection({ section }: { section: HomeReviewsSection }) {
   const [canScrollRight, setCanScrollRight] = useState(true);
   const [currentIndex, setCurrentIndex] = useState(0);
 
+  // Hide section if no reviews
+  if (!reviews || reviews.length === 0) {
+    return null;
+  }
+
   const checkScrollability = () => {
     if (!scrollContainerRef.current) return;
     const { scrollLeft, scrollWidth, clientWidth } = scrollContainerRef.current;
@@ -50,7 +55,7 @@ export function ReviewsSection({ section }: { section: HomeReviewsSection }) {
   };
 
   return (
-    <section className="py-20 border-t border-neutral-200 dark:border-gray-700 bg-neutral-50 dark:bg-neutral-900">
+    <section className="py-16 md:py-20 border-t border-neutral-200 dark:border-gray-700 bg-neutral-50 dark:bg-neutral-900">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="mb-8">
           <div className="max-w-xl space-y-2">
@@ -59,11 +64,11 @@ export function ReviewsSection({ section }: { section: HomeReviewsSection }) {
                 {t.home.reviews.eyebrow}
               </p>
             )}
-            <div className="flex items-center gap-3 flex-wrap">
+            <div className="flex items-baseline gap-3 flex-wrap">
               <h2 className="text-2xl sm:text-3xl font-semibold tracking-tight text-neutral-900 dark:text-white">
                 {t.home.reviews.title}
               </h2>
-              {/* Rating inline with title */}
+              {/* Rating inline with title - baseline aligned */}
               <div className="flex items-center gap-2">
                 <div className="flex items-center gap-0.5">
                   {[...Array(5)].map((_, i) => (
@@ -73,6 +78,11 @@ export function ReviewsSection({ section }: { section: HomeReviewsSection }) {
                   ))}
                 </div>
                 <span className="text-sm font-semibold text-neutral-900 dark:text-white">{averageRating.toFixed(1)}</span>
+                {reviews.length > 0 && (
+                  <span className="text-xs text-neutral-500 dark:text-neutral-400">
+                    ({reviews.length} {reviews.length === 1 ? 'review' : 'reviews'})
+                  </span>
+                )}
               </div>
             </div>
             {t.home.reviews.subtitle && (
@@ -86,32 +96,36 @@ export function ReviewsSection({ section }: { section: HomeReviewsSection }) {
 
         {/* Desktop: 3-column grid, Mobile: Scroll container */}
         <div className="mt-6 relative">
-          {/* Mobile arrows - inside container */}
-          <button
-            onClick={() => scroll('left')}
-            disabled={!canScrollLeft}
-            className={`md:hidden absolute left-2 top-1/2 -translate-y-1/2 z-10 flex items-center justify-center w-8 h-8 rounded-full bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 shadow-sm hover:shadow-md transition-all ${
-              canScrollLeft ? 'opacity-100 cursor-pointer' : 'opacity-30 pointer-events-none'
-            }`}
-            aria-label="Scroll left"
-          >
-            <ChevronLeft className="w-4 h-4 text-neutral-600 dark:text-neutral-400" />
-          </button>
+          {/* Mobile arrows - only show if more than 1 review */}
+          {reviews.length > 1 && (
+            <>
+              <button
+                onClick={() => scroll('left')}
+                disabled={!canScrollLeft}
+                className={`md:hidden absolute left-2 top-1/2 -translate-y-1/2 z-10 flex items-center justify-center w-8 h-8 rounded-full bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 shadow-sm hover:shadow-md transition-all ${
+                  canScrollLeft ? 'opacity-100 cursor-pointer' : 'opacity-30 pointer-events-none'
+                }`}
+                aria-label="Scroll left"
+              >
+                <ChevronLeft className="w-4 h-4 text-neutral-600 dark:text-neutral-400" />
+              </button>
 
-          <button
-            onClick={() => scroll('right')}
-            disabled={!canScrollRight}
-            className={`md:hidden absolute right-2 top-1/2 -translate-y-1/2 z-10 flex items-center justify-center w-8 h-8 rounded-full bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 shadow-sm hover:shadow-md transition-all ${
-              canScrollRight ? 'opacity-100 cursor-pointer' : 'opacity-30 pointer-events-none'
-            }`}
-            aria-label="Scroll right"
-          >
-            <ChevronRight className="w-4 h-4 text-neutral-600 dark:text-neutral-400" />
-          </button>
+              <button
+                onClick={() => scroll('right')}
+                disabled={!canScrollRight}
+                className={`md:hidden absolute right-2 top-1/2 -translate-y-1/2 z-10 flex items-center justify-center w-8 h-8 rounded-full bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 shadow-sm hover:shadow-md transition-all ${
+                  canScrollRight ? 'opacity-100 cursor-pointer' : 'opacity-30 pointer-events-none'
+                }`}
+                aria-label="Scroll right"
+              >
+                <ChevronRight className="w-4 h-4 text-neutral-600 dark:text-neutral-400" />
+              </button>
+            </>
+          )}
 
           {/* Desktop: 3-column grid, Mobile: Scroll container */}
           <div className="hidden md:grid md:grid-cols-3 gap-6">
-            {reviews.slice(0, 3).map((review) => (
+            {reviews.slice(0, Math.min(3, reviews.length)).map((review) => (
               <article
                 key={review.id}
                 className="flex flex-col rounded-2xl bg-white dark:bg-neutral-800 p-6 shadow-sm border border-neutral-200 dark:border-neutral-700 hover:shadow-md hover:border-blue-300 dark:hover:border-blue-700 transition-all"

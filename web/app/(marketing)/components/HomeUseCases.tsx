@@ -8,7 +8,7 @@ export default function HomeUseCases() {
   const { t } = useLanguage();
 
   return (
-    <section id="home-use-cases" className="py-20 bg-neutral-50 dark:bg-neutral-900 border-t border-neutral-200 dark:border-neutral-700">
+    <section id="home-use-cases" className="py-16 md:py-20 bg-neutral-50 dark:bg-neutral-900 border-t border-neutral-200 dark:border-neutral-700">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold tracking-tight text-neutral-900 dark:text-white mb-8 md:mb-12 text-center">
           {t.home.useCases.title}

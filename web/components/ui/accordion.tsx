@@ -14,24 +14,40 @@ export function AccordionItem({ question, answer, defaultOpen = false }: Accordi
   const [isOpen, setIsOpen] = useState(defaultOpen);
 
   return (
-    <div className="border-b border-neutral-200 last:border-b-0">
+    <div className={`border-b border-neutral-200 last:border-b-0 transition-colors ${
+      isOpen ? 'bg-blue-50/30 border-blue-200' : ''
+    }`}>
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}
-        className="w-full py-5 flex items-center justify-between text-left hover:text-neutral-900 transition-colors"
+        className={`w-full py-5 px-4 flex items-center justify-between text-left hover:text-neutral-900 transition-colors rounded-lg ${
+          isOpen ? 'bg-blue-50/50' : ''
+        }`}
       >
         <span className="font-medium text-neutral-900 pr-8 text-base flex-1">{question}</span>
-        <span className="text-neutral-500 flex-shrink-0 text-lg">
+        <span className={`flex-shrink-0 text-lg transition-colors ${
+          isOpen ? 'text-blue-600' : 'text-neutral-500'
+        }`}>
           {isOpen ? '−' : '+'}
         </span>
       </button>
       {isOpen && (
-        <div 
-          className="pb-5 text-neutral-700 leading-relaxed whitespace-pre-line text-base"
-          dangerouslySetInnerHTML={{ 
-            __html: answer.replace(/\*\*(.*?)\*\*/g, '<strong class="font-semibold text-neutral-900">$1</strong>')
-          }}
-        />
+        <div className="pb-5 px-4 text-base">
+          {answer.split('\n').map((line, idx) => {
+            if (idx === 0) {
+              return (
+                <p key={idx} className="font-semibold text-neutral-900 mb-2 leading-relaxed">
+                  {line}
+                </p>
+              );
+            }
+            return (
+              <p key={idx} className="text-neutral-600 leading-relaxed">
+                {line}
+              </p>
+            );
+          })}
+        </div>
       )}
     </div>
   );

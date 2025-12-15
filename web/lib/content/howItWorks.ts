@@ -73,20 +73,20 @@ export interface HowItWorksPageConfig {
 
 export const howItWorksPageConfig: HowItWorksPageConfig = {
   hero: {
-    title: 'How NexSupply Works',
-    subtitle: 'AI-powered sourcing reports. Real factory quotes. Transparent pricing.',
-    description: 'Start with a free AI cost and risk snapshot. Deposit $49 only if you want a dedicated manager and real factory quotes. Fully refundable and credited if you proceed.',
+    title: 'Stop guessing your landed cost.',
+    subtitle: 'Know your real delivered cost and duty risk in 1 business day. If the numbers work, pay a refundable $49 to trigger real factory quotes and a dedicated manager.',
+    description: '',
     note: '',
     cta: {
       primary: {
-        label: 'Get an analysis',
+        label: 'Get free snapshot',
         href: '/chat',
       },
       secondary: {
         label: 'Talk to a manager',
         href: '/chat',
       },
-      helperText: 'No credit card required for the free snapshot.',
+      helperText: 'No credit card for the free snapshot.',
     },
     chips: [
       { text: 'Step 1: Project brief 10 minutes' },
@@ -98,33 +98,33 @@ export const howItWorksPageConfig: HowItWorksPageConfig = {
     title: 'Your sourcing journey in three moves',
     cards: [
       {
-        title: 'Submit Project Brief',
-        body: 'Share your product idea, target market, and volume requirements.',
+        title: 'Submit your brief',
+        body: '10 minutes to replace 10 hours of back and forth.',
         icon: MessageSquare,
         deliverables: [
           'Structured sourcing brief',
-          'Shared project documentation',
-          'Clear starting point for the team',
+          'Clear assumptions',
+          'Shared project doc',
         ],
       },
       {
-        title: 'Free AI Cost & Risk Snapshot',
-        body: 'Receive a comprehensive landed cost and risk assessment within 1 business day.',
+        title: 'Free cost and risk snapshot',
+        body: 'Get the DDP breakdown, duty assumptions, and early red flags in 1 business day.',
         icon: TrendingUp,
         deliverables: [
-          'Estimated DDP (delivered cost) per unit breakdown',
-          'Compliance and AD/CVD (anti-dumping duties) risk flags',
-          'Go / Pause / Drop recommendation',
+          'DDP per unit breakdown',
+          'AD CVD and compliance flags',
+          'Go Pause Drop recommendation',
         ],
       },
       {
-        title: 'Deposit $49 to Unlock Manager & Factory Quotes',
-        body: 'Deposit $49 to unlock a dedicated manager and receive 3 factory quote options within 7 days.',
+        title: 'Refundable deposit to start factory outreach',
+        body: 'Pay $49 only when you want real quotes. Applied to your first order or refunded if you walk away.',
         icon: Package,
         deliverables: [
-          '3 factory quote options',
+          '3 real quote options in 7 days',
           'Dedicated manager assigned',
-          'Factory FOB locked for 3 months',
+          'FOB locked for 3 months',
         ],
       },
     ],
@@ -184,20 +184,16 @@ export const howItWorksPageConfig: HowItWorksPageConfig = {
       {
         title: 'Analysis and planning',
         items: [
-          'Free AI cost and risk snapshot within 1 business day.',
-          'Includes detailed report and one review call.',
-          'No subscription or commitment required.',
+          'Free snapshot in 1 business day.',
+          'No subscription. No commitment. "Go" 사인이 나올 때까지 결제 안 해도 됩니다.',
         ],
       },
       {
         title: 'When orders go through NexSupply',
         items: [
-          '$49 deposit credited 100% to your first order (refundable if not proceeding).',
-          'Factory FOB price locked for 3 months once quoted.',
-          'All logistics, customs, duties, packaging materials, labeling, and kitting costs are pass-through at cost with zero markup.',
-          'NexSupply charges a transparent 5% management fee on FOB for production management and QC coordination.',
-          'Hub locations: Seoul, Yiwu, Shantou, Vung Tau.',
-          'We help plan freight and customs but are not a customs broker or law firm.',
+          '$49 deposit triggers factory outreach.',
+          'Pass through at cost for logistics and duties.',
+          'We charge 5 percent on FOB for production management and QC.',
         ],
       },
     ],
@@ -207,19 +203,19 @@ export const howItWorksPageConfig: HowItWorksPageConfig = {
     items: [
       {
         question: 'Do I have to be an experienced seller?',
-        answer: 'No. We work with first time importers. The AI snapshot helps you sanity check costs before you commit.',
+        answer: 'No. This is built for people who cannot afford a bad first import. We surface the hidden costs before you send money to a factory.',
       },
       {
         question: 'Can I use NexSupply if I already have suppliers?',
-        answer: 'Yes. We can benchmark your current supplier against alternatives and flag compliance or duty risks early.',
+        answer: 'Yes. Most sellers overpay because they never benchmark. We compare your current supplier against real quotes and landed cost.',
       },
       {
         question: 'Do you handle shipping and customs?',
-        answer: 'We coordinate logistics planning and documentation support. We are not a customs broker.',
+        answer: 'We coordinate logistics planning and documentation support. We are not a customs broker, but we catch duty and compliance surprises early.',
       },
       {
         question: 'How long does the whole process take?',
-        answer: 'Brief takes 10 minutes. Snapshot within 1 business day. Factory quotes 7 days after deposit.',
+        answer: 'Free snapshot in 1 business day. Factory quotes in 7 days after deposit.',
       },
     ],
   },

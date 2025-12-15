@@ -3,7 +3,7 @@ import Link from 'next/link';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Accordion, AccordionItem } from '@/components/ui/accordion';
-import { MessageSquare, FileText, Package } from 'lucide-react';
+import { MessageSquare, FileText, Package, ArrowRight } from 'lucide-react';
 import { howItWorksPageConfig } from '@/lib/content/howItWorks';
 import { MarketingCard } from '@/components/marketing/MarketingCard';
 import { SectionLayout } from '@/components/marketing/SectionLayout';
@@ -23,7 +23,7 @@ export default async function HowItWorksPage() {
       <SectionLayout
         title={journey.title}
         subtitle={journey.subtitle}
-        className="bg-neutral-50 py-16 md:py-20"
+        className="bg-neutral-50 py-12 md:py-16"
       >
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {journey.cards.map((card, idx) => {
@@ -31,7 +31,11 @@ export default async function HowItWorksPage() {
             return (
               <div
                 key={idx}
-                className="bg-white rounded-lg border border-neutral-200 p-6 shadow-sm h-full flex flex-col"
+                className={`rounded-lg border p-6 shadow-sm h-full flex flex-col ${
+                  idx === 2 
+                    ? 'bg-blue-50 border-blue-200' 
+                    : 'bg-white border-neutral-200'
+                }`}
               >
                 <div className="flex items-start gap-3 mb-4">
                   <div className="flex-shrink-0 w-10 h-10 rounded-lg bg-blue-50 flex items-center justify-center">
@@ -71,28 +75,55 @@ export default async function HowItWorksPage() {
             );
           })}
         </div>
+        
+        {/* Mini CTA after steps */}
+        <div className="mt-8 text-center">
+          <Link href="/chat" className="inline-block">
+            <Button className="bg-blue-600 hover:bg-blue-700 text-white rounded-lg px-6 py-3 text-sm font-medium">
+              Get free snapshot
+              <ArrowRight className="w-4 h-4 ml-2" />
+            </Button>
+          </Link>
+        </div>
       </SectionLayout>
-
 
       {/* Pricing Summary */}
       <SectionLayout
         title={pricing.title}
-        className="bg-neutral-50 py-16 md:py-20"
+        className="bg-neutral-50 py-12 md:py-16"
       >
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8 lg:gap-10">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
           {pricing.cards.map((card, idx) => (
             <div
               key={idx}
-              className="border border-neutral-200 rounded-lg p-6 md:p-8 hover:border-blue-300 transition-colors duration-300 bg-white shadow-sm"
+              className={`border rounded-lg p-6 md:p-8 hover:border-blue-300 transition-colors duration-300 shadow-sm ${
+                idx === 0 
+                  ? 'bg-white border-neutral-200' 
+                  : 'bg-blue-50/30 border-blue-200'
+              }`}
             >
               <h3 className="text-xl font-bold text-neutral-900 mb-6">{card.title}</h3>
               <ul className="space-y-4">
-                {card.items.map((item, i) => (
-                  <li key={i} className="flex items-start gap-3">
-                    <div className="w-1.5 h-1.5 rounded-full bg-neutral-900 mt-2 flex-shrink-0" />
-                    <span className="text-sm md:text-base text-neutral-600 leading-relaxed">{item}</span>
-                  </li>
-                ))}
+                {card.items.map((item, i) => {
+                  // Extract numbers and make them bold
+                  const numberPattern = /(\$?\d+%?|\d+\s+(?:day|month|percent|business day|days))/gi;
+                  const parts = item.split(numberPattern);
+                  return (
+                    <li key={i} className="flex items-start gap-3">
+                      <div className="w-1.5 h-1.5 rounded-full bg-neutral-900 mt-2 flex-shrink-0" />
+                      <span className="text-sm md:text-base text-neutral-600 leading-relaxed">
+                        {parts.map((part, partIdx) => {
+                          const isNumber = numberPattern.test(part);
+                          return isNumber ? (
+                            <span key={partIdx} className="font-bold text-neutral-900">{part}</span>
+                          ) : (
+                            <span key={partIdx}>{part}</span>
+                          );
+                        })}
+                      </span>
+                    </li>
+                  );
+                })}
               </ul>
             </div>
           ))}
@@ -102,7 +133,7 @@ export default async function HowItWorksPage() {
       {/* FAQ Section */}
       <SectionLayout
         title={faq.title}
-        className="bg-white py-16 md:py-20"
+        className="bg-white py-12 md:py-16"
       >
         <div className="max-w-3xl mx-auto">
           <Accordion>

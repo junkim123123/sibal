@@ -7,6 +7,7 @@ export type HomeReview = {
   name: string;
   role?: string;
   date: string;
+  outcome?: string; // e.g., "Saved 12% landed cost" or "Avoided AD/CVD surprise"
 };
 
 export type HomeReviewsSection = {
@@ -75,6 +76,7 @@ export interface HomePageConfig {
     quotes: Array<{
       quote: string;
       author: string;
+      outcome?: string;
     }>;
   };
   benefits: {
@@ -152,14 +154,17 @@ export const homePageConfig: HomePageConfig = {
       {
         quote: 'Finally, I can see landed cost before I wire any money.',
         author: 'FBA Seller, CPG Category',
+        outcome: 'Saved 12% landed cost',
       },
       {
         quote: 'The compliance check prevented a very expensive mistake.',
         author: 'Retail Buyer, Hardlines',
+        outcome: 'Avoided AD/CVD surprise',
       },
       {
         quote: 'We used NexSupply to test a new snack product. The process was simple and fast.',
         author: 'Brand Manager, Food & Beverage',
+        outcome: 'Pilot to scale in 2 weeks',
       },
     ],
   },
@@ -228,6 +233,7 @@ export const homePageConfig: HomePageConfig = {
         name: 'Verified FBA Seller',
         role: 'Miami-based Importer',
         date: 'November 25, 2025',
+        outcome: 'Scaled from cartons to pallets',
       },
       {
         id: 'ashley',
@@ -237,6 +243,7 @@ export const homePageConfig: HomePageConfig = {
         name: 'Ashley Gomez',
         role: 'DTC brand operator',
         date: 'November 22, 2025',
+        outcome: 'Saved 12% landed cost',
       },
       {
         id: 'retail-buyer',
@@ -246,6 +253,7 @@ export const homePageConfig: HomePageConfig = {
         name: 'Michael Chen',
         role: 'Retail buyer, hardlines',
         date: 'November 20, 2025',
+        outcome: 'Avoided AD/CVD surprise',
       },
       {
         id: 'fba-seller-2',
@@ -255,6 +263,7 @@ export const homePageConfig: HomePageConfig = {
         name: 'Sarah Martinez',
         role: 'Amazon FBA seller, CPG',
         date: 'November 18, 2025',
+        outcome: 'Validated 35% margin',
       },
       {
         id: 'trading-company',
@@ -264,6 +273,7 @@ export const homePageConfig: HomePageConfig = {
         name: 'James Park',
         role: 'Trading company owner',
         date: 'November 15, 2025',
+        outcome: 'Saved 3 weeks on comparison',
       },
       {
         id: 'dtc-brand',
@@ -273,6 +283,7 @@ export const homePageConfig: HomePageConfig = {
         name: 'Rachel Kim',
         role: 'Food & beverage brand manager',
         date: 'November 12, 2025',
+        outcome: 'Pilot to scale in 2 weeks',
       },
       {
         id: 'wholesale',
@@ -282,6 +293,7 @@ export const homePageConfig: HomePageConfig = {
         name: 'David Thompson',
         role: 'Wholesale distributor',
         date: 'November 10, 2025',
+        outcome: '1 day vs 2 weeks quotes',
       },
       {
         id: 'fba-seller-3',
@@ -291,6 +303,7 @@ export const homePageConfig: HomePageConfig = {
         name: 'Lisa Wang',
         role: 'Amazon FBA seller',
         date: 'November 8, 2025',
+        outcome: 'Avoided 30% duty surprise',
       },
     ],
   },

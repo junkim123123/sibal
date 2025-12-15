@@ -64,6 +64,7 @@ export interface Translations {
       quotes: Array<{
         quote: string;
         author: string;
+        outcome?: string;
       }>;
       verifiedShipment: string;
     };
@@ -433,14 +434,17 @@ export const translations: Record<Language, Translations> = {
           {
             quote: 'Finally, I can see landed cost before I wire any money.',
             author: 'FBA Seller, CPG Category',
+            outcome: 'Saved 12% landed cost',
           },
           {
             quote: 'The compliance check prevented a very expensive mistake.',
             author: 'Retail Buyer, Hardlines',
+            outcome: 'Avoided AD/CVD surprise',
           },
           {
             quote: 'We used NexSupply to test a new snack product. The process was simple and fast.',
             author: 'Brand Manager, Food & Beverage',
+            outcome: 'Pilot to scale in 2 weeks',
           },
         ],
         verifiedShipment: 'Completed Project',

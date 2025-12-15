@@ -47,9 +47,9 @@ export function ReviewsSection({ section }: { section: HomeReviewsSection }) {
   };
 
   return (
-    <section className="py-16 md:py-24 border-t border-neutral-200 dark:border-gray-700 bg-neutral-50 dark:bg-neutral-900">
+    <section className="py-12 md:py-16 border-t border-neutral-200 dark:border-gray-700 bg-neutral-50 dark:bg-neutral-900">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="flex flex-col gap-8 md:flex-row md:items-end md:justify-between mb-10">
+        <div className="flex flex-col gap-6 md:flex-row md:items-end md:justify-between mb-8">
           <div className="max-w-xl space-y-3">
             {t.home.reviews.eyebrow && (
               <p className="text-xs font-semibold uppercase tracking-wide text-neutral-500 dark:text-gray-400">
@@ -80,7 +80,7 @@ export function ReviewsSection({ section }: { section: HomeReviewsSection }) {
         </div>
 
         {/* Horizontal Scroll Container with Controls */}
-        <div className="mt-10 relative">
+        <div className="mt-6 relative">
           {/* Left Arrow Button */}
           <button
             onClick={() => scroll('left')}
@@ -121,20 +121,39 @@ export function ReviewsSection({ section }: { section: HomeReviewsSection }) {
                   return (
                     <article
                       key={review.id}
-                      className="flex flex-col w-[320px] sm:w-[360px] flex-shrink-0 rounded-lg bg-white dark:bg-neutral-800 p-5 sm:p-6 shadow-sm border border-neutral-200 dark:border-neutral-700"
+                      className="flex flex-col w-[320px] sm:w-[360px] flex-shrink-0 rounded-lg bg-white dark:bg-neutral-800 p-4 sm:p-5 shadow-sm border border-neutral-200 dark:border-neutral-700"
                     >
-                      <h3 className="text-sm font-semibold leading-snug text-neutral-900">
-                        {review.headline}
-                      </h3>
-                      <p className="mt-3 text-sm text-neutral-700 flex-1 leading-relaxed">
-                        &ldquo;<strong className="font-semibold text-neutral-900">{firstSentence}</strong>{restOfQuote ? '. ' + restOfQuote : ''}&rdquo;
+                      {review.outcome && (
+                        <div className="mb-3">
+                          <p className="text-sm font-semibold text-neutral-900 dark:text-white leading-snug">
+                            {review.outcome}
+                          </p>
+                        </div>
+                      )}
+                      <p className="text-sm text-neutral-700 dark:text-neutral-300 flex-1 leading-relaxed mb-3">
+                        &ldquo;{review.quote}&rdquo;
                       </p>
-                      <div className="mt-4 text-xs text-neutral-500">
-                        <p className="font-medium text-neutral-700">
-                          {review.name}
-                          {review.role ? ` · ${review.role}` : ''}
-                        </p>
-                        <p>{review.date}</p>
+                      <div className="mt-auto pt-3 border-t border-neutral-200 dark:border-neutral-700">
+                        <div className="flex items-center justify-between">
+                          <div className="text-xs text-neutral-500 dark:text-neutral-400">
+                            <p className="font-medium text-neutral-700 dark:text-neutral-300">
+                              {review.name}
+                            </p>
+                            <p className="mt-0.5">
+                              {review.role ? `${review.role}` : ''}
+                            </p>
+                          </div>
+                          <a
+                            href="#"
+                            className="text-xs font-medium text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300"
+                            onClick={(e) => {
+                              e.preventDefault();
+                              // TODO: Link to case study
+                            }}
+                          >
+                            View case study →
+                          </a>
+                        </div>
                       </div>
                     </article>
                   );

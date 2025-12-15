@@ -26,7 +26,7 @@ export default function HomeHero({ page }: Props) {
         backgroundImage: `radial-gradient(circle at 2px 2px, currentColor 1px, transparent 0)`,
         backgroundSize: '32px 32px',
       }} />
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 relative z-10 pb-8">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 relative z-10 pb-4">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-start">
           {/* Left: Text Content */}
           <div className="flex flex-col space-y-5 min-w-0">
@@ -81,17 +81,17 @@ export default function HomeHero({ page }: Props) {
           </div>
 
           {/* Right: Report Preview Card */}
-          <div className="relative w-full mt-8 lg:mt-0">
+          <div className="relative w-full mt-8 lg:mt-0 z-20">
             <div className="relative">
               {/* Subtle background gradient */}
-              <div className="absolute inset-0 bg-gradient-to-br from-blue-50/30 via-transparent to-neutral-50/30 rounded-lg -z-10" />
+              <div className="absolute inset-0 bg-gradient-to-br from-blue-50/30 via-transparent to-neutral-50/30 rounded-lg -z-10 pointer-events-none" />
               <ReportPreviewCard />
             </div>
           </div>
         </div>
 
         {/* 3 Step Micro Section */}
-        <div className="mt-12 pt-12 border-t border-neutral-200 dark:border-neutral-700">
+        <div className="mt-8 pt-8 border-t border-neutral-200 dark:border-neutral-700">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto">
             {/* Step 1 */}
             <div className="flex items-start gap-4 p-4 rounded-lg hover:bg-neutral-50 dark:hover:bg-neutral-800/50 transition-colors">

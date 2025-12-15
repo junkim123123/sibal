@@ -6,7 +6,7 @@ export default function HomeSocialProofStrip() {
   const { t } = useLanguage();
 
   return (
-    <section className="py-16 md:py-24 bg-neutral-50 dark:bg-neutral-900 border-t border-neutral-200 dark:border-gray-700">
+    <section className="py-12 md:py-16 bg-neutral-50 dark:bg-neutral-900 border-t border-neutral-200 dark:border-gray-700">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="flex flex-col items-center gap-6 md:gap-10">
           <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold tracking-tight text-neutral-900 dark:text-white text-center">
@@ -34,9 +34,16 @@ export default function HomeSocialProofStrip() {
                 <p className="text-sm md:text-base font-medium text-neutral-800 dark:text-gray-200 leading-relaxed mb-4">&ldquo;{item.quote}&rdquo;</p>
                 <footer className="text-xs md:text-sm text-neutral-600 dark:text-gray-400">
                   <p className="font-medium text-neutral-900 dark:text-white">- {item.author}</p>
-                  <span className="mt-2 inline-flex items-center px-2 py-0.5 rounded text-[10px] font-medium bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 border border-blue-200/50 dark:border-blue-800">
-                    Completed Project
-                  </span>
+                  <div className="mt-2 flex items-center gap-2">
+                    <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-medium bg-neutral-100 dark:bg-neutral-700 text-neutral-600 dark:text-neutral-400 border border-neutral-200 dark:border-neutral-600">
+                      Verified Project
+                    </span>
+                    {item.outcome && (
+                      <span className="text-[10px] text-neutral-500 dark:text-neutral-500">
+                        {item.outcome}
+                      </span>
+                    )}
+                  </div>
                 </footer>
               </blockquote>
             </div>

@@ -90,8 +90,8 @@ export interface UseCasesPageContent {
 export const useCasesPageContent: UseCasesPageContent = {
   hero: {
     badge: 'Predictable Sourcing for Modern Brands',
-    title: 'Pick a starting point for your next import',
-    body: 'Get a landed cost and risk snapshot in 1 business day. Deposit is optional and only needed for factory outreach and real quotes.',
+    title: 'Pick the fastest way to de-risk your next import',
+    body: 'Get a landed cost and compliance snapshot in 1 business day. Upgrade to real factory quotes with a refundable $49 deposit.',
     ctaPrimary: {
       label: 'Get free snapshot',
       href: '/chat',
@@ -126,21 +126,21 @@ export const useCasesPageContent: UseCasesPageContent = {
         title: 'Launch a new FBA brand',
         summary: 'Validate margin and duty risk before you buy inventory',
         footnote: 'Typical users: CPG brands and FBA aggregators',
-        deliverables: 'Estimated delivered cost range, duty and compliance flags, go no go recommendation',
+        deliverables: 'Estimated delivered cost range and DDP drivers\nDuty and compliance flags\nGo or no-go recommendation',
       },
       {
         id: 're-source-existing-sku',
         title: 'Re-source an existing SKU',
         summary: 'Compare your current supplier with vetted alternatives on cost and risk',
         footnote: 'Typical users: Established sellers optimizing margins',
-        deliverables: 'Side by side landed cost, risk flags, savings opportunities',
+        deliverables: 'Side-by-side landed cost comparison\nRisk flags and supplier tradeoffs\nSavings estimate with assumptions',
       },
       {
         id: 'test-higher-risk-category',
-        title: 'Test a higher risk category',
+        title: 'Test a higher-risk category',
         summary: 'Check AD CVD and compliance risk before you import',
         footnote: 'Typical users: Brands entering regulated categories',
-        deliverables: 'Risk flags, required docs checklist, mitigation steps',
+        deliverables: 'AD and CVD risk screen\nRequired documents checklist\nMitigation steps before you place a PO',
       },
     ],
   },
@@ -149,7 +149,7 @@ export const useCasesPageContent: UseCasesPageContent = {
     rating: {
       badge: 'Pilot users',
       value: '4.6 / 5',
-      label: 'based on pilot projects',
+      label: 'based on 50+ pilot projects',
     },
     subtitle: 'Faster landed-cost clarity, fewer surprises at customs.',
     quotes: [
@@ -175,19 +175,19 @@ export const useCasesPageContent: UseCasesPageContent = {
     items: [
       {
         title: 'Transparent pricing',
-        body: 'Pass through costs at actual cost. 5 percent fee on FOB only',
+        body: 'Pass-through at actual cost. 5% fee on FOB only.',
       },
       {
         title: 'Real quotes fast',
-        body: 'Manager assigned after deposit. Three factory quotes within 7 days',
+        body: '3 factory quotes within 7 days after deposit.',
       },
       {
         title: 'Price lock',
-        body: 'Factory FOB locked for 3 months once quoted',
+        body: 'FOB locked for 90 days once quoted.',
       },
       {
         title: 'Risk controls',
-        body: 'Compliance, AD CVD, and supply chain flags before you commit',
+        body: 'Compliance, AD/CVD, and supply chain flags before you commit.',
       },
     ],
   },

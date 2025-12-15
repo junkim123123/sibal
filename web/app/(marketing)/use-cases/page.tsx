@@ -69,7 +69,14 @@ export default async function UseCasesPage() {
                 {project.deliverables && (
                   <div className="mb-3">
                     <p className="text-xs font-semibold text-neutral-500 uppercase tracking-wide mb-1.5">What you get</p>
-                    <p className="text-xs text-neutral-600 leading-relaxed">{project.deliverables}</p>
+                    <ul className="space-y-1 text-xs text-neutral-600 leading-relaxed">
+                      {project.deliverables.split('\n').map((item, i) => (
+                        <li key={i} className="flex gap-2">
+                          <span className="text-blue-600 mt-0.5 font-bold">•</span>
+                          <span>{item}</span>
+                        </li>
+                      ))}
+                    </ul>
                   </div>
                 )}
                 <p className="text-[11px] text-neutral-400 mt-auto">
@@ -172,7 +179,7 @@ export default async function UseCasesPage() {
       {/* Transparent Invoice Preview - Removed to avoid duplication with Home */}
 
       {/* Final CTA */}
-      <section aria-label="Call to action" className="py-16 sm:py-20 bg-black">
+      <section aria-label="Call to action" className="py-12 md:py-16 bg-black">
         <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h2 className="text-2xl sm:text-3xl font-semibold text-white">
             {cta.title}

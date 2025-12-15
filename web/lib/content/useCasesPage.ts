@@ -55,6 +55,7 @@ export interface UseCasesPageContent {
   };
   commonProjects: {
     title: string;
+    subtitle?: string;
     items: CommonProject[];
   };
   socialProof: {
@@ -91,7 +92,7 @@ export const useCasesPageContent: UseCasesPageContent = {
   hero: {
     badge: 'Predictable Sourcing for Modern Brands',
     title: 'De-risk your next import in 1 business day',
-    body: 'Get a landed cost and compliance snapshot. Upgrade to real factory quotes with a refundable 49 dollar deposit.',
+    body: 'See your landed cost and compliance risks in one place. If you want, we can connect you to real factory quotes with a $49 refundable deposit.',
     ctaPrimary: {
       label: 'Get free snapshot',
       href: '/chat',
@@ -100,7 +101,7 @@ export const useCasesPageContent: UseCasesPageContent = {
       label: 'Talk to a manager',
       href: '/chat',
     },
-    ctaHelperText: 'Deposit only applies when outreach starts. Credited if you proceed.',
+    ctaHelperText: '$49 deposit is refundable until outreach begins. Credited if you proceed.',
   },
   threeSteps: {
     items: [
@@ -120,27 +121,28 @@ export const useCasesPageContent: UseCasesPageContent = {
   },
   commonProjects: {
     title: 'Choose your starting point',
+    subtitle: 'Pick the fastest starting point for your situation.',
     items: [
       {
         id: 'launch-new-product',
         title: 'Launch a new FBA brand',
-        summary: 'Validate margin and duty risk before you buy inventory',
-        footnote: 'Typical users: CPG brands and FBA aggregators',
-        deliverables: 'Estimated delivered cost range and DDP drivers\nDuty and compliance red flags\nGo or no go recommendation',
+        summary: 'Check margin and risk before your first order.',
+        footnote: 'Typical users: New FBA sellers and early-stage brands',
+        deliverables: 'Estimated delivered cost range and key DDP drivers\nDuty and compliance red flags\nClear go or no-go recommendation',
       },
       {
         id: 're-source-existing-sku',
         title: 'Re-source an existing SKU',
-        summary: 'Compare your current supplier with vetted alternatives on cost and risk',
+        summary: 'Compare your current supplier with alternatives side-by-side on cost and risk.',
         footnote: 'Typical users: Established sellers optimizing margins',
-        deliverables: 'Side by side landed cost comparison\nSupplier tradeoffs and risk flags\nSavings estimate with adjustable assumptions',
+        deliverables: 'Side-by-side landed cost comparison\nSupplier tradeoffs and risk flags\nSavings estimate with assumptions',
       },
       {
         id: 'test-higher-risk-category',
-        title: 'Test a higher risk category',
-        summary: 'Screen AD CVD and compliance risk before you import',
+        title: 'Test a higher-risk category',
+        summary: 'Check AD/CVD and required documents before you import.',
         footnote: 'Typical users: Brands entering regulated categories',
-        deliverables: 'AD CVD risk screen and scope\nRequired documents checklist\nMitigation steps before you place a PO',
+        deliverables: 'AD/CVD risk screen and scope\nRequired documents checklist\nMitigation steps before you place a PO',
       },
     ],
   },
@@ -151,12 +153,12 @@ export const useCasesPageContent: UseCasesPageContent = {
       value: '4.6 / 5',
       label: 'based on 50+ pilot projects',
     },
-    subtitle: 'Examples shown are directional and vary by category and volume',
+    subtitle: 'Examples are directional and vary by category and volume',
     quotes: [
       {
         quote: 'Finally, I can see landed cost before I wire any money.',
         author: 'FBA Seller, CPG Category',
-        outcome: 'Saved 0.18 per unit',
+        outcome: 'Saved $0.18 per unit',
       },
       {
         quote: 'The compliance check prevented a very expensive mistake.',
@@ -175,11 +177,11 @@ export const useCasesPageContent: UseCasesPageContent = {
     items: [
       {
         title: 'Transparent pricing',
-        body: 'Pass through at actual cost. 5 percent fee on FOB only',
+        body: 'Pass-through at actual cost. 5% fee on FOB only',
       },
       {
-        title: 'Real quotes fast',
-        body: 'Manager assigned after deposit. Three factory quotes within 7 days',
+        title: 'Real quotes, fast',
+        body: '3 factory quotes within 7 days after deposit.',
       },
       {
         title: 'Price lock',
@@ -187,15 +189,15 @@ export const useCasesPageContent: UseCasesPageContent = {
       },
       {
         title: 'Risk controls',
-        body: 'Compliance and AD CVD screening before you commit',
+        body: 'Compliance and AD/CVD screening before you commit',
       },
       {
-        title: 'On the ground QC',
-        body: 'QC hubs in Seoul, Yiwu, Shantou, Vung Tau',
+        title: 'On-the-ground QC',
+        body: 'QC hubs in Seoul, Yiwu, Shantou, and Vung Tau.',
       },
       {
         title: 'Execution support',
-        body: 'Packaging, labeling, kitting, forwarding billed at cost',
+        body: 'Packaging, labeling, kitting, and forwarding billed at cost.',
       },
     ],
   },

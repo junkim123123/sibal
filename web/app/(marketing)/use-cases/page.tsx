@@ -51,9 +51,16 @@ export default async function UseCasesPage() {
       {/* Common ways people start */}
       <section id="projects" aria-label="Common projects" className="py-12 md:py-16 bg-white">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h2 className="text-2xl sm:text-3xl font-semibold text-center text-neutral-900">
-            {commonProjects.title}
-          </h2>
+          <div className="text-center mb-10">
+            <h2 className="text-2xl sm:text-3xl font-semibold text-neutral-900 mb-3">
+              {commonProjects.title}
+            </h2>
+            {commonProjects.subtitle && (
+              <p className="text-base text-neutral-600 max-w-2xl mx-auto">
+                {commonProjects.subtitle}
+              </p>
+            )}
+          </div>
           <div className="mt-10 grid gap-6 md:grid-cols-3">
             {commonProjects.items.map((project) => (
               <div
@@ -193,8 +200,7 @@ export default async function UseCasesPage() {
             </Link>
             <Link href="/chat" className="w-full sm:w-auto">
               <Button
-                variant="outline"
-                className="rounded-lg px-6 md:px-8 py-3 md:py-3.5 border-2 border-white bg-transparent text-white hover:bg-white hover:text-neutral-900 w-full sm:w-auto"
+                className="rounded-lg px-6 md:px-8 py-3 md:py-3.5 border-2 border-white bg-transparent text-white hover:bg-white hover:text-neutral-900 w-full sm:w-auto font-semibold"
               >
                 Talk to a manager
               </Button>

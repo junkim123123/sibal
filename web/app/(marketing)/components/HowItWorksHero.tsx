@@ -19,11 +19,11 @@ export default function HowItWorksHero() {
       </div>
 
       <div className="mx-auto w-full max-w-6xl px-6 lg:px-8 relative z-10">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 items-start">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 items-center">
           {/* Left: Copy and CTA */}
           <div className="text-center order-2 lg:order-1">
             {/* 1. Kicker */}
-            <div className="mb-2">
+            <div className="mb-2 text-center">
               <span className="text-xs font-semibold text-blue-700">
                 How it works
               </span>

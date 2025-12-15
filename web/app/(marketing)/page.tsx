@@ -34,13 +34,10 @@ export default async function HomePage() {
   return (
     <div className="bg-white dark:bg-gray-900">
       <HomeHero page={page} />
-      <HomeUseCases />
       <HomeSocialProofStrip />
+      <HomeUseCases />
       <HomeBenefitsGridV2 />
-      <TransparentInvoicePreview />
       <ReviewsSection section={homePageConfig.reviewsSection} />
-      <ProTeamSection section={homePageConfig.teamSection} />
-      <ExpertPanelSection panel={page?.expertPanel} />
       <HomeImpactBand />
     </div>
   );

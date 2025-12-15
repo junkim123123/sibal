@@ -7,7 +7,7 @@ import { MessageSquare, FileText, Package } from 'lucide-react';
 import { howItWorksPageConfig } from '@/lib/content/howItWorks';
 import { MarketingCard } from '@/components/marketing/MarketingCard';
 import { SectionLayout } from '@/components/marketing/SectionLayout';
-import { HeroSection } from '@/app/(marketing)/components/HeroSection';
+import HowItWorksHero from '@/app/(marketing)/components/HowItWorksHero';
 
 export const revalidate = 60;
 
@@ -17,24 +17,13 @@ export default async function HowItWorksPage() {
   return (
     <div className="bg-white">
       {/* Hero Section */}
-      <HeroSection
-        title={hero.title}
-        chips={hero.chips}
-        valueStatement={hero.subtitle}
-        description={hero.description}
-        cta={{
-          primary: hero.cta.primary,
-          secondary: hero.cta.secondary,
-          helperText: hero.cta.helperText,
-        }}
-        showPreviewCard={true}
-      />
+      <HowItWorksHero />
 
       {/* Journey in Three Moves */}
       <SectionLayout
         title={journey.title}
         subtitle={journey.subtitle}
-        className="bg-neutral-50 py-16 md:py-20 lg:py-24"
+        className="bg-neutral-50 py-16 md:py-24"
       >
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {journey.cards.map((card, idx) => {
@@ -79,7 +68,7 @@ export default async function HowItWorksPage() {
       {/* Step by Step Timeline */}
       <SectionLayout
         title={steps.title}
-        className="bg-white py-16 md:py-20 lg:py-24"
+        className="bg-white py-16 md:py-24"
       >
         <div className="max-w-4xl mx-auto">
           <div className="space-y-8 md:space-y-12 lg:space-y-16">
@@ -148,10 +137,10 @@ export default async function HowItWorksPage() {
         </div>
       </SectionLayout>
 
-      {/* Pricing and Coverage Band */}
+      {/* Pricing Summary */}
       <SectionLayout
         title={pricing.title}
-        className="bg-neutral-50 py-16 md:py-20 lg:py-24"
+        className="bg-neutral-50 py-16 md:py-24"
       >
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8 lg:gap-10">
           {pricing.cards.map((card, idx) => (
@@ -176,7 +165,7 @@ export default async function HowItWorksPage() {
       {/* FAQ Section */}
       <SectionLayout
         title={faq.title}
-        className="bg-white py-16 md:py-20 lg:py-24"
+        className="bg-white py-16 md:py-24"
       >
         <div className="max-w-3xl mx-auto">
           <Accordion>
@@ -192,7 +181,7 @@ export default async function HowItWorksPage() {
       </SectionLayout>
 
       {/* Final CTA Banner */}
-      <section aria-label="Call to action" className="py-10 md:py-16 bg-neutral-100">
+      <section aria-label="Call to action" className="py-16 md:py-24 bg-neutral-100">
         <div className="mx-auto max-w-6xl px-4 md:px-6">
           <div className="max-w-3xl mx-auto text-center">
             <h2 className="text-2xl md:text-3xl lg:text-4xl font-semibold text-neutral-900 mb-4">

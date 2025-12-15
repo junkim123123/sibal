@@ -8,7 +8,7 @@ export default function HomeImpactBand() {
   const { t } = useLanguage();
 
   return (
-    <section className="py-10 md:py-16 bg-neutral-900 dark:bg-gray-800 text-white">
+    <section className="py-16 md:py-24 bg-neutral-900 dark:bg-gray-800 text-white border-t border-neutral-800">
       <div className="mx-auto max-w-6xl px-4 md:px-6">
         <div className="text-center">
           <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold mb-4">

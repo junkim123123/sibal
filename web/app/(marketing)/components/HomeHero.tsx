@@ -20,8 +20,10 @@ export default function HomeHero({ page }: Props) {
   };
 
   return (
-    <section className="py-12 md:py-16 lg:py-20 bg-white dark:bg-gray-900">
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+    <section className="py-12 md:py-16 lg:py-20 bg-white dark:bg-gray-900 relative overflow-hidden">
+      {/* Subtle background gradient */}
+      <div className="absolute inset-0 bg-gradient-to-br from-blue-50/20 via-transparent to-neutral-50/20 pointer-events-none" />
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 relative z-10">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-start">
           {/* Left: Text Content */}
           <div className="flex flex-col space-y-5 min-w-0">

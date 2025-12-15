@@ -90,8 +90,8 @@ export interface UseCasesPageContent {
 export const useCasesPageContent: UseCasesPageContent = {
   hero: {
     badge: 'Predictable Sourcing for Modern Brands',
-    title: 'Pick the fastest way to de-risk your next import',
-    body: 'Get a landed cost and compliance snapshot in 1 business day. Upgrade to real factory quotes with a refundable $49 deposit.',
+    title: 'De-risk your next import in 1 business day',
+    body: 'Get a landed cost and compliance snapshot. Upgrade to real factory quotes with a refundable 49 dollar deposit.',
     ctaPrimary: {
       label: 'Get free snapshot',
       href: '/chat',
@@ -100,7 +100,7 @@ export const useCasesPageContent: UseCasesPageContent = {
       label: 'Talk to a manager',
       href: '/chat',
     },
-    ctaHelperText: '$49 deposit is refundable until outreach begins and credited if you proceed.',
+    ctaHelperText: 'Deposit only applies when outreach starts. Credited if you proceed.',
   },
   threeSteps: {
     items: [
@@ -119,44 +119,44 @@ export const useCasesPageContent: UseCasesPageContent = {
     ],
   },
   commonProjects: {
-    title: 'Choose your workflow',
+    title: 'Choose your starting point',
     items: [
       {
         id: 'launch-new-product',
         title: 'Launch a new FBA brand',
         summary: 'Validate margin and duty risk before you buy inventory',
         footnote: 'Typical users: CPG brands and FBA aggregators',
-        deliverables: 'Estimated delivered cost range and DDP drivers\nDuty and compliance flags\nGo or no-go recommendation',
+        deliverables: 'Estimated delivered cost range and DDP drivers\nDuty and compliance red flags\nGo or no go recommendation',
       },
       {
         id: 're-source-existing-sku',
         title: 'Re-source an existing SKU',
         summary: 'Compare your current supplier with vetted alternatives on cost and risk',
         footnote: 'Typical users: Established sellers optimizing margins',
-        deliverables: 'Side-by-side landed cost comparison\nRisk flags and supplier tradeoffs\nSavings estimate with assumptions',
+        deliverables: 'Side by side landed cost comparison\nSupplier tradeoffs and risk flags\nSavings estimate with adjustable assumptions',
       },
       {
         id: 'test-higher-risk-category',
-        title: 'Test a higher-risk category',
-        summary: 'Check AD CVD and compliance risk before you import',
+        title: 'Test a higher risk category',
+        summary: 'Screen AD CVD and compliance risk before you import',
         footnote: 'Typical users: Brands entering regulated categories',
-        deliverables: 'AD and CVD risk screen\nRequired documents checklist\nMitigation steps before you place a PO',
+        deliverables: 'AD CVD risk screen and scope\nRequired documents checklist\nMitigation steps before you place a PO',
       },
     ],
   },
   socialProof: {
-    title: 'See what importers are saying about NexSupply',
+    title: 'Results from recent pilot projects',
     rating: {
       badge: 'Pilot users',
       value: '4.6 / 5',
       label: 'based on 50+ pilot projects',
     },
-    subtitle: 'Faster landed-cost clarity, fewer surprises at customs.',
+    subtitle: 'Examples shown are directional and vary by category and volume',
     quotes: [
       {
         quote: 'Finally, I can see landed cost before I wire any money.',
         author: 'FBA Seller, CPG Category',
-        outcome: 'Saved $0.18 per unit',
+        outcome: 'Saved 0.18 per unit',
       },
       {
         quote: 'The compliance check prevented a very expensive mistake.',
@@ -171,23 +171,31 @@ export const useCasesPageContent: UseCasesPageContent = {
     ],
   },
   benefits: {
-    title: 'Why importers work with NexSupply',
+    title: 'Why teams work with NexSupply',
     items: [
       {
         title: 'Transparent pricing',
-        body: 'Pass-through at actual cost. 5% fee on FOB only.',
+        body: 'Pass through at actual cost. 5 percent fee on FOB only',
       },
       {
         title: 'Real quotes fast',
-        body: '3 factory quotes within 7 days after deposit.',
+        body: 'Manager assigned after deposit. Three factory quotes within 7 days',
       },
       {
         title: 'Price lock',
-        body: 'FOB locked for 90 days once quoted.',
+        body: 'FOB held for 90 days after quote',
       },
       {
         title: 'Risk controls',
-        body: 'Compliance, AD/CVD, and supply chain flags before you commit.',
+        body: 'Compliance and AD CVD screening before you commit',
+      },
+      {
+        title: 'On the ground QC',
+        body: 'QC hubs in Seoul, Yiwu, Shantou, Vung Tau',
+      },
+      {
+        title: 'Execution support',
+        body: 'Packaging, labeling, kitting, forwarding billed at cost',
       },
     ],
   },

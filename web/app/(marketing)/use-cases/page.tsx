@@ -3,14 +3,14 @@ import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { CheckCircle } from 'lucide-react';
 import { useCasesPageContent } from '@/lib/content/useCasesPage';
-import { Shield, Lock, DollarSign, Factory, Truck, AlertTriangle } from 'lucide-react';
+import { Shield, Lock, DollarSign, Factory, Truck, AlertTriangle, MapPin, Package } from 'lucide-react';
 
 export const revalidate = 60;
 
 export default async function UseCasesPage() {
   const { hero, threeSteps, commonProjects, socialProof, benefits, cta } = useCasesPageContent;
 
-  const benefitIcons = [Shield, Lock, Factory, DollarSign, Truck, AlertTriangle];
+  const benefitIcons = [DollarSign, Factory, Lock, Shield, MapPin, Package];
 
   return (
     <div className="bg-white">
@@ -68,7 +68,7 @@ export default async function UseCasesPage() {
                 </p>
                 {project.deliverables && (
                   <div className="mb-3">
-                    <p className="text-xs font-semibold text-neutral-500 uppercase tracking-wide mb-1.5">What you get</p>
+                    <p className="text-xs font-semibold text-neutral-500 uppercase tracking-wide mb-1.5">Included in the snapshot</p>
                     <ul className="space-y-1 text-xs text-neutral-600 leading-relaxed">
                       {project.deliverables.split('\n').map((item, i) => (
                         <li key={i} className="flex gap-2">
@@ -127,10 +127,6 @@ export default async function UseCasesPage() {
                 <footer className="mt-4 pl-6">
                   <div className="flex items-center gap-2 flex-wrap">
                     <span className="text-xs text-neutral-500">{quote.author}</span>
-                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-medium bg-blue-50 text-blue-700 border border-blue-200/50">
-                      <CheckCircle className="w-3 h-3" />
-                      Pilot project
-                    </span>
                     {quote.outcome && (
                       <span className="text-xs text-neutral-600 font-medium">
                         {quote.outcome}
@@ -152,7 +148,7 @@ export default async function UseCasesPage() {
               {benefits.title}
             </h2>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-5xl mx-auto">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl mx-auto">
             {benefits.items.map((benefit, index) => {
               const Icon = benefitIcons[index];
               return (

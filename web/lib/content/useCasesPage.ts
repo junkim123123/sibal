@@ -16,6 +16,7 @@ export interface CommonProject {
   title: string;
   summary: string;
   footnote: string;
+  deliverables?: string;
 }
 
 export interface WorkflowStep {
@@ -67,6 +68,7 @@ export interface UseCasesPageContent {
     quotes: Array<{
       quote: string;
       author: string;
+      outcome?: string;
     }>;
   };
   benefits: {
@@ -88,17 +90,17 @@ export interface UseCasesPageContent {
 export const useCasesPageContent: UseCasesPageContent = {
   hero: {
     badge: 'Predictable Sourcing for Modern Brands',
-    title: 'Stop Guessing. Start Sourcing with Confidence.',
-    body: 'Get AI cost and risk snapshot within 1 business day. Review the numbers, then deposit $49 to unlock a dedicated manager and real factory quotes within 7 days. All logistics, customs, duties, and packaging costs are pass-through at cost with zero markup. Transparent 5% management fee on FOB.',
+    title: 'Pick a starting point for your next import',
+    body: 'Get a landed cost and risk snapshot in 1 business day. Deposit is optional and only needed for factory outreach and real quotes.',
     ctaPrimary: {
-      label: 'Get an analysis',
+      label: 'Get free snapshot',
       href: '/chat',
     },
     ctaSecondary: {
-      label: 'Talk to a Manager',
+      label: 'Talk to a manager',
       href: '/chat',
     },
-    ctaHelperText: '$49 deposit is refundable until outreach begins. Credited to your first order if you proceed.',
+    ctaHelperText: '$49 deposit is refundable until outreach begins and credited if you proceed.',
   },
   threeSteps: {
     items: [
@@ -117,27 +119,28 @@ export const useCasesPageContent: UseCasesPageContent = {
     ],
   },
   commonProjects: {
-    title: 'Common ways people start with NexSupply',
+    title: 'Choose your workflow',
     items: [
       {
         id: 'launch-new-product',
         title: 'Launch a new FBA brand',
-        summary:
-          'Validate margin and duty risk before you launch your first private label product.',
+        summary: 'Validate margin and duty risk before you buy inventory',
         footnote: 'Typical users: CPG brands and FBA aggregators',
+        deliverables: 'Estimated delivered cost range, duty and compliance flags, go no go recommendation',
       },
       {
         id: 're-source-existing-sku',
         title: 'Re-source an existing SKU',
-        summary: 'Compare your current factory to vetted alternatives on landed cost and risk. Many projects see significant cost savings when switching to optimized suppliers.',
+        summary: 'Compare your current supplier with vetted alternatives on cost and risk',
         footnote: 'Typical users: Established sellers optimizing margins',
+        deliverables: 'Side by side landed cost, risk flags, savings opportunities',
       },
       {
         id: 'test-higher-risk-category',
-        title: 'Test a higher-risk category',
-        summary:
-          'Get an AD or CVD and compliance check before you import into a new category.',
+        title: 'Test a higher risk category',
+        summary: 'Check AD CVD and compliance risk before you import',
         footnote: 'Typical users: Brands entering regulated categories',
+        deliverables: 'Risk flags, required docs checklist, mitigation steps',
       },
     ],
   },
@@ -153,14 +156,17 @@ export const useCasesPageContent: UseCasesPageContent = {
       {
         quote: 'Finally, I can see landed cost before I wire any money.',
         author: 'FBA Seller, CPG Category',
+        outcome: 'Saved $0.18 per unit',
       },
       {
         quote: 'The compliance check prevented a very expensive mistake.',
         author: 'Retail Buyer, Hardlines',
+        outcome: 'Avoided customs hold',
       },
       {
         quote: 'We used NexSupply to test a new snack product. The process was simple and fast.',
         author: 'Brand Manager, Food & Beverage',
+        outcome: 'Reduced lead time by 2 weeks',
       },
     ],
   },
@@ -168,34 +174,26 @@ export const useCasesPageContent: UseCasesPageContent = {
     title: 'Why importers work with NexSupply',
     items: [
       {
-        title: 'Transparent Pricing',
-        body: 'All logistics, customs, duties, and packaging costs are pass-through at cost with zero markup. Transparent 5% management fee on FOB.',
+        title: 'Transparent pricing',
+        body: 'Pass through costs at actual cost. 5 percent fee on FOB only',
       },
       {
-        title: 'Price Lock Guarantee',
-        body: 'Factory FOB locked for 3 months once quoted. No surprise price increases during your production window.',
+        title: 'Real quotes fast',
+        body: 'Manager assigned after deposit. Three factory quotes within 7 days',
       },
       {
-        title: 'Hub Operations',
-        body: 'Owned quality control hubs in Seoul, Yiwu, Shantou, and Vung Tau. Rigorous QC processes to minimize defects.',
+        title: 'Price lock',
+        body: 'Factory FOB locked for 3 months once quoted',
       },
       {
-        title: 'Pass-Through Billing',
-        body: 'Logistics, customs, duties, packaging materials, labeling, kitting, and forwarding billed at actual cost with no markup.',
-      },
-      {
-        title: 'Manager Execution',
-        body: 'Dedicated manager assigned within 1 business day after deposit. Real factory quotes from 3 options within 7 days.',
-      },
-      {
-        title: 'Risk Controls',
-        body: 'AI-powered risk assessment flags compliance issues, AD/CVD risks, and supply chain concerns before you commit.',
+        title: 'Risk controls',
+        body: 'Compliance, AD CVD, and supply chain flags before you commit',
       },
     ],
   },
   cta: {
     title: 'Ready to test your next import?',
-    body: 'Start with one product. We will run a full landed cost and risk review, usually within 1 business day.',
+    body: 'Start with one product. Get a full landed cost and risk snapshot in 1 business day.',
     buttonLabel: 'Get free snapshot',
     buttonHref: '/chat',
     disclaimer: 'NexSupply is not a customs broker or legal advisor. Estimates are for directional planning only.',

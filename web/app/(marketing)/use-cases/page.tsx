@@ -19,10 +19,10 @@ export default async function UseCasesPage() {
         <div className="mx-auto max-w-6xl px-4 md:px-6">
           <div className="text-center max-w-3xl mx-auto">
             <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold tracking-tight text-neutral-900 leading-tight mb-6">
-              Common projects we support
+              {hero.title}
             </h1>
             <p className="text-base md:text-lg text-neutral-600 leading-relaxed mb-6">
-              From launching new FBA brands to re-sourcing existing SKUs, see how teams use NexSupply to validate margin and reduce risk before committing inventory.
+              {hero.body}
             </p>
             <div className="flex flex-col sm:flex-row gap-3 justify-center items-center">
               <Link href={hero.ctaPrimary.href} className="w-full sm:w-auto">
@@ -49,7 +49,7 @@ export default async function UseCasesPage() {
       </section>
 
       {/* Common ways people start */}
-      <section id="projects" aria-label="Common projects" className="py-16 sm:py-20 lg:py-24 bg-white">
+      <section id="projects" aria-label="Common projects" className="py-12 md:py-16 bg-white">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <h2 className="text-2xl sm:text-3xl font-semibold text-center text-neutral-900">
             {commonProjects.title}
@@ -63,9 +63,15 @@ export default async function UseCasesPage() {
                 <h3 className="text-base sm:text-lg font-semibold text-neutral-900 mb-3">
                   {project.title}
                 </h3>
-                <p className="text-sm text-neutral-600 leading-relaxed mb-3 flex-1">
+                <p className="text-sm text-neutral-600 leading-relaxed mb-3">
                   {project.summary}
                 </p>
+                {project.deliverables && (
+                  <div className="mb-3">
+                    <p className="text-xs font-semibold text-neutral-500 uppercase tracking-wide mb-1.5">What you get</p>
+                    <p className="text-xs text-neutral-600 leading-relaxed">{project.deliverables}</p>
+                  </div>
+                )}
                 <p className="text-[11px] text-neutral-400 mt-auto">
                   {project.footnote}
                 </p>
@@ -116,8 +122,13 @@ export default async function UseCasesPage() {
                     <span className="text-xs text-neutral-500">{quote.author}</span>
                     <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-medium bg-blue-50 text-blue-700 border border-blue-200/50">
                       <CheckCircle className="w-3 h-3" />
-                      Completed Project
+                      Pilot project
                     </span>
+                    {quote.outcome && (
+                      <span className="text-xs text-neutral-600 font-medium">
+                        {quote.outcome}
+                      </span>
+                    )}
                   </div>
                 </footer>
               </div>
@@ -127,14 +138,14 @@ export default async function UseCasesPage() {
       </section>
 
       {/* Why importers work with NexSupply */}
-      <section aria-label="Benefits" className="py-16 sm:py-20 lg:py-24 bg-white">
+      <section aria-label="Benefits" className="py-12 md:py-16 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
             <h2 className="text-2xl sm:text-3xl font-semibold text-neutral-900">
               {benefits.title}
             </h2>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-5xl mx-auto">
             {benefits.items.map((benefit, index) => {
               const Icon = benefitIcons[index];
               return (

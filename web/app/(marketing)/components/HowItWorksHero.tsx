@@ -21,9 +21,9 @@ export default function HowItWorksHero() {
       <div className="mx-auto w-full max-w-6xl px-6 lg:px-8 relative z-10">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 items-center">
           {/* Left: Copy and CTA */}
-          <div className="text-center order-2 lg:order-1">
+          <div className="text-left order-2 lg:order-1">
             {/* 1. Kicker */}
-            <div className="mb-2 text-center">
+            <div className="mb-2">
               <span className="text-xs font-semibold text-blue-700">
                 How it works
               </span>
@@ -40,7 +40,7 @@ export default function HowItWorksHero() {
             </p>
             
             {/* 4. CTA Buttons */}
-            <div className="flex flex-col sm:flex-row gap-4 justify-center mb-2">
+            <div className="flex flex-col sm:flex-row gap-4 justify-start mb-2">
               <Link href={hero.cta.primary.href} className="w-full sm:w-auto">
                 <Button className="bg-blue-600 hover:bg-blue-700 text-white rounded-lg px-6 md:px-8 py-3 md:py-3.5 w-full sm:w-auto">
                   Get free snapshot
@@ -58,12 +58,12 @@ export default function HowItWorksHero() {
             </div>
             
             {/* CTA Helper Text */}
-            <p className="text-xs text-neutral-500 text-center mb-3">
+            <p className="text-xs text-neutral-500 mb-3">
               {hero.cta.helperText}
             </p>
             
             {/* 5. Trust bar - Small badges */}
-            <div className="mt-4 flex flex-wrap justify-center gap-2">
+            <div className="mt-4 flex flex-wrap justify-start gap-2">
               <span className="inline-flex items-center rounded-full border border-neutral-200 bg-white px-3 py-1 text-xs font-medium text-neutral-700">
                 $49 deposit
               </span>

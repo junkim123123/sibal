@@ -198,7 +198,7 @@ export default async function UseCasesPage() {
             <Link href="/chat" className="w-full sm:w-auto">
               <Button
                 variant="outline"
-                className="rounded-lg px-6 md:px-8 py-3 md:py-3.5 border-2 border-neutral-400 text-white hover:bg-neutral-800 w-full sm:w-auto"
+                className="rounded-lg px-6 md:px-8 py-3 md:py-3.5 border-2 border-white bg-transparent text-white hover:bg-white hover:text-neutral-900 w-full sm:w-auto"
               >
                 Talk to a manager
               </Button>

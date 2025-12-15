@@ -26,14 +26,14 @@ export default async function HowItWorksPage() {
         className="bg-neutral-50 py-2 md:py-4 mt-10 border-t border-neutral-200 pt-8"
         titleClassName="text-2xl md:text-3xl font-semibold tracking-tight"
       >
-        <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-6 items-stretch">
+        <div className="mt-6 sm:mt-8 grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6 items-stretch">
           {journey.cards.map((card, idx) => {
             const Icon = card.icon;
             return (
               <div
                 key={idx}
                 id={`step-${idx + 1}`}
-                className={`rounded-2xl border p-5 shadow-sm h-full flex flex-col scroll-mt-24 ${
+                className={`rounded-2xl border p-4 sm:p-5 shadow-sm h-full flex flex-col scroll-mt-24 ${
                   idx === 2 
                     ? 'bg-blue-50/80 border-2 border-blue-400' 
                     : 'bg-white border-neutral-200'
@@ -102,11 +102,11 @@ export default async function HowItWorksPage() {
         className="bg-neutral-50 py-10 md:py-14"
         titleClassName="text-2xl md:text-3xl font-semibold"
       >
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-5 max-w-5xl mx-auto items-stretch">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-5 max-w-5xl mx-auto items-stretch">
           {/* Free */}
-          <div className="bg-white border border-neutral-200 rounded-lg p-5 shadow-sm flex flex-col">
+          <div className="bg-white border border-neutral-200 rounded-lg p-4 sm:p-5 shadow-sm flex flex-col">
             <div className="flex items-baseline gap-2 mb-2">
-              <div className="text-5xl font-bold text-neutral-900">$0</div>
+              <div className="text-4xl sm:text-5xl font-bold text-neutral-900">$0</div>
               <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-50 text-green-700 border border-green-200">
                 1 business day
               </span>
@@ -132,14 +132,14 @@ export default async function HowItWorksPage() {
           </div>
 
           {/* Deposit and Fee combined */}
-          <div className="bg-white border-2 border-blue-300 rounded-lg p-5 shadow-sm flex flex-col">
+          <div className="bg-white border-2 border-blue-300 rounded-lg p-4 sm:p-5 shadow-sm flex flex-col">
             <div className="grid grid-cols-2 gap-4 mb-3">
               <div className="flex flex-col">
-                <div className="text-4xl font-bold text-blue-600 leading-none mb-1">$49</div>
+                <div className="text-3xl sm:text-4xl font-bold text-blue-600 leading-none mb-1">$49</div>
                 <p className="text-xs text-neutral-600 font-medium">Deposit</p>
               </div>
               <div className="flex flex-col">
-                <div className="text-4xl font-bold text-neutral-900 leading-none mb-1">5%</div>
+                <div className="text-3xl sm:text-4xl font-bold text-neutral-900 leading-none mb-1">5%</div>
                 <p className="text-xs text-neutral-600 font-medium">On FOB</p>
               </div>
             </div>
@@ -185,13 +185,13 @@ export default async function HowItWorksPage() {
       </SectionLayout>
 
       {/* Final CTA Banner */}
-      <section aria-label="Call to action" className="py-10 md:py-14 bg-neutral-900 text-white">
-        <div className="mx-auto w-full max-w-6xl px-6 lg:px-8">
+      <section aria-label="Call to action" className="py-12 sm:py-14 bg-neutral-900 text-white">
+        <div className="mx-auto w-full max-w-6xl px-4 sm:px-6 lg:px-8">
           <div className="max-w-3xl mx-auto text-center">
-            <h2 className="text-2xl md:text-3xl lg:text-4xl font-semibold text-white mb-4">
+            <h2 className="text-2xl sm:text-3xl md:text-4xl font-semibold text-white mb-3 sm:mb-4">
               {cta.title}
             </h2>
-            <p className="text-sm md:text-base lg:text-lg text-neutral-300 mb-6 max-w-xl mx-auto">
+            <p className="text-sm sm:text-base md:text-lg text-neutral-300 mb-5 sm:mb-6 max-w-xl mx-auto">
               {cta.description}
             </p>
             <Link href="/chat" className="inline-block w-full sm:w-auto mb-6">

@@ -58,12 +58,12 @@ export default async function UseCasesPage() {
               </p>
             )}
           </div>
-          <div className="mt-10 grid gap-6 md:grid-cols-3">
+          <div className="mt-8 sm:mt-10 grid gap-4 sm:gap-6 md:grid-cols-3">
             {commonProjects.items.map((project) => (
               <Link
                 key={project.id}
                 href="/chat"
-                className="rounded-2xl border border-neutral-200 bg-white shadow-sm p-6 flex flex-col h-full min-h-[420px] hover:shadow-md transition-shadow"
+                className="rounded-2xl border border-neutral-200 bg-white shadow-sm p-5 sm:p-6 flex flex-col h-full min-h-[360px] sm:min-h-[420px] hover:shadow-md transition-shadow"
               >
                 {project.badge && (
                   <span className="inline-flex w-fit text-xs font-medium px-3 py-1 rounded-full bg-blue-50 text-blue-700">
@@ -124,15 +124,15 @@ export default async function UseCasesPage() {
                 </p>
               )}
             </div>
-            <div className="mt-10 grid gap-8 lg:grid-cols-2 items-start">
+            <div className="mt-8 sm:mt-10 grid gap-6 sm:gap-8 lg:grid-cols-2 items-start">
               {/* Left: Preview mockup */}
-              <div className="rounded-2xl border border-neutral-200 bg-white p-4 shadow-sm">
+              <div className="rounded-2xl border border-neutral-200 bg-white p-3 sm:p-4 shadow-sm">
                 <div className="aspect-[16/10] bg-neutral-50 rounded-lg flex items-center justify-center">
                   <div className="text-xs text-neutral-400">Snapshot preview image</div>
                 </div>
               </div>
               {/* Right: Summary */}
-              <div className="rounded-2xl border border-neutral-200 bg-white p-6 shadow-sm">
+              <div className="rounded-2xl border border-neutral-200 bg-white p-4 sm:p-6 shadow-sm">
                 <div className="space-y-5">
                   {snapshotPreview.items.map((item, i) => (
                     <div key={i}>
@@ -173,11 +173,11 @@ export default async function UseCasesPage() {
             </p>
           </div>
           {socialProof.metrics && (
-            <div className="mt-10 grid gap-6 md:grid-cols-3">
+            <div className="mt-8 sm:mt-10 grid gap-4 sm:gap-6 md:grid-cols-3">
               {socialProof.metrics.map((metric, index) => (
                 <div
                   key={index}
-                  className="rounded-2xl border border-neutral-200 bg-white shadow-sm p-8 min-h-[220px]"
+                  className="rounded-2xl border border-neutral-200 bg-white shadow-sm p-6 sm:p-8 min-h-[180px] sm:min-h-[220px]"
                 >
                   <div className="text-3xl sm:text-4xl font-semibold tracking-tight leading-tight text-neutral-900">
                     {metric.value}
@@ -205,13 +205,13 @@ export default async function UseCasesPage() {
               {benefits.title}
             </h2>
           </div>
-          <div className="mt-10 grid gap-6 md:grid-cols-3">
+          <div className="mt-8 sm:mt-10 grid gap-4 sm:gap-6 md:grid-cols-3">
             {benefits.items.map((benefit, index) => {
               const Icon = benefitIcons[index];
               return (
                 <div
                   key={index}
-                  className="rounded-2xl border border-neutral-200 bg-white shadow-sm p-6 min-h-[160px]"
+                  className="rounded-2xl border border-neutral-200 bg-white shadow-sm p-5 sm:p-6 min-h-[140px] sm:min-h-[160px]"
                 >
                   <div className="h-10 w-10 rounded-xl bg-blue-50 text-blue-700 flex items-center justify-center">
                     <Icon className="w-5 h-5" />

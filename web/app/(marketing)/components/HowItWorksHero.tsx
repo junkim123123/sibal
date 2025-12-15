@@ -9,7 +9,7 @@ export default function HowItWorksHero() {
   const { hero } = howItWorksPageConfig;
 
   return (
-    <section aria-label="Hero" className="w-full pt-4 md:pt-5 pb-3 md:pb-4 bg-white relative overflow-hidden mb-0">
+    <section aria-label="Hero" className="w-full pt-12 sm:pt-16 pb-8 sm:pb-12 bg-white relative overflow-hidden mb-0">
       {/* Subtle background pattern */}
       <div className="absolute inset-0 opacity-[0.02] pointer-events-none">
         <div className="absolute inset-0" style={{
@@ -19,9 +19,9 @@ export default function HowItWorksHero() {
       </div>
 
       <div className="mx-auto w-full max-w-6xl px-4 sm:px-6 lg:px-8 relative z-10">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-10 items-center">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8 lg:gap-10 items-center">
           {/* Left: Copy and CTA */}
-          <div className="text-center lg:text-left order-2 lg:order-1">
+          <div className="text-center lg:text-left order-2 lg:order-1 px-2 sm:px-0">
             {/* 1. Kicker */}
             <div className="mb-2">
               <span className="text-xs font-semibold text-blue-700">
@@ -30,12 +30,12 @@ export default function HowItWorksHero() {
             </div>
             
             {/* 2. Headline */}
-            <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold tracking-tight text-neutral-900 leading-tight mb-3">
+            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-4xl font-bold tracking-tight text-neutral-900 leading-tight mb-3 sm:mb-4">
               {hero.title}
             </h1>
             
             {/* 3. Subcopy */}
-            <p className="text-sm md:text-base text-neutral-700 font-medium mb-4 leading-relaxed">
+            <p className="text-sm sm:text-base md:text-lg text-neutral-700 font-medium mb-4 sm:mb-5 leading-relaxed">
               {hero.subtitle}
             </p>
             
@@ -78,7 +78,7 @@ export default function HowItWorksHero() {
 
           {/* Right: Sample report preview */}
           <div className="order-1 lg:order-2">
-            <div className="rounded-2xl border border-neutral-200 bg-white p-5 shadow-sm w-full max-w-none">
+            <div className="rounded-2xl border border-neutral-200 bg-white p-4 sm:p-5 shadow-sm w-full max-w-none">
               {/* Header */}
               <div className="flex items-center justify-between">
                 <div className="text-xs font-semibold tracking-wide text-neutral-900 uppercase">

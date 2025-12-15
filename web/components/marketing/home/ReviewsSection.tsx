@@ -47,7 +47,7 @@ export function ReviewsSection({ section }: { section: HomeReviewsSection }) {
   };
 
   return (
-    <section className="py-16 sm:py-24 border-t-2 border-b-2 border-neutral-300 dark:border-gray-700 bg-white dark:bg-gray-900">
+    <section className="py-16 sm:py-24 border-t border-neutral-200 dark:border-gray-700 bg-neutral-50 dark:bg-neutral-900">
       <div className="mx-auto max-w-6xl px-4 sm:px-6">
         <div className="flex flex-col gap-8 md:flex-row md:items-end md:justify-between mb-10">
           <div className="max-w-xl space-y-3">
@@ -85,7 +85,7 @@ export function ReviewsSection({ section }: { section: HomeReviewsSection }) {
           <button
             onClick={() => scroll('left')}
             disabled={!canScrollLeft}
-            className={`absolute left-2 sm:left-0 top-1/2 -translate-y-1/2 z-10 bg-white border border-neutral-200 rounded-full p-2 shadow-lg hover:bg-neutral-50 transition-all ${
+            className={`absolute left-2 sm:left-0 top-1/2 -translate-y-1/2 z-10 bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-full p-2 shadow-sm hover:bg-neutral-50 dark:hover:bg-neutral-700 transition-all ${
               canScrollLeft ? 'opacity-100 cursor-pointer' : 'opacity-30 cursor-not-allowed'
             }`}
             aria-label="Scroll left"
@@ -97,7 +97,7 @@ export function ReviewsSection({ section }: { section: HomeReviewsSection }) {
           <button
             onClick={() => scroll('right')}
             disabled={!canScrollRight}
-            className={`absolute right-2 sm:right-0 top-1/2 -translate-y-1/2 z-10 bg-white border border-neutral-200 rounded-full p-2 shadow-lg hover:bg-neutral-50 transition-all ${
+            className={`absolute right-2 sm:right-0 top-1/2 -translate-y-1/2 z-10 bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-full p-2 shadow-sm hover:bg-neutral-50 dark:hover:bg-neutral-700 transition-all ${
               canScrollRight ? 'opacity-100 cursor-pointer' : 'opacity-30 cursor-not-allowed'
             }`}
             aria-label="Scroll right"
@@ -121,7 +121,7 @@ export function ReviewsSection({ section }: { section: HomeReviewsSection }) {
                   return (
                     <article
                       key={review.id}
-                      className="flex flex-col w-[320px] sm:w-[360px] flex-shrink-0 rounded-2xl bg-neutral-50 p-5 sm:p-6 shadow-sm border border-neutral-100"
+                      className="flex flex-col w-[320px] sm:w-[360px] flex-shrink-0 rounded-lg bg-white dark:bg-neutral-800 p-5 sm:p-6 shadow-sm border border-neutral-200 dark:border-neutral-700"
                     >
                       <h3 className="text-sm font-semibold leading-snug text-neutral-900">
                         {review.headline}

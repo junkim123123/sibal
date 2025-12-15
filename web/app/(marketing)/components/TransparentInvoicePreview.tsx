@@ -4,11 +4,11 @@ import { Factory, Truck, Scale, Package, Percent, Info } from 'lucide-react';
 
 export function TransparentInvoicePreview() {
   return (
-    <section className="py-16 md:py-24 bg-neutral-50 dark:bg-neutral-900">
-      <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
+    <section className="py-16 md:py-24 bg-white dark:bg-gray-900 border-t border-neutral-200 dark:border-neutral-700">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="text-center mb-12">
-          <h2 className="text-3xl md:text-4xl font-bold text-neutral-900 dark:text-white mb-4">
+          <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold tracking-tight text-neutral-900 dark:text-white mb-4">
             Transparent Invoice Preview
           </h2>
           <p className="text-lg text-neutral-600 dark:text-neutral-400 max-w-2xl mx-auto">
@@ -18,7 +18,7 @@ export function TransparentInvoicePreview() {
         </div>
 
         {/* Invoice Card */}
-        <div className="bg-white dark:bg-neutral-800 rounded-xl border border-neutral-200 dark:border-neutral-700 shadow-lg overflow-hidden">
+        <div className="bg-white dark:bg-neutral-800 rounded-lg border border-neutral-200 dark:border-neutral-700 shadow-sm overflow-hidden">
           {/* Invoice Header */}
           <div className="bg-blue-50 dark:bg-blue-900/20 border-b border-blue-200 dark:border-blue-800 px-6 py-4">
             <div className="flex items-center justify-between">

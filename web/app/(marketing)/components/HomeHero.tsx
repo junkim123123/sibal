@@ -20,7 +20,7 @@ export default function HomeHero({ page }: Props) {
   };
 
   return (
-    <section className="py-12 md:py-20 lg:py-24 bg-white dark:bg-gray-900">
+    <section className="py-16 md:py-24 lg:py-28 bg-white dark:bg-gray-900">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-center">
           {/* Left: Text Content */}
@@ -58,14 +58,13 @@ export default function HomeHero({ page }: Props) {
                 {t.home.hero.cta}
                 <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
               </Button>
-              <Link href="/pricing">
-                <Button
-                  variant="outline"
-                  className="inline-flex items-center gap-2 group border-2 border-neutral-300 hover:border-neutral-400 text-neutral-700 dark:text-neutral-300 hover:text-neutral-900 dark:hover:text-white font-semibold px-6 py-3 rounded-lg transition-colors"
-                >
-                  {t.home.hero.ctaSecondary}
-                </Button>
-              </Link>
+              <Button
+                onClick={() => router.push('/chat')}
+                variant="outline"
+                className="inline-flex items-center gap-2 group border-2 border-neutral-300 hover:border-neutral-400 text-neutral-700 dark:text-neutral-300 hover:text-neutral-900 dark:hover:text-white font-semibold px-6 py-3 rounded-lg transition-colors"
+              >
+                {t.home.hero.ctaSecondary}
+              </Button>
             </div>
           </div>
 

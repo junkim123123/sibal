@@ -10,7 +10,7 @@ import { getHomePage, getSiteSettings } from '@/lib/sanity/client';
 import HomeHero from './components/HomeHero';
 import HomeUseCases from './components/HomeUseCases';
 import HomeSocialProofStrip from './components/HomeSocialProofStrip';
-import HomeBenefitsGrid from './components/HomeBenefitsGrid';
+import HomeBenefitsGridV2 from './components/HomeBenefitsGridV2';
 import { TransparentInvoicePreview } from './components/TransparentInvoicePreview';
 import HomeImpactBand from './components/HomeImpactBand';
 import ExpertPanelSection from '@/components/marketing/ExpertPanelSection';
@@ -36,7 +36,7 @@ export default async function HomePage() {
       <HomeHero page={page} />
       <HomeUseCases />
       <HomeSocialProofStrip />
-      <HomeBenefitsGrid />
+      <HomeBenefitsGridV2 />
       <TransparentInvoicePreview />
       <ReviewsSection section={homePageConfig.reviewsSection} />
       <ProTeamSection section={homePageConfig.teamSection} />

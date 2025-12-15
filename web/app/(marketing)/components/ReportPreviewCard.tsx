@@ -4,7 +4,7 @@ import { CheckCircle, AlertTriangle, ArrowRight, Lock, Factory } from 'lucide-re
 
 export function ReportPreviewCard() {
   return (
-    <div className="relative rounded-xl bg-white/80 backdrop-blur-sm border border-neutral-200/60 shadow-xl p-6 md:p-8 lg:p-10">
+    <div className="relative rounded-lg bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 shadow-sm p-6 md:p-8 lg:p-10">
       {/* Header */}
       <div className="mb-6">
         <h3 className="text-sm font-semibold text-neutral-900 uppercase tracking-wider mb-1">
@@ -30,7 +30,10 @@ export function ReportPreviewCard() {
         <h4 className="text-xs font-semibold text-neutral-500 uppercase tracking-wider mb-3">
           Decision Summary
         </h4>
-        <p className="text-sm text-neutral-700 leading-relaxed">
+        <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-blue-50 border border-blue-200 mb-2">
+          <span className="text-xs font-semibold text-blue-900">GO</span>
+        </div>
+        <p className="text-sm text-neutral-700 leading-relaxed mt-2">
           Project shows <span className="font-semibold text-neutral-900">strong viability</span> with manageable compliance requirements. 
           Recommended to proceed with deposit for factory quotes.
         </p>

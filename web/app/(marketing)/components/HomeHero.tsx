@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
-import { ArrowRight, CheckCircle, Factory, Ship, Scale } from 'lucide-react';
+import { ArrowRight, CheckCircle, Factory, Ship, Scale, Brain, FileText, Users, AlertCircle } from 'lucide-react';
 import { useLanguage } from '@/components/i18n/language-provider';
 
 type Props = {
@@ -57,11 +57,13 @@ export default function HomeHero({ page }: Props) {
                 {t.home.hero.cta}
                 <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
               </Button>
-              <Link
-                href="/how-it-works"
-                className="text-base font-medium text-neutral-700 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white transition-colors inline-flex items-center gap-1"
-              >
-                {t.home.hero.ctaSecondary}
+              <Link href="/pricing">
+                <Button
+                  variant="outline"
+                  className="inline-flex items-center gap-2 group border-2 border-neutral-300 hover:border-neutral-400 text-neutral-700 dark:text-neutral-300 hover:text-neutral-900 dark:hover:text-white font-semibold px-6 py-3 rounded-lg transition-colors"
+                >
+                  {t.home.hero.ctaSecondary}
+                </Button>
               </Link>
             </div>
           </div>
@@ -120,18 +122,69 @@ export default function HomeHero({ page }: Props) {
                 </div>
               </div>
 
-              {/* Compliance Badge - 강조 */}
+              {/* Compliance Status - 중립 톤 */}
               <div className="mt-6 pt-6 border-t border-neutral-200">
-                <div className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg bg-green-50 border-2 border-green-200 shadow-sm">
-                  <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0" />
-                  <span className="text-sm font-bold text-green-700">
-                    Compliance Check: PASSED
+                <div className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg bg-neutral-50 border border-neutral-200">
+                  <AlertCircle className="w-4 h-4 text-neutral-600 flex-shrink-0" />
+                  <span className="text-sm font-medium text-neutral-700">
+                    Compliance flags checked
                   </span>
                 </div>
-                <p className="mt-2.5 text-xs font-medium text-green-600">
-                  Risk: Low
+                <p className="mt-2.5 text-xs font-medium text-neutral-600">
+                  Risk screening: Low
                 </p>
               </div>
+
+              {/* Disclaimer */}
+              <div className="mt-4 pt-4 border-t border-neutral-200">
+                <p className="text-xs text-neutral-500 leading-relaxed">
+                  Example estimate. Final quote confirmed by a manager.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* 3 Step Micro Section */}
+        <div className="mt-16 pt-16 border-t border-neutral-200">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl mx-auto">
+            {/* Step 1 */}
+            <div className="flex flex-col items-center text-center">
+              <div className="w-12 h-12 rounded-full bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center mb-4">
+                <Brain className="w-6 h-6 text-neutral-700 dark:text-neutral-300" />
+              </div>
+              <h3 className="text-sm font-semibold text-neutral-900 dark:text-white mb-2">
+                AI Cost and Risk Snapshot
+              </h3>
+              <p className="text-xs text-neutral-600 dark:text-neutral-400 leading-relaxed">
+                Within 1 business day
+              </p>
+            </div>
+
+            {/* Step 2 */}
+            <div className="flex flex-col items-center text-center">
+              <div className="w-12 h-12 rounded-full bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center mb-4">
+                <FileText className="w-6 h-6 text-neutral-700 dark:text-neutral-300" />
+              </div>
+              <h3 className="text-sm font-semibold text-neutral-900 dark:text-white mb-2">
+                Deposit to Unlock Manager
+              </h3>
+              <p className="text-xs text-neutral-600 dark:text-neutral-400 leading-relaxed">
+                Real factory quotes within 7 days
+              </p>
+            </div>
+
+            {/* Step 3 */}
+            <div className="flex flex-col items-center text-center">
+              <div className="w-12 h-12 rounded-full bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center mb-4">
+                <Users className="w-6 h-6 text-neutral-700 dark:text-neutral-300" />
+              </div>
+              <h3 className="text-sm font-semibold text-neutral-900 dark:text-white mb-2">
+                Execute
+              </h3>
+              <p className="text-xs text-neutral-600 dark:text-neutral-400 leading-relaxed">
+                5% service fee, packaging and labeling quoted separately
+              </p>
             </div>
           </div>
         </div>

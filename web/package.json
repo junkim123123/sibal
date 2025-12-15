@@ -4,10 +4,11 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "prebuild": "tsx scripts/generate-portfolio-list.ts",
+    "prebuild": "npm run guard:copy && tsx scripts/generate-portfolio-list.ts",
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
+    "guard:copy": "node scripts/copy-guard.mjs",
     "generate:category-popularity": "tsx scripts/generateCategoryPopularity.ts",
     "reinforce:top-categories": "tsx scripts/reinforceTopCategories.ts",
     "generate:regulation-patterns": "tsx scripts/generateRegulationPatterns.ts",

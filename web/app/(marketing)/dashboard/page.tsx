@@ -1011,7 +1011,7 @@ function PaymentModal({
               <div>
                 <p className="text-sm font-semibold text-teal-900 mb-1">Credited Upon Order</p>
                 <p className="text-sm text-teal-900 leading-relaxed">
-                  This fee covers the agent's labor for negotiation and is <strong>non-refundable</strong>. However, it will be <strong>fully deducted</strong> from your final 5% service fee when you proceed with the order.
+                  Deposit is 100 percent credited to your first order.
                 </p>
               </div>
             </div>
@@ -1080,7 +1080,7 @@ function PaymentModal({
           {/* Non-refundable Notice (Microcopy) */}
           <div className="pt-2 border-t border-gray-200">
             <p className="text-xs text-gray-500 text-center leading-relaxed">
-              The sourcing fee is non-refundable once the official quote has been delivered.
+              Deposit is 100 percent credited to your first order.
             </p>
           </div>
         </div>

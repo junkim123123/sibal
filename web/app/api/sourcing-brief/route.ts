@@ -45,7 +45,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      message: 'Request received. We\'ll send you a quote within 24–48 hours.',
+      message: 'Request received. We\'ll send you a quote within 1 business day.',
     });
   } catch (error) {
     console.error('Error submitting sourcing brief:', error);

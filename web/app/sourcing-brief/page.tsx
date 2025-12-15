@@ -509,7 +509,7 @@ function SourcingBriefPageContent() {
               <CheckCircle2 className="w-5 h-5" />
               <p className="font-medium">Request received!</p>
             </div>
-            <p className="text-sm">We'll send you a quote within 24–48 hours.</p>
+            <p className="text-sm">We'll send you a quote within 1 business day.</p>
           </div>
         ),
       }]);

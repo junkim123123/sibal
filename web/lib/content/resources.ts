@@ -174,7 +174,7 @@ const faqSection: FAQSection = {
       id: 'how-long-analysis-take',
       question: 'How long does an analysis take?',
       answer:
-        "After you submit a product brief, the initial AI-assisted snapshot is usually ready within 24–48 hours. If we need to collect extra quotes or documents for your category, we'll let you know and share an updated timeline.",
+        "After you submit a product brief, the initial AI-assisted snapshot is usually ready within 1 business day. If we need to collect extra quotes or documents for your category, we'll let you know and share an updated timeline.",
     },
   ],
 };

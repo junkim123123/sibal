@@ -72,7 +72,7 @@ export const howItWorksPageConfig: HowItWorksPageConfig = {
     title: 'How NexSupply Works',
     subtitle: 'From first idea to your first controlled shipment, NexSupply keeps your project moving at every step of the sourcing process.',
     description: 'Start with one chat. When the numbers work, scale at your own pace.',
-    note: 'Most projects receive an initial landed-cost snapshot within one business day.',
+    note: 'Most projects receive an initial landed-cost snapshot within one business day. Packaging and kitting available, billed separately.',
     cta: {
       primary: {
         label: 'Get an analysis',
@@ -94,12 +94,12 @@ export const howItWorksPageConfig: HowItWorksPageConfig = {
       },
       {
         title: 'Get Landed Cost Reality Check',
-        body: 'Our AI tools turn that brief into a landed cost and risk view, so you see margins, duties, and red flags before you spend on inventory. Usually within 1 business day.',
+        body: 'Our AI tools turn that brief into a landed cost and risk view, so you see margins, duties, and red flags before you spend on inventory. Usually within 1 business day. Packaging and kitting available, billed separately.',
         icon: TrendingUp,
       },
       {
         title: 'Run Pilot & Ship',
-        body: 'When the numbers look right, we help you line up suppliers, QC and logistics for a first controlled shipment, not a blind leap.',
+        body: 'When the numbers look right, deposit $49 to unlock real factory quotes within 7 days. Deposit is 100 percent credited to your first order. We help you line up suppliers, QC and logistics for a first controlled shipment, not a blind leap.',
         icon: Package,
       },
     ],
@@ -126,17 +126,19 @@ export const howItWorksPageConfig: HowItWorksPageConfig = {
         bullets: [
           'We do: Estimated DDP per unit (factory, freight, duty, and extras). Flag early signs of compliance or AD/CVD risk. Pressure-test your assumptions on margin and risk. Suggest alternative scenarios (factory options, MOQ, route, etc.).',
           'You get: A sanity check on whether the project makes sense before you commit. Human eyes on the numbers and a clear "go / pause / drop" recommendation.',
+          'Packaging and kitting available, billed separately.',
         ],
         icon: Brain,
       },
       {
         stepNumber: '3',
         title: 'Pilot run and beyond',
-        timeEstimate: '1–2 week pilot',
+        timeEstimate: 'Real factory quotes within 7 days',
         body: 'You do: Decide when you\'re ready to move from analysis into a first test order.',
         bullets: [
-          'We do: Shortlist and compare qualified factories. Align QC and logistics to match your risk level. Use the pilot to learn, then translate those lessons into a repeatable playbook.',
+          'We do: Shortlist and compare qualified factories. Real factory quotes within 7 days after deposit. Deposit is 100 percent credited to your first order. Align QC and logistics to match your risk level. Use the pilot to learn, then translate those lessons into a repeatable playbook.',
           'You get: A controlled first shipment instead of jumping straight into a huge PO.',
+          '5% execution fee covers: Production management and QC coordination. 5% execution fee does NOT cover: Packaging, labeling, and kitting costs (quoted separately as pass-through line items).',
         ],
         icon: Truck,
       },
@@ -156,8 +158,8 @@ export const howItWorksPageConfig: HowItWorksPageConfig = {
       {
         title: 'When orders go through NexSupply',
         items: [
-          'Transparent 5% service fee with a clear cap.',
-          'Clear cap so your per-unit margin stays protected.',
+          '5% execution fee covers: Production management and QC coordination.',
+          '5% execution fee does NOT cover: Packaging, labeling, and kitting costs (quoted separately as pass-through line items).',
           'Currently focused on imports into the US and selected EU markets.',
         ],
       },

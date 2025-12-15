@@ -15,105 +15,92 @@ export default async function UseCasesPage() {
   return (
     <div className="bg-white">
       {/* Hero Section - Use Cases Specific */}
-      <section aria-label="Hero" className="py-12 md:py-[72px] bg-white border-b border-neutral-100">
-        <div className="mx-auto max-w-[1120px] px-4 sm:px-6">
-          <div className="text-center max-w-3xl mx-auto">
-            <h1 className="text-[52px] md:text-[56px] font-bold tracking-tight text-neutral-900 leading-tight mb-4">
+      <section aria-label="Hero" className="pt-16 pb-12 sm:pt-20 sm:pb-16 bg-white border-y border-neutral-200">
+        <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
+          <div className="text-center">
+            <h1 className="text-4xl sm:text-6xl font-semibold tracking-tight leading-tight text-neutral-900">
               {hero.title}
             </h1>
-            <p className="text-base text-neutral-600 leading-relaxed mb-6">
+            <p className="mt-5 text-base sm:text-lg text-neutral-600 leading-relaxed max-w-2xl mx-auto">
               {hero.body}
             </p>
-            <div className="flex flex-col sm:flex-row gap-3 justify-center items-center mb-3">
+            <div className="mt-8 flex flex-col sm:flex-row gap-3 justify-center">
               <Link href={hero.ctaPrimary.href} className="w-full sm:w-auto">
-                <Button className="bg-blue-600 hover:bg-blue-700 text-white rounded-lg px-6 md:px-8 py-3 md:py-3.5 w-full sm:w-auto">
+                <button className="w-full sm:w-auto h-11 px-6 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold">
                   {hero.ctaPrimary.label}
-                </Button>
+                </button>
               </Link>
               <Link href={hero.ctaSecondary.href} className="w-full sm:w-auto">
-                <Button
-                  variant="outline"
-                  className="border-2 border-neutral-300 hover:border-neutral-400 text-neutral-700 hover:text-neutral-900 rounded-lg px-6 md:px-8 py-3 md:py-3.5 w-full sm:w-auto"
-                >
+                <button className="w-full sm:w-auto h-11 px-6 rounded-xl border-2 border-neutral-300 hover:border-neutral-400 text-neutral-700 hover:text-neutral-900 bg-white font-semibold">
                   Talk to a manager
-                </Button>
+                </button>
               </Link>
             </div>
             {hero.ctaHelperText && (
-              <div className="mt-3 space-y-1">
-                {hero.ctaHelperText.split('. ').filter(Boolean).map((line, i, arr) => (
-                  <p key={i} className="text-xs text-neutral-500">
-                    {line}
-                    {i < arr.length - 1 ? '.' : ''}
-                  </p>
-                ))}
-              </div>
+              <p className="mt-4 text-xs text-neutral-500 leading-5 max-w-md mx-auto">
+                {hero.ctaHelperText}
+              </p>
             )}
           </div>
         </div>
       </section>
 
       {/* Common ways people start */}
-      <section id="projects" aria-label="Common projects" className="py-12 md:py-[72px] bg-white border-b border-neutral-100">
-        <div className="max-w-[1120px] mx-auto px-4 sm:px-6">
-          <div className="text-center mb-10">
-            <h2 className="text-[34px] md:text-[38px] font-semibold text-neutral-900 mb-3">
+      <section id="projects" aria-label="Common projects" className="py-16 sm:py-20 bg-neutral-50 border-y border-neutral-200">
+        <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
+          <div className="text-center">
+            <h2 className="text-3xl sm:text-4xl font-semibold text-neutral-900">
               {commonProjects.title}
             </h2>
             {commonProjects.subtitle && (
-              <p className="text-base text-neutral-600 max-w-2xl mx-auto">
+              <p className="mt-3 text-sm sm:text-base text-neutral-600 max-w-2xl mx-auto">
                 {commonProjects.subtitle}
               </p>
             )}
           </div>
-          <div className="mt-8 grid gap-6 md:grid-cols-3 md:gap-8">
+          <div className="mt-10 grid gap-6 md:grid-cols-3">
             {commonProjects.items.map((project) => (
               <Link
                 key={project.id}
                 href="/chat"
-                className="bg-white border border-neutral-200 rounded-2xl p-5 sm:p-6 shadow-sm hover:shadow-lg hover:border-blue-300 transition-all h-full flex flex-col group cursor-pointer"
+                className="rounded-2xl border border-neutral-200 bg-white shadow-sm p-6 flex flex-col h-full min-h-[420px] hover:shadow-md transition-shadow"
               >
                 {project.badge && (
-                  <span className="inline-block text-xs font-medium text-neutral-700 bg-neutral-100 px-2.5 py-1 rounded-full mb-3 w-fit">
+                  <span className="inline-flex w-fit text-xs font-medium px-3 py-1 rounded-full bg-blue-50 text-blue-700">
                     {project.badge}
                   </span>
                 )}
-                <h3 className="text-[20px] md:text-[22px] font-semibold text-neutral-900 mb-3">
+                <h3 className="mt-3 text-lg font-semibold leading-snug text-neutral-900">
                   {project.title}
                 </h3>
-                <p className="text-sm text-neutral-600 leading-relaxed mb-3">
+                <p className="mt-2 text-sm text-neutral-600 leading-6">
                   {project.summary}
                 </p>
                 {project.deliverables && (
-                  <div className="mb-3">
-                    <p className="text-xs font-semibold text-neutral-500 uppercase tracking-wide mb-1.5">Included in the snapshot</p>
-                    <ul className="space-y-1 text-xs text-neutral-600 leading-relaxed">
+                  <div className="mt-5">
+                    <p className="text-xs font-semibold text-neutral-500 tracking-wide">Included in the snapshot</p>
+                    <ul className="mt-3 space-y-2 text-sm text-neutral-700 leading-6">
                       {project.deliverables.split('\n').map((item, i) => (
                         <li key={i} className="flex gap-2">
-                          <span className="text-neutral-400 mt-0.5 font-bold">•</span>
+                          <span className="text-neutral-400 mt-0.5">•</span>
                           <span>{item}</span>
                         </li>
                       ))}
                     </ul>
                   </div>
                 )}
-                <div className="mt-auto pt-4 border-t border-neutral-100">
+                <div className="mt-auto pt-5 border-t border-neutral-200">
                   {project.outcomeExample && (
-                    <p className="text-xs font-medium text-neutral-700 mb-2">
+                    <p className="text-xs text-neutral-500 leading-5 mb-2">
                       {project.outcomeExample}
                     </p>
                   )}
-                  <p className="text-[11px] text-neutral-400 mb-3">
+                  <p className="text-xs text-neutral-500 leading-5 mb-3">
                     {project.footnote}
                   </p>
                   {project.ctaLabel && (
-                    <Link href="/chat" className="mt-3">
-                      <button
-                        type="button"
-                        className="w-full inline-flex items-center justify-center font-semibold transition-all rounded-lg px-4 py-2 text-sm border-2 border-neutral-300 hover:border-neutral-400 text-neutral-700 hover:text-neutral-900 bg-white"
-                      >
-                        {project.ctaLabel}
-                      </button>
+                    <Link href="/chat" className="mt-4 inline-flex items-center justify-center h-10 w-full rounded-xl border border-neutral-300 hover:border-blue-600 text-blue-600 hover:text-blue-700 text-sm font-medium">
+                      {project.ctaLabel}
                     </Link>
                   )}
                 </div>
@@ -125,62 +112,46 @@ export default async function UseCasesPage() {
 
       {/* Snapshot Preview */}
       {snapshotPreview && (
-        <section aria-label="Snapshot preview" className="py-12 md:py-[72px] bg-neutral-50 border-b border-neutral-100">
-          <div className="max-w-[1120px] mx-auto px-4 sm:px-6">
-            <div className="text-center mb-10">
-              <h2 className="text-[34px] md:text-[38px] font-semibold text-neutral-900 mb-2">
+        <section aria-label="Snapshot preview" className="py-16 sm:py-20 bg-white border-y border-neutral-200">
+          <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
+            <div className="text-center">
+              <h2 className="text-3xl sm:text-4xl font-semibold text-neutral-900">
                 {snapshotPreview.title}
               </h2>
               {snapshotPreview.subtitle && (
-                <p className="text-base text-neutral-600">
+                <p className="mt-3 text-sm sm:text-base text-neutral-600">
                   {snapshotPreview.subtitle}
                 </p>
               )}
             </div>
-            <div className="grid md:grid-cols-2 gap-8 items-start">
+            <div className="mt-10 grid gap-8 lg:grid-cols-2 items-start">
               {/* Left: Preview mockup */}
-              <div className="bg-white border border-neutral-200 rounded-lg p-6 shadow-sm">
-                <div className="space-y-3">
-                  <div className="h-3 bg-neutral-200 rounded w-3/4"></div>
-                  <div className="h-3 bg-neutral-200 rounded w-full"></div>
-                  <div className="h-3 bg-neutral-200 rounded w-5/6"></div>
-                  <div className="mt-4 pt-4 border-t border-neutral-200">
-                    <div className="h-2 bg-neutral-100 rounded w-full mb-2"></div>
-                    <div className="h-2 bg-neutral-100 rounded w-4/5 mb-2"></div>
-                    <div className="h-2 bg-neutral-100 rounded w-3/4"></div>
-                  </div>
-                  <div className="mt-4 pt-4 border-t border-neutral-200">
-                    <div className="flex gap-2">
-                      <div className="h-6 w-16 bg-yellow-100 border border-yellow-200 rounded"></div>
-                      <div className="h-6 w-20 bg-blue-100 border border-blue-200 rounded"></div>
-                    </div>
-                  </div>
+              <div className="rounded-2xl border border-neutral-200 bg-white p-4 shadow-sm">
+                <div className="aspect-[16/10] bg-neutral-50 rounded-lg flex items-center justify-center">
+                  <div className="text-xs text-neutral-400">Snapshot preview image</div>
                 </div>
               </div>
               {/* Right: Summary */}
-              <div className="space-y-4">
-                {snapshotPreview.items.map((item, i) => (
-                  <div key={i} className="border-b border-neutral-100 pb-4 last:border-0 last:pb-0">
-                    <div className="text-xs font-semibold text-neutral-500 uppercase tracking-wide mb-1">
-                      {item.label}
+              <div className="rounded-2xl border border-neutral-200 bg-white p-6 shadow-sm">
+                <div className="space-y-5">
+                  {snapshotPreview.items.map((item, i) => (
+                    <div key={i}>
+                      <div className="text-xs font-semibold text-neutral-500 tracking-wide">
+                        {item.label}
+                      </div>
+                      <div className="mt-1 text-sm text-neutral-800 leading-6">
+                        {item.value}
+                      </div>
                     </div>
-                    <div className="text-sm text-neutral-700">
-                      {item.value}
-                    </div>
-                  </div>
-                ))}
-                <div className="pt-4">
-                  <Link href="/chat">
-                    <button
-                      type="button"
-                      className="inline-flex items-center justify-center font-semibold transition-all rounded-lg px-5 py-2.5 text-sm border-2 border-neutral-300 hover:border-neutral-400 text-neutral-700 hover:text-neutral-900 bg-white"
-                    >
-                      View a sample snapshot
-                    </button>
+                  ))}
+                </div>
+                <div className="mt-8">
+                  <Link href="/chat" className="inline-flex items-center justify-center h-10 px-5 rounded-xl border border-neutral-300 hover:border-blue-600 text-blue-600 hover:text-blue-700 text-sm font-medium">
+                    View a sample snapshot
                   </Link>
                 </div>
                 {snapshotPreview.disclaimer && (
-                  <p className="text-xs text-neutral-400">
+                  <p className="mt-4 text-xs text-neutral-500">
                     {snapshotPreview.disclaimer}
                   </p>
                 )}
@@ -191,40 +162,35 @@ export default async function UseCasesPage() {
       )}
 
       {/* Social proof summary - Metrics version */}
-      <section aria-label="Social proof" className="py-12 md:py-[72px] bg-neutral-50 border-t border-neutral-100">
-        <div className="max-w-[1120px] mx-auto px-4 sm:px-6">
-          <div className="text-center mb-10">
-            <h2 className="text-[34px] md:text-[38px] font-semibold text-neutral-900 mb-4">
+      <section aria-label="Social proof" className="py-16 sm:py-20 bg-neutral-50 border-y border-neutral-200">
+        <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
+          <div className="text-center">
+            <h2 className="text-3xl sm:text-4xl font-semibold text-neutral-900">
               {socialProof.title}
             </h2>
-            <p className="text-base text-neutral-600 mb-4">
-              {socialProof.rating.value} {socialProof.rating.label}
+            <p className="mt-3 text-sm sm:text-base text-neutral-600">
+              {socialProof.rating.badge} rate {socialProof.rating.value} {socialProof.rating.label}
             </p>
           </div>
           {socialProof.metrics && (
-            <div className="grid md:grid-cols-3 gap-6 md:gap-8 mb-6">
+            <div className="mt-10 grid gap-6 md:grid-cols-3">
               {socialProof.metrics.map((metric, index) => (
                 <div
                   key={index}
-                  className="bg-white border border-neutral-200 rounded-lg p-6 shadow-sm"
+                  className="rounded-2xl border border-neutral-200 bg-white shadow-sm p-8 min-h-[220px]"
                 >
-                  <div className="text-3xl md:text-4xl font-bold text-neutral-900 mb-2">
+                  <div className="text-3xl sm:text-4xl font-semibold tracking-tight leading-tight text-neutral-900">
                     {metric.value}
                   </div>
-                  <div className="text-sm font-medium text-neutral-700 mb-1">
+                  <div className="mt-3 text-sm text-neutral-600 leading-6">
                     {metric.subtitle || metric.label}
                   </div>
-                  {metric.subtitle && (
-                    <div className="text-xs text-neutral-500">
-                      {metric.label}
-                    </div>
-                  )}
                 </div>
               ))}
             </div>
           )}
           {socialProof.subtitle && (
-            <p className="text-center text-xs text-neutral-500">
+            <p className="mt-6 text-xs text-neutral-500 text-center">
               {socialProof.subtitle}
             </p>
           )}
@@ -232,28 +198,28 @@ export default async function UseCasesPage() {
       </section>
 
       {/* Why importers work with NexSupply */}
-      <section aria-label="Benefits" className="py-12 md:py-[72px] bg-white border-t border-neutral-100">
-        <div className="max-w-[1120px] mx-auto px-4 sm:px-6">
-          <div className="text-center mb-10">
-            <h2 className="text-[34px] md:text-[38px] font-semibold text-neutral-900">
+      <section aria-label="Benefits" className="py-16 sm:py-20 bg-white border-y border-neutral-200">
+        <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
+          <div className="text-center">
+            <h2 className="text-3xl sm:text-4xl font-semibold text-neutral-900">
               {benefits.title}
             </h2>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
+          <div className="mt-10 grid gap-6 md:grid-cols-3">
             {benefits.items.map((benefit, index) => {
               const Icon = benefitIcons[index];
               return (
                 <div
                   key={index}
-                  className="bg-white border border-neutral-200 rounded-lg p-6 shadow-sm hover:shadow-md transition-shadow"
+                  className="rounded-2xl border border-neutral-200 bg-white shadow-sm p-6 min-h-[160px]"
                 >
-                  <div className="w-10 h-10 rounded-lg bg-neutral-100 flex items-center justify-center mb-4">
-                    <Icon className="w-5 h-5 text-neutral-600" />
+                  <div className="h-10 w-10 rounded-xl bg-blue-50 text-blue-700 flex items-center justify-center">
+                    <Icon className="w-5 h-5" />
                   </div>
-                  <h3 className="text-[20px] md:text-[22px] font-semibold text-neutral-900 mb-2">
+                  <h3 className="mt-4 text-base font-semibold text-neutral-900">
                     {benefit.title}
                   </h3>
-                  <p className="text-sm text-neutral-600 leading-relaxed">
+                  <p className="mt-2 text-sm text-neutral-600 leading-6">
                     {benefit.body}
                   </p>
                 </div>
@@ -266,27 +232,27 @@ export default async function UseCasesPage() {
       {/* Transparent Invoice Preview - Removed to avoid duplication with Home */}
 
       {/* Final CTA */}
-      <section aria-label="Call to action" className="py-12 md:py-[72px] bg-black overflow-visible">
-        <div className="max-w-[1120px] mx-auto px-4 sm:px-6 text-center">
-          <h2 className="text-[34px] md:text-[38px] font-semibold text-white mb-3">
+      <section aria-label="Call to action" className="py-12 sm:py-14 bg-black overflow-visible">
+        <div className="mx-auto max-w-4xl px-4 sm:px-6 text-center">
+          <h2 className="text-3xl sm:text-4xl font-semibold tracking-tight text-white">
             {cta.title}
           </h2>
-          <p className="text-base text-neutral-200 leading-relaxed max-w-2xl mx-auto">
+          <p className="mt-3 text-sm sm:text-base text-neutral-300 leading-6 max-w-2xl mx-auto">
             {cta.body}
           </p>
-          <div className="mt-6 flex flex-col sm:flex-row gap-3 justify-center items-center">
+          <div className="mt-7 flex flex-col sm:flex-row gap-3 justify-center">
             <Link href={cta.buttonHref || '/chat'} className="w-full sm:w-auto">
               <button
                 type="button"
-                className="inline-flex items-center justify-center font-semibold transition-all rounded-lg px-6 md:px-8 py-3 md:py-3.5 w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white"
+                className="w-full sm:w-auto h-11 px-6 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold"
               >
-                Get a free snapshot
+                Get instant snapshot
               </button>
             </Link>
             <Link href="/chat" className="w-full sm:w-auto">
               <button
                 type="button"
-                className="inline-flex items-center justify-center font-semibold transition-all rounded-lg px-6 md:px-8 py-3 md:py-3.5 w-full sm:w-auto border-2 border-neutral-300 hover:border-neutral-400 text-neutral-700 hover:text-neutral-900 bg-white"
+                className="w-full sm:w-auto h-11 px-6 rounded-xl border-2 border-neutral-300 hover:border-neutral-400 text-neutral-700 hover:text-neutral-900 bg-white font-semibold"
               >
                 Talk to a manager
               </button>

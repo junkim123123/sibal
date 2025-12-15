@@ -19,10 +19,15 @@ export default function HomeImpactBand() {
           </p>
           <Link 
             href="/chat" 
-            className="inline-block w-full sm:w-auto inline-flex items-center justify-center font-semibold transition-all bg-white text-neutral-900 hover:bg-neutral-100 px-6 md:px-8 py-3 md:py-3.5 text-base rounded-full"
+            className="inline-block w-full sm:w-auto inline-flex items-center justify-center font-semibold transition-all bg-white text-neutral-900 hover:bg-neutral-100 px-6 md:px-8 py-3 md:py-3.5 text-base rounded-full mb-4"
           >
             {t.home.cta.buttonLabel}
           </Link>
+          {t.home.cta.disclaimer && (
+            <p className="text-xs text-neutral-400 dark:text-neutral-500 max-w-2xl mx-auto">
+              {t.home.cta.disclaimer}
+            </p>
+          )}
         </div>
       </div>
     </section>

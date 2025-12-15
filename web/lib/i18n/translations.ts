@@ -52,6 +52,7 @@ export interface Translations {
       title: string;
       description: string;
       buttonLabel: string;
+      disclaimer?: string;
     };
     socialProof: {
       title: string;
@@ -72,6 +73,7 @@ export interface Translations {
       eyebrow: string;
       title: string;
       ratingLabel: string;
+      subtitle?: string;
     };
     team: {
       eyebrow: string;
@@ -402,25 +404,26 @@ export const translations: Record<Language, Translations> = {
         cards: [
           {
             title: 'Launch a new FBA brand',
-            body: '<strong>Validate margin</strong> and duty risk before you launch your first private label product.',
-            target: 'Typical users: CPG brands and FBA aggregators',
+            body: 'Validate margin and duty exposure before you place your first PO.',
+            target: 'Typical users, CPG founders and FBA operators',
           },
           {
             title: 'Re-source an existing SKU',
-            body: 'Compare your current factory to vetted alternatives on landed cost and risk. Many projects see <strong>significant cost savings</strong> when switching to optimized suppliers.',
-            target: 'Typical users: Established sellers optimizing margins',
+            body: 'Compare your current supplier to vetted alternatives on landed cost, lead time, and risk.',
+            target: 'Typical users, established sellers optimizing margin',
           },
           {
-            title: 'Test a higher-risk category',
-            body: 'Get an AD or CVD and <strong>compliance check</strong> before you import into a new category.',
-            target: 'Typical users: Brands entering regulated categories',
+            title: 'Test a higher risk category',
+            body: 'Screen AD or CVD exposure and compliance requirements before you import.',
+            target: 'Typical users, brands entering regulated categories',
           },
         ],
       },
       cta: {
         title: 'Ready to test your next import?',
-        description: 'Start with one product. We will run a full landed cost and risk review, usually within 1 business day.',
-        buttonLabel: 'Calculate My Profit',
+        description: 'Start with one product. Get a landed cost and risk review, usually within 1 business day.',
+        buttonLabel: 'Calculate my profit',
+        disclaimer: 'NexSupply is not a customs broker or legal advisor. Estimates are directional for planning.',
       },
       socialProof: {
         title: 'See what importers are saying about NexSupply',

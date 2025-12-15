@@ -59,8 +59,8 @@ export function ReviewsSection({ section }: { section: HomeReviewsSection }) {
             <h2 className="text-2xl sm:text-3xl font-semibold tracking-tight text-neutral-900 dark:text-white">
               {t.home.reviews.title}
             </h2>
-            {subtitle && (
-              <p className="text-sm sm:text-base text-neutral-600 dark:text-gray-400">{subtitle}</p>
+            {t.home.reviews.subtitle && (
+              <p className="text-sm sm:text-base text-neutral-600 dark:text-gray-400">{t.home.reviews.subtitle}</p>
             )}
           </div>
           <div className="flex items-center gap-3 text-sm sm:text-base">
@@ -73,7 +73,7 @@ export function ReviewsSection({ section }: { section: HomeReviewsSection }) {
               ))}
             </div>
             <div className="flex flex-col">
-              <span className="font-semibold text-neutral-900 dark:text-white">{averageRating.toFixed(1)} / 5</span>
+              <span className="font-semibold text-neutral-900 dark:text-white">{averageRating.toFixed(1)}</span>
               <span className="text-xs text-neutral-500 dark:text-gray-400">{t.home.reviews.ratingLabel}</span>
             </div>
           </div>

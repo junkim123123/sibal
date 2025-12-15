@@ -33,29 +33,35 @@ export default function HomeHero({ page }: Props) {
             {/* Badge */}
             <div className="inline-flex items-center">
               <span className="inline-flex items-center px-4 py-1.5 rounded-full text-xs font-medium text-neutral-700 dark:text-neutral-300 bg-neutral-100 dark:bg-neutral-800 border border-neutral-200/50 dark:border-neutral-700/50">
-                {t.home.hero.badge}
+                Predictable sourcing for modern brands
               </span>
             </div>
 
             {/* Main Headline */}
             <h1 className="text-3xl sm:text-4xl md:text-4xl lg:text-5xl font-bold tracking-tight text-neutral-900 dark:text-white leading-[1.15]">
-              {t.home.hero.title}{' '}
-              <span className="text-blue-600 dark:text-blue-400">{t.home.hero.titleHighlight}</span>
+              Stop guessing.{' '}
+              <span className="text-blue-600 dark:text-blue-400">Start sourcing with confidence.</span>
             </h1>
 
             {/* Sub-headline */}
             <p className="text-base md:text-lg text-neutral-600 dark:text-neutral-300 leading-relaxed max-w-2xl">
-              {t.home.hero.subheadline}
+              See landed cost, duty exposure, and compliance flags before you commit to inventory.
             </p>
 
             {/* Bullets */}
             <ul className="space-y-2">
-              {t.home.hero.bullets.map((bullet, index) => (
-                <li key={index} className="flex items-start gap-2 text-sm md:text-base text-neutral-700 dark:text-neutral-300">
-                  <span className="text-blue-600 dark:text-blue-400 mt-1 flex-shrink-0">•</span>
-                  <span>{bullet}</span>
-                </li>
-              ))}
+              <li className="flex items-start gap-2 text-sm md:text-base text-neutral-700 dark:text-neutral-300">
+                <span className="text-blue-600 dark:text-blue-400 mt-1 flex-shrink-0">•</span>
+                <span>AI cost and risk snapshot in 1 business day</span>
+              </li>
+              <li className="flex items-start gap-2 text-sm md:text-base text-neutral-700 dark:text-neutral-300">
+                <span className="text-blue-600 dark:text-blue-400 mt-1 flex-shrink-0">•</span>
+                <span>Unlock a dedicated manager with a $49 deposit</span>
+              </li>
+              <li className="flex items-start gap-2 text-sm md:text-base text-neutral-700 dark:text-neutral-300">
+                <span className="text-blue-600 dark:text-blue-400 mt-1 flex-shrink-0">•</span>
+                <span>3 real factory quotes within 7 days</span>
+              </li>
             </ul>
 
             {/* CTA Buttons */}
@@ -76,7 +82,7 @@ export default function HomeHero({ page }: Props) {
             </div>
             {/* Deposit microcopy */}
             <p className="text-xs text-neutral-500 dark:text-neutral-400 leading-relaxed">
-              $49 deposit is credited to your first order and refundable if you don't proceed.
+              The $49 deposit is credited to your first order and refundable if you do not proceed.
             </p>
           </div>
 
@@ -100,7 +106,7 @@ export default function HomeHero({ page }: Props) {
               </div>
               <div className="flex-1 min-w-0">
                 <div className="text-2xl font-bold text-neutral-900 dark:text-white mb-1">1 business day</div>
-                <p className="text-sm font-medium text-neutral-700 dark:text-neutral-300">AI Cost and Risk Snapshot</p>
+                <p className="text-sm font-medium text-neutral-700 dark:text-neutral-300">AI snapshot, cost and risk</p>
               </div>
             </div>
 
@@ -111,7 +117,7 @@ export default function HomeHero({ page }: Props) {
               </div>
               <div className="flex-1 min-w-0">
                 <div className="text-2xl font-bold text-neutral-900 dark:text-white mb-1">3 quotes</div>
-                <p className="text-sm font-medium text-neutral-700 dark:text-neutral-300">Real factory quotes within 7 days</p>
+                <p className="text-sm font-medium text-neutral-700 dark:text-neutral-300">Factory quotes from three options in 7 days</p>
               </div>
             </div>
 
@@ -122,7 +128,7 @@ export default function HomeHero({ page }: Props) {
               </div>
               <div className="flex-1 min-w-0">
                 <div className="text-2xl font-bold text-neutral-900 dark:text-white mb-1">5% fee</div>
-                <p className="text-sm font-medium text-neutral-700 dark:text-neutral-300">Transparent management fee on FOB</p>
+                <p className="text-sm font-medium text-neutral-700 dark:text-neutral-300">Transparent management fee on FOB only</p>
               </div>
             </div>
           </div>

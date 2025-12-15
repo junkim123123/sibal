@@ -26,7 +26,7 @@ export default async function HowItWorksPage() {
         className="bg-neutral-50 py-2 md:py-4 mt-10 border-t border-neutral-200 pt-8"
         titleClassName="text-2xl md:text-3xl font-semibold tracking-tight"
       >
-        <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-5 items-stretch">
+        <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-6 items-stretch">
           {journey.cards.map((card, idx) => {
             const Icon = card.icon;
             return (
@@ -78,7 +78,7 @@ export default async function HowItWorksPage() {
                   })}
                 </p>
                 {card.deliverables && card.deliverables.length > 0 && (
-                  <div className="mt-5 border-t border-neutral-200 pt-4">
+                  <div className="mt-auto pt-5 border-t border-neutral-200">
                     <div className="text-xs font-semibold tracking-wide text-neutral-500 uppercase">DELIVERABLES</div>
                     <ul className="mt-3 space-y-2 text-sm text-neutral-700">
                       {card.deliverables.slice(0, 3).map((item, i) => (
@@ -173,7 +173,7 @@ export default async function HowItWorksPage() {
         title={faq.title}
         className="bg-white py-10 md:py-14"
       >
-        <div className="max-w-4xl mx-auto">
+        <div className="max-w-3xl mx-auto">
           <Accordion>
             {faq.items.map((faqItem, idx) => (
               <AccordionItem
@@ -189,7 +189,7 @@ export default async function HowItWorksPage() {
 
       {/* Final CTA Banner */}
       <section aria-label="Call to action" className="py-12 md:py-16 bg-neutral-900 text-white">
-        <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
+        <div className="mx-auto w-full max-w-6xl px-6 lg:px-8">
           <div className="max-w-3xl mx-auto text-center">
             <h2 className="text-2xl md:text-3xl lg:text-4xl font-semibold text-white mb-4">
               {cta.title}
@@ -220,7 +220,7 @@ export default async function HowItWorksPage() {
 
       {/* Footer Disclaimer */}
       <section className="py-6 bg-white border-t border-neutral-200">
-        <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
+        <div className="mx-auto w-full max-w-6xl px-6 lg:px-8">
           <p className="text-xs text-neutral-500 text-center">
             NexSupply is not a customs broker or legal advisor. Estimates are for directional planning only.
           </p>

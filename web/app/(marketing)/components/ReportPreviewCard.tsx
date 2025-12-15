@@ -201,12 +201,6 @@ export function ReportPreviewCard() {
                 <p className="text-[10px] text-neutral-500 dark:text-neutral-400 text-center mt-1">
                   $49 deposit refundable, credited to first order
                 </p>
-                <button
-                  onClick={() => setIsExpanded(!isExpanded)}
-                  className="w-full flex items-center justify-center gap-2 py-2 px-3 text-xs font-medium text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 bg-blue-50 hover:bg-blue-100 dark:bg-blue-900/20 dark:hover:bg-blue-900/30 rounded-lg transition-all border border-blue-200 dark:border-blue-800"
-                >
-                  View full sample report
-                </button>
               </div>
             </div>
           )}

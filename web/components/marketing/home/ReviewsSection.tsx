@@ -203,31 +203,6 @@ export function ReviewsSection({ section }: { section: HomeReviewsSection }) {
               </div>
             </div>
           </div>
-          
-          {/* Dot indicators - Desktop only */}
-          <div className="hidden md:flex justify-center gap-2 mt-8">
-            {[0, 1, 2].map((index) => (
-              <button
-                key={index}
-                onClick={() => {
-                  if (!scrollContainerRef.current) return;
-                  const container = scrollContainerRef.current;
-                  const cardWidth = 360 + 24;
-                  setCurrentIndex(index);
-                  container.scrollTo({
-                    left: index * cardWidth,
-                    behavior: 'smooth',
-                  });
-                }}
-                className={`w-2 h-2 rounded-full transition-all ${
-                  currentIndex === index
-                    ? 'bg-blue-600 dark:bg-blue-400 w-6'
-                    : 'bg-neutral-300 dark:bg-neutral-600 hover:bg-neutral-400 dark:hover:bg-neutral-500'
-                }`}
-                aria-label={`Go to review ${index + 1}`}
-              />
-            ))}
-          </div>
         </div>
       </div>
     </section>

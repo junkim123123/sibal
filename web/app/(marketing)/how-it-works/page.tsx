@@ -152,7 +152,7 @@ export default async function HowItWorksPage() {
                   {/* Left: Number Bubble */}
                   <div className="flex-shrink-0">
                     <div className="relative">
-                      <div className="w-12 h-12 md:w-16 md:h-16 rounded-full bg-[#008080] text-white flex items-center justify-center font-bold text-xl md:text-2xl">
+                      <div className="w-12 h-12 md:w-16 md:h-16 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold text-xl md:text-2xl">
                         {step.stepNumber}
                       </div>
                     </div>

@@ -87,7 +87,7 @@ export default function PricingPage() {
               >
                 {tier.highlight && (
                   <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                    <span className="bg-[#008080] text-white text-xs px-3 py-1 rounded-full font-semibold">
+                    <span className="bg-blue-600 text-white text-xs px-3 py-1 rounded-full font-semibold">
                       {t.pricing.mostPopular}
                     </span>
                   </div>
@@ -128,7 +128,7 @@ export default function PricingPage() {
                   {tier.id === 'validator' ? (
                     <div>
                       <button
-                        className="w-full rounded-full bg-[#008080] text-white hover:bg-[#006666] transition-colors px-6 py-3 text-sm font-medium flex items-center justify-center gap-2"
+                        className="w-full rounded-full bg-blue-600 text-white hover:bg-blue-700 transition-colors px-6 py-3 text-sm font-medium flex items-center justify-center gap-2"
                       >
                         {tier.cta.label}
                         <ArrowRight className="w-4 h-4" />
@@ -170,7 +170,7 @@ export default function PricingPage() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-8 max-w-3xl mx-auto relative">
             {t.pricing.howItWorks.steps.map((step, index) => (
               <div key={index} className="text-center relative">
-                <div className="w-12 h-12 rounded-full bg-[#008080] text-white flex items-center justify-center font-bold text-xl mx-auto mb-4 relative z-10">
+                <div className="w-12 h-12 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold text-xl mx-auto mb-4 relative z-10">
                   {index + 1}
                 </div>
                 <h3 className="text-lg font-semibold text-neutral-900 dark:text-white mb-3">

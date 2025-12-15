@@ -11,6 +11,7 @@ import HomeHero from './components/HomeHero';
 import HomeUseCases from './components/HomeUseCases';
 import HomeSocialProofStrip from './components/HomeSocialProofStrip';
 import HomeBenefitsGrid from './components/HomeBenefitsGrid';
+import { TransparentInvoicePreview } from './components/TransparentInvoicePreview';
 import HomeImpactBand from './components/HomeImpactBand';
 import ExpertPanelSection from '@/components/marketing/ExpertPanelSection';
 import { ReviewsSection } from '@/components/marketing/home/ReviewsSection';
@@ -36,6 +37,7 @@ export default async function HomePage() {
       <HomeUseCases />
       <HomeSocialProofStrip />
       <HomeBenefitsGrid />
+      <TransparentInvoicePreview />
       <ReviewsSection section={homePageConfig.reviewsSection} />
       <ProTeamSection section={homePageConfig.teamSection} />
       <ExpertPanelSection panel={page?.expertPanel} />

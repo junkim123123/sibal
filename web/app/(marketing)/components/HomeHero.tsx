@@ -3,8 +3,9 @@
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
-import { ArrowRight, CheckCircle, Factory, Ship, Scale, Brain, FileText, Users, AlertCircle } from 'lucide-react';
+import { ArrowRight, Brain, FileText, Users } from 'lucide-react';
 import { useLanguage } from '@/components/i18n/language-provider';
+import { ReportPreviewCard } from './ReportPreviewCard';
 
 type Props = {
   page: any | null;
@@ -52,7 +53,7 @@ export default function HomeHero({ page }: Props) {
             <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center pt-2">
               <Button
                 onClick={handleStartAnalysis}
-                className="inline-flex items-center gap-2 group bg-[#008080] hover:bg-[#006666] text-white font-semibold px-6 py-3 rounded-lg transition-colors"
+                className="inline-flex items-center gap-2 group bg-blue-600 hover:bg-blue-700 text-white font-semibold px-6 py-3 rounded-lg transition-colors"
               >
                 {t.home.hero.cta}
                 <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
@@ -68,80 +69,9 @@ export default function HomeHero({ page }: Props) {
             </div>
           </div>
 
-          {/* Right: Sourcing Intelligence Card */}
+          {/* Right: Report Preview Card */}
           <div className="relative w-full mt-8 lg:mt-0">
-            <div className="relative rounded-xl bg-white/80 backdrop-blur-sm border border-neutral-200/60 shadow-xl p-6 md:p-8 lg:p-10">
-              {/* Header */}
-              <div className="mb-6">
-                <h3 className="text-sm font-semibold text-neutral-900 uppercase tracking-wider mb-1">
-                  Landed Cost Breakdown
-                </h3>
-                <div className="h-px bg-gradient-to-r from-neutral-200 to-transparent" />
-              </div>
-
-              {/* Main Price */}
-              <div className="mb-8 text-center">
-                <p className="text-6xl md:text-7xl lg:text-8xl font-bold text-neutral-900 mb-2 font-mono tracking-tight">
-                  $2.10
-                </p>
-                <p className="text-sm font-medium text-neutral-600">
-                  per unit landed cost
-                </p>
-              </div>
-
-              {/* Line Items */}
-              <div className="space-y-4 mb-6">
-                <div className="flex items-center justify-between gap-4 py-2">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-lg bg-blue-50 flex items-center justify-center flex-shrink-0">
-                      <Factory className="w-5 h-5 text-blue-600" />
-                    </div>
-                    <span className="text-sm font-semibold text-neutral-700">Factory Cost</span>
-                  </div>
-                  <span className="text-base font-bold font-mono text-neutral-900">$1.50</span>
-                </div>
-                
-                <div className="flex items-center justify-between gap-4 py-2">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-lg bg-teal-50 flex items-center justify-center flex-shrink-0">
-                      <Ship className="w-5 h-5 text-teal-600" />
-                    </div>
-                    <span className="text-sm font-semibold text-neutral-700">Int&apos;l Logistics</span>
-                  </div>
-                  <span className="text-base font-bold font-mono text-neutral-900">$0.40</span>
-                </div>
-                
-                <div className="flex items-center justify-between gap-4 py-2">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-lg bg-purple-50 flex items-center justify-center flex-shrink-0">
-                      <Scale className="w-5 h-5 text-purple-600" />
-                    </div>
-                    <span className="text-sm font-semibold text-neutral-700">Est. Duties</span>
-                  </div>
-                  <span className="text-base font-bold font-mono text-neutral-900">$0.20</span>
-                </div>
-              </div>
-
-              {/* Compliance Status - 중립 톤 */}
-              <div className="mt-6 pt-6 border-t border-neutral-200">
-                <div className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg bg-neutral-50 border border-neutral-200">
-                  <AlertCircle className="w-4 h-4 text-neutral-600 flex-shrink-0" />
-                  <span className="text-sm font-medium text-neutral-700">
-                    Compliance flags checked
-                  </span>
-                </div>
-                <p className="mt-2.5 text-xs font-medium text-neutral-600">
-                  Risk screening: Low
-                </p>
-              </div>
-
-              {/* Disclaimer */}
-              <div className="mt-4 pt-4 border-t border-neutral-200">
-                <p className="text-xs text-neutral-500 leading-relaxed">
-                  Example estimate. Final quote confirmed by a manager.
-                </p>
-              </div>
-            </div>
+            <ReportPreviewCard />
           </div>
         </div>
 

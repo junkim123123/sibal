@@ -24,7 +24,7 @@ export default function HomeHero({ page }: Props) {
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-start">
           {/* Left: Text Content */}
-          <div className="flex flex-col space-y-5">
+          <div className="flex flex-col space-y-5 min-w-0">
             {/* Badge */}
             <div className="inline-flex items-center">
               <span className="inline-flex items-center px-4 py-1.5 rounded-full text-xs font-medium text-neutral-700 dark:text-neutral-300 bg-neutral-100 dark:bg-neutral-800 border border-neutral-200/50 dark:border-neutral-700/50">
@@ -33,9 +33,9 @@ export default function HomeHero({ page }: Props) {
             </div>
 
             {/* Main Headline */}
-            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight text-neutral-900 dark:text-white leading-tight max-w-2xl">
+            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-5xl xl:text-6xl font-bold tracking-tight text-neutral-900 dark:text-white leading-tight">
               {t.home.hero.title}{' '}
-              <span className="whitespace-nowrap">{t.home.hero.titleHighlight}</span>
+              {t.home.hero.titleHighlight}
             </h1>
 
             {/* Sub-headline */}
@@ -74,7 +74,11 @@ export default function HomeHero({ page }: Props) {
 
           {/* Right: Report Preview Card */}
           <div className="relative w-full mt-8 lg:mt-0">
-            <ReportPreviewCard />
+            <div className="relative">
+              {/* Subtle background gradient */}
+              <div className="absolute inset-0 bg-gradient-to-br from-blue-50/30 via-transparent to-neutral-50/30 rounded-lg -z-10" />
+              <ReportPreviewCard />
+            </div>
           </div>
         </div>
 

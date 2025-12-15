@@ -42,7 +42,7 @@ export function HeroSection({
       <div className="mx-auto max-w-6xl px-4 md:px-6">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-start">
           {/* Left: Text Content */}
-          <div className="flex flex-col space-y-5">
+          <div className="flex flex-col space-y-5 min-w-0">
             {/* Title */}
             <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold tracking-tight text-neutral-900 leading-tight">
               {title}
@@ -104,7 +104,11 @@ export function HeroSection({
           {/* Right: Report Preview Card */}
           {showPreviewCard && (
             <div className="relative mt-8 md:mt-0">
-              <ReportPreviewCard />
+              <div className="relative">
+                {/* Subtle background gradient */}
+                <div className="absolute inset-0 bg-gradient-to-br from-blue-50/30 via-transparent to-neutral-50/30 rounded-lg -z-10" />
+                <ReportPreviewCard />
+              </div>
             </div>
           )}
         </div>

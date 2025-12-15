@@ -154,7 +154,7 @@ export function TransparentInvoicePreview() {
               <p className="text-xs text-blue-700 dark:text-blue-300 leading-relaxed">
                 Logistics, customs, duties, and packaging costs are <strong>pass-through at cost</strong> with no markup. 
                 NexSupply charges a <strong>flat 5% management fee on FOB</strong> for production management and QC coordination. 
-                This fee covers our services; all other costs are transparently passed through at actual cost.
+                This fee covers our services; all other costs are transparently billed at actual cost.
               </p>
             </div>
           </div>

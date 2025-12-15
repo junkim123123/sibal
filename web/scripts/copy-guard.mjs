@@ -127,6 +127,8 @@ function checkFile(filePath) {
     /passed_quantity:/i, // 객체 속성명
     /\.passed/i, // 객체 속성 접근
     /passed to/i, // 일반 동사 "passed to"
+    /passed through/i, // 일반 동사 "passed through"
+    /pass-through/i, // 하이픈 포함 "pass-through"
     /successfully passed/i, // 일반 동사 "successfully passed"
     /have passed/i, // 일반 동사 "have passed"
     /has passed/i, // 일반 동사 "has passed"

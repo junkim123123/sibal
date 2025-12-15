@@ -33,7 +33,7 @@ export default function HomeSocialProofStrip() {
               <blockquote className="text-center">
                 <p className="text-sm md:text-base font-medium text-neutral-800 dark:text-gray-200 leading-relaxed mb-4">&ldquo;{item.quote}&rdquo;</p>
                 <footer className="text-xs md:text-sm text-neutral-600 dark:text-gray-400">
-                  <p className="font-medium text-neutral-900 dark:text-white">— {item.author}</p>
+                  <p className="font-medium text-neutral-900 dark:text-white">- {item.author}</p>
                   <span className="mt-2 inline-flex items-center px-2 py-0.5 rounded text-[10px] font-medium bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 border border-blue-200/50 dark:border-blue-800">
                     Completed Project
                   </span>

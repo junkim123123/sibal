@@ -81,8 +81,8 @@ export const useCasesPageContent: UseCasesPageContent = {
   hero: {
     title: 'Sourcing Intelligence Built for Your Business Model',
     subtitle:
-      'From Amazon FBA to Enterprise Retail, NexSupply equips your team with precision data on margin, compliance, and logistics—unified in one command center.',
-    ctaLabel: 'Start a project',
+      'Channel-specific landed cost and compliance risk analysis. From Amazon FBA to Enterprise Retail, get precision data on margin, duties, and logistics—unified in one command center.',
+    ctaLabel: 'Get an analysis',
     ctaHref: '/chat',
   },
   segments: [
@@ -245,7 +245,7 @@ export const useCasesPageContent: UseCasesPageContent = {
     subtitle:
       'Stop guessing on duties and freight. Submit your product details now and receive a comprehensive strategic audit within 1 business day.',
     subtitle2: undefined,
-    ctaLabel: 'Request My Sourcing Audit',
+    ctaLabel: 'Get an analysis',
     ctaHref: '/chat',
   },
 } as const;

@@ -12,7 +12,7 @@ export default async function UseCasesPage() {
   return (
     <div className="bg-white">
       {/* Hero Section */}
-      <section aria-label="Hero" className="py-16 sm:py-20 bg-white">
+      <section aria-label="Hero" className="py-12 md:py-16 bg-white">
         <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h1 className="text-4xl sm:text-5xl font-semibold tracking-tight text-neutral-900">
             {hero.title}
@@ -23,9 +23,7 @@ export default async function UseCasesPage() {
           <div className="mt-8 flex flex-col items-center gap-4">
             <Link href={hero.ctaHref}>
               <Button
-                variant="primary"
-                size="lg"
-                className="rounded-full px-6 md:px-8 py-3 md:py-3.5"
+                className="bg-blue-600 hover:bg-blue-700 text-white rounded-lg px-6 md:px-8 py-3 md:py-3.5"
               >
                 {hero.ctaLabel}
               </Button>
@@ -34,7 +32,7 @@ export default async function UseCasesPage() {
               href="#projects"
               className="text-sm text-neutral-600 hover:text-neutral-900 transition-colors"
             >
-              Find Your Strategy ↓
+              Find Your Strategy
             </Link>
           </div>
           <div className="mt-12 border-t border-neutral-200"></div>
@@ -61,7 +59,7 @@ export default async function UseCasesPage() {
                   <div className="grid gap-4 lg:grid-cols-[1.2fr,1.8fr] items-start">
                     {/* Left column */}
                     <div>
-                      <div className="h-10 w-10 rounded-xl bg-[#008080] text-white flex items-center justify-center mb-4">
+                      <div className="h-10 w-10 rounded-lg bg-blue-600 text-white flex items-center justify-center mb-4">
                         <Icon className="h-5 w-5 text-white" />
                       </div>
                       <h3 className="text-lg font-semibold text-neutral-900">
@@ -88,6 +86,15 @@ export default async function UseCasesPage() {
                         </ul>
                       )}
                     </div>
+                  </div>
+                  <div className="mt-6 pt-4 border-t border-neutral-200">
+                    <Link href="/chat">
+                      <Button
+                        className="w-full bg-blue-600 hover:bg-blue-700 text-white rounded-lg px-4 py-2 text-sm font-medium"
+                      >
+                        Get an analysis
+                      </Button>
+                    </Link>
                   </div>
                 </div>
               );
@@ -251,10 +258,10 @@ export default async function UseCasesPage() {
                 </blockquote>
                 <footer className="mt-4 pl-6 text-xs text-neutral-500">
                   <div className="flex items-center gap-2 flex-wrap">
-                    <span>— {testimonial.meta}</span>
-                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-medium bg-green-50 text-green-700 border border-green-200/50">
+                    <span>- {testimonial.meta}</span>
+                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-medium bg-blue-50 text-blue-700 border border-blue-200/50">
                       <CheckCircle className="w-3 h-3" />
-                      Verified Project
+                      Completed Project
                     </span>
                   </div>
                 </footer>
@@ -283,9 +290,7 @@ export default async function UseCasesPage() {
           <div className="mt-8">
             <Link href={cta.ctaHref}>
               <Button
-                variant="primary"
-                size="lg"
-                className="rounded-full px-6 md:px-8 py-3 md:py-3.5 bg-white text-neutral-900 hover:bg-neutral-100"
+                className="rounded-lg px-6 md:px-8 py-3 md:py-3.5 bg-white text-neutral-900 hover:bg-neutral-100"
               >
                 {cta.ctaLabel}
               </Button>

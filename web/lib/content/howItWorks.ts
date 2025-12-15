@@ -6,6 +6,7 @@ export interface JourneyCard {
   title: string;
   body: string;
   icon: LucideIcon;
+  deliverables?: string[];
 }
 
 export interface Step {
@@ -14,6 +15,7 @@ export interface Step {
   timeEstimate: string;
   body: string;
   bullets: string[];
+  deliverables?: string[];
   icon: LucideIcon;
 }
 
@@ -70,17 +72,17 @@ export interface HowItWorksPageConfig {
 export const howItWorksPageConfig: HowItWorksPageConfig = {
   hero: {
     title: 'How NexSupply Works',
-    subtitle: 'From first idea to your first controlled shipment, NexSupply keeps your project moving at every step of the sourcing process.',
-    description: 'Start with one chat. When the numbers work, scale at your own pace.',
-    note: 'Most projects receive an initial landed-cost snapshot within one business day. Packaging and kitting available, billed separately.',
+    subtitle: 'AI-powered sourcing reports. Real factory quotes. Transparent pricing.',
+    description: 'Start with a free analysis. When the numbers work, deposit $49 to unlock factory quotes within 7 days.',
+    note: '',
     cta: {
       primary: {
         label: 'Get an analysis',
         href: '/chat',
       },
       secondary: {
-        label: 'See use cases',
-        href: '/how-it-works',
+        label: 'Talk to a Manager ($49 deposit)',
+        href: '/chat',
       },
     },
   },
@@ -89,18 +91,33 @@ export const howItWorksPageConfig: HowItWorksPageConfig = {
     cards: [
       {
         title: 'Submit Project Brief',
-        body: 'Tell us what you want to sell, where you want to sell it, and how big you want to go. We capture the key details in a shared project brief.',
+        body: 'Share your product idea, target market, and volume requirements.',
         icon: MessageSquare,
+        deliverables: [
+          'Structured sourcing brief',
+          'Shared project documentation',
+          'Clear starting point for the team',
+        ],
       },
       {
-        title: 'Get Landed Cost Reality Check',
-        body: 'Our AI tools turn that brief into a landed cost and risk view, so you see margins, duties, and red flags before you spend on inventory. Usually within 1 business day. Packaging and kitting available, billed separately.',
+        title: 'Get AI Cost & Risk Snapshot',
+        body: 'Receive a comprehensive landed cost and risk assessment within 1 business day.',
         icon: TrendingUp,
+        deliverables: [
+          'Estimated DDP per unit breakdown',
+          'Compliance and AD/CVD risk flags',
+          'Go / Pause / Drop recommendation',
+        ],
       },
       {
-        title: 'Run Pilot & Ship',
-        body: 'When the numbers look right, deposit $49 to unlock real factory quotes within 7 days. Deposit is 100 percent credited to your first order. We help you line up suppliers, QC and logistics for a first controlled shipment, not a blind leap.',
+        title: 'Deposit & Get Factory Quotes',
+        body: 'Deposit $49 to unlock manager and receive 3 factory quotes within 7 days.',
         icon: Package,
+        deliverables: [
+          '3 factory quote options',
+          'Dedicated manager assigned',
+          'Factory FOB locked for 3 months',
+        ],
       },
     ],
   },
@@ -111,10 +128,11 @@ export const howItWorksPageConfig: HowItWorksPageConfig = {
         stepNumber: '1',
         title: 'Describe your product',
         timeEstimate: '~10 minutes',
-        body: 'You do: Upload a product idea, photo or reference listing. Tell us the target market and main sales channel. Share rough volume and timing (test run or ongoing).',
+        body: 'Upload your product idea or reference listing. Share target market, sales channel, volume, and timing.',
         bullets: [
-          'We do: Turn this into a structured sourcing brief.',
-          'You get: A clear, shared starting point for everyone on the project.',
+          'Create structured sourcing brief',
+          'Document project requirements',
+          'Establish shared starting point',
         ],
         icon: Upload,
       },
@@ -122,23 +140,31 @@ export const howItWorksPageConfig: HowItWorksPageConfig = {
         stepNumber: '2',
         title: 'AI cost and risk check',
         timeEstimate: 'Within 1 business day',
-        body: 'You do: Review a first-pass landed cost and risk snapshot. If the numbers look promising, we can discuss alternative scenarios and next steps.',
+        body: 'Review the AI-generated cost and risk snapshot with DDP breakdown, compliance flags, and risk assessment.',
         bullets: [
-          'We do: Estimated DDP per unit (factory, freight, duty, and extras). Flag early signs of compliance or AD/CVD risk. Pressure-test your assumptions on margin and risk. Suggest alternative scenarios (factory options, MOQ, route, etc.).',
-          'You get: A sanity check on whether the project makes sense before you commit. Human eyes on the numbers and a clear "go / pause / drop" recommendation.',
-          'Packaging and kitting available, billed separately.',
+          'Estimated DDP per unit including factory, freight, duty, and extras',
+          'Compliance and AD/CVD risk flags',
+          'Margin assumption testing and alternative scenario suggestions',
+        ],
+        deliverables: [
+          'DDP per unit breakdown',
+          'Duty assumptions',
+          'Early risk flags',
         ],
         icon: Brain,
       },
       {
         stepNumber: '3',
-        title: 'Pilot run and beyond',
+        title: 'Deposit & factory quotes',
         timeEstimate: 'Real factory quotes within 7 days',
-        body: 'You do: Decide when you\'re ready to move from analysis into a first test order.',
+        body: 'Deposit $49 to unlock your dedicated manager. The deposit is 100% credited to your first order and refundable if you choose not to proceed. Receive 3 real factory quotes within 7 days with FOB prices locked for 3 months.',
         bullets: [
-          'We do: Shortlist and compare qualified factories. Real factory quotes within 7 days after deposit. Deposit is 100 percent credited to your first order. Align QC and logistics to match your risk level. Use the pilot to learn, then translate those lessons into a repeatable playbook.',
-          'You get: A controlled first shipment instead of jumping straight into a huge PO.',
-          '5% execution fee covers: Production management and QC coordination. 5% execution fee does NOT cover: Packaging, labeling, and kitting costs (quoted separately as pass-through line items).',
+          'Shortlist and compare qualified factories',
+          'Deliver 3 real factory quotes within 7 days',
+          'Assign dedicated manager within 1 business day',
+          'Align QC and logistics to match your risk level',
+          'Factory FOB locked for 3 months once quoted',
+          'Deposit 100% credited to first order',
         ],
         icon: Truck,
       },
@@ -150,17 +176,20 @@ export const howItWorksPageConfig: HowItWorksPageConfig = {
       {
         title: 'Analysis and planning',
         items: [
-          'Free analysis with instant AI reports.',
-          'Includes AI report and one review call.',
-          'No subscription required.',
+          'Free AI cost and risk snapshot within 1 business day.',
+          'Includes detailed report and one review call.',
+          'No subscription or commitment required.',
         ],
       },
       {
         title: 'When orders go through NexSupply',
         items: [
-          '5% execution fee covers: Production management and QC coordination.',
-          '5% execution fee does NOT cover: Packaging, labeling, and kitting costs (quoted separately as pass-through line items).',
-          'Currently focused on imports into the US and selected EU markets.',
+          '$49 deposit credited 100% to your first order (refundable if not proceeding).',
+          'Factory FOB price locked for 3 months once quoted.',
+          'All logistics, customs, duties, packaging materials, labeling, and kitting costs are pass-through at cost with zero markup.',
+          'NexSupply charges a transparent 5% management fee on FOB for production management and QC coordination.',
+          'Hub locations: Seoul, Yiwu, Shantou, Vung Tau.',
+          'We help plan freight and customs but are not a customs broker or law firm.',
         ],
       },
     ],

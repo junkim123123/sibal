@@ -74,11 +74,11 @@ npm run dev
 PORT=3001 npm run dev
 ```
 
-### Prisma 관련 오류
+### 데이터베이스 연결 오류
 
 ```bash
-# Prisma 클라이언트 재생성
-npx prisma generate
+# Supabase 연결 확인
+# 환경 변수 NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY 확인
 ```
 
 ### 의존성 문제

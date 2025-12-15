@@ -94,7 +94,7 @@ export const howItWorksPageConfig: HowItWorksPageConfig = {
       },
       {
         title: 'Get Landed Cost Reality Check',
-        body: 'Our AI tools turn that brief into a landed cost and risk view, so you see margins, duties, and red flags before you spend on inventory. Usually within 24 hours.',
+        body: 'Our AI tools turn that brief into a landed cost and risk view, so you see margins, duties, and red flags before you spend on inventory. Usually within 1 business day.',
         icon: TrendingUp,
       },
       {
@@ -121,7 +121,7 @@ export const howItWorksPageConfig: HowItWorksPageConfig = {
       {
         stepNumber: '2',
         title: 'AI cost and risk check',
-        timeEstimate: 'Within 24 hours',
+        timeEstimate: 'Within 1 business day',
         body: 'You do: Review a first-pass landed cost and risk snapshot. If the numbers look promising, we can discuss alternative scenarios and next steps.',
         bullets: [
           'We do: Estimated DDP per unit (factory, freight, duty, and extras). Flag early signs of compliance or AD/CVD risk. Pressure-test your assumptions on margin and risk. Suggest alternative scenarios (factory options, MOQ, route, etc.).',
@@ -148,15 +148,15 @@ export const howItWorksPageConfig: HowItWorksPageConfig = {
       {
         title: 'Analysis and planning',
         items: [
-          'Simple flat fee per project during alpha.',
+          'Free analysis with instant AI reports.',
           'Includes AI report and one review call.',
-          'No subscription or long-term contract.',
+          'No subscription required.',
         ],
       },
       {
         title: 'When orders go through NexSupply',
         items: [
-          'Transparent project-based success fee with a clear cap.',
+          'Transparent 5% service fee with a clear cap.',
           'Clear cap so your per-unit margin stays protected.',
           'Currently focused on imports into the US and selected EU markets.',
         ],
@@ -180,7 +180,7 @@ export const howItWorksPageConfig: HowItWorksPageConfig = {
       },
       {
         question: 'How long does the whole process take?',
-        answer: 'Most projects receive an initial analysis within one business day and a first pilot supplier plan within one to two weeks, depending on category.',
+        answer: 'Most projects receive an initial analysis within 1 business day and a first pilot supplier plan within one to two weeks, depending on category.',
       },
     ],
   },

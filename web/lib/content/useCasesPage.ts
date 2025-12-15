@@ -137,7 +137,7 @@ export const useCasesPageContent: UseCasesPageContent = {
         summary:
           'You have a new category idea and want to validate margin feasibility and duty risk before ordering samples.',
         scope: '1 SKU, 1 primary market.',
-        timeline: 'Initial AI Audit: 24 Hours / Full Factory Matching: 1 Week',
+        timeline: 'Initial AI Audit: 1 Business Day / Full Factory Matching: 1 Week',
       },
       {
         id: 're-source-existing-sku',
@@ -145,7 +145,7 @@ export const useCasesPageContent: UseCasesPageContent = {
         title: 'Re-source an existing SKU',
         summary: 'You want to benchmark new factories or trade terms against your current supplier.',
         scope: '1 SKU with multiple factory options.',
-        timeline: 'Initial AI Audit: 24 Hours / Factory Comparison: 1–2 Weeks',
+        timeline: 'Initial AI Audit: 1 Business Day / Factory Comparison: 1–2 Weeks',
       },
       {
         id: 'test-higher-risk-category',
@@ -154,7 +154,7 @@ export const useCasesPageContent: UseCasesPageContent = {
         summary:
           "You're interested in a more regulated category but want to understand the compliance and AD/CVD risk first.",
         scope: '1 SKU in a higher-risk or regulated category.',
-        timeline: 'Initial AI Audit: 24 Hours / Compliance Mapping: 1 Week',
+        timeline: 'Initial AI Audit: 1 Business Day / Compliance Mapping: 1 Week',
       },
       {
         id: 'clean-up-messy-supply-chain',
@@ -163,7 +163,7 @@ export const useCasesPageContent: UseCasesPageContent = {
         summary:
           'You have similar products across multiple factories with different terms and logistics routes.',
         scope: 'Multiple SKUs and factories, using your existing quotes and contract data.',
-        timeline: 'Initial AI Audit: 24 Hours / Portfolio Analysis: 2 Weeks',
+        timeline: 'Initial AI Audit: 1 Business Day / Portfolio Analysis: 2 Weeks',
       },
     ],
   },
@@ -198,16 +198,16 @@ export const useCasesPageContent: UseCasesPageContent = {
       chip: 'Analysis only',
       title: 'Sourcing Intelligence Audit',
       bullets: [
-        'Flat project fee for each analysis during pilot period.',
+        'Free analysis with instant AI reports.',
         'Includes AI report and one review call (typically 30+ minutes).',
-        'Pay-Per-Project (No Commitments)',
+        'No subscription required.',
       ],
     },
     orders: {
       chip: 'When you place orders',
       title: 'End-to-End Execution',
       bullets: [
-        'Performance-Based Management Fee only when you place orders through us.',
+        'Transparent 5% service fee only when you place orders through us.',
         'Margin Protection Guarantee: Fee cap on per-unit margin so your upside stays protected.',
         'Currently focused on imports into the US and selected EU markets.',
       ],
@@ -243,7 +243,7 @@ export const useCasesPageContent: UseCasesPageContent = {
   cta: {
     title: 'Get Your Landed Cost Reality Check.',
     subtitle:
-      'Stop guessing on duties and freight. Submit your product details now and receive a comprehensive strategic audit within 24 hours.',
+      'Stop guessing on duties and freight. Submit your product details now and receive a comprehensive strategic audit within 1 business day.',
     subtitle2: undefined,
     ctaLabel: 'Request My Sourcing Audit',
     ctaHref: '/chat',

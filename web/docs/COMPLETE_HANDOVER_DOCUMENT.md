@@ -117,12 +117,15 @@ nexi.ai/
 - id: UUID (Primary Key, auth.users 참조)
 - email: TEXT (Unique)
 - name: TEXT
+- full_name: TEXT (매니저 표시용 이름)
 - company: TEXT
 - role: TEXT ('free', 'pro', 'manager', 'admin', 'super_admin')
 - is_manager: BOOLEAN
 - workload_score: INTEGER (매니저 작업량)
 - is_banned: BOOLEAN
 - total_spend: NUMERIC
+- phone: TEXT (전화번호, WhatsApp 연결용)
+- telegram_id: TEXT (Telegram ID)
 - created_at: TIMESTAMPTZ
 ```
 
@@ -188,6 +191,7 @@ nexi.ai/
      4. `web/supabase/super_admin_schema.sql`
      5. `web/supabase/chat_sessions_schema.sql`
      6. `web/supabase/email_notifications_schema.sql`
+     7. `web/supabase/migrations/add_manager_phone_telegram.sql` (매니저 연락처 정보용)
 
 3. **Storage 버킷 생성**
    - Storage → Create Bucket
@@ -430,6 +434,51 @@ Supabase 대시보드에서 SQL 파일들을 순서대로 실행 (위 "데이터
 3. **마일스톤 업데이트 알림** (`Milestone Updates`)
    - 프로젝트 마일스톤이 업데이트되면 알림
 
+## 📱 WhatsApp/Telegram 연결 시스템
+
+### WhatsAppConnectCard 컴포넌트
+
+**위치**: `web/components/WhatsAppConnectCard.tsx`
+
+**주요 기능**:
+1. **매니저 연락처 정보 표시**
+   - 매니저 이름 (`profiles.full_name`)
+   - 전화번호 (`profiles.phone`)
+   - Telegram ID (`profiles.telegram_id`)
+
+2. **사용자 전화번호 관리**
+   - 사용자 전화번호 입력 필드
+   - 입력한 전화번호를 `profiles.phone`에 저장
+   - 저장된 전화번호 자동 불러오기
+
+3. **WhatsApp 연결**
+   - WhatsApp 링크 생성 (`https://wa.me/{phone}?text={message}`)
+   - 프로젝트 정보 자동 포함 (이메일, 제품명, 프로젝트 ID)
+   - QR 코드 표시 (qrserver.com API 사용)
+   - 기본 전화번호: +1 (314) 657-7892 (매니저 전화번호가 없을 경우)
+
+4. **콜백 요청**
+   - WhatsApp이 없는 사용자를 위한 콜백 요청 기능
+   - 활동 로그에 `callback_requested` 이벤트 기록
+
+5. **활동 로그**
+   - WhatsApp 연결 클릭 시 `whatsapp_connect_clicked` 이벤트 기록
+   - 콜백 요청 시 `callback_requested` 이벤트 기록
+   - `/api/manager/activity-log` API를 통해 `consultation_notes` 테이블에 시스템 메시지로 저장
+
+**사용 위치**:
+- `/dashboard/chat?project_id=xxx` - 클라이언트 채팅 페이지
+- `/manager/workstation` - 매니저 워크스테이션 (프로젝트 선택 시 표시)
+
+### 데이터베이스 스키마 확장
+
+매니저 연락처 정보를 위해 `profiles` 테이블에 다음 필드가 추가되었습니다:
+- `phone` (TEXT): 전화번호
+- `telegram_id` (TEXT): Telegram ID
+- `full_name` (TEXT): 표시용 이름
+
+마이그레이션 파일: `web/supabase/migrations/add_manager_phone_telegram.sql`
+
 ### 설정
 
 - **SMTP**: Google SMTP 사용
@@ -449,6 +498,15 @@ Supabase 대시보드에서 SQL 파일들을 순서대로 실행 (위 "데이터
 - `POST /api/chat-sessions` - 새 채팅 세션 생성
 - `POST /api/chat-messages` - 메시지 전송
 - `POST /api/chat/upload` - 파일 업로드
+
+### 매니저 API
+- `GET /api/manager/projects` - 할당된 프로젝트 목록
+- `GET /api/manager/chat-sessions` - 매니저 채팅 세션
+- `POST /api/manager/milestones` - 마일스톤 업데이트
+- `POST /api/manager/files/upload` - 파일 업로드
+- `POST /api/manager/activity-log` - 활동 로그 기록 (WhatsApp 연결, 콜백 요청 등)
+- `GET /api/manager/consultation-notes` - 상담 일지 조회
+- `POST /api/manager/consultation-notes` - 상담 일지 저장
 
 ### 결제 API
 - `GET /api/payment/create-checkout-url` - Checkout URL 생성
@@ -489,6 +547,18 @@ Supabase 대시보드에서 SQL 파일들을 순서대로 실행 (위 "데이터
 **위치**: `web/components/MilestoneTracker.tsx`
 - 프로젝트 마일스톤 타임라인
 - 마일스톤 업데이트 기능
+
+### 5. WhatsAppConnectCard
+**위치**: `web/components/WhatsAppConnectCard.tsx`
+- WhatsApp/Telegram 연결 카드 컴포넌트
+- 매니저 연락처 정보 표시 (전화번호, Telegram ID)
+- 사용자 전화번호 입력 및 프로필 저장
+- WhatsApp 링크 생성 및 QR 코드 표시 (qrserver.com API 사용)
+- 콜백 요청 기능
+- 활동 로그 기록 (`/api/manager/activity-log`)
+- 사용 위치:
+  - `/dashboard/chat` (클라이언트 채팅 페이지)
+  - `/manager/workstation` (매니저 워크스테이션)
 
 ---
 
@@ -674,6 +744,7 @@ chore: 빌드 업무 수정
 
 **문서 작성자**: AI Assistant  
 **최종 업데이트**: 2024년 12월  
+**버전**: 1.1.0 (WhatsAppConnectCard 정보 추가)  
 **다음 리뷰 예정일**: 필요시 업데이트
 
 ---

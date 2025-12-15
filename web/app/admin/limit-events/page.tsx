@@ -1,6 +1,6 @@
 import { getServerSession } from 'next-auth/next';
 import { redirect } from 'next/navigation';
-import { prisma } from '@/lib/prisma';
+import { createClient } from '@/lib/supabase/server';
 import { Card } from '@/components/ui/card';
 
 const ADMIN_EMAIL = process.env.ALPHA_ADMIN_EMAIL;
@@ -41,19 +41,23 @@ export default async function LimitEventsPage() {
     );
   }
 
-  // Fetch limit events
-  let events = [];
-  if (prisma) {
-    try {
-      events = await prisma.limitEvent.findMany({
-        take: 200,
-        orderBy: {
-          createdAt: 'desc',
-        },
-      });
-    } catch (error: any) {
+  // Fetch limit events from Supabase
+  let events: any[] = [];
+  try {
+    const supabase = await createClient();
+    const { data, error } = await supabase
+      .from('limit_events')
+      .select('*')
+      .order('created_at', { ascending: false })
+      .limit(200);
+
+    if (error) {
       console.error('[LimitEventsPage] Failed to fetch events:', error);
+    } else {
+      events = data || [];
     }
+  } catch (error: any) {
+    console.error('[LimitEventsPage] Failed to fetch events:', error);
   }
 
   return (
@@ -66,11 +70,7 @@ export default async function LimitEventsPage() {
           </p>
         </div>
 
-        {!prisma ? (
-          <Card className="p-6">
-            <p className="text-destructive">Database connection unavailable.</p>
-          </Card>
-        ) : events.length === 0 ? (
+        {events.length === 0 ? (
           <Card className="p-6 text-center">
             <p className="text-muted-foreground">No limit events found yet.</p>
           </Card>
@@ -107,21 +107,21 @@ export default async function LimitEventsPage() {
                       className="hover:bg-surface/50 transition-colors"
                     >
                       <td className="px-4 py-3 text-sm text-foreground whitespace-nowrap">
-                        {formatDate(event.createdAt)}
+                        {formatDate(new Date(event.created_at))}
                       </td>
                       <td className="px-4 py-3 text-sm">
                         <span
                           className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
-                            event.userType === 'user'
+                            event.user_type === 'user'
                               ? 'bg-primary/20 text-primary'
                               : 'bg-muted text-muted-foreground'
                           }`}
                         >
-                          {event.userType}
+                          {event.user_type}
                         </span>
                       </td>
                       <td className="px-4 py-3 text-sm text-muted-foreground">
-                        {event.userId || '-'}
+                        {event.user_id || '-'}
                       </td>
                       <td className="px-4 py-3 text-sm text-foreground">
                         <span className="inline-flex items-center px-2 py-1 rounded text-xs bg-surface border border-subtle-border">

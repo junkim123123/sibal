@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth/next";
 import { headers } from "next/headers";
-import { prisma } from "@/lib/prisma";
+import { createClient } from "@/lib/supabase/server";
 
 export async function POST(req: Request) {
   try {
@@ -44,31 +44,29 @@ export async function POST(req: Request) {
     const userId = isAuthenticated && session?.user?.email ? session.user.email : null;
 
     // Ensure userType matches authentication status
-    // If authenticated but userType is "anonymous", use "user" instead
-    // If not authenticated but userType is "user", use "anonymous" instead
     const actualUserType = isAuthenticated ? "user" : "anonymous";
 
-    // Create the limit event record
-    if (!prisma) {
-      console.error("[LimitEvents] Prisma client is not available");
-      // Don't fail the request if DB is unavailable, just log
-      return NextResponse.json({ ok: true, warning: "Database unavailable, event not logged" });
-    }
-
+    // Create the limit event record using Supabase
     try {
-      await prisma.limitEvent.create({
-        data: {
-          userId,
-          userType: actualUserType,
+      const supabase = await createClient();
+      const { error } = await supabase
+        .from('limit_events')
+        .insert({
+          user_id: userId,
+          user_type: actualUserType,
           reason,
           action,
           input: input || null,
-          userAgent,
-        },
-      });
+          user_agent: userAgent,
+        });
+
+      if (error) {
+        console.error("[LimitEvents] Supabase error:", error);
+        // Don't fail the request on DB errors, just log
+        return NextResponse.json({ ok: true, warning: "Event logged with warnings" });
+      }
     } catch (dbError: any) {
       console.error("[LimitEvents] Database error:", dbError);
-      // Don't fail the request on DB errors during alpha, just log
       return NextResponse.json({ ok: true, warning: "Event logged with warnings" });
     }
 

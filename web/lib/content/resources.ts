@@ -59,7 +59,7 @@ const featuredProjectsSection: FeaturedProjectsSection = {
       title: 'Verified IP Sourcing for 7-Eleven',
       description: 'Navigated complex IP licensing and food safety compliance to deliver Pokemon-branded confectioneries to 7-Eleven shelves.',
       tag: 'Retail Sourcing / IP Licensing',
-      result: 'Result: 0% Defect Rate over 50k units',
+      result: 'Result: High-quality production with rigorous QC processes',
       country: 'US',
       image: {
         src: '/images/projects/pokemon-7eleven.png',
@@ -71,7 +71,7 @@ const featuredProjectsSection: FeaturedProjectsSection = {
       title: 'Strict QA for Don Quijote Japan',
       description: 'Passed rigorous Japanese food safety standards to supply seasonal confectionery to Don Quijote retail chain.',
       tag: 'Japan Export / Food Safety',
-      result: 'Result: 100% Compliance Pass Rate',
+      result: 'Result: Full compliance with regulatory requirements',
       country: 'JP',
       image: {
         src: '/images/projects/donquijote-marshmallow.png',
@@ -156,7 +156,7 @@ const faqSection: FAQSection = {
       id: 'shipping-or-analysis',
       question: 'Do you handle shipping or only analysis?',
       answer:
-        'During alpha, our main product is analysis and planning. We help you compare scenarios, pick suppliers, and understand landed cost. For selected projects, we can also support shipping and execution with our existing freight and QC partners.',
+        'Our main product is analysis and planning. We help you compare scenarios, pick suppliers, and understand landed cost. For selected projects, we can also support shipping and execution with our existing freight and QC partners.',
     },
     {
       id: 'replacement-for-sourcing-agent',

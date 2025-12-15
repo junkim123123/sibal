@@ -15,7 +15,6 @@ import HomeImpactBand from './components/HomeImpactBand';
 import ExpertPanelSection from '@/components/marketing/ExpertPanelSection';
 import { ReviewsSection } from '@/components/marketing/home/ReviewsSection';
 import { ProTeamSection } from '@/components/marketing/home/ProTeamSection';
-import { PortfolioMarquee } from '@/components/marketing/home/PortfolioMarquee';
 import { homePageConfig } from '@/lib/content/homePage';
 
 export const revalidate = 60;
@@ -34,7 +33,6 @@ export default async function HomePage() {
   return (
     <div className="bg-white dark:bg-gray-900">
       <HomeHero page={page} />
-      <PortfolioMarquee />
       <HomeUseCases />
       <HomeSocialProofStrip />
       <HomeBenefitsGrid />

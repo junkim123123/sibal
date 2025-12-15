@@ -178,6 +178,7 @@ nexi.ai/
 - id: UUID (Primary Key, auth.users 참조)
 - email: TEXT (Unique)
 - name: TEXT
+- full_name: TEXT (매니저 표시용 이름)
 - company: TEXT
 - role: TEXT ('free', 'pro', 'manager', 'admin', 'super_admin')
 - is_manager: BOOLEAN
@@ -188,6 +189,8 @@ nexi.ai/
 - analysis_count: INTEGER (월별 분석 횟수)
 - last_analysis_date: TIMESTAMPTZ
 - total_spend: NUMERIC
+- phone: TEXT (전화번호, WhatsApp 연결용)
+- telegram_id: TEXT (Telegram ID)
 - created_at: TIMESTAMPTZ
 ```
 
@@ -276,6 +279,7 @@ nexi.ai/
      4. `web/supabase/super_admin_schema.sql`
      5. `web/supabase/chat_sessions_schema.sql`
      6. `web/supabase/email_notifications_schema.sql`
+     7. `web/supabase/migrations/add_manager_phone_telegram.sql` (매니저 연락처 정보용)
 
 3. **Storage 버킷 생성**
    - Storage → Create Bucket
@@ -452,11 +456,17 @@ npx prisma migrate dev
 2. "Active Orders" 탭에서 진행 중인 프로젝트 확인
 3. 프로젝트 클릭 또는 "Chat" 버튼 클릭
 4. /dashboard/chat?project_id=xxx 접속
-5. 매니저와 실시간 채팅
+5. WhatsApp 연결 카드 표시
+   - 매니저 전화번호 확인
+   - 본인 전화번호 입력 및 저장
+   - WhatsApp 링크 클릭 또는 QR 코드 스캔으로 채팅 시작
+   - 프로젝트 정보가 자동으로 포함된 메시지 전송
+   - 콜백 요청 가능 (WhatsApp이 없는 경우)
+6. 매니저와 실시간 채팅 (WhatsApp 외에도 내부 채팅 시스템 사용 가능)
    - 텍스트 메시지
    - 파일 업로드 (견적, QC 리포트 등)
-6. 파일 라이브러리에서 모든 문서 확인
-7. 마일스톤 진행 상황 확인
+7. 파일 라이브러리에서 모든 문서 확인
+8. 마일스톤 진행 상황 확인
 ```
 
 ### 2. 매니저 사용자 플로우
@@ -722,6 +732,17 @@ interface AnalysisResult {
   - 프로젝트별 그룹화
   - 읽지 않은 메시지 배지
 
+- **WhatsAppConnectCard**: `web/components/WhatsAppConnectCard.tsx`
+  - WhatsApp/Telegram 연결 카드 컴포넌트
+  - 매니저 연락처 정보 표시 (전화번호, Telegram ID)
+  - 사용자 전화번호 입력 및 프로필 저장
+  - WhatsApp 링크 생성 및 QR 코드 표시
+  - 콜백 요청 기능
+  - 활동 로그 기록 (whatsapp_connect_clicked, callback_requested)
+  - 사용 위치:
+    - `/dashboard/chat` (클라이언트 채팅 페이지)
+    - `/manager/workstation` (매니저 워크스테이션)
+
 ---
 
 ## 📊 주요 API 엔드포인트
@@ -760,6 +781,9 @@ interface AnalysisResult {
 - `GET /api/manager/chat-sessions` - 매니저 채팅 세션
 - `POST /api/manager/milestones` - 마일스톤 업데이트
 - `POST /api/manager/files/upload` - 파일 업로드
+- `POST /api/manager/activity-log` - 활동 로그 기록 (WhatsApp 연결, 콜백 요청 등)
+- `GET /api/manager/consultation-notes` - 상담 일지 조회
+- `POST /api/manager/consultation-notes` - 상담 일지 저장
 
 ### Admin API
 
@@ -1092,6 +1116,7 @@ test: 테스트 추가/수정
 | 날짜 | 버전 | 변경 내용 | 작성자 |
 |------|------|----------|--------|
 | 2024-12 | 2.0.0 | 종합 인수인계 문서 작성 | AI Assistant |
+| 2024-12 | 2.1.0 | WhatsAppConnectCard 컴포넌트 정보 추가, profiles 테이블 확장 필드 추가, 활동 로그 API 추가 | AI Assistant |
 
 ---
 

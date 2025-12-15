@@ -29,7 +29,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // TODO: Save to database (Prisma)
+    // TODO: Save to database (Supabase)
     // TODO: Send confirmation email
     // TODO: Create lead in CRM
     

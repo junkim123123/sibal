@@ -130,7 +130,7 @@ export const homePageConfig: HomePageConfig = {
       },
       {
         title: 'Re-source an existing SKU',
-        body: 'Compare your current factory to vetted alternatives on landed cost and risk. Often <strong>70% cheaper</strong> than current suppliers.',
+        body: 'Compare your current factory to vetted alternatives on landed cost and risk. Many projects see <strong>significant cost savings</strong> when switching to optimized suppliers.',
         target: 'Typical users: Established sellers optimizing margins',
       },
       {
@@ -143,9 +143,9 @@ export const homePageConfig: HomePageConfig = {
   socialProof: {
     title: 'See what importers are saying about NexSupply',
     rating: {
-      value: '4.8 / 5',
-      label: 'from verified sourcing projects',
-      badge: 'Verified Sourcing Projects',
+      value: '4.6 / 5',
+      label: 'from internal pilot users',
+      badge: 'Internal Pilot Users',
     },
     summary: 'Faster landed-cost clarity, fewer surprises at customs.',
     quotes: [
@@ -171,7 +171,7 @@ export const homePageConfig: HomePageConfig = {
         items: [
           {
             title: 'Owned Quality Control Hubs',
-            body: 'We don\'t just \'screen\' partners. We operate our own packing hubs to ensure 0% defect rates before shipping.',
+            body: 'We don\'t just \'screen\' partners. We operate our own packing hubs with rigorous quality control processes to minimize defects before shipping.',
           },
           {
             title: 'Smaller first tests',
@@ -209,7 +209,7 @@ export const homePageConfig: HomePageConfig = {
   },
   cta: {
     title: 'Ready to test your next import?',
-    description: 'Start with one product. We will run a full landed cost and risk review, usually within one day.',
+    description: 'Start with one product. We will run a full landed cost and risk review, usually within 1 business day.',
     buttonLabel: 'Calculate My Profit',
     buttonHref: '/chat',
   },

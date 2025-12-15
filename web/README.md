@@ -1,131 +1,91 @@
 # NexSupply - B2B Sourcing Platform
 
+**nexi.ai** 레포지토리 - NexSupply 서비스의 기술 구현체
+
+> **용어 정의**: 
+> - **nexi.ai**: 레포지토리 및 코드베이스 이름
+> - **NexSupply**: 서비스 및 브랜드 이름
+
 AI-powered B2B sourcing intelligence platform that provides cost analysis, supplier verification, and market insights for global sourcing decisions.
 
-## Features
+## 📚 문서
 
-- 🤖 **AI-Powered Analysis**: Gemini 2.5 Flash for intelligent sourcing insights
-- 💰 **Landed Cost Calculator**: Accurate cost breakdown with hidden cost alerts
-- ✅ **Supplier Verification**: Verified supplier database with risk assessment
-- 📊 **Market Snapshot**: Real-time market demand and competition analysis
-- ⏱️ **Lead Time Planning**: Production and shipping timeline estimates
-- 🌐 **Multi-language Support**: English, Chinese, Spanish, Hindi, Arabic, Korean, Japanese
+**신입 개발자는 반드시 다음 문서를 먼저 읽어주세요:**
 
-## Tech Stack
+👉 **[인수인계 문서 (HANDOVER.md)](docs/HANDOVER.md)** - 완전한 가이드 및 30분 내 로컬 실행 방법
 
-- **Framework**: Streamlit
-- **AI Model**: Google Gemini 2.5 Flash
-- **Database**: SQLite (local analytics)
-- **Visualization**: Plotly
-- **Email**: SMTP (Gmail)
+## 🚀 Quick Start
 
-## Quick Start
+### 사전 요구사항
 
-### Local Development
+- Node.js 18+
+- npm 또는 yarn
 
-1. **Clone the repository**
-   ```bash
-   git clone <repository-url>
-   cd nexsupply-platform
-   ```
-
-2. **Install dependencies**
-   ```bash
-   pip install -r requirements.txt
-   ```
-
-3. **Set up environment variables**
-   - Copy `.streamlit/secrets.toml.example` to `.streamlit/secrets.toml`
-   - Add your `GEMINI_API_KEY` and SMTP credentials
-
-4. **Run the app**
-   ```bash
-   streamlit run streamlit_app.py
-   ```
-
-## Deployment
-
-### Streamlit Cloud
-
-1. **Push to GitHub**
-   ```bash
-   git add .
-   git commit -m "Ready for deployment"
-   git push origin main
-   ```
-
-2. **Deploy on Streamlit Cloud**
-   - Go to [share.streamlit.io](https://share.streamlit.io)
-   - Connect your GitHub repository
-   - Add secrets in Streamlit Cloud dashboard:
-     - `GEMINI_API_KEY`
-     - `SMTP_SERVER` (optional)
-     - `SMTP_PORT` (optional, default: 465)
-     - `SMTP_USERNAME` (optional)
-     - `SMTP_PASSWORD` (optional)
-
-3. **Mobile Access**
-   - Streamlit apps are mobile-responsive
-   - Access via mobile browser at your Streamlit Cloud URL
-   - No additional mobile app needed
-
-### Environment Variables (Streamlit Cloud)
-
-In Streamlit Cloud, add these secrets:
-
-```
-GEMINI_API_KEY=your-api-key-here
-SMTP_SERVER=smtp.gmail.com
-SMTP_PORT=465
-SMTP_USERNAME=your-email@gmail.com
-SMTP_PASSWORD=your-app-password
-SMTP_FROM_EMAIL=your-email@gmail.com
-```
-
-## Project Structure
-
-```
-nexsupply-platform/
-├── pages/              # Streamlit pages
-│   ├── home.py        # Landing page
-│   ├── results_dashboard.py  # Results page
-│   └── analytics.py   # Analytics dashboard
-├── services/          # Business logic
-│   ├── gemini_service.py  # AI service
-│   ├── email_service.py   # Email service
-│   └── data_logger.py     # Analytics
-├── components/         # Reusable components
-│   └── supplier_card.py
-├── utils/              # Utilities
-│   ├── config.py      # Configuration
-│   ├── prompts.py     # AI prompts
-│   └── cost_calculator.py
-├── state/              # Session state
-└── streamlit_app.py   # Main entry point
-```
-
-## Security
-
-- ✅ API keys stored in environment variables/secrets
-- ✅ No hardcoded credentials
-- ✅ Error handling with generic error codes
-- ✅ Database files excluded from Git
-
-## Sanity CMS
-
-### Sanity Studio 실행
-
-마케팅 페이지 콘텐츠를 관리하기 위한 Sanity Studio를 실행하려면:
+### 로컬 실행
 
 ```bash
-cd ../sanity
-npm install
+# 의존성 설치
+npm install --legacy-peer-deps
+
+# 환경 변수 설정 (.env.local 파일 생성)
+cp .env.example .env.local
+# .env.local 파일에 필요한 환경 변수 입력
+
+# 개발 서버 실행
 npm run dev
 ```
 
-브라우저에서 `http://localhost:3333`로 접속하면 Sanity Studio가 열립니다.
+브라우저에서 `http://localhost:3000` 접속
 
-자세한 내용은 프로젝트 루트의 `SANITY_STUDIO_GUIDE.md`를 참고하세요.
+**자세한 설정 방법은 [HANDOVER.md](docs/HANDOVER.md)를 참고하세요.**
+
+## 🏗️ Tech Stack
+
+- **Framework**: Next.js 15.1.0 (App Router)
+- **언어**: TypeScript
+- **Database**: Supabase (PostgreSQL)
+- **AI Model**: Google Gemini 2.5 Flash
+- **배포**: Vercel
+- **CMS**: Sanity
+
+## 📁 프로젝트 구조
+
+```
+web/
+├── app/              # Next.js App Router
+│   ├── chat/        # ⭐ 메인 플로우
+│   ├── results/     # 분석 결과 페이지
+│   ├── dashboard/   # 클라이언트 대시보드
+│   ├── manager/     # 매니저 페이지
+│   └── admin/       # Admin 페이지
+├── components/       # 재사용 가능한 컴포넌트
+├── lib/             # 유틸리티 및 헬퍼
+├── supabase/        # 데이터베이스 스키마
+└── docs/            # 문서
+    └── HANDOVER.md  # ⭐ 인수인계 문서
+```
+
+## 🔍 주요 기능
+
+- **메인 플로우**: `/chat` - Dr.B 스타일 온보딩 채팅
+- **결과 페이지**: `/results` - 분석 결과 표시
+- **프로젝트 관리**: `/dashboard` - 클라이언트 대시보드
+- **매니저 도구**: `/manager/workstation` - 매니저 작업 공간
+
+## 🧪 문서 검증
+
+문서에 언급된 파일 경로가 유효한지 검사:
+
+```bash
+npm run docs:check
+```
+
+## 📝 추가 자료
+
+- **[HANDOVER.md](docs/HANDOVER.md)** - ⭐ 완전한 인수인계 가이드 (신입 개발자 필수)
+- [Next.js 문서](https://nextjs.org/docs)
+- [Supabase 문서](https://supabase.com/docs)
+- [Vercel 문서](https://vercel.com/docs)
 
 ## License
 

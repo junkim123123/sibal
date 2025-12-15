@@ -254,20 +254,20 @@ export const useCasesPageConfig: UseCasesPageConfig = {
   },
   pricing: {
     title: 'What does it cost',
-    subtitle: 'Simple pricing while NexSupply is in early alpha.',
+    subtitle: 'Simple, transparent pricing.',
     cards: [
       {
         title: 'Analysis and planning',
         items: [
-          'Flat project fee for each analysis during alpha so you know your cost before we start.',
+          'Free analysis with instant AI reports.',
           'Includes AI report and one review call which is typically a bit more than half an hour.',
-          'No subscription or long term contract during alpha.',
+          'No subscription required.',
         ],
       },
       {
         title: 'When orders go through NexSupply',
         items: [
-          'Transparent success fee only when you place orders through us.',
+          'Transparent 5% service fee only when you place orders through us.',
           'Fee linked to per unit margin with a hard cap so your upside stays protected.',
           'Currently focused on imports into the United States and selected markets in the European Union.',
         ],

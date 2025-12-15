@@ -3,8 +3,7 @@ import GoogleProvider from 'next-auth/providers/google';
 import EmailProvider from 'next-auth/providers/email';
 import CredentialsProvider from 'next-auth/providers/credentials';
 
-// For now, use JWT sessions only (no database required for admin login)
-// Database adapter will be added later when Prisma connection is stable
+// JWT sessions only (Supabase Auth is used for authentication, not NextAuth database adapter)
 const adapter = undefined;
 
 const providers = [];

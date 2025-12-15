@@ -78,44 +78,44 @@ export default function HowItWorksHero() {
 
           {/* Right: Sample report preview - 7 columns (Compact) */}
           <div className="lg:col-span-7 order-1 lg:order-2 lg:self-center">
-            <div className="bg-white border border-neutral-200 rounded-lg p-4 shadow-sm max-w-md mx-auto lg:mx-0">
+            <div className="bg-white border border-neutral-200 rounded-lg p-5 md:p-6 shadow-sm max-w-lg mx-auto lg:mx-0">
               {/* Header - Minimal */}
-              <div className="mb-3">
-                <div className="flex items-center justify-between mb-1.5">
+              <div className="mb-4">
+                <div className="flex items-center justify-between mb-2">
                   <h3 className="text-xs font-semibold text-neutral-900 uppercase tracking-wider">
                     Sample report preview
                   </h3>
-                  <span className="text-[10px] text-neutral-400">Example</span>
+                  <span className="text-xs text-neutral-400">Example</span>
                 </div>
                 <div className="h-px bg-neutral-200"></div>
               </div>
               
               {/* Core numbers block */}
-              <div className="mb-3">
-                <div className="text-[10px] font-semibold text-neutral-500 uppercase mb-1.5">Estimated landed cost range</div>
-                <div className="text-xl md:text-2xl font-bold text-neutral-900 mb-0.5">
+              <div className="mb-4">
+                <div className="text-xs font-semibold text-neutral-500 uppercase mb-2">Estimated landed cost range</div>
+                <div className="text-2xl md:text-3xl font-bold text-neutral-900 mb-1">
                   $<span className="font-bold">1.85</span> to $<span className="font-bold">2.35</span>
                 </div>
-                <div className="text-xs text-neutral-600">per unit, DDP</div>
+                <div className="text-sm text-neutral-600">per unit, DDP</div>
               </div>
               
               {/* Risk flags */}
-              <div className="mb-3">
-                <div className="text-[10px] font-semibold text-neutral-500 uppercase mb-1.5">Early risk flags</div>
-                <div className="flex flex-wrap gap-1.5">
-                  <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-medium bg-yellow-50 text-yellow-700 border border-yellow-200">
+              <div className="mb-4">
+                <div className="text-xs font-semibold text-neutral-500 uppercase mb-2">Early risk flags</div>
+                <div className="flex flex-wrap gap-2">
+                  <span className="inline-flex items-center px-2.5 py-1 rounded text-xs font-medium bg-yellow-50 text-yellow-700 border border-yellow-200">
                     AD risk check
                   </span>
-                  <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-medium bg-blue-50 text-blue-700 border border-blue-200">
+                  <span className="inline-flex items-center px-2.5 py-1 rounded text-xs font-medium bg-blue-50 text-blue-700 border border-blue-200">
                     Compliance review
                   </span>
                 </div>
               </div>
               
               {/* Optional ghost link */}
-              <div className="pt-2 border-t border-neutral-200">
+              <div className="pt-3 border-t border-neutral-200">
                 <Link href="/chat" className="inline-block w-full text-center">
-                  <span className="text-xs text-blue-600 hover:text-blue-700 hover:underline">
+                  <span className="text-sm text-blue-600 hover:text-blue-700 hover:underline">
                     View full sample report
                   </span>
                 </Link>

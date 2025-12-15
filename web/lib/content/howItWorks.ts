@@ -95,36 +95,36 @@ export const howItWorksPageConfig: HowItWorksPageConfig = {
     ],
   },
   journey: {
-    title: 'Your sourcing journey in three moves',
+    title: 'Step details',
     cards: [
       {
-        title: 'Submit your brief',
+        title: 'Submit brief',
         body: '10 minutes to replace 10 hours of back and forth.',
         icon: MessageSquare,
         deliverables: [
-          'Structured sourcing brief',
-          'Clear assumptions',
-          'Shared project doc',
+          'Sourcing brief',
+          'Project assumptions',
+          'Shared doc',
         ],
       },
       {
-        title: 'Free cost and risk snapshot',
+        title: 'Free snapshot',
         body: 'Get the DDP breakdown, duty assumptions, and early red flags in 1 business day.',
         icon: TrendingUp,
         deliverables: [
-          'DDP per unit breakdown',
-          'AD CVD and compliance flags',
-          'Go, Hold, Pass recommendation',
+          'DDP breakdown',
+          'Compliance flags',
+          'Go or no go recommendation',
         ],
       },
       {
-        title: 'Refundable deposit to start factory outreach',
+        title: 'Deposit to start factory outreach',
         body: 'Pay $49 only when you want real quotes. Applied to your first order or refunded if you walk away.',
         icon: Package,
         deliverables: [
-          '3 real quote options in 7 days',
-          'Dedicated manager assigned',
-          'FOB locked for 3 months',
+          '3 quotes in 7 days',
+          'Manager assigned',
+          'FOB locked 3 months',
         ],
       },
     ],
@@ -185,7 +185,7 @@ export const howItWorksPageConfig: HowItWorksPageConfig = {
         title: 'Analysis and planning',
         items: [
           'Free snapshot in 1 business day.',
-          'No subscription. No commitment. No payment until you see a "Go" signal.',
+          'No subscription. No commitment. No payment unless you proceed.',
         ],
       },
       {

@@ -8,6 +8,16 @@ import { howItWorksPageConfig } from '@/lib/content/howItWorks';
 export default function HowItWorksHero() {
   const { hero } = howItWorksPageConfig;
 
+  const scrollToId = (id: string) => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    // Update URL hash for shareable links
+    if (typeof window !== 'undefined') {
+      window.history.replaceState(null, '', `#${id}`);
+    }
+  };
+
   return (
     <section aria-label="Hero" className="py-4 md:py-5 bg-white relative overflow-hidden">
       {/* Subtle background pattern */}
@@ -57,26 +67,38 @@ export default function HowItWorksHero() {
               </Link>
             </div>
             
-            {/* 5. Mini Stepper - 3 steps in one line */}
-            <div className="flex flex-col sm:flex-row gap-2 mb-4">
-              <div className="flex-1 bg-neutral-50 border border-neutral-200 rounded-lg px-3 py-2.5 text-center">
+            {/* 5. Mini Stepper - 3 steps in one line (Anchor Navigation) */}
+            <div className="flex flex-col sm:flex-row gap-2 mb-4" role="navigation" aria-label="Step navigation">
+              <button
+                onClick={() => scrollToId('step-1')}
+                className="flex-1 bg-neutral-50 border border-neutral-200 rounded-lg px-3 py-2.5 text-center hover:bg-neutral-100 hover:border-blue-300 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
+                aria-label="Navigate to Step 1: Submit brief"
+              >
                 <div className="text-xs font-semibold text-blue-600 mb-0.5">Step 1</div>
                 <div className="text-sm font-bold text-neutral-900 mb-0.5">10</div>
                 <div className="text-xs text-neutral-600">min</div>
                 <div className="text-xs text-neutral-600 mt-0.5">Submit brief</div>
-              </div>
-              <div className="flex-1 bg-neutral-50 border border-neutral-200 rounded-lg px-3 py-2.5 text-center">
+              </button>
+              <button
+                onClick={() => scrollToId('step-2')}
+                className="flex-1 bg-neutral-50 border border-neutral-200 rounded-lg px-3 py-2.5 text-center hover:bg-neutral-100 hover:border-blue-300 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
+                aria-label="Navigate to Step 2: Free snapshot"
+              >
                 <div className="text-xs font-semibold text-blue-600 mb-0.5">Step 2</div>
                 <div className="text-sm font-bold text-neutral-900 mb-0.5">1</div>
                 <div className="text-xs text-neutral-600">business day</div>
-                <div className="text-xs text-neutral-600 mt-0.5">Snapshot</div>
-              </div>
-              <div className="flex-1 bg-neutral-50 border border-neutral-200 rounded-lg px-3 py-2.5 text-center">
+                <div className="text-xs text-neutral-600 mt-0.5">Free snapshot</div>
+              </button>
+              <button
+                onClick={() => scrollToId('step-3')}
+                className="flex-1 bg-neutral-50 border border-neutral-200 rounded-lg px-3 py-2.5 text-center hover:bg-neutral-100 hover:border-blue-300 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
+                aria-label="Navigate to Step 3: Factory quotes"
+              >
                 <div className="text-xs font-semibold text-blue-600 mb-0.5">Step 3</div>
                 <div className="text-sm font-bold text-neutral-900 mb-0.5">7</div>
                 <div className="text-xs text-neutral-600">days after deposit</div>
                 <div className="text-xs text-neutral-600 mt-0.5">Quotes</div>
-              </div>
+              </button>
             </div>
             
             {/* 6. Trust bar */}

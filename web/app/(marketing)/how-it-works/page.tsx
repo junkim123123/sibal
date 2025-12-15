@@ -31,7 +31,8 @@ export default async function HowItWorksPage() {
             return (
               <div
                 key={idx}
-                className={`rounded-lg border p-4 shadow-sm h-full flex flex-col ${
+                id={`step-${idx + 1}`}
+                className={`rounded-lg border p-3.5 shadow-sm h-full flex flex-col scroll-mt-24 ${
                   idx === 2 
                     ? 'bg-blue-50/80 border-2 border-blue-400' 
                     : 'bg-white border-neutral-200'
@@ -39,33 +40,33 @@ export default async function HowItWorksPage() {
               >
                 {/* Step 3 Deposit badge */}
                 {idx === 2 && (
-                  <div className="mb-2">
+                  <div className="mb-1.5">
                     <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold bg-blue-600 text-white">
                       Deposit required
                     </span>
                   </div>
                 )}
-                <div className="flex items-start gap-2.5 mb-2.5">
-                  <div className="flex-shrink-0 w-7 h-7 rounded-lg bg-blue-50 flex items-center justify-center">
-                    <Icon className="h-3.5 w-3.5 text-blue-600" />
+                <div className="flex items-start gap-2 mb-2">
+                  <div className="flex-shrink-0 w-6 h-6 rounded-lg bg-blue-50 flex items-center justify-center">
+                    <Icon className="h-3 w-3 text-blue-600" />
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-1 flex-wrap">
-                      <span className={`text-xs font-semibold ${
+                      <span className={`text-xs font-semibold whitespace-nowrap ${
                         idx === 2 ? 'text-blue-700 bg-blue-100 px-2 py-0.5 rounded' : 'text-blue-600'
                       }`}>
                         Step {idx + 1}
                       </span>
-                      {idx === 0 && <span className="text-xs text-neutral-500 font-medium">10 minutes</span>}
-                      {idx === 1 && <span className="text-xs text-neutral-500 font-medium">1 business day</span>}
-                      {idx === 2 && <span className="text-xs text-blue-700 font-medium">7 days after deposit</span>}
+                      {idx === 0 && <span className="text-xs text-neutral-500 font-medium whitespace-nowrap">10 minutes</span>}
+                      {idx === 1 && <span className="text-xs text-neutral-500 font-medium whitespace-nowrap">1 business day</span>}
+                      {idx === 2 && <span className="text-xs text-blue-700 font-medium whitespace-nowrap">7 days after deposit</span>}
                     </div>
-                    <h3 className="text-base font-semibold text-neutral-900">
+                    <h3 className="text-sm font-semibold text-neutral-900 leading-tight">
                       {card.title}
                     </h3>
                   </div>
                 </div>
-                <p className="text-sm text-neutral-600 leading-relaxed mb-2.5 flex-1">
+                <p className="text-xs text-neutral-600 leading-relaxed mb-2 flex-1">
                   {card.body.split(/(\d+)/g).map((part, i) => {
                     const isNumber = /^\d+$/.test(part);
                     return isNumber ? (
@@ -76,14 +77,14 @@ export default async function HowItWorksPage() {
                   })}
                 </p>
                 {card.deliverables && card.deliverables.length > 0 && (
-                  <div className="mt-auto pt-2.5 border-t border-neutral-200">
-                    <p className="text-xs font-semibold text-neutral-500 uppercase tracking-wider mb-1.5">
+                  <div className="mt-auto pt-2 border-t border-neutral-200">
+                    <p className="text-xs font-semibold text-neutral-500 uppercase tracking-wider mb-1">
                       Deliverables
                     </p>
                     <ul className="space-y-0.5">
                       {card.deliverables.slice(0, 3).map((item, i) => (
                         <li key={i} className="flex items-start gap-1.5 text-xs text-neutral-600">
-                          <span className="text-blue-600 mt-0.5">•</span>
+                          <span className="text-blue-600 mt-0.5 flex-shrink-0">•</span>
                           <span className="leading-snug">{item}</span>
                         </li>
                       ))}
@@ -93,16 +94,6 @@ export default async function HowItWorksPage() {
               </div>
             );
           })}
-        </div>
-        
-        {/* Mini CTA after steps */}
-        <div className="mt-6 text-center">
-          <Link href="/chat" className="inline-block">
-            <Button className="bg-blue-600 hover:bg-blue-700 text-white rounded-lg px-6 py-3 text-sm font-medium">
-              Get free snapshot
-              <ArrowRight className="w-4 h-4 ml-2" />
-            </Button>
-          </Link>
         </div>
       </SectionLayout>
 
@@ -135,7 +126,7 @@ export default async function HowItWorksPage() {
               </li>
               <li className="flex items-start gap-2">
                 <span className="text-blue-600 mt-0.5 font-bold">•</span>
-                <span>No payment until Go, Hold, Pass recommendation</span>
+                <span>No payment unless you proceed</span>
               </li>
             </ul>
           </div>

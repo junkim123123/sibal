@@ -23,8 +23,8 @@ export default async function HowItWorksPage() {
       <SectionLayout
         title={journey.title}
         subtitle={journey.subtitle}
-        className="bg-neutral-50 py-6 md:py-10 -mt-2"
-        titleClassName="text-xl md:text-2xl lg:text-3xl font-semibold"
+        className="bg-neutral-50 py-3 md:py-5 -mt-2"
+        titleClassName="text-base md:text-lg lg:text-xl font-semibold"
       >
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
           {journey.cards.map((card, idx) => {

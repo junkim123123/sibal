@@ -26,11 +26,11 @@ export function SectionLayout({
             {eyebrow}
           </p>
         )}
-        <h2 className={`${titleClassName || 'text-2xl md:text-3xl lg:text-4xl font-bold'} text-neutral-900 ${titleClassName ? 'mb-3 md:mb-4' : 'mb-4 md:mb-6'} text-center`}>
+        <h2 className={`${titleClassName || 'text-2xl md:text-3xl lg:text-4xl font-bold'} text-neutral-900 ${titleClassName ? 'mb-1.5 md:mb-2' : 'mb-4 md:mb-6'} text-center`}>
           {title}
         </h2>
         {subtitle && (
-          <p className={`text-sm md:text-base text-neutral-600 ${titleClassName ? 'mb-6 md:mb-8' : 'mb-8 md:mb-12'} text-center max-w-2xl mx-auto`}>
+          <p className={`text-sm md:text-base text-neutral-600 ${titleClassName ? 'mb-3 md:mb-4' : 'mb-8 md:mb-12'} text-center max-w-2xl mx-auto`}>
             {subtitle}
           </p>
         )}
